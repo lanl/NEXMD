@@ -1,0 +1,4 @@
+!  Hartree Fock variables
+      real*8 tt(Lt_M)             	 ! hopping integrals
+      real*8 ee(Nb_M)               	 ! HF eigenvalues
+

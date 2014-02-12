@@ -1,0 +1,842 @@
+
+FC = ifort
+CC = icc
+
+NAESMDDIR = naesmd
+SQMDIR = sqm
+PMEMDDIR = pmemd
+PBSADIR = pbsa
+SANDERDIR = sander
+DIRSFF = sff
+DIRPUBPME = pubpme
+AMOEBADIR = amoeba
+DIRDRIVERSRC = driver_src
+LIBDIR = lib
+BLASDIR = blas
+LAPACKDIR = lapack
+
+OBJDIR = obj
+SRCDIR = src
+MODDIR = mod
+LIB = lib 
+
+SQMINC = -Imod/$(SQMDIR)/
+AMOEBAINC = -I$(MODDIR)/$(AMOEBADIR)/
+
+INC= -Iinc/ -Iinc/sander/ -Iinc/$(PBSADIR)/ -Imod/$(PBSADIR)/ -Iinc/$(LIBDIR)/ -Iinc/$(PMEMDDIR)/ -Iinc/$(NAESMDDIR)/old/ -Imod/$(SQMDIR)/
+
+OBJSQM = \
+	$(OBJDIR)/$(SQMDIR)/assert.o \
+	$(OBJDIR)/$(SQMDIR)/mexit.o \
+	$(OBJDIR)/$(SQMDIR)/findmask.o \
+	$(OBJDIR)/$(SQMDIR)/constants.o \
+	$(OBJDIR)/$(SQMDIR)/utilitiesModule.o \
+	$(OBJDIR)/$(SQMDIR)/qmmm_qmtheorymodule.o \
+	$(OBJDIR)/$(SQMDIR)/qmmm_nml_module.o \
+	$(OBJDIR)/$(SQMDIR)/elementOrbitalIndex.o \
+	$(OBJDIR)/$(SQMDIR)/parameterReader.o \
+	$(OBJDIR)/$(SQMDIR)/rotation.o \
+	$(OBJDIR)/$(SQMDIR)/qmmm_struct_module.o \
+	$(OBJDIR)/$(SQMDIR)/file_io_dat.o \
+	$(OBJDIR)/$(SQMDIR)/qmmm_vsolv_module.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_params_module.o \
+	$(OBJDIR)/$(SQMDIR)/qmmm_module.o \
+	$(OBJDIR)/$(SQMDIR)/qm_gb.o \
+	$(OBJDIR)/$(SQMDIR)/slater_overlap.o \
+	$(OBJDIR)/$(SQMDIR)/MNDOChargeSeparation.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_fock_d.o \
+	$(OBJDIR)/$(SQMDIR)/dh_correction_module.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_davidson_module.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_pm6_hof_module.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_get_qm_forces.o \
+	$(OBJDIR)/$(SQMDIR)/dcart1.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_module.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_read_cm3.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_3rd_order.o \
+	$(OBJDIR)/$(SQMDIR)/nmlsrc.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_dispersionread.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_gettab.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_core_core_repulsion.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_parameters.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_repp_d.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_rotate_qmqm.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_repp.o \
+	$(OBJDIR)/$(SQMDIR)/qm_assign_atom_types.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_get_qm_forces.o \
+	$(OBJDIR)/$(SQMDIR)/cosmo_C.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_print_energy.o \
+	$(OBJDIR)/$(SQMDIR)/amopen.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_load_params.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_fock.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_slkode.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_self.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_slktrafo.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_skpar.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_gamma.o \
+	$(OBJDIR)/$(SQMDIR)/timer_dummy.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_repulsiv.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_dispersion_egr.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_h1elec_d.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_h1elec.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_core_core_repulsion_dxyz.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dihed.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_calc_dipole.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_iterator_mod.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_diagonalizer_module.o \
+	$(OBJDIR)/$(SQMDIR)/opnq_Erep.o \
+	$(OBJDIR)/$(SQMDIR)/opnq_Edisp.o \
+	$(OBJDIR)/$(SQMDIR)/opnq_Evdw.o \
+	$(OBJDIR)/$(SQMDIR)/opnq_SwitchMod.o \
+	$(OBJDIR)/$(SQMDIR)/opnq.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_scf.o \
+	$(OBJDIR)/$(SQMDIR)/cosmo.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_fock_predict.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_calc_charges.o \
+	$(OBJDIR)/$(SQMDIR)/qm_link_atoms.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_get_qmmm_forces.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_get_qmmm_forces.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_energy.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_calc_rij_and_eqns.o \
+	$(OBJDIR)/$(SQMDIR)/qm_print_info.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_load_params_and_allocate.o \
+	$(OBJDIR)/$(SQMDIR)/qm_zero_charges.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_print_charges.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_cm3.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_mulliken.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_setup_orb_exp.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_identify_peptide_links.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_allocate_e_repul.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_hcore_qmmm.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_hcore_qmqm.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_energy.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_scf.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_gb.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_broyden.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_fermi.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_ewevge.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_shift.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_gammamat.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_externalshift.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_dftb_dispersion_params.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_smallest_number.o \
+	$(OBJDIR)/$(SQMDIR)/liouv_new.o \
+	$(OBJDIR)/$(SQMDIR)/dipole.o \
+	$(OBJDIR)/$(SQMDIR)/nacr.o \
+	$(OBJDIR)/$(SQMDIR)/dcart2.o \
+	$(OBJDIR)/$(SQMDIR)/deriv.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_get_exc_forces.o \
+	$(OBJDIR)/$(SQMDIR)/calc_rhotz.o \
+	$(OBJDIR)/$(SQMDIR)/md_util.o \
+	$(OBJDIR)/$(SQMDIR)/util.o \
+	$(OBJDIR)/$(SQMDIR)/davidson.o \
+	$(OBJDIR)/$(SQMDIR)/liouville.o \
+	$(OBJDIR)/$(SQMDIR)/buildM.o \
+	$(OBJDIR)/$(SQMDIR)/timing.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_print_bondorders.o 
+OBJNAESMD = \
+	$(OBJDIR)/$(NAESMDDIR)/apc.o \
+        $(OBJDIR)/$(NAESMDDIR)/naesmd_constants.o\
+        $(OBJDIR)/$(NAESMDDIR)/naesmd_space_module.o \
+        $(OBJDIR)/$(NAESMDDIR)/additional-subroutines.o \
+        $(OBJDIR)/$(NAESMDDIR)/dcart_xpm_module.o \
+        $(OBJDIR)/$(NAESMDDIR)/fcn.o \
+        $(OBJDIR)/$(NAESMDDIR)/quantum-prop.o \
+        $(OBJDIR)/$(NAESMDDIR)/response.o \
+	$(OBJDIR)/$(NAESMDDIR)/random.o \
+	$(OBJDIR)/$(NAESMDDIR)/langevin-temperature.o \
+	$(OBJDIR)/$(NAESMDDIR)/communism.o \
+	$(OBJDIR)/$(NAESMDDIR)/nacT_analytic.o \
+	$(OBJDIR)/$(NAESMDDIR)/fewest-switches.o \
+	$(OBJDIR)/$(NAESMDDIR)/coherence.o \
+	$(OBJDIR)/$(NAESMDDIR)/quantum-prop-add.o \
+	$(OBJDIR)/$(NAESMDDIR)/writeoutput.o \
+	$(OBJDIR)/$(NAESMDDIR)/verlet.o \
+	$(OBJDIR)/$(NAESMDDIR)/cadiab.o \
+	$(OBJDIR)/$(NAESMDDIR)/main.o \
+        $(OBJDIR)/$(NAESMDDIR)/sqm_subs.o 
+OBJPBSA = \
+	$(OBJDIR)/$(PBSADIR)/timer.o \
+	$(OBJDIR)/$(PBSADIR)/sa_driver.o \
+	$(OBJDIR)/$(PBSADIR)/decomp.o \
+	$(OBJDIR)/$(PBSADIR)/pb_force.o \
+        $(OBJDIR)/$(PBSADIR)/pb_write.o \
+	$(OBJDIR)/$(PBSADIR)/svbksb.o \
+	$(OBJDIR)/$(PBSADIR)/svdcmp.o \
+	$(OBJDIR)/$(PBSADIR)/pythag.o \
+	$(OBJDIR)/$(PBSADIR)/gen_dx_file.o \
+	$(OBJDIR)/$(PBSADIR)/pb_augdrv.o \
+	$(OBJDIR)/$(PBSADIR)/gmresX.o \
+	$(OBJDIR)/$(PBSADIR)/aug_iccg.o \
+	$(OBJDIR)/$(PBSADIR)/matvec3.o \
+	$(OBJDIR)/$(PBSADIR)/iimod.o \
+	$(OBJDIR)/$(PBSADIR)/interpX.o \
+	$(OBJDIR)/$(PBSADIR)/dsvdc.o \
+	$(OBJDIR)/$(PBSADIR)/pb_fftsolv.o \
+	$(OBJDIR)/$(PBSADIR)/irre32.o \
+	$(OBJDIR)/$(PBSADIR)/problem.o \
+	$(OBJDIR)/$(PBSADIR)/regular.o \
+	$(OBJDIR)/$(PBSADIR)/qld.o \
+	$(OBJDIR)/$(PBSADIR)/miniop.o \
+	$(OBJDIR)/$(PBSADIR)/jumps.o \
+	$(OBJDIR)/$(PBSADIR)/irre31.o \
+	$(OBJDIR)/$(PBSADIR)/wint.o \
+	$(OBJDIR)/$(PBSADIR)/coed6.o \
+	$(OBJDIR)/$(PBSADIR)/qint.o \
+	$(OBJDIR)/$(PBSADIR)/coed20.o \
+	$(OBJDIR)/$(PBSADIR)/prodis.o \
+	$(OBJDIR)/$(PBSADIR)/indexg.o \
+	$(OBJDIR)/$(PBSADIR)/pb_iimdrv.o \
+	$(OBJDIR)/$(PBSADIR)/IIM.o \
+	$(OBJDIR)/$(PBSADIR)/bicg.o \
+	$(OBJDIR)/$(PBSADIR)/dslubc.o \
+	$(OBJDIR)/$(PBSADIR)/dbcg.o \
+	$(OBJDIR)/$(PBSADIR)/isdbcg.o \
+	$(OBJDIR)/$(PBSADIR)/d1mach.o \
+	$(OBJDIR)/$(PBSADIR)/xermsg.o \
+	$(OBJDIR)/$(PBSADIR)/xerhlt.o \
+	$(OBJDIR)/$(PBSADIR)/xersve.o \
+	$(OBJDIR)/$(PBSADIR)/i1mach.o \
+	$(OBJDIR)/$(PBSADIR)/xgetua.o \
+	$(OBJDIR)/$(PBSADIR)/j4save.o \
+	$(OBJDIR)/$(PBSADIR)/xerprn.o \
+	$(OBJDIR)/$(PBSADIR)/fdump.o \
+	$(OBJDIR)/$(PBSADIR)/xercnt.o \
+	$(OBJDIR)/$(PBSADIR)/dsluti.o \
+	$(OBJDIR)/$(PBSADIR)/dslui4.o \
+	$(OBJDIR)/$(PBSADIR)/dslui.o \
+	$(OBJDIR)/$(PBSADIR)/dslui2.o \
+	$(OBJDIR)/$(PBSADIR)/dsmtv.o \
+	$(OBJDIR)/$(PBSADIR)/dsmv.o \
+	$(OBJDIR)/$(PBSADIR)/dsilus.o \
+	$(OBJDIR)/$(PBSADIR)/dchkw.o \
+	$(OBJDIR)/$(PBSADIR)/ds2y.o \
+	$(OBJDIR)/$(PBSADIR)/qs2i1d.o \
+	$(OBJDIR)/$(PBSADIR)/gmres.o \
+	$(OBJDIR)/$(PBSADIR)/dslugm.o \
+	$(OBJDIR)/$(PBSADIR)/dgmres.o \
+	$(OBJDIR)/$(PBSADIR)/dpigmr.o \
+	$(OBJDIR)/$(PBSADIR)/dhels.o \
+	$(OBJDIR)/$(PBSADIR)/drlcal.o \
+	$(OBJDIR)/$(PBSADIR)/isdgmr.o \
+	$(OBJDIR)/$(PBSADIR)/dheqr.o \
+	$(OBJDIR)/$(PBSADIR)/dxlcal.o \
+	$(OBJDIR)/$(PBSADIR)/dorth.o \
+	$(OBJDIR)/$(PBSADIR)/curv.o \
+	$(OBJDIR)/$(PBSADIR)/GrToPr.o \
+	$(OBJDIR)/$(PBSADIR)/transf.o \
+	$(OBJDIR)/$(PBSADIR)/pb_lsolver.o \
+	$(OBJDIR)/$(PBSADIR)/pb_nlsolver.o \
+	$(OBJDIR)/$(PBSADIR)/pb_fddrv.o \
+	$(OBJDIR)/$(PBSADIR)/pb_exmol.o \
+	$(OBJDIR)/$(PBSADIR)/membrane.o \
+	$(OBJDIR)/$(PBSADIR)/pb_direct.o \
+	$(OBJDIR)/$(PBSADIR)/pb_mpfrc.o \
+	$(OBJDIR)/$(PBSADIR)/pb_list.o \
+	$(OBJDIR)/$(PBSADIR)/periodic_cg/random.o \
+	$(OBJDIR)/$(PBSADIR)/np_force.o
+
+OBJSANDER = \
+	$(OBJDIR)/$(SANDERDIR)/amoeba_mdin.o \
+	$(OBJDIR)/$(SANDERDIR)/trace.o \
+	$(OBJDIR)/$(SANDERDIR)/nonbond_list.o \
+	$(OBJDIR)/$(SANDERDIR)/binrestart.o \
+	$(OBJDIR)/$(SANDERDIR)/ew_box.o \
+	$(OBJDIR)/$(SANDERDIR)/qm_ewald.o \
+	$(OBJDIR)/$(SANDERDIR)/erfcfun.o \
+	$(OBJDIR)/$(SANDERDIR)/stack.o \
+	$(OBJDIR)/$(SANDERDIR)/state.o \
+	$(OBJDIR)/$(SANDERDIR)/amoeba_runmd.o \
+	$(OBJDIR)/$(SANDERDIR)/ew_bspline.o \
+	$(OBJDIR)/$(SANDERDIR)/sander_lib.o \
+	$(OBJDIR)/$(SANDERDIR)/spatial_fft.o \
+	$(OBJDIR)/$(SANDERDIR)/ew_setup.o \
+	$(OBJDIR)/$(SANDERDIR)/ew_recip_reg.o \
+	$(OBJDIR)/$(SANDERDIR)/ew_fft.o \
+	$(OBJDIR)/$(SANDERDIR)/parms.o \
+	$(OBJDIR)/$(SANDERDIR)/softcore.o \
+	$(OBJDIR)/$(SANDERDIR)/decomp.o \
+	$(OBJDIR)/$(SANDERDIR)/icosasurf.o \
+	$(OBJDIR)/$(SANDERDIR)/linear_response.o \
+	$(OBJDIR)/$(SANDERDIR)/locmem.o \
+	$(OBJDIR)/$(SANDERDIR)/crg_reloc.o \
+	$(OBJDIR)/$(SANDERDIR)/charmm.o \
+	$(OBJDIR)/$(SANDERDIR)/ew_recip.o \
+	$(OBJDIR)/$(SANDERDIR)/debug.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-constants.o \
+	$(OBJDIR)/$(SANDERDIR)/sglds.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-sander-proxy.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-colvar-type.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-utils.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-colvar-math.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-colvar-utils.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-cv-ANGLE.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-cv-TORSION.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-cv-DISTANCE.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-rmsd.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-cv-MULTI_RMSD.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-cv-R_OF_GYRATION.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-cv-HANDEDNESS.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-cv-N_OF_BONDS.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-cv-N_OF_STRUCTURES.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-cv-LCOD.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-cv-COS_OF_DIHEDRAL.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-cv-COM_ANGLE.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-cv-COM_TORSION.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-cv-COM_DISTANCE.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-cv-PCA.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-value.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-cftree.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-read-pca.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-colvar.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-lexer.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-parser.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-pmd-hooks.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-umbrella.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-abmd-hooks.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-smd-hooks.o \
+	$(OBJDIR)/$(SANDERDIR)/ncsu-sander-hooks.o \
+	$(OBJDIR)/$(SANDERDIR)/egb.o \
+	$(OBJDIR)/$(SANDERDIR)/pimd_vars.o \
+	$(OBJDIR)/$(SANDERDIR)/relax_mat.o \
+	$(OBJDIR)/$(SANDERDIR)/amoeba_multipoles.o \
+	$(OBJDIR)/$(SANDERDIR)/amoeba_induced.o \
+	$(OBJDIR)/$(SANDERDIR)/amoeba_vdw.o \
+	$(OBJDIR)/$(SANDERDIR)/amoeba_adjust.o \
+	$(OBJDIR)/$(SANDERDIR)/amoeba_recip.o \
+	$(OBJDIR)/$(SANDERDIR)/amoeba_valence.o \
+	$(OBJDIR)/$(SANDERDIR)/amoeba_direct.o \
+	$(OBJDIR)/$(SANDERDIR)/amoeba_self.o \
+	$(OBJDIR)/$(SANDERDIR)/amoeba_interface.o \
+	$(OBJDIR)/$(SANDERDIR)/amd.o \
+	$(OBJDIR)/$(SANDERDIR)/ips.o \
+	$(OBJDIR)/$(SANDERDIR)/memory_module.o \
+	$(OBJDIR)/$(SANDERDIR)/emap.o \
+	$(OBJDIR)/$(SANDERDIR)/xref.o \
+	$(OBJDIR)/$(SANDERDIR)/force.o \
+	$(OBJDIR)/$(SANDERDIR)/pimd_force.o \
+	$(OBJDIR)/$(SANDERDIR)/ene.o \
+	$(OBJDIR)/$(SANDERDIR)/nmr.o \
+	$(OBJDIR)/$(SANDERDIR)/nmrcal.o \
+	$(OBJDIR)/$(SANDERDIR)/set.o \
+	$(OBJDIR)/$(SANDERDIR)/decnvh.o \
+	$(OBJDIR)/$(SANDERDIR)/align.o \
+	$(OBJDIR)/$(SANDERDIR)/csa.o \
+	$(OBJDIR)/$(SANDERDIR)/pcshift.o \
+	$(OBJDIR)/$(SANDERDIR)/pearsn.o \
+	$(OBJDIR)/$(SANDERDIR)/cshf.o \
+	$(OBJDIR)/$(SANDERDIR)/multitmd.o \
+	$(OBJDIR)/$(SANDERDIR)/mtmdcall.o \
+	$(OBJDIR)/$(SANDERDIR)/ew_dipole_recip.o \
+	$(OBJDIR)/$(SANDERDIR)/spatial_recip.o \
+	$(OBJDIR)/$(SANDERDIR)/ew_force.o \
+	$(OBJDIR)/$(SANDERDIR)/ew_handle_dips.o \
+	$(OBJDIR)/$(SANDERDIR)/extra_pts.o \
+	$(OBJDIR)/$(SANDERDIR)/short_ene.o \
+	$(OBJDIR)/$(SANDERDIR)/qm2_extern_adf_module.o \
+	$(OBJDIR)/$(SANDERDIR)/qm2_extern_gms_module.o \
+	$(OBJDIR)/$(SANDERDIR)/qm2_extern_tc_module.o \
+	$(OBJDIR)/$(SANDERDIR)/qm2_extern_gau_module.o \
+	$(OBJDIR)/$(SANDERDIR)/qm2_extern_orc_module.o \
+	$(OBJDIR)/$(SANDERDIR)/qm2_extern_nw_module.o \
+	$(OBJDIR)/$(SANDERDIR)/qm2_extern_module.o \
+	$(OBJDIR)/$(SANDERDIR)/qm_mm.o \
+	$(OBJDIR)/$(SANDERDIR)/qm2_read_adf_results.o \
+	$(OBJDIR)/$(SANDERDIR)/KFReader.o \
+	$(OBJDIR)/$(SANDERDIR)/ArrayList.o \
+	$(OBJDIR)/$(SANDERDIR)/molecule.o \
+	$(OBJDIR)/$(SANDERDIR)/qmmm_vsolv.o \
+	$(OBJDIR)/$(SANDERDIR)/iwrap2.o \
+	$(OBJDIR)/$(SANDERDIR)/rgroup.o \
+	$(OBJDIR)/$(SANDERDIR)/bintraj.o \
+	$(OBJDIR)/$(SANDERDIR)/cmd_vars.o \
+	$(OBJDIR)/$(SANDERDIR)/dynlib.o \
+	$(OBJDIR)/$(SANDERDIR)/matinv.o \
+	$(OBJDIR)/$(SANDERDIR)/constantph.o \
+	$(OBJDIR)/$(SANDERDIR)/new_time.o \
+	$(OBJDIR)/$(SANDERDIR)/lscivr_vars.o \
+	$(OBJDIR)/$(SANDERDIR)/nose_hoover.o \
+	$(OBJDIR)/$(SANDERDIR)/fastwt.o \
+	$(OBJDIR)/$(SANDERDIR)/nose_hoover_vars.o \
+	$(OBJDIR)/$(SANDERDIR)/runmd.o \
+	$(OBJDIR)/$(SANDERDIR)/prn_dipoles.o \
+	$(OBJDIR)/$(SANDERDIR)/prn_qmmm_dipole.o \
+	$(OBJDIR)/$(SANDERDIR)/mdwrit.o \
+	$(OBJDIR)/$(SANDERDIR)/cmd_matrix_a1st.o \
+	$(OBJDIR)/$(SANDERDIR)/cmd_matrix.o \
+	$(OBJDIR)/$(SANDERDIR)/shake.o \
+	$(OBJDIR)/$(SANDERDIR)/pimd_init.o \
+	$(OBJDIR)/$(SANDERDIR)/lsc_xp.o \
+	$(OBJDIR)/$(SANDERDIR)/lsc_init.o \
+	$(OBJDIR)/$(SANDERDIR)/nose_hoover_init.o \
+	$(OBJDIR)/$(SANDERDIR)/degcnt.o 
+OBJPMEMD = \
+	$(OBJDIR)/$(PMEMDDIR)/veclib.o \
+	$(OBJDIR)/$(PMEMDDIR)/file_io_dat.o \
+	$(OBJDIR)/$(PMEMDDIR)/gbl_constants.o \
+	$(OBJDIR)/$(PMEMDDIR)/parallel_dat.o \
+	$(OBJDIR)/$(PMEMDDIR)/pmemd_lib.o \
+	$(OBJDIR)/$(PMEMDDIR)/gbl_datatypes.o \
+	$(OBJDIR)/$(PMEMDDIR)/mol_list.o \
+	$(OBJDIR)/$(PMEMDDIR)/dynamics_dat.o \
+	$(OBJDIR)/$(PMEMDDIR)/prfs.o \
+	$(OBJDIR)/$(PMEMDDIR)/random.o \
+	$(OBJDIR)/$(PMEMDDIR)/file_io.o \
+	$(OBJDIR)/$(PMEMDDIR)/mdin_ctrl_dat.o \
+	$(OBJDIR)/$(PMEMDDIR)/dynamics.o \
+	$(OBJDIR)/$(PMEMDDIR)/nextprmtop_section.o \
+	$(OBJDIR)/$(PMEMDDIR)/charmm.o \
+	$(OBJDIR)/$(PMEMDDIR)/prmtop_dat.o \
+	$(OBJDIR)/$(PMEMDDIR)/pbc.o \
+	$(OBJDIR)/$(PMEMDDIR)/axis_optimize.o \
+	$(OBJDIR)/$(PMEMDDIR)/binrestart.o \
+	$(OBJDIR)/$(PMEMDDIR)/inpcrd_dat.o \
+	$(OBJDIR)/$(PMEMDDIR)/bintraj.o \
+	$(OBJDIR)/$(PMEMDDIR)/remd.o \
+	$(OBJDIR)/$(PMEMDDIR)/timers.o \
+	$(OBJDIR)/$(PMEMDDIR)/state_info.o \
+	$(OBJDIR)/$(PMEMDDIR)/fft1d.o \
+	$(OBJDIR)/$(PMEMDDIR)/mdin_ewald_dat.o \
+	$(OBJDIR)/$(PMEMDDIR)/nmr_lib.o \
+	$(OBJDIR)/$(PMEMDDIR)/nmr_calls.o \
+	$(OBJDIR)/$(PMEMDDIR)/runfiles.o \
+	$(OBJDIR)/$(PMEMDDIR)/pmemd_clib.o \
+	$(OBJDIR)/$(PMEMDDIR)/erfcfun.o 
+
+OBJSFF = \
+	$(OBJDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC)/utility.o \
+	$(OBJDIR)/$(DIRSFF)/xminC.o
+OBJSFF = \
+	$(OBJDIR)/$(DIRSFF)/xminC.o 
+
+OBJAMOEBA = \
+	$(OBJDIR)/$(AMOEBADIR)/nextprmtop_section.o \
+	$(OBJDIR)/$(AMOEBADIR)/state_info.o \
+	$(OBJDIR)/$(AMOEBADIR)/file_io_dat.o \
+	$(OBJDIR)/$(AMOEBADIR)/parallel_dat.o \
+	$(OBJDIR)/$(AMOEBADIR)/pmemd_lib.o \
+	$(OBJDIR)/$(AMOEBADIR)/gbl_constants.o \
+	$(OBJDIR)/$(AMOEBADIR)/fft1d.o \
+	$(OBJDIR)/$(AMOEBADIR)/axis_optimize.o \
+	$(OBJDIR)/$(AMOEBADIR)/file_io.o \
+	$(OBJDIR)/$(AMOEBADIR)/mdin_ctrl_dat.o \
+	$(OBJDIR)/$(AMOEBADIR)/mdin_ewald_dat.o \
+	$(OBJDIR)/$(AMOEBADIR)/gbl_datatypes.o \
+	$(OBJDIR)/$(AMOEBADIR)/prmtop_dat.o \
+	$(OBJDIR)/$(AMOEBADIR)/nmr_lib.o \
+	$(OBJDIR)/$(AMOEBADIR)/nmr_calls.o \
+	$(OBJDIR)/$(AMOEBADIR)/dynamics_dat.o \
+	$(OBJDIR)/$(AMOEBADIR)/random.o \
+	$(OBJDIR)/$(AMOEBADIR)/dynamics.o \
+	$(OBJDIR)/$(AMOEBADIR)/pbc.o \
+	$(OBJDIR)/$(AMOEBADIR)/inpcrd_dat.o \
+	$(OBJDIR)/$(AMOEBADIR)/bintraj.o \
+	$(OBJDIR)/$(AMOEBADIR)/loadbal.o \
+	$(OBJDIR)/$(AMOEBADIR)/runfiles.o \
+	$(OBJDIR)/$(AMOEBADIR)/erfcfun.o \
+	$(OBJDIR)/$(AMOEBADIR)/pmemd_clib.o
+
+OBJLIB = \
+	$(OBJDIR)/$(LIBDIR)/rfree.o \
+	$(OBJDIR)/$(LIBDIR)/nxtsec.o \
+	$(OBJDIR)/$(LIBDIR)/veclib.o \
+	$(OBJDIR)/$(LIBDIR)/sys.o \
+	$(OBJDIR)/$(LIBDIR)/wallclock.o \
+	$(OBJDIR)/$(LIBDIR)/random.o
+
+OBJLAPACK = \
+	$(OBJDIR)/$(LAPACKDIR)/dsyev.o \
+        $(OBJDIR)/$(LAPACKDIR)/dsygv.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlansy.o \
+        $(OBJDIR)/$(LAPACKDIR)/dsytrd.o \
+        $(OBJDIR)/$(LAPACKDIR)/dorgtr.o \
+        $(OBJDIR)/$(LAPACKDIR)/dsteqr.o \
+        $(OBJDIR)/$(LAPACKDIR)/dsterf.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlascl.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlamch.o \
+        $(OBJDIR)/$(LAPACKDIR)/ilaenv.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlassq.o \
+        $(OBJDIR)/$(LAPACKDIR)/dsytd2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlatrd.o \
+        $(OBJDIR)/$(LAPACKDIR)/dorgql.o \
+        $(OBJDIR)/$(LAPACKDIR)/dorgqr.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlasrt.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaset.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlanst.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaev2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlasr.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlapy2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlartg.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlae2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dorg2r.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlarft.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlarfb.o \
+	$(OBJDIR)/$(LAPACKDIR)/dorg2l.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlarfg.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlarf.o \
+        $(OBJDIR)/$(LAPACKDIR)/dspev.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlansp.o \
+        $(OBJDIR)/$(LAPACKDIR)/dsptrd.o \
+        $(OBJDIR)/$(LAPACKDIR)/dopgtr.o \
+        $(OBJDIR)/$(LAPACKDIR)/dppsv.o \
+        $(OBJDIR)/$(LAPACKDIR)/dspsv.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgeev.o \
+        $(OBJDIR)/$(LAPACKDIR)/dsptrs.o \
+        $(OBJDIR)/$(LAPACKDIR)/dsptrf.o \
+        $(OBJDIR)/$(LAPACKDIR)/dpptrs.o \
+        $(OBJDIR)/$(LAPACKDIR)/dpptrf.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgebak.o \
+        $(OBJDIR)/$(LAPACKDIR)/dtrevc.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlacpy.o \
+        $(OBJDIR)/$(LAPACKDIR)/dhseqr.o \
+        $(OBJDIR)/$(LAPACKDIR)/dorghr.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgehrd.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgebal.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlange.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlabad.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlahqr.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlarfx.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlanhs.o \
+	$(OBJDIR)/$(LAPACKDIR)/dlaln2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgehd2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlahrd.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlanv2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dladiv.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgerq2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dorm2r.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlarnv.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgeqr2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaruv.o \
+        $(OBJDIR)/$(LAPACKDIR)/dspevd.o \
+        $(OBJDIR)/$(LAPACKDIR)/dstedc.o \
+        $(OBJDIR)/$(LAPACKDIR)/dopmtr.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaed0.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaed1.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaed7.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaeda.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaed8.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaed9.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlamrg.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaed2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaed3.o \
+        $(OBJDIR)/$(LAPACKDIR)/dpotrs.o \
+        $(OBJDIR)/$(LAPACKDIR)/dpotrf.o \
+        $(OBJDIR)/$(LAPACKDIR)/dsygst.o \
+        $(OBJDIR)/$(LAPACKDIR)/dpotf2.o \
+	$(OBJDIR)/$(LAPACKDIR)/dsygs2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dposv.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaebz.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlagtf.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlagts.o \
+        $(OBJDIR)/$(LAPACKDIR)/dormqr.o \
+        $(OBJDIR)/$(LAPACKDIR)/dormql.o \
+        $(OBJDIR)/$(LAPACKDIR)/dorm2l.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaed4.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaed5.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaed6.o \
+        $(OBJDIR)/$(LAPACKDIR)/ieeeck.o \
+        $(OBJDIR)/$(LAPACKDIR)/dsyevx.o \
+        $(OBJDIR)/$(LAPACKDIR)/dsyevd.o \
+        $(OBJDIR)/$(LAPACKDIR)/dstebz.o \
+        $(OBJDIR)/$(LAPACKDIR)/dstein.o \
+        $(OBJDIR)/$(LAPACKDIR)/dormtr.o \
+        $(OBJDIR)/$(LAPACKDIR)/zheev.o \
+        $(OBJDIR)/$(LAPACKDIR)/zlanhe.o \
+        $(OBJDIR)/$(LAPACKDIR)/zlascl.o \
+        $(OBJDIR)/$(LAPACKDIR)/zhetrd.o \
+        $(OBJDIR)/$(LAPACKDIR)/zungtr.o \
+        $(OBJDIR)/$(LAPACKDIR)/zsteqr.o \
+        $(OBJDIR)/$(LAPACKDIR)/zlassq.o \
+        $(OBJDIR)/$(LAPACKDIR)/zlatrd.o \
+	$(OBJDIR)/$(LAPACKDIR)/zhetd2.o \
+	$(OBJDIR)/$(LAPACKDIR)/zungqr.o \
+	$(OBJDIR)/$(LAPACKDIR)/zlasr.o \
+	$(OBJDIR)/$(LAPACKDIR)/zlaset.o \
+        $(OBJDIR)/$(LAPACKDIR)/zlacgv.o \
+        $(OBJDIR)/$(LAPACKDIR)/zlarfg.o \
+        $(OBJDIR)/$(LAPACKDIR)/zung2l.o \
+        $(OBJDIR)/$(LAPACKDIR)/zlarft.o \
+        $(OBJDIR)/$(LAPACKDIR)/zung2r.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlapy3.o \
+        $(OBJDIR)/$(LAPACKDIR)/zladiv.o \
+        $(OBJDIR)/$(LAPACKDIR)/zlarf.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgesvd.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgebrd.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgebd2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlabrd.o \
+        $(OBJDIR)/$(LAPACKDIR)/dorgbr.o \
+        $(OBJDIR)/$(LAPACKDIR)/dbdsqr.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgeqrf.o \
+        $(OBJDIR)/$(LAPACKDIR)/dormbr.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgelqf.o \
+        $(OBJDIR)/$(LAPACKDIR)/dorglq.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlas2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlasq1.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlasv2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgelq2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgelq2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dorgl2.o \
+	$(OBJDIR)/$(LAPACKDIR)/dlasq2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dormlq.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlasq3.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlasq4.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlasq5.o \
+        $(OBJDIR)/$(LAPACKDIR)/dorml2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlasq6.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgesv.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgetrs.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaswp.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgetrf.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgerfs.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgetf2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dsysv.o \
+        $(OBJDIR)/$(LAPACKDIR)/dsytrs.o \
+        $(OBJDIR)/$(LAPACKDIR)/dsytrf.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlasyf.o \
+        $(OBJDIR)/$(LAPACKDIR)/dsytf2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgelsd.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlalsd.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlasdq.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlasda.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlalsa.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlasd6.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlals0.o \
+	$(OBJDIR)/$(LAPACKDIR)/dlasdt.o \
+	$(OBJDIR)/$(LAPACKDIR)/dlasd7.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlasd8.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlasd4.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlasd5.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlacn2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgelsy.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaic1.o \
+        $(OBJDIR)/$(LAPACKDIR)/dtzrzf.o \
+        $(OBJDIR)/$(LAPACKDIR)/dormrz.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlarzt.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlarzb.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlatrz.o \
+        $(OBJDIR)/$(LAPACKDIR)/dormr3.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgeqp3.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlarz.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaqps.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaqp2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dspevx.o \
+        $(OBJDIR)/$(LAPACKDIR)/dsyevr.o \
+        $(OBJDIR)/$(LAPACKDIR)/dstegr.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlarrv.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlarre.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlarrb.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlar1v.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlarrf.o \
+        $(OBJDIR)/$(LAPACKDIR)/dggev.o \
+	$(OBJDIR)/$(LAPACKDIR)/dhgeqz.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgghrd.o \
+        $(OBJDIR)/$(LAPACKDIR)/dtgevc.o \
+        $(OBJDIR)/$(LAPACKDIR)/dggbak.o \
+        $(OBJDIR)/$(LAPACKDIR)/dggbal.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlag2.o \
+        $(OBJDIR)/$(LAPACKDIR)/disnan.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaisnan.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlarfp.o \
+        $(OBJDIR)/$(LAPACKDIR)/dstemr.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlarra.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlarrc.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlarrd.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlarrj.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlarrk.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlarrr.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaneg.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaqr0.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaqr1.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaqr2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaqr3.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaqr4.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaqr5.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlahr2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dormhr.o \
+        $(OBJDIR)/$(LAPACKDIR)/dtrexc.o \
+	$(OBJDIR)/$(LAPACKDIR)/dlaexc.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlasy2.o \
+        $(OBJDIR)/$(LAPACKDIR)/iparmq.o \
+        $(OBJDIR)/$(LAPACKDIR)/iladlc.o \
+        $(OBJDIR)/$(LAPACKDIR)/iladlr.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlatrs.o \
+        $(OBJDIR)/$(LAPACKDIR)/drscl.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlantr.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgecon.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgeequ.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlaqge.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgesvx.o \
+        $(OBJDIR)/$(LAPACKDIR)/chla_transtype.o \
+        $(OBJDIR)/$(LAPACKDIR)/dla_wwaddw.o \
+        $(OBJDIR)/$(LAPACKDIR)/dla_geamv.o \
+        $(OBJDIR)/$(LAPACKDIR)/dla_lin_berr.o \
+        $(OBJDIR)/$(LAPACKDIR)/ilatrans.o \
+        $(OBJDIR)/$(LAPACKDIR)/dla_gercond.o \
+        $(OBJDIR)/$(LAPACKDIR)/ilaprec.o \
+        $(OBJDIR)/$(LAPACKDIR)/dla_rpvgrw.o \
+        $(OBJDIR)/$(LAPACKDIR)/dlascl2.o \
+        $(OBJDIR)/$(LAPACKDIR)/dgeequb.o \
+        $(OBJDIR)/$(LAPACKDIR)/zungql.o \
+        $(OBJDIR)/$(LAPACKDIR)/zlarfb.o \
+        $(OBJDIR)/$(LAPACKDIR)/ilazlc.o \
+	$(OBJDIR)/$(LAPACKDIR)/ilazlr.o	
+
+OBJBLAS = \
+        $(OBJDIR)/$(BLASDIR)/dasum.o \
+        $(OBJDIR)/$(BLASDIR)/daxpy.o \
+        $(OBJDIR)/$(BLASDIR)/dcabs1.o \
+        $(OBJDIR)/$(BLASDIR)/dcopy.o \
+        $(OBJDIR)/$(BLASDIR)/ddot.o \
+        $(OBJDIR)/$(BLASDIR)/dgbmv.o \
+        $(OBJDIR)/$(BLASDIR)/dgemm.o \
+        $(OBJDIR)/$(BLASDIR)/dgemv.o \
+        $(OBJDIR)/$(BLASDIR)/dger.o \
+        $(OBJDIR)/$(BLASDIR)/dnrm2.o \
+        $(OBJDIR)/$(BLASDIR)/drot.o \
+        $(OBJDIR)/$(BLASDIR)/drotg.o \
+        $(OBJDIR)/$(BLASDIR)/dsbmv.o \
+        $(OBJDIR)/$(BLASDIR)/dscal.o \
+        $(OBJDIR)/$(BLASDIR)/dspmv.o \
+        $(OBJDIR)/$(BLASDIR)/dspr.o \
+        $(OBJDIR)/$(BLASDIR)/dspr2.o \
+        $(OBJDIR)/$(BLASDIR)/dswap.o \
+        $(OBJDIR)/$(BLASDIR)/dsymm.o \
+        $(OBJDIR)/$(BLASDIR)/dsymv.o \
+       	$(OBJDIR)/$(BLASDIR)/dsyr.o \
+        $(OBJDIR)/$(BLASDIR)/dsyr2.o \
+        $(OBJDIR)/$(BLASDIR)/dsyr2k.o \
+        $(OBJDIR)/$(BLASDIR)/dsyrk.o \
+        $(OBJDIR)/$(BLASDIR)/dtbmv.o \
+        $(OBJDIR)/$(BLASDIR)/dtbsv.o \
+        $(OBJDIR)/$(BLASDIR)/dtpmv.o \
+        $(OBJDIR)/$(BLASDIR)/dtpsv.o \
+        $(OBJDIR)/$(BLASDIR)/dtrmm.o \
+        $(OBJDIR)/$(BLASDIR)/dtrmv.o \
+        $(OBJDIR)/$(BLASDIR)/dtrsm.o \
+        $(OBJDIR)/$(BLASDIR)/dtrsv.o \
+        $(OBJDIR)/$(BLASDIR)/dummy.o \
+        $(OBJDIR)/$(BLASDIR)/dzasum.o \
+        $(OBJDIR)/$(BLASDIR)/dznrm2.o \
+        $(OBJDIR)/$(BLASDIR)/isamax.o \
+        $(OBJDIR)/$(BLASDIR)/lsame.o \
+        $(OBJDIR)/$(BLASDIR)/xerbla.o \
+        $(OBJDIR)/$(BLASDIR)/scopy.o \
+        $(OBJDIR)/$(BLASDIR)/sswap.o \
+        $(OBJDIR)/$(BLASDIR)/sscal.o \
+        $(OBJDIR)/$(BLASDIR)/sasum.o \
+        $(OBJDIR)/$(BLASDIR)/snrm2.o \
+        $(OBJDIR)/$(BLASDIR)/sdot.o \
+        $(OBJDIR)/$(BLASDIR)/ssyr2k.o \
+        $(OBJDIR)/$(BLASDIR)/saxpy.o \
+        $(OBJDIR)/$(BLASDIR)/sgemv.o \
+        $(OBJDIR)/$(BLASDIR)/ssyr2.o \
+        $(OBJDIR)/$(BLASDIR)/ssymv.o \
+        $(OBJDIR)/$(BLASDIR)/sgemm.o \
+        $(OBJDIR)/$(BLASDIR)/strmm.o \
+        $(OBJDIR)/$(BLASDIR)/strmv.o \
+        $(OBJDIR)/$(BLASDIR)/sger.o \
+        $(OBJDIR)/$(BLASDIR)/zher2k.o \
+        $(OBJDIR)/$(BLASDIR)/zswap.o \
+        $(OBJDIR)/$(BLASDIR)/zgemv.o \
+        $(OBJDIR)/$(BLASDIR)/zhemv.o \
+        $(OBJDIR)/$(BLASDIR)/zscal.o \
+        $(OBJDIR)/$(BLASDIR)/zdotc.o \
+        $(OBJDIR)/$(BLASDIR)/zaxpy.o \
+        $(OBJDIR)/$(BLASDIR)/zher2.o \
+        $(OBJDIR)/$(BLASDIR)/zdscal.o \
+        $(OBJDIR)/$(BLASDIR)/ztrmv.o \
+        $(OBJDIR)/$(BLASDIR)/zcopy.o \
+        $(OBJDIR)/$(BLASDIR)/ztrmm.o \
+        $(OBJDIR)/$(BLASDIR)/zgemm.o \
+        $(OBJDIR)/$(BLASDIR)/zgerc.o
+
+
+FFLAG = -O3 
+#-mcmodel=medium
+LDFLAGS = $(FFLAG)
+LINK =  -llapack -lblas 
+LINK =
+
+
+$(OBJDIR)/$(LIBDIR)/%.o: $(SRCDIR)/$(LIBDIR)/%.F90
+	$(FC) $(INC) $(FFLAG) -o $@ -c $<
+
+$(OBJDIR)/$(LIBDIR)/%.o: $(SRCDIR)/$(LIBDIR)/%.F
+	$(FC) $(INC) $(FFLAG) -o $@ -c $<
+
+$(OBJDIR)/$(AMOEBADIR)/%.o: $(SRCDIR)/$(AMOEBADIR)/%.F90
+	$(FC) $(INC) $(FFLAG) -module $(MODDIR)/$(AMOEBADIR)/  -o $@ -c $<
+
+$(OBJDIR)/$(AMOEBADIR)/%.o: $(SRCDIR)/$(AMOEBADIR)/%.c
+	$(CC) $(INC) -o $@ -c $<
+
+
+
+$(OBJDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC)/%.o: $(SRCDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC)/%.f
+	$(FC) $(INC) $(FFLAG) -o $@ -c $<
+
+
+$(OBJDIR)/$(DIRSFF)/%.o: $(SRCDIR)/$(DIRSFF)/%.c
+	$(CC) $(INC) -DSQM -o $@ -c $<
+
+$(OBJDIR)/$(LIBDIR)/%.o: $(SRCDIR)/$(LIBDIR)/%.c
+	$(CC) $(INC) $(FFLAG) -o $@ -c $<
+
+$(OBJDIR)/$(SANDERDIR)/%.o: $(SRCDIR)/$(SANDERDIR)/%.F90
+	$(FC) $(INC) $(FFLAG) $(SQMINC) -module $(MODDIR)/$(SANDERDIR)/ -o $@ -c $<
+
+$(OBJDIR)/$(SANDERDIR)/%.o: $(SRCDIR)/$(SANDERDIR)/%.c
+	$(CC) $(INC) $(FFLAG) -o $@ -c $<
+
+$(OBJDIR)/$(SQMDIR)/%.o: $(SRCDIR)/$(SQMDIR)/%.F90 
+	$(FC) $(INC) $(FFLAG) -DSQM -module $(MODDIR)/$(SQMDIR)/ -o $@ -c $< 
+
+$(OBJDIR)/$(PBSADIR)/%.o: $(SRCDIR)/$(PBSADIR)/%.F90
+	$(FC) $(INC) $(FFLAG) -module $(MODDIR)/$(PBSADIR)/ -o $@ -c $<
+
+
+$(OBJDIR)/$(PBSADIR)/periodic_cg/%.o: $(SRCDIR)/$(PBSADIR)/periodic_cg/%.F90
+	$(FC) $(INC) $(FFLAG) -o $@ -c $<
+
+
+$(OBJDIR)/$(NAESMDDIR)/%.o: $(SRCDIR)/$(NAESMDDIR)/%.F90
+	$(FC) $(INC) $(FFLAG) $(SQMINC) -module $(MODDIR)/$(NAESMDDIR)/  -o $@ -c $<  
+#	&& mv *.mod mod/
+
+$(OBJDIR)/$(NAESMDDIR)/old/%.o: $(SRCDIR)/$(NAESMDDIR)/old/%.F90
+	$(FC) $(INC) $(FFLAG) -o $@ -c $< 
+# && mv *.mod mod/
+
+$(OBJDIR)/$(NAESMDDIR)/old/%.o: $(SRCDIR)/$(NAESMDDIR)/old/%.f
+	$(FC) $(INC) $(FFLAG) -o $@ -c $<
+
+
+$(OBJDIR)/$(PMEMDDIR)/%.o: $(SRCDIR)/$(PMEMDDIR)/%.F90
+	$(FC) $(INC) $(FFLAG) -module $(MODDIR)/$(PMEMDDIR) -o $@ -c $<
+
+$(OBJDIR)/$(PMEMDDIR)/%.o: $(SRCDIR)/$(PMEMDDIR)/%.c
+	$(CC) $(INC) $(FFLAG) -o $@ -c $<
+
+$(OBJDIR)/$(LAPACKDIR)/%.o: $(SRCDIR)/$(LAPACKDIR)/%.f
+	$(FC) $(FFLAG) -o $@ -c $<
+
+$(OBJDIR)/$(BLASDIR)/%.o: $(SRCDIR)/$(BLASDIR)/%.f
+	$(FC) $(FFLAG) -o $@ -c $<
+
+
+naesmd.exe: $(OBJSQM) $(OBJLIB) $(OBJNAESMD) $(OBJSFF) $(OBJBLAS) $(OBJLAPACK)
+	$(FC) $(LDFLAGS) -o naesmd.exe $(OBJNAESMD) $(OBJSQM) $(OBJLIB) $(OBJSFF) $(OBJBLAS) $(OBJLAPACK) -L$(LIB) $(LINK) 
+
+ceoDavM:   $(FILESMmodM1) 
+	$(LD) $(LDFLAGS) ceoDavM $(FILESMmodM1) $(LIB_BLAS-LAPAC)
+	
+listvmodes:   $(FILES8) 
+	$(LD) $(LDFLAGS) listvmodes $(FILES8)
+
+mopac.o: mopac.f
+	$(FC) -g -c $<
+
+util.o: util.f
+	$(FC) -g -c $<
+		
+clean :
+	rm -f ob*/*.o obj/*/*.o  mod/*.mod *.mod mod/*/*.mod rm lib/*.a

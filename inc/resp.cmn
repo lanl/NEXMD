@@ -1,0 +1,5 @@
+!
+        common /lin/ mux,muy,muz,ftot,alphax,alphay,alphaz,alpha
+        common /lin/ mu2x,mu2y,mu2z,ftot2,betax,betay,betaz,beta
+        common /lin/ mu3x,mu3y,mu3z,ftot3,gammax,gammay,gammaz,gamma
+	

@@ -1,0 +1,3 @@
+!
+      common /etaxi/ eta,eta1,eta2,xi,xi1,xi2
+

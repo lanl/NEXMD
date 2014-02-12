@@ -1,0 +1,18 @@
+!  Main parameters
+	integer Na_M,N3_M,Nm_M,N2_M
+	real*8 Ry2,TeV,fcoeff,dcoeff,ocoeff,freqcoeff
+      parameter (Na_M = 1100)      ! max. number of atoms
+      parameter (N3_M = 3*Na_M)   ! max. number of cartesian coordinates
+!      parameter (Nm_M = 3*Na_M-6) ! max. number of normal modes
+      parameter (Nm_M = 3*Na_M) ! max. number of normal modes
+      parameter (N2_M = 2*Nm_M)   ! max. number of coordinates + velocities
+
+      parameter (Ry2 = 27.211396d0)          ! Energy AU -> eV
+      parameter (ocoeff = 1301.889666774621d0) ! sqrt(fii/m) -> (cm^-1)
+      parameter (TeV = 11606.0)          ! Temperature,K  -> eV
+      parameter (dcoeff = 5.804475702226032d0) ! d0 for m=1au, w=1cm^(-1)
+      parameter (fcoeff = 1.60217733d-19 &   ! whatever -> A/fs^2   *->& KGB
+     *      1d-10 / 1.6605402d-27)           ! (1.6d-19 J/eV * 1d20 (m/A)^2) / 
+                                             ! (1.66d-27 kg/au * 1d30 (fs/s)^2)
+      parameter (freqcoeff = 1.0d15)	     ! frequency coeff, s^-1 -> fs^-1
+!      parameter (np_M = 16)		     ! max. number of processes

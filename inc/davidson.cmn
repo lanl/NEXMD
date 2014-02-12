@@ -1,0 +1,4 @@
+!
+      common /davvar/ vexp1,vexp
+      common /davvar2/ ray,rayv,rayvL,rayvR,raye,raye1,ray1,ray1a,ray2 
+

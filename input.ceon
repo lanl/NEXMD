@@ -1,0 +1,127 @@
+&qmmm
+   qm_theory='AM1',
+   exst_method=1, ! CIS (1) or RPA (2)
+   davidson_guess=1, ! restart Davidson from previous (1) or from scratch (0)
+   ftol=0.d0, !   Min tolerance (|emin-eold|)
+   ftol0=1.d-7, !  Acceptance tol.(|emin-eold|)
+   ftol1=1.d-8, ! Accept.tol.for residual norm
+   verbosity=5,
+   scfconv=1.0d-9,
+   qmcharge=0,
+   maxcyc=0,
+   ceps=1000,
+   cosmo_scf_ftol=1.0d-8
+   EF=0,
+   Ex=0, !Electric Field Vector X for potential_type 1
+   Ez=0, !Electric Field Vector Z for potential_type 1
+   Ey=0.01, !Electric Field Vector Y for potential_type 1
+   onsager_radius=1.9, ! Onsager radius
+   printcharges=0, ! Mulliken charges for ground state
+   printdipole=0, !0 - None, 1 - Excited State, Relaxed, Unrelaxed
+   solvent_model=1, ! 0 - None, 1 - LR, >2 SS :: 2-[V_s(T+Z),xi], 3-[V_s(xi),xi], (4-[V_s(T+Z),rho_0+xi], 5-[V_s(xi),rho_0+xi] for testing)
+   potential_type=3, ! 1 - Constant Electric Field, 2 - Onsager, 3 - COSMO, 4 - Testing (CEF only in ES with solvent_model=4,5), 0-Normal Correlation
+&endqmmm
+
+
+&moldyn
+   !***** General parameters
+   rnd_seed=1, ! seed for the random number generator
+   bo_dynamics_flag=1, ! 0-non-BO, 1-BO
+   exc_state_init=10, ! initial excited state (0 - ground state)
+   n_exc_states_propagate=10, ! number of excited states
+
+   !***** Dynamics parameters
+   time_init=0.d0 ! initial time, fs
+   time_step=0.05d0, ! time step, fs
+   n_class_steps=0, !number of classical steps
+   n_quant_steps=0, ! number of quantum steps for each classical step
+   moldyn_deriv_flag=2, ! 0-none, 1-analyt, 2-numeric
+   num_deriv_step=1.d-5, ! displacement for numerical derivatives, A
+   rk_tolerance=1.d-7, ! tolerance for the Runge-Kutta propagator
+
+   !***** Non-adiabatic parameters
+   quant_coeffs_reinit=0, ! reinit (1) or not (0) quantum coeffs after a hop
+   quant_step_reduction_factor=0.1d0, ! quantum step reduction factor
+   decoher_type=0, ! type of decoherence: Persico/Granucci (0), Truhlar(1) 
+   decoher_e0=0.d0, ! decoherence parameter E0
+   decoher_c=0.d0, ! decoherence parameter C
+
+   !***** Thermostat parameters
+   therm_type=0, ! Thermostat type (0-no thermostat,1-Langevin,2-Berendsen)
+   therm_temperature=300.d0, ! Thermostate temperature, K
+   therm_friction=2.d0, ! thermostate friction coefficient, 1/ps
+   berendsen_relax_const=0.4d0, ! bath relaxation constant, only for Berendsen
+   heating=0, ! heating (1) or equilibrated(0)
+   heating_steps_per_degree=100, ! number of steps per degree during heating
+
+   !***** Output & Log parameters
+   verbosity=3, ! output verbosity (0-minimal, 3-highest) 
+   out_count_init=0, ! the initial count for output files
+   out_data_steps=1, ! number of steps to write data
+   out_coords_steps=10, ! number of steps to write the restart file
+   out_data_cube=0, ! write(1) or not(0) view files to generate cubes   
+&endmoldyn
+
+&coord
+6          -2.25381         0.88569         0.03993
+6          -0.86966         1.08300         0.02725
+6           0.01217        -0.02031         0.04789
+6          -0.53397        -1.31514         0.08141
+6          -1.91716        -1.51060         0.09399
+6          -2.79435        -0.41215         0.07338
+6           1.50358         0.11349         0.03594
+6           2.16158         1.29653         0.00297
+6           3.65549         1.50712        -0.01121
+6           4.08825         2.84412        -0.04940
+6           5.45337         3.18573        -0.06653
+6           6.42784         2.16844        -0.04504
+6           6.00585         0.82422        -0.00656
+6           4.63608         0.47749         0.01071
+1           2.04465        -0.81290         0.05519
+1           1.57457         2.20209        -0.01614
+1          -2.90492         1.75057         0.02351
+1          -0.51342         2.09932         0.00147
+1          -2.30267        -2.52188         0.11986
+7          -4.21060        -0.61090         0.08617
+1           0.11609        -2.18172         0.09788
+1           3.34496         3.63003        -0.06611
+1           6.73251         0.03462         0.01040
+6           7.88095         2.55714        -0.06400
+6           8.91475         1.68383        -0.04688
+1           8.09592         3.61356        -0.09345
+6          10.35605         2.08316        -0.06610
+1           8.72156         0.62239        -0.01746
+6          10.79045         3.42888        -0.10449
+6          12.15655         3.72949        -0.12065
+6          13.10331         2.70486        -0.09907
+6          12.68870         1.37366        -0.06119
+6          11.32608         1.06309        -0.04478
+1          10.09703         4.25347        -0.12227
+1          12.48130         4.76172        -0.15004
+1          14.15910         2.94292        -0.11172
+1          13.42399         0.57953        -0.04447
+1          11.02575         0.02265        -0.01532
+8           5.85645         4.48765        -0.10376
+6           5.02642         5.59030        -0.12856
+8           4.25763        -0.82710         0.04813
+6           5.09636        -1.92373         0.07294
+1           5.64765         6.50876        -0.15679
+1           4.39730         5.61988         0.78658
+1           4.38680         5.57095        -1.03667
+1           4.48140        -2.84642         0.10142
+1           5.73523        -1.90064         0.98148
+1           5.72473        -1.94995        -0.84282
+8          -4.95199         0.32543         0.06857
+8          -4.66521        -1.71504         0.11448
+&endcoord
+
+&veloc
+   0.0   0.0   0.0
+   0.0   0.0   0.0
+&endveloc
+
+&coeff
+  1.00	0.00
+  0.00	0.00
+&endcoeff
+

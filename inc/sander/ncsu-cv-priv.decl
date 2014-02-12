@@ -1,0 +1,10 @@
+!
+! this is used to bind some type-dependent per-instance
+! data to type(colvar_t) instances
+!
+
+private :: get_priv
+private :: new_priv
+private :: del_priv
+
+type(priv_t), private, save, pointer :: priv_list => null()
