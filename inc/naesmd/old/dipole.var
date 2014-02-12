@@ -1,0 +1,4 @@
+!  Dipoles matrices
+      real*8 dip0x(Lt_M),dip0y(Lt_M),dip0z(Lt_M)            	 
+
+

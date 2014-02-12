@@ -1,0 +1,8 @@
+!
+      real*8 intf(6)
+      integer Nb,Np,Nh,Lt,Mb,M4,M2,Nc,Mx,Mj,Ni,Nat,Ntot
+      integer Charg,inttyp,irflag  
+      real*8 ftol,ftol0,ftol1
+      integer lprint,Nrestart, idav         
+      real*8 Eelec,Enucl,Esol,Atheat,Escf,Energy,rtol   
+
