@@ -59,7 +59,9 @@ subroutine dav_wrap()
 	qm2ds%v0_old(:,:)=qm2ds%v0(:,:)
 
 	! Output
-	call outDavidson()
+	if (qm2ds%verbosity>0) then
+		call outDavidson()
+	endif
 
 	qm2ds%has_been_run = .TRUE.
 

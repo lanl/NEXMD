@@ -15,7 +15,7 @@ module communism
       integer                        :: Na, nbasis
       integer                        :: Ncharge
       integer                        :: excN ! number of excited states
-      _REAL_			     :: escf		
+      _REAL_                         :: escf
       _REAL_, dimension(:), pointer  :: deriv_forces ! forces as they come out
                                                        ! of deriv (eV/A)
       ! Various cumulative times (initial values=0.d0)       
@@ -210,7 +210,6 @@ module communism
 
    call qmmm2coords_r(sim)
 
-   !sim%dav%Mx=sim%excN+1 ! kav: I do not think we need this
    sim%dav%Mx=sim%excN ! as many excited state as required, no more
    ! CML Includes call to Davidson within sqm_energy() 7/16/12
    call sqm_energy(sim%Na,sim%coords,sim%escf,born_radii, &
@@ -218,7 +217,6 @@ module communism
       sim%time_sqm_took,sim%time_davidson_took)
 
    ! ground state energy
-   !sim%dav%Eground=escf/evkcal ! kav: I do not understand value of escf
    sim%dav%Eground=qm2ds%Eground
    sim%nbasis=sim%dav%Nb
 
@@ -242,7 +240,7 @@ module communism
          end do
       end if
    end do
-   if(quir_cmdqt>0) then ! quirality was restored at least once above
+   if((quir_cmdqt>0).and.(qm2ds%verbosity>0)) then ! quirality was restored at least once above
       print*,' Restoring quirality in cmdqt'
    end if
 
@@ -325,8 +323,7 @@ module communism
    include 'md.cmn'
    include 'common'
 
-   !type(simulation_t),pointer,intent(in) :: sim
-   type(simulation_t),pointer::sim ! kav-test - line above does not work with pgf90
+   type(simulation_t),pointer::sim 
 
    integer,intent(in)::fdes_in,fdes_out
 
@@ -353,21 +350,9 @@ module communism
    integer :: igb, maxcyc
    _REAL_  :: grms_tol
    _REAL_  :: total_energy
-   _REAL_  :: mu(3);	
    logical :: master=.true.
 
    character(len=strlen) :: string
-
-   !interface
-   !   subroutine qm2_calc_dipole(coord,mass,ipres,lbres,nres)
-   !     integer, optional, intent(in) :: nres, ipres(*)
-   !     _REAL_, optional, intent(inout) :: mass(*)
-   !     _REAL_, intent(inout) :: coord(*)
-   !     character(len=4), optional, intent(in) :: lbres(*)
-   !   end subroutine qm2_calc_dipole
-   !end interface
-
-   write(6,*)"nstep=",nstep
 
    ! ==== Initialise first_call flags for QMMM ====
    qmmm_struct%qm_mm_first_call = .true.
@@ -383,10 +368,6 @@ module communism
    ncharge=0;
         
    igb = 0
-   !call getsqmx( natom, x, atnam, atnum, ncharge, excharge, chgnam, chgatnum)
-   !call read_qmmm_nm_and_alloc(natom,igb,atnam,atnum,maxcyc,grms_tol,ntpr, &
-   !   ncharge,excharge,chgatnum, &
-   !   qm2ds%Mx,qm2ds%struct_opt_state,qm2ds%idav)
    call sqm_read_and_alloc(fdes_in, fdes_out, &
       sim%Na,igb,atnam,sim%naesmd%atomtype,maxcyc, &
       grms_tol,ntpr, ncharge,excharge,chgatnum, &
@@ -413,10 +394,10 @@ module communism
    allocate ( qm2_struct%scf_mchg(qmmm_struct%nquant_nlink), stat = ier )
    REQUIRE(ier == 0)
 
-   allocate ( qmmm_struct%qm_coords(3,qmmm_struct%nquant_nlink),&
-                                                            stat=ier )
-                   !Stores the REAL and link atom qm coordinates
+   allocate ( qmmm_struct%qm_coords(3,qmmm_struct%nquant_nlink), stat=ier )
    REQUIRE(ier == 0)
+
+!Check if we are doing Geometry Optimization or Dynamics and act accordingly
    if (maxcyc < 1) then   	    
 	   qm2ds%minimization = .FALSE.   
 	   sim%Ncharge  = ncharge
@@ -431,22 +412,15 @@ module communism
 	!  intdiel, extdiel, Arad, sim%qm2%scf_mchg )
 	call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs)
    else if (nstep<1) then ! nstep - number of classical steps for dynamics
+	
 	qm2ds%minimization = .TRUE.
         sim%Ncharge  = ncharge
         sim%qmmm     => qmmm_struct
-        sim%qm2	=> qm2_struct
+        sim%qm2 => qm2_struct
         sim%dav      => qm2ds
+        qm2ds%verbosity=0 !don't print output from scf calculations
+	qmmm_nml%verbosity=0
         call naesmd2qmmm_r(sim)
-	!x=>qmmm_struct%qm_coords;
-        !do i=0,natom-1
-        !         x(i*3+1)=qmmm_struct%qm_coords(1,i+1)
-        !         x(i*3+2)=qmmm_struct%qm_coords(2,i+1)
-        !         x(i*3+3)=qmmm_struct%qm_coords(3,i+1)
-        !end do
-	!write(6,*)"xmin args=", natom,qmmm_struct%qm_coords(1,1), f(1), escf, xmin_iter, maxcyc, born_radii(1)
-	!write(6,*)"xmin args=", one_born_radii(1), intdiel 
-	!write(6,*)"xmin args=", extdiel, Arad
-	!write(6,*)"xmin args=", qm2_struct%scf_mchg(1), grms_tol, ntpr		
         call xmin(natom, qmmm_struct%qm_coords , f, sim%escf, xmin_iter, maxcyc, born_radii, &
            one_born_radii, intdiel, extdiel, Arad, qm2_struct%scf_mchg, grms_tol, ntpr,sim)
    else 
@@ -463,10 +437,9 @@ module communism
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !+ Driver routine for XMIN minimization.
 !-----------------------------------------------------------------------
-
 subroutine xmin( natom, x, fg, escf, xmin_iter, maxiter, born_radii, &
      one_born_radii, intdiel, extdiel, Arad, scf_mchg, grms_tol, ntpr,sim_pass )
-	
+   use qm2_davidson_module
    use qmmm_module, only : qmmm_nml,qmmm_struct
    use constants, only : zero, KCAL_TO_EV, EV_TO_KCAL
    implicit none
@@ -514,7 +487,7 @@ subroutine xmin( natom, x, fg, escf, xmin_iter, maxiter, born_radii, &
    ! line search details plus CG details in TNCG.
    integer,      parameter :: MAXIMUM_XMIN_VERBOSITY = 2
    integer,      parameter :: MINIMUM_XMIN_VERBOSITY = 0
-   integer                 :: xmin_verbosity = 2
+   integer                 :: xmin_verbosity = 0
    integer i
 
    integer ::  ls_method, ls_maxiter, ls_iter, xyz_min
@@ -545,125 +518,100 @@ subroutine xmin( natom, x, fg, escf, xmin_iter, maxiter, born_radii, &
    is_error = .false.
    is_xmin_done = .false.
    do while ( .not. is_xmin_done .and. .not. is_error )
+	minimum_energy = xminC( xyz_min, xmin_method_code, maxiter, grms_tol, &
+		natom, lbfgs_memory_depth, mvpm_code, &
+		x, escf, fg, grms, xmin_iter, xmin_time, &
+		xmin_verbosity, ls_method, ls_maxiter, ls_iter, ls_maxatmov, &
+		beta_armijo, c_armijo, mu_armijo, ftol_wolfe, gtol_wolfe,  &
+		return_flag, status_flag )
 
-!     write(555,*)"==========================================="
-!     write(555,*)xyz_min, xmin_method_code, maxiter
-!     write(555,*)grms_tol,natom,lbfgs_memory_depth,mvpm_code
-!     write(555,*)x(15),escf,fg(15),grms
-!     write(555,*)xmin_iter,xmin_time,xmin_verbosity,ls_method
-!     write(555,*)ls_maxiter, ls_iter, ls_maxatmov,beta_armijo
-!     write(555,*)c_armijo, mu_armijo, ftol_wolfe, gtol_wolfe
-!     write(555,*)return_flag, status_flag			
-!     write(555,*)"==========================================="
-write(6,*)'XMIN CALLED FROM COMMUNISM MODULE'
-      minimum_energy = xminC( xyz_min, xmin_method_code, maxiter, grms_tol, &
-            natom, lbfgs_memory_depth, mvpm_code, &
-            x, escf, fg, grms, xmin_iter, xmin_time, &
-            xmin_verbosity, ls_method, ls_maxiter, ls_iter, ls_maxatmov, &
-            beta_armijo, c_armijo, mu_armijo, ftol_wolfe, gtol_wolfe,  &
-            return_flag, status_flag )
-
-      select case ( return_flag )
-      case ( DONE )
-         ! Finished minimization.
-         is_xmin_done = .true.
-         is_error = status_flag < 0
-         write(6,'(a)') '  ... geometry converged (in function communism) !'
-	write(6,*)	
-          write(6,*) 'Final Structure'
-	   call qm_print_coords(0,.true.)
-	    if ( qmmm_nml%printbondorders ) then
-		      write(6,*) ''
-		      write(6,*) 'Bond Orders'
-		      call qm2_print_bondorders()
-	   end if
-      case ( CALCENRG, CALCGRAD, CALCBOTH )
-         ! Normal Amber control of NB list updates.
-         is_error = status_flag < 0
-         if ( .not. is_error ) then
-	    call qmmm2naesmd_r(sim_pass)	
-	    call do_sqm_davidson_update(sim_pass);		    	
-            !call sqm_energy( natom, x, escf, born_radii, one_born_radii, &
-            !     intdiel, extdiel, Arad, scf_mchg ) 
-            !call sqm_forces(natom, fg)
-	     write(6,*)"state2=",qmmm_struct%state_of_interest	
-             call deriv(sim_pass,qmmm_struct%state_of_interest)
-             fg(1:3*natom)=-sim_pass%deriv_forces(1:3*natom)*EV_TO_KCAL;	
-            n_force_calls = n_force_calls + 1
-         end if
-      case ( CALCENRG_NEWNBL, CALCGRAD_NEWNBL, CALCBOTH_NEWNBL )
-         ! Coerce a NB list update.
-         is_error = status_flag < 0
-         if ( .not. is_error ) then
-            if( n_force_calls>0 .and. mod(xmin_iter,ntpr)==0 ) then
-               grms = sqrt(ddot(3*natom,fg,1,fg,1)/dble(3*natom))
-               if (first) then
-                  write(6,'(a)') '      iter         sqm energy              rms gradient'
-                  write(6,'(a)') '      ----    -------------------    -----------------------'
-                  first = .false.
-               end if
-               write(6,'(a,i5,f14.4,a,f14.4,a)') 'xmin ', xmin_iter, escf,' kcal/mol', grms, ' kcal/(mol*A)'
-            end if
-	     call qmmm2naesmd_r(sim_pass);	
-	     call do_sqm_davidson_update(sim_pass);
+	select case ( return_flag )
+	case ( DONE )
+		! Finished minimization.
+		is_xmin_done = .true.
+		is_error = status_flag < 0
+		if(maxiter==xmin_iter) then
+			write(6,*) 'Maximum number of iterations reached without convergence. Calculation failed...'
+			stop
+		else
+			write(6,'(a)') '  ... geometry converged!'
+			write(6,*)
+			write(6,*) 'Final Structure'
+			call qm_print_coords(0,.true.)
+			if ( qmmm_nml%printbondorders ) then
+				write(6,*) ''
+				write(6,*) 'Bond Orders'
+				call qm2_print_bondorders()
+			end if
+		endif
+	case ( CALCENRG, CALCGRAD, CALCBOTH )
+	! Normal Amber control of NB list updates.
+		is_error = status_flag < 0
+		if ( .not. is_error ) then
+			call qmmm2naesmd_r(sim_pass)
+			call do_sqm_davidson_update(sim_pass)   
+			call deriv(sim_pass,qmmm_struct%state_of_interest)
+			fg(1:3*natom)=-sim_pass%deriv_forces(1:3*natom)
+			if(qmmm_struct%state_of_interest>0) then
+				escf=qm2ds%Etot(qmmm_struct%state_of_interest)
+			else
+				escf=qm2ds%Eground
+			endif
+			n_force_calls = n_force_calls + 1
+		end if
+	case ( CALCENRG_NEWNBL, CALCGRAD_NEWNBL, CALCBOTH_NEWNBL )
+	! Coerce a NB list update.
+		is_error = status_flag < 0
+		if ( .not. is_error ) then
+			if( n_force_calls>0 .and. mod(xmin_iter,ntpr)==0 ) then
+				grms = sqrt(ddot(3*natom,fg,1,fg,1)/dble(3*natom))
+				if (first) then
+					write(6,'(a)') '       iter       energy            rms gradient'
+					write(6,'(a)') '       ----    --------------     -----------------'
+					first = .false.
+				end if
+				write(6,'(a,i5,f16.6,a,f16.6,a)') 'xmin ', xmin_iter, escf,' eV', grms, ' eV/A'
+			end if
+			call qmmm2naesmd_r(sim_pass);
+			call do_sqm_davidson_update(sim_pass)
+			call deriv(sim_pass,qmmm_struct%state_of_interest)
+			if(qmmm_struct%state_of_interest>0) then
+                                escf=qm2ds%Etot(qmmm_struct%state_of_interest)
+			else
+				escf=qm2ds%Eground
+			endif
+			fg(1:3*natom)=-sim_pass%deriv_forces(1:3*natom)
+			n_force_calls = n_force_calls + 1
+		end if
+	case ( CALCENRG_OLDNBL, CALCGRAD_OLDNBL, CALCBOTH_OLDNBL )
+	! Prevent a NB list update.
+		is_error = status_flag < 0
+		if ( .not. is_error ) then
+			call qmmm2naesmd_r(sim_pass);
+			call do_sqm_davidson_update(sim_pass);
+			call deriv(sim_pass,qmmm_struct%state_of_interest)
+                        if(qmmm_struct%state_of_interest>0) then
+                                escf=qm2ds%Etot(qmmm_struct%state_of_interest)
+                        else
+				escf=qm2ds%Eground
+			endif
+			fg(1:3*natom)=-sim_pass%deriv_forces(1:3*natom);
+			n_force_calls = n_force_calls + 1
+		end if
+	case default
+		! error from XMIN or the return_flag is corrupted.
+		is_error = status_flag < 0
+		ASSERT( is_error )
+	end select
 	
-            !call sqm_energy( natom, x, escf, born_radii, one_born_radii, &
-            !     intdiel, extdiel, Arad, scf_mchg ) 
-	     write(6,*)"state2=",qmmm_struct%state_of_interest
-	     call deriv(sim_pass,qmmm_struct%state_of_interest)
-	    fg(1:3*natom)=-sim_pass%deriv_forces(1:3*natom)*EV_TO_KCAL;	
-	 	!call sqm_forces(natom, fg)
+	end do
 
-     !write(559,*)"==========================================="
-     !write(559,*)return_flag
-     !do i=0,natom-1
-     !   write(559,*)x(3*i+1),x(3*i+2),x(3*i+3)
-     !end do
-     !write(559,*)"==========================================="
+	if ( is_error ) then
+		write(6,'(a,i4)') '  XMIN ERROR: Status is ', status_flag
+		call mexit(6,1)
+	end if
 
-     !write(557,*)"==========================================="
-     !write(557,*)return_flag
-     !do  i=0,natom-1
-     !   write(557,*)fg(3*i+1),fg(3*i+2),fg(3*i+3)
-     !end do
-     !write(557,*)"==========================================="
-
-            n_force_calls = n_force_calls + 1
-         end if
-      case ( CALCENRG_OLDNBL, CALCGRAD_OLDNBL, CALCBOTH_OLDNBL )
-         ! Prevent a NB list update.
-         is_error = status_flag < 0
-         if ( .not. is_error ) then
-	    call qmmm2naesmd_r(sim_pass);	
-	    call do_sqm_davidson_update(sim_pass);	
-            !call sqm_energy( natom, x, escf, born_radii, one_born_radii, &
-            !     intdiel, extdiel, Arad, scf_mchg ) 
-            !call sqm_forces(natom, fg)
-	    write(6,*)"state2=",qmmm_struct%state_of_interest
-            call deriv(sim_pass,qmmm_struct%state_of_interest)
-            fg(1:3*natom)=-sim_pass%deriv_forces(1:3*natom)*EV_TO_KCAL;	
-
-            n_force_calls = n_force_calls + 1
-
-
-	    !write(6,*)"return_flag=",return_flag
-	    !pause	
-         end if
-      case default
-         ! error from XMIN or the return_flag is corrupted.
-         is_error = status_flag < 0
-         ASSERT( is_error )
-      end select
-
-   end do
-
-   if ( is_error ) then
-      write(6,'(a,i4)') '  XMIN ERROR: Status is ', status_flag
-      call mexit(6,1)
-   end if
-
-   return
-
+return
 end subroutine xmin
 
 end module communism

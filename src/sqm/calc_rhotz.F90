@@ -11,7 +11,6 @@ subroutine calc_rhotz(state, rhoTZ,calc_Z)
         _REAL_ tmp(qm2ds%Nb,qm2ds%Nb)
         _REAL_ f,t,d,d1,ff,ff0,ff1,ff11
         integer i,ii,j,k,im,one,istate,mdflag,ip,ih,solvent_model_1
-	write(6,*) 'Called calc_rhotz'
 	if((solvent_model.gt.0).and.(solvent_model.ne.10)) then
 		solvent_model_1=99 !Use linear response solvent model
 	else

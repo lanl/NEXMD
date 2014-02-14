@@ -236,7 +236,7 @@
       end if
    end do
 
-   if(quir_ev>0) then ! quirality was restored at least once above
+   if((quir_ev>0).and.(qm2ds%verbosity>0)) then ! quirality was restored at least once above
       print*,' Restoring quirality in HF orbitals'
    end if
    flush(6)
@@ -799,11 +799,11 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
    qmcut = 9999.d0
    use_pme = 0
    ntb = 0
-   maxcyc = 0	!9999
+   maxcyc = 0
    grms_tol = 0.02
    ntpr=10
 
-   ! Default parameters of excite state calculations
+   ! Default parameters of excited state calculations
    excN = 0 ! Default is to not run the Davidson procedure at all
    struct_opt_state = 0 ! Optimize the ground state by default
    exst_method=1 ! CI singles
@@ -1309,7 +1309,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
    !Will we be calculating the Mulliken charges on every SCF iteration?
    !Default is no. Will be set to true in a bit if certain options, such as qm_ewald
    !require it.
-   qm2_struct%calc_mchg_scf = .true.
+   qm2_struct%calc_mchg_scf = .false.
 
    !DFTB Calculates Mulliken charges anyway so we might as well store them in the correct place.
    if (qmmm_nml%qmtheory%DFTB) qm2_struct%calc_mchg_scf = .true.
@@ -1324,7 +1324,6 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
    !qmmm_struct%iqm_atomic_numbers(1:natom) = atnum(1:natom)
    !qmmm_nml%iqmatoms(1:natom) = iqmatoms(1:natom)
    qmmm_struct%iqm_atomic_numbers(1:qmmm_struct%nquant_nlink) = atnum(1:qmmm_struct%nquant_nlink)
-write(6,*)'GOTYA'
    qmmm_nml%iqmatoms(1:qmmm_struct%nquant_nlink) = iqmatoms(1:qmmm_struct%nquant_nlink)
    if (ncharge_in > 0) then
       qmmm_struct%qm_xcrd = 0.0D0

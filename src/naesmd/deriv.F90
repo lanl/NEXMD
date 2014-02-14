@@ -79,7 +79,6 @@ if (ihop>0) then
 
 !CALCULATE EXCITED STATE DERIVATIVES
 !Omega^x=Tr(F^x rhoTZ)+Tr(V^x(xi) xi^+)
-write(6,*)'Excited State Derivatives'
 !TERM 1: Tr(F^x rhoTZ)
 
      ! Need to call dealloc_rhotz() when finished or in polishing
@@ -164,7 +163,6 @@ write(6,*)'Excited State Derivatives'
         !write(6,*)'ES SOLVENT CONTRIBUTION',E_ES_left
 
    elseif(qmmm_struct%ideriv.eq.2) then
-   write(6,*)'Doing Numerical Derivatives'
    h=qmmm_struct%numder_step !step size
    oldverbosity=qmmm_nml%verbosity
    qmmm_nml%verbosity=0
@@ -271,7 +269,7 @@ write(6,*)'Excited State Derivatives'
       write (6,'("QMMM: Atm ",i6,": ",3f20.14)') (j,-dxyz_gs(1+3*(j-1)), &
          -dxyz_gs(2+3*(j-1)), &
          -dxyz_gs(3+3*(j-1)), j=1,qmmm_struct%nquant_nlink)
-
+	if(ihop>0) then
       write (6,'("QMMM:")')
       write (6,'("QMMM: Forces on QM atoms excited state calculation (eV)")')
       write (6,'("QMMM: state=",2i3)') ihop, qm2ds%struct_opt_state
@@ -297,6 +295,7 @@ write(6,*)'Excited State Derivatives'
                  (qmmm_struct%qm_coords(J,I),J=1,3)
            end do
       end if
+	endif
    end if
 simpoint%deriv_forces=dxyz_gs+dxyz !incorporating into sim type
   return
