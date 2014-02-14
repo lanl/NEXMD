@@ -244,7 +244,6 @@ L00:
 	    (sqrt_epsmach / vec_in_max));
 	for (i = 0; i < n; i++)
 		xyz[i] -= tiny_step * vec_in[i];
-	fprintf(nabout,"case 3 \n");
 	*return_flag = CALCGRAD_OLDNBL;
 	*label = 1;
 	return;
@@ -253,7 +252,6 @@ L01:
 	memcpy(xyz, xyz_save, n * sizeof(double));
 	for (i = 0; i < n; i++)
 		xyz[i] += tiny_step * vec_in[i];
-	fprintf(nabout,"case 4 \n");
 	*return_flag = CALCGRAD_OLDNBL;
 	*label = 2;
 	return;
@@ -734,7 +732,6 @@ L00:
 									*return_flag = CALCBOTH_NEWNBL;  /* force NBL update at LS start */
 								}
 								else {
-									fprintf(nabout,"case 1 \n");
 									*return_flag = CALCBOTH_OLDNBL;  /* keep same NBL until LS done */
 								}
 								*label = 1;
@@ -960,7 +957,6 @@ L00:
 			*return_flag = CALCBOTH_NEWNBL;  /* force NBL update at LS start */
 		}
 		else {
-			fprintf(nabout,"case 2 \n");
 			*return_flag = CALCBOTH_OLDNBL;  /* keep same NBL until LS done */
 		}
 		*label = 1;
@@ -1524,7 +1520,6 @@ L00:
 						p[i] = -grad[i];  /* p[] not yet calculated, use -grad[] */
 					}
 				}
-				fprintf(nabout,"case 5 \n");
 				break;                  /* bail out with current p[] */
 			} else {
 				convex = YES;

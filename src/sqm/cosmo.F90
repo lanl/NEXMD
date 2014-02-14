@@ -106,7 +106,6 @@ subroutine coscl2(a, id, x, y, n)
     double precision, dimension (n), intent (in) :: y
     integer :: i, k, kk
     double precision :: summe
-    print*,'cosmo_call coscl2'
 if(1==1) then !Make sure to use LAPACK in coscl1 as well
   x=y
   call  DPPTRS( 'U', n, 1, a,  x, n, i ) !LAPACK subroutine for this operation
@@ -778,7 +777,6 @@ subroutine coscl1 (a, id, n, info)
     integer :: i, indi, indk, j, k, kk
     double precision :: summe
     double precision :: ap(n*(n+1)/2)
-    write(6,*)'COSMO:Performing Cholesky factorization'
     indi = 0
 if (1==1) then !use LAPACK but must also use LAPACK in coscl2
     call DPPTRF( 'U', n, a, i ) !LAPACK Subroutine for this
