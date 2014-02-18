@@ -499,6 +499,8 @@ subroutine xmin( natom, x, fg, escf, xmin_iter, maxiter, born_radii, &
    ! ------ External Functions -----------------
    _REAL_ ddot
 
+100   format(I5,'     ',3F12.6) !for printing final coordinates
+
    first = .true.
    status_flag = 0
    xyz_min = 1
@@ -537,7 +539,11 @@ subroutine xmin( natom, x, fg, escf, xmin_iter, maxiter, born_radii, &
 			write(6,'(a)') '  ... geometry converged!'
 			write(6,*)
 			write(6,*) 'Final Structure'
-			call qm_print_coords(0,.true.)
+			!call qm_print_coords(0,.true.)
+			do i=1,natom !NAESMD format
+				write(6,100) qmmm_struct%iqm_atomic_numbers(i),x(3*(i-1)+1),x(3*(i-1)+2),x(3*(i-1)+3)
+			end do
+
 			if ( qmmm_nml%printbondorders ) then
 				write(6,*) ''
 				write(6,*) 'Bond Orders'
