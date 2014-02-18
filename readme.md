@@ -1,5 +1,5 @@
 Bugs
-1.) Mulliken charges being calculated when printcharges=0
+1.) ground state dipole prints during geometry optimization when printdipole=1, this should only print before and after geometry optimization
 2.) Possible error: profiler logs calc_rhotz instead of packing/unpacking subroutines possibly because of compilation error from 'Entry'.
 
 Optimization
