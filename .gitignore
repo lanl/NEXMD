@@ -8,7 +8,9 @@ fort*
 /obj
 /mod
 /test
-#*.sw*
+*.sw*
+*.sv*
+.*
 
 # Libraries
 *.lib
