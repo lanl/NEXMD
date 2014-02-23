@@ -533,6 +533,12 @@ subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
    logical :: first
    ! ------ External Functions -----------------
    _REAL_ ddot
+<<<<<<< HEAD
+=======
+
+100   format(I5,'     ',3F12.6) !for printing final coordinates
+
+>>>>>>> 26c9f87fc98745571ea87d94c258af98e2d0439f
    first = .true.
    status_flag = 0
    xyz_min = 1
@@ -577,7 +583,11 @@ subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
 			write(6,*) 'Final Structure'
 			!call qm_print_coords(0,.true.)
 			do i=1,natom !NAESMD format
+<<<<<<< HEAD
 				write(6,"(I5,'     ',3F12.6)") qmmm_struct%iqm_atomic_numbers(i),x(3*(i-1)+1),x(3*(i-1)+2),x(3*(i-1)+3)
+=======
+				write(6,100) qmmm_struct%iqm_atomic_numbers(i),x(3*(i-1)+1),x(3*(i-1)+2),x(3*(i-1)+3)
+>>>>>>> 26c9f87fc98745571ea87d94c258af98e2d0439f
 			end do
 
 			if ( qmmm_nml%printbondorders ) then

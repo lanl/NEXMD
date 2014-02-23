@@ -18,10 +18,14 @@ SRCDIR = src
 MODDIR = mod
 LIB = lib 
 
-SQMINC = -Imod/$(SQMDIR)/
+SQMINC = -I$(MODDIR)/$(SQMDIR)/
 AMOEBAINC = -I$(MODDIR)/$(AMOEBADIR)/
 
-INC= -Iinc/ -Iinc/sander/ -Iinc/$(PBSADIR)/ -Imod/$(PBSADIR)/ -Iinc/$(LIBDIR)/ -Iinc/$(PMEMDDIR)/ -Iinc/$(NAESMDDIR)/old/ -Imod/$(SQMDIR)/
+INC= -Iinc/ -Iinc/$(SANDERDIR) -Iinc/$(PBSADIR)/ -Imod/$(PBSADIR)/ -Iinc/$(LIBDIR)/ -Iinc/$(PMEMDDIR)/ -Iinc/$(NAESMDDIR)/old/ -Imod/$(SQMDIR)/
+
+DIRECTORIES= $(MODDIR)/$(SQMDIR) $(MODDIR)/$(NAESMDDIR) $(MODDIR)/$(AMEOBADIR) $(MODDIR)/$(PBSADIR) inc/$(SANDERDIR) inc/$(PBSADIR) inc/$(LIBDIR) inc/$(PMEMDDIR) inc/$(NAESMDDIR) inc/$(NAESMDDIR)/old $(OBJDIR)/$(SQMDIR) $(OBJDIR)/$(NAESMDDIR) $(OBJDIR)/$(SANDERDIR) $(OBJDIR)/$(PMEMDIR) $(OBJDIR)/$(PBSADIR) $(OBJDIR)/$(AMOEBADIR) $(OBJDIR)/$(DIRSFF) $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME) $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC) $(OBJDIR)/$(LIBDIR)
+
+$(shell   mkdir -p $(DIRECTORIES)) 
 
 OBJSQM = \
 	$(OBJDIR)/$(SQMDIR)/assert.o \
@@ -130,7 +134,6 @@ OBJSQM = \
 	$(OBJDIR)/$(SQMDIR)/liouville.o \
 	$(OBJDIR)/$(SQMDIR)/buildM.o \
 	$(OBJDIR)/$(SQMDIR)/timing.o \
-	$(OBJDIR)/$(SQMDIR)/xmin.o \
 	$(OBJDIR)/$(SQMDIR)/qm2_print_bondorders.o 
 OBJNAESMD = \
 	$(OBJDIR)/$(NAESMDDIR)/apc.o \
