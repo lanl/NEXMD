@@ -3,7 +3,7 @@
 /****************************************************************************/
 
 /*  Note: there are two "public" routines here:
- *  xminC():  a fairly low-level interface (currently used by sqm), which
+ *  xminc():  a fairly low-level interface (currently used by sqm), which
  *            requires its own driver that understands the reverse
  *            communication needed
  *  xmin():   a higher-level, NAB-like interface, which takes the function
@@ -106,7 +106,7 @@ extern int get_mytaskid();      /* for MPI */
 #  define xminC xminc_
 #endif
 
-double xminC();
+double xminc();
 
 
 /*
@@ -2322,7 +2322,7 @@ L00:
  Reverse communication XMIN function:
  *****/
 double
-xminC(int *xyz_min, int *minim_method, int *maxiter, double *grms_tol,
+xminc(int *xyz_min, int *minim_method, int *maxiter, double *grms_tol,
       int *natm_ext, int *m_lbfgs, int *numdiff, double *xyz_ext,double *enrg,
       double *grad_ext, double *grms, int *iter, double *total_time,
       int *print_level, int *ls_method, int *ls_maxiter, int *ls_iter,
@@ -2896,7 +2896,7 @@ REAL_T xmin( REAL_T ( *func )( REAL_T*, REAL_T*, INT_T* ),
 	nfunc = 0;
 	for( status_flag = xo->error_flag = 0;; ) {
 		
-		xminC( &(xo->mol_struct_opt),
+		xminc( &(xo->mol_struct_opt),
 		      &(xo->method),
 		      &(xo->maxiter),
 		      &(xo->grms_tol),
