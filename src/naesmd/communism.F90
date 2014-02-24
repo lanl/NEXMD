@@ -413,15 +413,12 @@ module communism
         sim%qm2 => qm2_struct
         sim%dav      => qm2ds
 
-<<<<<<< HEAD
 	if (qmmm_nml%verbosity<5) then
 	        qm2ds%verbosity=0 !don't print output from scf calculations
 		qmmm_nml%verbosity=0
 	endif
-=======
         qm2ds%verbosity=0 !don't print output from scf calculations
 	qmmm_nml%verbosity=0
->>>>>>> ea70c21ef35a6ee2cd090baf69e7d7dbaf31c7e7
         call naesmd2qmmm_r(sim)
         !call xmin(natom, qmmm_struct%qm_coords , f, sim%escf, xmin_iter, maxcyc, born_radii, &
         !   one_born_radii, intdiel, extdiel, Arad, qm2_struct%scf_mchg, grms_tol, ntpr,sim)
@@ -433,13 +430,8 @@ module communism
 
    return      
 end subroutine
-<<<<<<< HEAD
 
 
-=======
-
-
->>>>>>> ea70c21ef35a6ee2cd090baf69e7d7dbaf31c7e7
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !+ Driver routine for XMIN minimization.
 !-----------------------------------------------------------------------
@@ -545,15 +537,7 @@ subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
    logical :: first
    ! ------ External Functions -----------------
    _REAL_ ddot
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-
 100   format(I5,'     ',3F12.6) !for printing final coordinates
-
->>>>>>> 26c9f87fc98745571ea87d94c258af98e2d0439f
->>>>>>> ea70c21ef35a6ee2cd090baf69e7d7dbaf31c7e7
    first = .true.
    status_flag = 0
    xyz_min = 1
@@ -598,15 +582,7 @@ subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
 			write(6,*) 'Final Structure'
 			!call qm_print_coords(0,.true.)
 			do i=1,natom !NAESMD format
-<<<<<<< HEAD
-				write(6,"(I5,'     ',3F12.6)") qmmm_struct%iqm_atomic_numbers(i),x(3*(i-1)+1),x(3*(i-1)+2),x(3*(i-1)+3)
-=======
-<<<<<<< HEAD
-				write(6,"(I5,'     ',3F12.6)") qmmm_struct%iqm_atomic_numbers(i),x(3*(i-1)+1),x(3*(i-1)+2),x(3*(i-1)+3)
-=======
 				write(6,100) qmmm_struct%iqm_atomic_numbers(i),x(3*(i-1)+1),x(3*(i-1)+2),x(3*(i-1)+3)
->>>>>>> 26c9f87fc98745571ea87d94c258af98e2d0439f
->>>>>>> ea70c21ef35a6ee2cd090baf69e7d7dbaf31c7e7
 			end do
 
 			if ( qmmm_nml%printbondorders ) then
