@@ -464,8 +464,6 @@ $(OBJDIR)/$(AMOEBADIR)/%.o: $(SRCDIR)/$(AMOEBADIR)/%.F90
 $(OBJDIR)/$(AMOEBADIR)/%.o: $(SRCDIR)/$(AMOEBADIR)/%.c
 	$(CC) $(INC) -o $@ -c $<
 
-
-
 $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC)/%.o: $(SRCDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC)/%.f
 	$(FC) $(INC) $(FFLAG) -o $@ -c $<
 
@@ -516,18 +514,6 @@ $(OBJDIR)/$(PMEMDDIR)/%.o: $(SRCDIR)/$(PMEMDDIR)/%.c
 
 naesmd.exe: $(OBJSQM) $(OBJLIB) $(OBJNAESMD) $(OBJSFF)
 	$(FC) $(LDFLAGS) -o naesmd.exe $(OBJNAESMD) $(OBJSQM) $(OBJLIB) $(OBJSFF) -L$(LIB) $(LINK) 
-
-ceoDavM:   $(FILESMmodM1) 
-	$(LD) $(LDFLAGS) ceoDavM $(FILESMmodM1) $(LIB_BLAS-LAPAC)
-	
-listvmodes:   $(FILES8) 
-	$(LD) $(LDFLAGS) listvmodes $(FILES8)
-
-mopac.o: mopac.f
-	$(FC) -g -c $<
-
-util.o: util.f
-	$(FC) -g -c $<
 		
 clean :
 	rm -f ob*/*.o obj/*/*.o  mod/*.mod *.mod mod/*/*.mod rm lib/*.a

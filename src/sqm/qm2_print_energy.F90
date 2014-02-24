@@ -21,6 +21,7 @@ subroutine qm2_print_energy(verbosity, qmtheory, escf, qmmm_struct)
 
   use constants, only : J_PER_CAL, EV_TO_KCAL, KCAL_TO_EV
   use qmmm_struct_module, only : qmmm_struct_type
+  use qmmm_module, only: qmmm_scratch,qm2_struct
   use qmmm_qmtheorymodule, only : qmTheoryType
 
    use cosmo_C, only: ediel,onsagE,solvent_model,potential_type
@@ -35,10 +36,19 @@ subroutine qm2_print_energy(verbosity, qmtheory, escf, qmmm_struct)
 
   _REAL_ :: total_energy
 
+!Printing molecular orbital energies
+	if (verbosity > 4) then
+		write (6,'("QMMM: Occupied MO Energies (eV):")')
+		write (6,'(5f18.8)') qmmm_scratch%mat_diag_workspace(1:qm2_struct%nclosed,1)
+		write (6,'("QMMM: Virtual MO Energies (eV):")') 
+		write(6,'(5f18.8)') qmmm_scratch%mat_diag_workspace(qm2_struct%nclosed+1:qm2_struct%norbs,1)
+	endif
+
+!Printing other energies
   if (verbosity > 0) then
      !Verbosity level of 1 or more = print more accurate SCF energy
      write (6,'("QMMM:")')
-     write (6,'("QMMM: SCF Energy =",f22.14," KCal/mol, ",f22.14," KJ/mol")') escf, escf*J_PER_CAL
+     write (6,'("QMMM: SCF Energy =",f18.8," KCal/mol, ",f18.8," KJ/mol")') escf, escf*J_PER_CAL
      write (6,'("QMMM: SCF Energy = Heat of formation")')
      !If verbosity level is greater than 1 we also print the nuclear and electronic energies.
      if (verbosity > 1) then
@@ -70,7 +80,7 @@ subroutine qm2_print_energy(verbosity, qmtheory, escf, qmmm_struct)
                 (qmmm_struct%enuclr_qmmm+qmmm_struct%enuclr_qmqm)*EV_TO_KCAL
            total_energy = qmmm_struct%elec_eng + qmmm_struct%enuclr_qmmm + qmmm_struct%enuclr_qmqm
         end if
-        write (6,'("QMMM:             Total energy = ",f25.15," eV (",f18.8," KCal/mol)")') &
+        write (6,'("QMMM:             Total energy = ",f18.8," eV (",f18.8," KCal/mol)")') &
              total_energy, total_energy*EV_TO_KCAL
         ! Print Dispersion energy if in use
         if (qmtheory%DISPERSION .or. qmtheory%DISPERSION_HYDROGENPLUS) then
