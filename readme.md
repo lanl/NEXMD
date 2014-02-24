@@ -1,6 +1,5 @@
 Bugs
-1.) ground state dipole prints during geometry optimization when printdipole=1, this should only print before and after geometry optimization
-2.) Possible error: profiler logs calc_rhotz instead of packing/unpacking subroutines possibly because of compilation error from 'Entry'.
+1.) Possible error: profiler logs calc_rhotz instead of packing/unpacking subroutines possibly because of compilation error from 'Entry'.
 
 Optimization
 1.) Use 2-electron integrals from ground state for excited state
@@ -13,6 +12,6 @@ Optimization
 Features
 1.) State Specific Solvent Z-Vector equation
 2.) State Specific Solvent Gradients
-3.) QM/MM
-4.) Add davidson alternatives from recent Tretiak paper
+3.) State Specific Solvent SCF with GS calculations
+4.) QM/MM
 5.) Write documentation
