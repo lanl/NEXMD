@@ -57,11 +57,11 @@ module communism
    integer i;
    type(simulation_t),pointer::sim
    integer::mn
-   if (qm2ds%Mx>0) then
-	mn=min(size(sim%dav%e0),size(sim%naesmd%Omega))
-	sim%naesmd%Omega(1:mn) = sim%dav%e0(1:mn)/feVmdqt;
-   endif
+
+   mn=min(size(sim%dav%e0),size(sim%naesmd%Omega))
+   if (qm2ds%Mx>0) sim%naesmd%Omega(1:mn) = sim%dav%e0(1:mn)/feVmdqt;
    sim%naesmd%E0=sim%dav%Eground/feVmdqt
+
    return
    end subroutine
 !
@@ -212,6 +212,7 @@ module communism
 
    sim%dav%Mx=sim%excN ! as many excited state as required, no more
    ! CML Includes call to Davidson within sqm_energy() 7/16/12
+	write(6,*)'TESTTESTTEST'
    call sqm_energy(sim%Na,sim%coords,sim%escf,born_radii, &
       one_born_radii,intdiel,extdiel,Arad,sim%qm2%scf_mchg, &
       sim%time_sqm_took,sim%time_davidson_took)
@@ -243,6 +244,7 @@ module communism
    if((quir_cmdqt>0).and.(qm2ds%verbosity>0)) then ! quirality was restored at least once above
       print*,' Restoring quirality in cmdqt'
    end if
+write(6,*)'TESTTESTTESTnumber2'
    return
    end subroutine
 !
@@ -274,9 +276,11 @@ module communism
          vmdqt(i)=(sim%naesmd%Omega(i)+sim%naesmd%E0) 
       end do
    end if
+
    if(present(cmdqt)) then
       call dav2cmdqt(sim,cmdqt)
    end if
+   
    return
    end subroutine
 !
@@ -402,8 +406,6 @@ module communism
 	   sim%qm2      => qm2_struct
 	   sim%dav      => qm2ds
 	   call naesmd2qmmm_r(sim)
-	   !sim%dav%Mx = sim%excN
-	   !sim%dav%mdflag=2
 	call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs)
    else if (nstep<1) then ! nstep - number of classical steps for dynamics
 	
@@ -412,20 +414,13 @@ module communism
         sim%qmmm     => qmmm_struct
         sim%qm2 => qm2_struct
         sim%dav      => qm2ds
-
-<<<<<<< HEAD
-	if (qmmm_nml%verbosity<5) then
-	        qm2ds%verbosity=0 !don't print output from scf calculations
-		qmmm_nml%verbosity=0
-	endif
-=======
         qm2ds%verbosity=0 !don't print output from scf calculations
 	qmmm_nml%verbosity=0
->>>>>>> ea70c21ef35a6ee2cd090baf69e7d7dbaf31c7e7
         call naesmd2qmmm_r(sim)
         !call xmin(natom, qmmm_struct%qm_coords , f, sim%escf, xmin_iter, maxcyc, born_radii, &
         !   one_born_radii, intdiel, extdiel, Arad, qm2_struct%scf_mchg, grms_tol, ntpr,sim)
-        call xmin(natom, qmmm_struct%qm_coords, xmin_iter, maxcyc, grms_tol, ntpr,sim)
+        call xmin(natom, xmin_iter, maxcyc, born_radii, &
+           one_born_radii, intdiel, extdiel, Arad, qm2_struct%scf_mchg, grms_tol, ntpr,sim)
    else 
 	write(6,*)"You must run Dynamics(n_class_steps>0) or Geom. optimization (maxcyc>0). Running both of them are not possible"	
 	STOP 0;
@@ -433,30 +428,21 @@ module communism
 
    return      
 end subroutine
-<<<<<<< HEAD
 
 
-=======
-
-
->>>>>>> ea70c21ef35a6ee2cd090baf69e7d7dbaf31c7e7
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !+ Driver routine for XMIN minimization.
 !-----------------------------------------------------------------------
 #include "xmin.h" !includes return_flag definitions for select_case statement shared with XminC
 !subroutine xmin( natom, x, fg, escf, xmin_iter, maxiter, born_radii, &
 !     one_born_radii, intdiel, extdiel, Arad, scf_mchg, grms_tol, ntpr,sim_pass )
-subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
+subroutine xmin(natom, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
 
    use qm2_davidson_module
    use qmmm_module, only : qmmm_nml,qmmm_struct
-   use constants, only : zero, AU_TO_EV
+   use constants, only : zero, KCAL_TO_EV, EV_TO_KCAL
    use iso_c_binding
    implicit none
-
-   ! ------ External functions -----------------
-   !_REAL_   xminC
-   !external xminC
 
         !Fortran 90 interface with xminc by JAB
         interface
@@ -495,16 +481,13 @@ subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
                 end function xminc
         end interface
 
+	!----- nonlocal variables -----------
    type(simulation_t),pointer::sim_pass
    integer, intent(in) :: natom, maxiter, ntpr
-   !_REAL_ born_radii(*), one_born_radii(*), intdiel, extdiel, Arad, scf_mchg(*)
-   _REAL_,  intent(inout) :: x(natom*3) !coordinates
    integer, intent(inout) :: xmin_iter  
    _REAL_,  intent(in)  :: grms_tol
 
    ! ------ local variables --------------------
-	_REAL_		::fg(natom*3) !derivatives (should it be forces?)
-	_REAL_		::energy 
    _REAL_  :: grms            = ZERO
    logical :: is_error
    logical :: is_xmin_done
@@ -540,20 +523,15 @@ subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
 
    integer ::  ls_method, ls_maxiter, ls_iter, xyz_min
    _REAL_  :: ls_maxatmov, beta_armijo, c_armijo, mu_armijo, ftol_wolfe, &
-              gtol_wolfe
+              gtol_wolfe,energy
 
+	_REAL_		::fg(3*natom)
+	_REAL_
    logical :: first
+
    ! ------ External Functions -----------------
    _REAL_ ddot
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
 
-100   format(I5,'     ',3F12.6) !for printing final coordinates
-
->>>>>>> 26c9f87fc98745571ea87d94c258af98e2d0439f
->>>>>>> ea70c21ef35a6ee2cd090baf69e7d7dbaf31c7e7
    first = .true.
    status_flag = 0
    xyz_min = 1
@@ -567,20 +545,22 @@ subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
    gtol_wolfe = 0.9
 
    ! keep xminC() from thinking that atoms are frozen:
-   fg(1:3*natom) = 1.d0
+   sim_pass%deriv_forces(1:3*natom) = 1.d0
+   if(qmmm_struct%state_of_interest>0) then
+                                escf=qm2ds%Etot(qmmm_struct%state_of_interest)
+                        else
+                                escf=qm2ds%Eground
+                        endif
 
    n_force_calls = 0
    is_error = .false.
    is_xmin_done = .false.
-	if(qmmm_struct%state_of_interest>0) then
-		energy=(sim_pass%naesmd%Omega(qmmm_struct%state_of_interest)+sim_pass%naesmd%E0)*AU_TO_EV
-	else
-		energy=sim_pass%naesmd%E0*AU_TO_EV
-	endif
+
+	energy=sim%
    do while ( .not. is_xmin_done .and. .not. is_error )
 	minimum_energy = xminc( xyz_min, xmin_method_code, maxiter, grms_tol, &
 		natom, lbfgs_memory_depth, mvpm_code, &
-		x, energy, fg, grms, xmin_iter, xmin_time, &
+		x, energy, -sim_pass%deriv_forces, grms, xmin_iter, xmin_time, &
 		xmin_verbosity, ls_method, ls_maxiter, ls_iter, ls_maxatmov, &
 		beta_armijo, c_armijo, mu_armijo, ftol_wolfe, gtol_wolfe,  &
 		return_flag, status_flag )
@@ -598,15 +578,7 @@ subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
 			write(6,*) 'Final Structure'
 			!call qm_print_coords(0,.true.)
 			do i=1,natom !NAESMD format
-<<<<<<< HEAD
 				write(6,"(I5,'     ',3F12.6)") qmmm_struct%iqm_atomic_numbers(i),x(3*(i-1)+1),x(3*(i-1)+2),x(3*(i-1)+3)
-=======
-<<<<<<< HEAD
-				write(6,"(I5,'     ',3F12.6)") qmmm_struct%iqm_atomic_numbers(i),x(3*(i-1)+1),x(3*(i-1)+2),x(3*(i-1)+3)
-=======
-				write(6,100) qmmm_struct%iqm_atomic_numbers(i),x(3*(i-1)+1),x(3*(i-1)+2),x(3*(i-1)+3)
->>>>>>> 26c9f87fc98745571ea87d94c258af98e2d0439f
->>>>>>> ea70c21ef35a6ee2cd090baf69e7d7dbaf31c7e7
 			end do
 
 			if ( qmmm_nml%printbondorders ) then
@@ -624,9 +596,9 @@ subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
 			call deriv(sim_pass,qmmm_struct%state_of_interest)
 			fg(1:3*natom)=-sim_pass%deriv_forces(1:3*natom)
 			if(qmmm_struct%state_of_interest>0) then
-				energy=(sim_pass%naesmd%Omega(qmmm_struct%state_of_interest)+sim_pass%naesmd%E0)*AU_TO_EV
+				energy=qm2ds%Etot(qmmm_struct%state_of_interest)
 			else
-				energy=sim_pass%naesmd%E0*AU_TO_EV
+				energy=qm2ds%Eground
 			endif
 			n_force_calls = n_force_calls + 1
 		end if
@@ -641,15 +613,15 @@ subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
 					write(6,'(a)') '       ----    --------------     -----------------'
 					first = .false.
 				end if
-				write(6,'(a,i5,f16.6,a,f16.6,a)') 'xmin ', xmin_iter, energy,' eV', grms, ' eV/A'
+				write(6,'(a,i5,f16.6,a,f16.6,a)') 'xmin ', xmin_iter, escf,' eV', grms, ' eV/A'
 			end if
 			call qmmm2naesmd_r(sim_pass);
 			call do_sqm_davidson_update(sim_pass)
 			call deriv(sim_pass,qmmm_struct%state_of_interest)
 			if(qmmm_struct%state_of_interest>0) then
-                                energy=(sim_pass%naesmd%Omega(qmmm_struct%state_of_interest)+sim_pass%naesmd%E0)*AU_TO_EV
+                                energy=qm2ds%Etot(qmmm_struct%state_of_interest)
 			else
-				energy=sim_pass%naesmd%E0*AU_TO_EV
+				energy=qm2ds%Eground
 			endif
 			fg(1:3*natom)=-sim_pass%deriv_forces(1:3*natom)
 			n_force_calls = n_force_calls + 1
@@ -662,9 +634,9 @@ subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
 			call do_sqm_davidson_update(sim_pass);
 			call deriv(sim_pass,qmmm_struct%state_of_interest)
                         if(qmmm_struct%state_of_interest>0) then
-                                energy=(sim_pass%naesmd%Omega(qmmm_struct%state_of_interest)+sim_pass%naesmd%E0)*AU_TO_EV
+                                energy=qm2ds%Etot(qmmm_struct%state_of_interest)
                         else
-				energy=sim_pass%naesmd%E0*AU_TO_EV
+				energy=qm2ds%Eground
 			endif
 			fg(1:3*natom)=-sim_pass%deriv_forces(1:3*natom);
 			n_force_calls = n_force_calls + 1
