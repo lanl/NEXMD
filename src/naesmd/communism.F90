@@ -57,11 +57,11 @@ module communism
    integer i;
    type(simulation_t),pointer::sim
    integer::mn
-
-   mn=min(size(sim%dav%e0),size(sim%naesmd%Omega))
-   if (qm2ds%Mx>0) sim%naesmd%Omega(1:mn) = sim%dav%e0(1:mn)/feVmdqt;
+   if (qm2ds%Mx>0) then
+	mn=min(size(sim%dav%e0),size(sim%naesmd%Omega))
+	sim%naesmd%Omega(1:mn) = sim%dav%e0(1:mn)/feVmdqt;
+   endif
    sim%naesmd%E0=sim%dav%Eground/feVmdqt
-
    return
    end subroutine
 !
@@ -243,7 +243,6 @@ module communism
    if((quir_cmdqt>0).and.(qm2ds%verbosity>0)) then ! quirality was restored at least once above
       print*,' Restoring quirality in cmdqt'
    end if
-
    return
    end subroutine
 !
@@ -275,11 +274,9 @@ module communism
          vmdqt(i)=(sim%naesmd%Omega(i)+sim%naesmd%E0) 
       end do
    end if
-
    if(present(cmdqt)) then
       call dav2cmdqt(sim,cmdqt)
    end if
-   
    return
    end subroutine
 !
@@ -407,9 +404,6 @@ module communism
 	   call naesmd2qmmm_r(sim)
 	   !sim%dav%Mx = sim%excN
 	   !sim%dav%mdflag=2
-	!  call sqm_energy(sim%Na, sim%coords, escf, born_radii,&
-	!  one_born_radii,                              &
-	!  intdiel, extdiel, Arad, sim%qm2%scf_mchg )
 	call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs)
    else if (nstep<1) then ! nstep - number of classical steps for dynamics
 	
@@ -418,45 +412,89 @@ module communism
         sim%qmmm     => qmmm_struct
         sim%qm2 => qm2_struct
         sim%dav      => qm2ds
-        qm2ds%verbosity=0 !don't print output from scf calculations
-	qmmm_nml%verbosity=0
+
+	if (qmmm_nml%verbosity<5) then
+	        qm2ds%verbosity=0 !don't print output from scf calculations
+		qmmm_nml%verbosity=0
+	endif
         call naesmd2qmmm_r(sim)
-        call xmin(natom, qmmm_struct%qm_coords , f, sim%escf, xmin_iter, maxcyc, born_radii, &
-           one_born_radii, intdiel, extdiel, Arad, qm2_struct%scf_mchg, grms_tol, ntpr,sim)
+        !call xmin(natom, qmmm_struct%qm_coords , f, sim%escf, xmin_iter, maxcyc, born_radii, &
+        !   one_born_radii, intdiel, extdiel, Arad, qm2_struct%scf_mchg, grms_tol, ntpr,sim)
+        call xmin(natom, qmmm_struct%qm_coords, xmin_iter, maxcyc, grms_tol, ntpr,sim)
    else 
 	write(6,*)"You must run Dynamics(n_class_steps>0) or Geom. optimization (maxcyc>0). Running both of them are not possible"	
 	STOP 0;
    end if	
 
    return      
-   end subroutine
+end subroutine
 
-
-#include "xmin.h"
 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !+ Driver routine for XMIN minimization.
 !-----------------------------------------------------------------------
-subroutine xmin( natom, x, fg, escf, xmin_iter, maxiter, born_radii, &
-     one_born_radii, intdiel, extdiel, Arad, scf_mchg, grms_tol, ntpr,sim_pass )
+#include "xmin.h" !includes return_flag definitions for select_case statement shared with XminC
+!subroutine xmin( natom, x, fg, escf, xmin_iter, maxiter, born_radii, &
+!     one_born_radii, intdiel, extdiel, Arad, scf_mchg, grms_tol, ntpr,sim_pass )
+subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
+
    use qm2_davidson_module
    use qmmm_module, only : qmmm_nml,qmmm_struct
-   use constants, only : zero, KCAL_TO_EV, EV_TO_KCAL
+   use constants, only : zero, AU_TO_EV
+   use iso_c_binding
    implicit none
+
+   ! ------ External functions -----------------
+   !_REAL_   xminC
+   !external xminC
+
+        !Fortran 90 interface with xminc by JAB
+        interface
+                real(c_double) function xminc( xyz_min, xmin_method_code, maxiter, grms_tol, &
+                natom, lbfgs_memory_depth, mvpm_code, &
+                x, escf, fg, grms, xmin_iter, xmin_time, &
+                xmin_verbosity, ls_method, ls_maxiter, ls_iter, ls_maxatmov, &
+                beta_armijo, c_armijo, mu_armijo, ftol_wolfe, gtol_wolfe,  &
+                return_flag, status_flag ) bind(c)
+                        use, intrinsic                  ::iso_c_binding
+                                integer(c_int)                  ::xyz_min
+                                integer(c_int)                  ::xmin_method_code
+                                integer(c_int)                  ::maxiter
+                                real(c_double)                  ::grms_tol
+                                integer(c_int)                  ::natom
+                                integer(c_int)                  ::lbfgs_memory_depth
+                                integer(c_int)                  ::mvpm_code
+                                real(c_double)                  ::x(natom*3)
+                                real(c_double)                  ::escf
+                                real(c_double)                  ::fg(natom*3)
+                                real(c_double)                  ::grms
+                                integer(c_int)                  ::xmin_iter
+                                real(c_double)                  ::xmin_time
+                                integer(c_int)                  ::xmin_verbosity
+                                integer(c_int)                  ::ls_method
+                                integer(c_int)                  ::ls_maxiter
+                                integer(c_int)                  ::ls_iter
+                                real(c_double)                  ::ls_maxatmov
+                                real(c_double)                  ::beta_armijo
+                                real(c_double)                  ::c_armijo
+                                real(c_double)                  ::mu_armijo
+                                real(c_double)                  ::ftol_wolfe
+                                real(c_double)                  ::gtol_wolfe
+                                integer(c_int)                  ::return_flag
+                                integer(c_int)                  ::status_flag
+                end function xminc
+        end interface
 
    type(simulation_t),pointer::sim_pass
    integer, intent(in) :: natom, maxiter, ntpr
-   _REAL_ born_radii(*), one_born_radii(*), intdiel, extdiel, Arad, scf_mchg(*)
-   _REAL_,  intent(inout) :: x(*)
-   _REAL_,  intent(inout) :: fg(*)
-   _REAL_,  intent(inout) :: escf
+   !_REAL_ born_radii(*), one_born_radii(*), intdiel, extdiel, Arad, scf_mchg(*)
+   _REAL_,  intent(inout) :: x(natom*3) !coordinates
    integer, intent(inout) :: xmin_iter  
    _REAL_,  intent(in)  :: grms_tol
-   ! ------ External functions -----------------
-   _REAL_   xminC
-   external xminC
 
    ! ------ local variables --------------------
+	_REAL_		::fg(natom*3) !derivatives (should it be forces?)
+	_REAL_		::energy 
    _REAL_  :: grms            = ZERO
    logical :: is_error
    logical :: is_xmin_done
@@ -495,12 +533,8 @@ subroutine xmin( natom, x, fg, escf, xmin_iter, maxiter, born_radii, &
               gtol_wolfe
 
    logical :: first
-
    ! ------ External Functions -----------------
    _REAL_ ddot
-
-100   format(I5,'     ',3F12.6) !for printing final coordinates
-
    first = .true.
    status_flag = 0
    xyz_min = 1
@@ -519,14 +553,18 @@ subroutine xmin( natom, x, fg, escf, xmin_iter, maxiter, born_radii, &
    n_force_calls = 0
    is_error = .false.
    is_xmin_done = .false.
+	if(qmmm_struct%state_of_interest>0) then
+		energy=(sim_pass%naesmd%Omega(qmmm_struct%state_of_interest)+sim_pass%naesmd%E0)*AU_TO_EV
+	else
+		energy=sim_pass%naesmd%E0*AU_TO_EV
+	endif
    do while ( .not. is_xmin_done .and. .not. is_error )
-	minimum_energy = xminC( xyz_min, xmin_method_code, maxiter, grms_tol, &
+	minimum_energy = xminc( xyz_min, xmin_method_code, maxiter, grms_tol, &
 		natom, lbfgs_memory_depth, mvpm_code, &
-		x, escf, fg, grms, xmin_iter, xmin_time, &
+		x, energy, fg, grms, xmin_iter, xmin_time, &
 		xmin_verbosity, ls_method, ls_maxiter, ls_iter, ls_maxatmov, &
 		beta_armijo, c_armijo, mu_armijo, ftol_wolfe, gtol_wolfe,  &
 		return_flag, status_flag )
-
 	select case ( return_flag )
 	case ( DONE )
 		! Finished minimization.
@@ -541,7 +579,7 @@ subroutine xmin( natom, x, fg, escf, xmin_iter, maxiter, born_radii, &
 			write(6,*) 'Final Structure'
 			!call qm_print_coords(0,.true.)
 			do i=1,natom !NAESMD format
-				write(6,100) qmmm_struct%iqm_atomic_numbers(i),x(3*(i-1)+1),x(3*(i-1)+2),x(3*(i-1)+3)
+				write(6,"(I5,'     ',3F12.6)") qmmm_struct%iqm_atomic_numbers(i),x(3*(i-1)+1),x(3*(i-1)+2),x(3*(i-1)+3)
 			end do
 
 			if ( qmmm_nml%printbondorders ) then
@@ -559,9 +597,9 @@ subroutine xmin( natom, x, fg, escf, xmin_iter, maxiter, born_radii, &
 			call deriv(sim_pass,qmmm_struct%state_of_interest)
 			fg(1:3*natom)=-sim_pass%deriv_forces(1:3*natom)
 			if(qmmm_struct%state_of_interest>0) then
-				escf=qm2ds%Etot(qmmm_struct%state_of_interest)
+				energy=(sim_pass%naesmd%Omega(qmmm_struct%state_of_interest)+sim_pass%naesmd%E0)*AU_TO_EV
 			else
-				escf=qm2ds%Eground
+				energy=sim_pass%naesmd%E0*AU_TO_EV
 			endif
 			n_force_calls = n_force_calls + 1
 		end if
@@ -576,15 +614,15 @@ subroutine xmin( natom, x, fg, escf, xmin_iter, maxiter, born_radii, &
 					write(6,'(a)') '       ----    --------------     -----------------'
 					first = .false.
 				end if
-				write(6,'(a,i5,f16.6,a,f16.6,a)') 'xmin ', xmin_iter, escf,' eV', grms, ' eV/A'
+				write(6,'(a,i5,f16.6,a,f16.6,a)') 'xmin ', xmin_iter, energy,' eV', grms, ' eV/A'
 			end if
 			call qmmm2naesmd_r(sim_pass);
 			call do_sqm_davidson_update(sim_pass)
 			call deriv(sim_pass,qmmm_struct%state_of_interest)
 			if(qmmm_struct%state_of_interest>0) then
-                                escf=qm2ds%Etot(qmmm_struct%state_of_interest)
+                                energy=(sim_pass%naesmd%Omega(qmmm_struct%state_of_interest)+sim_pass%naesmd%E0)*AU_TO_EV
 			else
-				escf=qm2ds%Eground
+				energy=sim_pass%naesmd%E0*AU_TO_EV
 			endif
 			fg(1:3*natom)=-sim_pass%deriv_forces(1:3*natom)
 			n_force_calls = n_force_calls + 1
@@ -597,9 +635,9 @@ subroutine xmin( natom, x, fg, escf, xmin_iter, maxiter, born_radii, &
 			call do_sqm_davidson_update(sim_pass);
 			call deriv(sim_pass,qmmm_struct%state_of_interest)
                         if(qmmm_struct%state_of_interest>0) then
-                                escf=qm2ds%Etot(qmmm_struct%state_of_interest)
+                                energy=(sim_pass%naesmd%Omega(qmmm_struct%state_of_interest)+sim_pass%naesmd%E0)*AU_TO_EV
                         else
-				escf=qm2ds%Eground
+				energy=sim_pass%naesmd%E0*AU_TO_EV
 			endif
 			fg(1:3*natom)=-sim_pass%deriv_forces(1:3*natom);
 			n_force_calls = n_force_calls + 1
@@ -609,7 +647,6 @@ subroutine xmin( natom, x, fg, escf, xmin_iter, maxiter, born_radii, &
 		is_error = status_flag < 0
 		ASSERT( is_error )
 	end select
-	
 	end do
 
 	if ( is_error ) then
