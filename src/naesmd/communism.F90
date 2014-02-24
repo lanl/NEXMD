@@ -417,8 +417,6 @@ module communism
 	        qm2ds%verbosity=0 !don't print output from scf calculations
 		qmmm_nml%verbosity=0
 	endif
-        qm2ds%verbosity=0 !don't print output from scf calculations
-	qmmm_nml%verbosity=0
         call naesmd2qmmm_r(sim)
         !call xmin(natom, qmmm_struct%qm_coords , f, sim%escf, xmin_iter, maxcyc, born_radii, &
         !   one_born_radii, intdiel, extdiel, Arad, qm2_struct%scf_mchg, grms_tol, ntpr,sim)

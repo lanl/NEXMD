@@ -260,13 +260,17 @@
       !CALL FOCK2(Nb_M,Nat,eta,xi,W,WJ,WK,NFIRST, &
       !   NMIDLE,NLAST,ID,ITYPE )
 
-      call qm2_fock2(eta,xi,qm2ds%W,qm2_params%orb_loc)
+	!No d orbitals but has exchange
+	!call qm2_fock2(eta,xi,qm2ds%W,qm2_params%orb_loc)
+	!D orbitals but no exchange (RHF only)
+	call qm2_fock2_d(eta,xi,qm2ds%W)
    
    if (qm2ds%iderivfl.eq.0) then ! We are not in analytic derivatives     
       !CALL FOCK1(Nat,atm,eta,xi,NFIRST,NMIDLE,NLAST, &
       !   GSS,GSP,GPP,GP2,HSP,GSD,GPD,GDD)
 
-      call qm2_fock1(eta,xi) 
+      !call qm2_fock1(eta,xi) 
+	call qm2_fock1_d(eta,xi)
       endif
    
       eta(:)=eta(:)*2.0 !Why *2.0? Is it for the commutator in L(xi)?
@@ -313,8 +317,10 @@
       !CALL FOCK2(Nb_M,Nat,eta,xi,W,WJ,WK,NFIRST, &
       !   NMIDLE,NLAST,ID,ITYPE )
 
-      call qm2_fock2(eta,xi,qm2ds%W,qm2_params%orb_loc)
+      !call qm2_fock2(eta,xi,qm2ds%W,qm2_params%orb_loc)
+	call qm2_fock2_d(eta,xi,qm2ds%W)
 
+	!What is this for? Why is there an analytic derivatives flag here?
    if (qm2ds%iderivfl.eq.0) then ! We are not in analytic derivatives
       !CALL FOCK11(Nat,atm,eta,xi,NFIRST,NMIDLE,NLAST, &
       !   GSS,GSP,GPP,GP2,HSP,GSD,GPD,GDD)
