@@ -315,23 +315,22 @@ subroutine diegrd(dxyz)
         end if
       end do
     end do
-
 !Surface Closure
-    bsurf = 0.d0
-    do i = 1, nipc
-      ia = isude(1, i)
-      ib = isude(2, i)
-      deab = -0.25d0 * (qscat(ia)**2*sude(1, i)/arat(ia)+qscat(ib)**2*sude(2, &
-     & i)/arat(ib)+bsurf*(sude(1, i)+sude(2, i)))
-      xk(1) = qmmm_struct%qm_coords(1, ib) - qmmm_struct%qm_coords(1, ia)
-      xk(2) = qmmm_struct%qm_coords(2, ib) - qmmm_struct%qm_coords(2, ia)
-      xk(3) = qmmm_struct%qm_coords(3, ib) - qmmm_struct%qm_coords(3, ia)
-      deab = deab / Sqrt (xk(1)**2+xk(2)**2+xk(3)**2)
-      do ix = 1, 3
-        dxyz(ix, ia) = dxyz(ix, ia) - xk(ix) * deab
-        dxyz(ix, ib) = dxyz(ix, ib) + xk(ix) * deab
-      end do
-    end do
+    !bsurf = 0.d0
+    !do i = 1, nipc
+    !  ia = isude(1, i)
+    !  ib = isude(2, i)
+    !  deab = -0.25d0 * (qscat(ia)**2*sude(1, i)/arat(ia)+qscat(ib)**2*sude(2, &
+    ! & i)/arat(ib)+bsurf*(sude(1, i)+sude(2, i)))
+    !  xk(1) = qmmm_struct%qm_coords(1, ib) - qmmm_struct%qm_coords(1, ia)
+    !  xk(2) = qmmm_struct%qm_coords(2, ib) - qmmm_struct%qm_coords(2, ia)
+    !  xk(3) = qmmm_struct%qm_coords(3, ib) - qmmm_struct%qm_coords(3, ia)
+    !  deab = deab / Sqrt (xk(1)**2+xk(2)**2+xk(3)**2)
+    !  do ix = 1, 3
+    !    dxyz(ix, ia) = dxyz(ix, ia) - xk(ix) * deab
+    !    dxyz(ix, ib) = dxyz(ix, ib) + xk(ix) * deab
+    !  end do
+    !end do
 
 !Calculate q*del(B)*Q
    do k = 1, nps

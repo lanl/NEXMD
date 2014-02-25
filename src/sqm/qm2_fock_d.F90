@@ -76,6 +76,7 @@ subroutine qm2_fock2_d(F, PTOT, W)
             j=qm2_params%natomic_orbs(jj)
             starting=w_position(ii,jj)
             size=( i*(i+1)*j*(j+1) ) /4
+  	    !write(*,*) "starting ", starting,size,i,j,k,l          
             call W2Fock_atompair(W(starting:starting+size-1), F, ptot, &
                 i, j, k, l)
            end if
@@ -84,6 +85,8 @@ subroutine qm2_fock2_d(F, PTOT, W)
 
     return
 end subroutine qm2_fock2_d
+
+
 
 subroutine qm2_fock1_d(F, PTOT)
 
@@ -176,99 +179,6 @@ subroutine qm2_fock1_d(F, PTOT)
 
     return
 end subroutine qm2_fock1_d
-
-!This function is not modified yet, but is here to start thinking about adding d-orbital functionality for excited state calculation
-subroutine qm2_fock1_d_skew(F, PTOT)
-
-    use constants          , only : fourth
-    use ElementOrbitalIndex, only : MaxValenceDimension, &
-                                    Index1_2Electron, IntRep,  &
-                                    IntRf1, IntRf2, IntIJ, IntKL
-    use MNDOChargeSeparation, only: GetOneCenter2Electron
-    use qmmm_module         , only : qmmm_mpi, qmmm_struct, qm2_params
-    implicit none
-
-    _REAL_, intent(inout) :: F(:)
-    _REAL_, intent(in) :: PTOT(:)
-
- ! local
-
-    _REAL_, save::W(Index1_2Electron)=0.0D0
-    _REAL_::F_local(MaxValenceDimension), P_local(MaxValenceDimension)
-    integer, save::qmType_saved=-1
-    logical, save::initialized=.false.
-
-    integer::i,j,k,i1,i2,ij,kl,counter
-    integer::qmType
-
-
-    if (.not.w_position_initialized) call InitializeWPosition
-
-    ! first calculate the SP contributions
-    call qm2_fock1(F,PTOT)
-
-    do i=1,qmmm_struct%nquant_nlink
-        qmType=qmmm_struct%qm_atom_type(i)
-        k=qm2_params%natomic_orbs(i)
-
-        if (k.ge.9) then !only do those atoms w/ d-orbitals
-
-            ! the integrals
-            if ((.not.initialized).or. (qmType.ne.qmType_saved)) then
-                do j=1,Index1_2Electron
-                     i1 = IntRf1(j)
-                     i2 = IntRf2(j)
-                     W(j) = GetOneCenter2Electron(qmType, IntRep(j))
-                     if(i1>0) W(j) = W(j)-fourth*GetOneCenter2Electron(qmType,i1)
-                     if(i2>0) W(j) = W(j)-fourth*GetOneCenter2Electron(qmType,i2)
-                end do
-                qmType_saved=qmType
-                initialized=.true.
-            end if
-
-            ! Copy the density matrix to local
-
-            i1=qm2_params%orb_loc(1,i)
-            i2=qm2_params%orb_loc(2,i)
-            counter=0
-            do j=i1, i2
-                do k=qm2_params%pascal_tri1(j)+i1, qm2_params%pascal_tri2(j)-1
-                    counter=counter+1
-                    P_local(counter)=PTOT(k)*2.d0  ! off-diag terms need to be
-                            ! doubled to account for the half matrix summation
-                end do
-                counter=counter+1
-                P_local(counter)=PTOT(qm2_params%pascal_tri2(j))
-            end do
-
-            ! the coulombic contribution
-            F_local=0.0D0
-            do j=1,Index1_2Electron
-              ij=IntIJ(j)
-              kl=IntKL(j)
-              F_local(ij)=F_local(ij)+P_local(kl)*W(j)
-            end do
-
-            ! the exchange contribution
-            ! no exchange for the RHF case
-            ! the UHF case--to be done later
-
-            ! add local contribution back to the Fock matrix
-            i1=qm2_params%orb_loc(1,i)
-            i2=qm2_params%orb_loc(2,i)
-            counter=0
-            do j=i1, i2
-                do k=qm2_params%pascal_tri1(j)+i1, qm2_params%pascal_tri2(j)
-                    counter=counter+1
-                    F(k)=F(k)+F_local(counter)
-                end do
-            end do
-
-        end if
-    end do
-
-    return
-end subroutine qm2_fock1_d_skew
 
 subroutine W2Fock_atompair(W, F, D, norbs_a, norbs_b,  &
           na_starting, nb_starting)
