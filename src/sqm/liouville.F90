@@ -131,7 +131,7 @@
 !
    subroutine Vxi(xi,eta)
    use qm2_davidson_module
-
+   
    implicit none
 
    _REAL_ xi(qm2ds%Nb,qm2ds%Nb),eta(qm2ds%Nb,qm2ds%Nb)
@@ -227,6 +227,7 @@
    subroutine Vxi_pack(xi,eta)
    use qmmm_module,only: qm2_struct,qm2_params,qmmm_struct,qmmm_scratch
    use qm2_davidson_module
+   use qm2_fock_d
 
    implicit none
 
@@ -260,17 +261,15 @@
       !CALL FOCK2(Nb_M,Nat,eta,xi,W,WJ,WK,NFIRST, &
       !   NMIDLE,NLAST,ID,ITYPE )
 
-	!No d orbitals but has exchange
-	!call qm2_fock2(eta,xi,qm2ds%W,qm2_params%orb_loc)
-	!D orbitals but no exchange (RHF only)
-	call qm2_fock2_d(eta,xi,qm2ds%W)
+	call qm2_fock2(eta,xi,qm2ds%W,qm2_params%orb_loc)
+	!call qm2_fock2_d(eta,xi,qm2ds%W)
    
    if (qm2ds%iderivfl.eq.0) then ! We are not in analytic derivatives     
       !CALL FOCK1(Nat,atm,eta,xi,NFIRST,NMIDLE,NLAST, &
       !   GSS,GSP,GPP,GP2,HSP,GSD,GPD,GDD)
 
-      !call qm2_fock1(eta,xi) 
-	call qm2_fock1_d(eta,xi)
+      call qm2_fock1(eta,xi) 
+	!call qm2_fock1_d(eta,xi)
       endif
    
       eta(:)=eta(:)*2.0 !Why *2.0? Is it for the commutator in L(xi)?
@@ -285,6 +284,7 @@
    subroutine Vxi_packA (xi,eta)
    use qmmm_module,only: qm2_struct,qm2_params,qmmm_struct,qmmm_scratch
    use qm2_davidson_module
+   use qm2_fock_d
 
    implicit none
 
@@ -317,15 +317,14 @@
       !CALL FOCK2(Nb_M,Nat,eta,xi,W,WJ,WK,NFIRST, &
       !   NMIDLE,NLAST,ID,ITYPE )
 
-      !call qm2_fock2(eta,xi,qm2ds%W,qm2_params%orb_loc)
-	call qm2_fock2_d(eta,xi,qm2ds%W)
+      call qm2_fock2(eta,xi,qm2ds%W,qm2_params%orb_loc)
+	!call qm2_fock2_d(eta,xi,qm2ds%W)
 
-	!What is this for? Why is there an analytic derivatives flag here?
    if (qm2ds%iderivfl.eq.0) then ! We are not in analytic derivatives
       !CALL FOCK11(Nat,atm,eta,xi,NFIRST,NMIDLE,NLAST, &
       !   GSS,GSP,GPP,GP2,HSP,GSD,GPD,GDD)
-
       call qm2_fock1_skew(eta,xi)
+	!call qm2_fock1_d_skew(eta,xi) !This skew function is not finished
 
       endif
 
