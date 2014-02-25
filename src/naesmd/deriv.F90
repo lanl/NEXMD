@@ -62,8 +62,6 @@ if(qmmm_struct%ideriv.eq.1) then !analytical derivatives
           call diegrd(dxyz1_test) !derivative
         elseif(potential_type.eq.2) then
           call rcnfldgrad(dxyz1_test,qm2_struct%den_matrix,qm2_struct%norbs)   
-          !write(6,*)'dxyz1=',dxyz1_test; dxyz1_test=0.d0  
-          !call rcnfldgrad2(dxyz1_test,qm2_struct%den_matrix,qm2_struct%den_matrix,qm2ds%nb,.true.)
         endif      
       dxyz1=dxyz1+dxyz1_test
       endif
@@ -105,7 +103,7 @@ if (ihop>0) then
 
          !calculate vacuum derivative for term 1
          call dcart1(dxyz1,qm2_struct%den_matrix,qm2ds%rhoTZ,qmmm_struct%qm_coords)
-         !add solvent part (symmetric only b/c symmetric matrix)  
+         !add solvent part (symmetric only b/c symmetric matrix)
          if(solvent_model.gt.0) then
                 if(potential_type.eq.3) then
                   call cosmo_1_tri_2(qm2ds%rhoTZ,density2,charges2,acharges2) !solvent and solute charges 
@@ -123,19 +121,21 @@ if (ihop>0) then
          end do
 
 !TERM 2: Tr(V^x(xi) xi^+) 
-         !Symmetric part
          dxyz1=0.d0; dxyz1_test=0.d0; charges2=0.d0; acharges2=0.d0;
          !pack triangular of symmetric part and antisymmetric parts
          call packing(qm2ds%Nb, qm2ds%rhoLZ,qm2ds%tz_scratch(1), 's')
          call packing(qm2ds%Nb, qm2ds%rhoLZ,qm2ds%tz_scratch(qm2ds%nb**2+1),'u')
          !vacuum derivative
-         call dcart2(dxyz1,qm2ds%tz_scratch(1),qmmm_struct%qm_coords)
-         call dcart2(dxyz1,qm2ds%tz_scratch(qm2ds%nb**2+1),qmmm_struct%qm_coords)
+         call dcart2(dxyz1,qm2ds%tz_scratch(1),qmmm_struct%qm_coords) !Symmetric
+         call dcart2(dxyz1,qm2ds%tz_scratch(qm2ds%nb**2+1),qmmm_struct%qm_coords) !Skewsymmetric
          if(solvent_model.eq.1) then
          if(potential_type.eq.3) then
             qscnet(:,1)=0.d0; qdenet(:,1)=0.d0; !Clear Nuclear Charges
-            call cosmo_1_tri(qm2ds%tz_scratch(1)) !Fill Electronic Chrages
+            call cosmo_1_tri(qm2ds%tz_scratch(1)) !Fill Electronic Chrages Symmetric Part
             call diegrd(dxyz1_test); !derivative
+		!call cosmo_1_tri(qm2ds%tz_scratch(qm2ds%nb**2+1)) !Skew symmetric part
+		!call diegrd(dxyz1_test); !derivative is zero!
+		dxyz1_test=dxyz1_test*4.0
          elseif(potential_type.eq.2) then
             call rcnfldgrad_full(dxyz1_test,qm2ds%rhoLZ,qm2ds%nb)
          end if

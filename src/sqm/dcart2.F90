@@ -7,6 +7,10 @@
 ! CML this subroutine, as well as DCART1() and qm2_get_exc_forces(), since they are based
 ! CML on the same subroutine. 7/13/12
 
+! Something to keep in mind when reading these subroutines (especially dhc2) is that we aren't talking about the fock matrix or hamiltonian matrix here, just the 2 electron potential operator. The H matrix is used to hold the core-core interactions (two point charges) and the F matrix is used to hold H and the semiemprical integrals. JAB
+! I was really confused at first because the core-core interactions shouldn't be here, but after further investigation, I see that they are subtracted in the last subroutine. This subroutine doesn't really show up when profiling, so I guess I will leave it there for now. JAB
+! Essentially, everything that is going on with H in this subroutine is pointless because it is is subtracted out at the end. Pretty funny.
+
 subroutine dcart2(dxyzqm, xisu, xyz_in) ! CML add coordinates passed in 7/13/12
 !Current code maintained by: Ross Walker (TSRI 2004)
 
@@ -252,7 +256,6 @@ subroutine qm2_dhc2(P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, & ! CML 7
       call GetRotationMatrix(xyz_qmj-xyz_qmi, rotationMatrix, hasDOrbital)        
       call qm2_rotate_qmqm(-1,iqm,jqm,natqmi,natqmj,xyz_qmi,xyz_qmj,            &
                   W(KR),KR, RI, core)
-
       if (hasDOrbital) then   ! spd case
 
         i_dimension=n_atomic_orbi*(n_atomic_orbi+1)/2
@@ -290,7 +293,7 @@ subroutine qm2_dhc2(P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, & ! CML 7
    
    !call qm2_core_core_repulsion(iqm, jqm, rij, oneOverRij, RI, enuclr) !not used
         
-    ! put what we have now to the Fock matrix
+    ! put what we have now to the Fock matrix (of course here this is not the fock matrix)
     F(1:linear)=H(1:linear)
 
         ! The following is an additional fix to the problem related to the one commented

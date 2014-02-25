@@ -18,7 +18,7 @@
    onsager_radius=1.9, ! Onsager radius
    printcharges=0, ! Mulliken charges for ground state
    printdipole=1, !0 - None, 1 - Excited State, Relaxed, Unrelaxed
-   solvent_model=11, ! 0 - None, 1 - LR, >2 SS :: 2-[V_s(T+Z),xi], 3-[V_s(xi),xi], (4-[V_s(T+Z),rho_0+xi], 5-[V_s(xi),rho_0+xi] for testing)
+   solvent_model=0, ! 0 - None, 1 - LR, >2 SS :: 2-[V_s(T+Z),xi], 3-[V_s(xi),xi], (4-[V_s(T+Z),rho_0+xi], 5-[V_s(xi),rho_0+xi] for testing)
    potential_type=3, ! 1 - Constant Electric Field, 2 - Onsager, 3 - COSMO, 4 - Testing (CEF only in ES with solvent_model=4,5), 0-Normal Correlation
 &endqmmm
 
@@ -33,7 +33,7 @@
    !***** Dynamics parameters
    time_init=0.d0 ! initial time, fs
    time_step=0.05d0, ! time step, fs
-   n_class_steps=0, !number of classical steps
+   n_class_steps=100, !number of classical steps
    n_quant_steps=1, ! number of quantum steps for each classical step
    moldyn_deriv_flag=1, ! 0-num, 1-analyt, 2-fast GS analyt, 3-??? 
    num_deriv_step=1.d-5, ! displacement for numerical derivatives, A

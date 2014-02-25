@@ -5,18 +5,19 @@
    ftol=0.d0, !   Min tolerance (|emin-eold|)
    ftol0=1.d-7, !  Acceptance tol.(|emin-eold|)
    ftol1=1.d-8, ! Accept.tol.for residual norm
-   verbosity=5,
+   verbosity=4,
    scfconv=1.0d-9,
    qmcharge=0,
-   maxcyc=0, !Number of optimization cycles
-   ntpr=1, !Print optimization stats every ntpr cycles
-   grms_tol=0.005, !RMS tolerance for forces in geometry optimization
-   ceps=1000, !Dielectric constant for solvent 
-   EF=0, !Electric Field 0 : none, 1: in Ground state and Excited state, 2: in only Excited state
+   maxcyc=0,
+   ntpr=1,
+   grms_tol=0.01,
+   ceps=1000,
+   cosmo_scf_ftol=1.0d-8
+   EF=0,
    Ex=0, !Electric Field Vector X for potential_type 1
    Ez=0, !Electric Field Vector Z for potential_type 1
    Ey=0.01, !Electric Field Vector Y for potential_type 1
-   onsager_radius=9, ! Onsager radius
+   onsager_radius=1.9, ! Onsager radius
    printcharges=0, ! Mulliken charges for ground state
    printdipole=0, !0 - None, 1 - Excited State, Relaxed, Unrelaxed
    solvent_model=1, ! 0 - None, 1 - LR, >2 SS :: 2-[V_s(T+Z),xi], 3-[V_s(xi),xi], (4-[V_s(T+Z),rho_0+xi], 5-[V_s(xi),rho_0+xi] for testing)
@@ -34,9 +35,9 @@
    !***** Dynamics parameters
    time_init=0.d0 ! initial time, fs
    time_step=0.05d0, ! time step, fs
-   n_class_steps=0, !number of classical steps
+   n_class_steps=1000, !number of classical steps
    n_quant_steps=1, ! number of quantum steps for each classical step
-   moldyn_deriv_flag=1, ! 0-num, 1-analyt, 2-fast GS analyt, 3-??? 
+   moldyn_deriv_flag=1, ! 0-none, 1-analyt, 2-numeric
    num_deriv_step=1.d-5, ! displacement for numerical derivatives, A
    rk_tolerance=1.d-7, ! tolerance for the Runge-Kutta propagator
 
@@ -64,8 +65,56 @@
 &endmoldyn
 
 &coord
-  1 1.0 0.0 0.0
-  9 0.0 0.0 0.0
+    6        -2.144665    0.923736    0.037519
+    6        -0.765081    1.099653    0.026637
+    6         0.104908   -0.001816    0.047900
+    6        -0.442722   -1.298913    0.081337
+    6        -1.817061   -1.498164    0.093043
+    6        -2.669754   -0.379416    0.070197
+    6         1.552096    0.133113    0.035830
+    6         2.207215    1.307423    0.007811
+    6         3.642662    1.519108   -0.006604
+    6         4.082313    2.856168   -0.049678
+    6         5.438225    3.172976   -0.067547
+    6         6.428306    2.155924   -0.044340
+    6         5.995012    0.829560   -0.000956
+    6         4.630007    0.508436    0.019023
+    1         2.091855   -0.831531    0.052281
+    1         1.627519    2.252846   -0.008996
+    1        -2.813547    1.801879    0.020438
+    1        -0.368290    2.127829    0.000130
+    1        -2.229622   -2.521837    0.119632
+    7        -4.132781   -0.575739    0.079955
+    1         0.226534   -2.175664    0.097170
+    1         3.325613    3.658292   -0.069340
+    1         6.745589    0.023305    0.017041
+    6         7.831959    2.521813   -0.065495
+    6         8.862247    1.657909   -0.041363
+    1         8.017294    3.611751   -0.104511
+    6        10.264060    2.039556   -0.062384
+    1         8.687401    0.566394   -0.001479
+    6        10.685411    3.377095   -0.101175
+    6        12.043408    3.690754   -0.118224
+    6        12.999766    2.676315   -0.096752
+    6        12.592339    1.341850   -0.058306
+    6        11.237121    1.023966   -0.041348
+    1         9.947026    4.193857   -0.118195
+    1        12.358797    4.745582   -0.147983
+    1        14.071712    2.926424   -0.109789
+    1        13.344439    0.537521   -0.040957
+    1        10.922486   -0.031566   -0.011055
+    8         5.918445    4.469854   -0.107354
+    6         4.944161    5.511544   -0.131923
+    8         4.180418   -0.795345    0.068252
+    6         5.167037   -1.825756    0.066872
+    1         5.566421    6.442703   -0.160765
+    1         4.316431    5.484517    0.791305
+    1         4.307743    5.433130   -1.046301
+    1         4.552764   -2.762551    0.096672
+    1         5.815664   -1.751617    0.972875
+    1         5.779067   -1.784806   -0.866183
+    8        -4.867368    0.380712    0.049859
+    8        -4.589893   -1.691469    0.117300
 &endcoord
 
 &veloc
