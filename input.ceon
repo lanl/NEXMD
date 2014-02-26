@@ -11,7 +11,7 @@
    maxcyc=0,
    ntpr=1,
    grms_tol=0.01,
-   ceps=10,
+   ceps=15,
    cosmo_scf_ftol=1.0d-8
    EF=0,
    Ex=0, !Electric Field Vector X for potential_type 1

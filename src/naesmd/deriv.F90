@@ -136,8 +136,8 @@ if (ihop>0) then
             qscnet(:,1)=0.d0; qdenet(:,1)=0.d0; !Clear Nuclear Charges
             call cosmo_1_tri(qm2ds%tz_scratch(1)) !Fill Electronic Chrages
             call diegrd(dxyz1_test); !derivative
-            call cosmo_1_tri(qm2ds%tz_scratch(qm2ds%nb**2+1)) !Fill Electronic Chrages
-            call diegrd(dxyz1_test); !derivative
+            !call cosmo_1_tri(qm2ds%tz_scratch(qm2ds%nb**2+1)) !Fill Electronic Chrages
+            !call diegrd(dxyz1_test); !derivative
 		dxyz1_test=4.0*dxyz1_test
          elseif(potential_type.eq.2) then
             call rcnfldgrad_full(dxyz1_test,qm2ds%rhoLZ,qm2ds%nb)
@@ -155,15 +155,6 @@ if (ihop>0) then
         !Currently wastes many resources by running full calculations for each
         !state. Need to store derivatives for all states since they are
         !calculated each time instead of calling deriv() for each state.
-
-        !Testing Solvent ES
-        !call calc_rhotz(ihop, qm2ds%rhoT,.false.) !Unrelaxed Transition Density (T)
-        !call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoT,qm2ds%tz_scratch(1), &
-        ! qm2ds%tz_scratch(qm2ds%Nb**2+1))!Site rep of T
-        !call unpacking(qm2ds%nb,qm2_struct%den_matrix,qm2ds%tz_scratch(qm2ds%nb**2+1:2*qm2ds%nb**2),'s')
-        !call calc_Esolv(E_ES_left,qm2ds%tz_scratch(qm2ds%nb**2+1:2*qm2ds%nb**2),qm2ds%tz_scratch(1:qm2ds%nb**2),.true.)
-        !End Testing
-        !write(6,*)'ES SOLVENT CONTRIBUTION',E_ES_left
 
    elseif(qmmm_struct%ideriv.eq.2) then
    h=qmmm_struct%numder_step !step size
@@ -187,28 +178,6 @@ if (ihop>0) then
            ,ry=qmmm_struct%qm_coords(2,:),rz=qmmm_struct%qm_coords(3,:))
         !Note: rx=___ etc. might already be uncessary because qm_coords might be used in the subroutine
         E_ES_left=sim%naesmd%Omega(ihop)
-        !write(6,*)'den_l=',qm2_struct%den_matrix
-        !write(6,*)'fock_l=',qm2_struct%fock_matrix
-        !write(6,*)'VGS LEFT',Escf_left
-        !write(6,*)'enuclrleft',qmmm_struct%enuclr_qmqm
-        !Escf_left=-onsagE/27.2116!
-        !Escf_left=qmmm_struct%enuclr_qmqm/27.2116
-        !Escf_left=ediel/27.2116
-        !Escf_left=Escf_left-ediel/27.2116
-        !Testing Solvent GS: Check density matrices, compare V_s in calcEsolv to
-        !V_s in addfck
-        !call unpacking(qm2ds%nb,qm2_struct%den_matrix,qm2ds%tz_scratch(1:qm2ds%nb**2),'s')
-        !call calc_Esolv(Escf_left,qm2ds%tz_scratch(1:qm2ds%nb**2),qm2ds%tz_scratch(1:qm2ds%nb**2),.true.)
-        !call addnuc(Escf_left)
-        !End Testing
-
-        !Testing Solvent ES
-        !call calc_rhotz(ihop, qm2ds%rhoT,.false.) !Unrelaxed Transition Density (T)
-        !call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoT,qm2ds%tz_scratch(1), &  
-        ! qm2ds%tz_scratch(qm2ds%Nb**2+1))!Site rep of T
-        !call unpacking(qm2ds%nb,qm2_struct%den_matrix,qm2ds%tz_scratch(qm2ds%nb**2+1:2*qm2ds%nb**2),'s')
-        !call calc_Esolv(E_ES_left,qm2ds%tz_scratch(qm2ds%nb**2+1:2*qm2ds%nb**2),qm2ds%tz_scratch(1:qm2ds%nb**2),.true.)
-        !End Testing
 
       xyz(i)=xyz(i)-2*h !right
       do k=1,qmmm_struct%nquant_nlink
@@ -220,27 +189,6 @@ if (ihop>0) then
       call do_sqm_davidson_update(simpoint,vgs=Escf_right,rx=qmmm_struct%qm_coords(1,:)&
            ,ry=qmmm_struct%qm_coords(2,:),rz=qmmm_struct%qm_coords(3,:))
         E_ES_right=sim%naesmd%Omega(ihop)
-        !write(6,*)'fock_r=',qm2_struct%fock_matrix
-        !write(6,*)'VGS RIGHT',Escf_right
-        !write(6,*)'enuclrright',qmmm_struct%enuclr_qmqm
-        !Escf_right=-onsagE/27.2116!
-        !Escf_right=qmmm_struct%enuclr_qmqm/27.2116
-        !Escf_right=ediel/27.2116 !Solvent contribution only
-        !Escf_right=Escf_right-ediel/27.2116
-        !Testing Solvent GS: Check density matrices, compare V_s in calcEsolv to
-        !V_s in addfck
-        !call unpacking(qm2ds%nb,qm2_struct%den_matrix,qm2ds%tz_scratch(1:qm2ds%nb**2),'s')
-        !call calc_Esolv(Escf_right,qm2ds%tz_scratch(1:qm2ds%nb**2),qm2ds%tz_scratch(1:qm2ds%nb**2),.true.)
-        !call addnuc(Escf_right)
-        !End Testing
-
-        !Testing Solvent ES
-        !call calc_rhotz(ihop, qm2ds%rhoT,.false.)
-        !call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoT,qm2ds%tz_scratch(1), &   
-        ! qm2ds%tz_scratch(qm2ds%Nb**2+1))!Site rep of T
-        !call unpacking(qm2ds%nb,qm2_struct%den_matrix,qm2ds%tz_scratch(qm2ds%nb**2+1:2*qm2ds%nb**2),'s')
-        !call calc_Esolv(E_ES_right,qm2ds%tz_scratch(qm2ds%nb**2+1:2*qm2ds%nb**2),qm2ds%tz_scratch(1:qm2ds%nb**2),.true.)
-        !End Testing
 
       xyz(i)=xyz(i)+h !back to center
       do k=1,qmmm_struct%nquant_nlink
