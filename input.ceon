@@ -11,16 +11,16 @@
    maxcyc=0,
    ntpr=1,
    grms_tol=0.01,
-   ceps=15,
+   ceps=1000,
    cosmo_scf_ftol=1.0d-8
    EF=0,
    Ex=0, !Electric Field Vector X for potential_type 1
    Ez=0, !Electric Field Vector Z for potential_type 1
    Ey=0.01, !Electric Field Vector Y for potential_type 1
-   onsager_radius=1.3, ! Onsager radius
+   onsager_radius=2, ! Onsager radius
    printcharges=0, ! Mulliken charges for ground state
-   printdipole=0, !0 - None, 1 - Excited State, Relaxed, Unrelaxed
-   solvent_model=1, ! 0 - None, 1 - LR, >2 SS :: 2-[V_s(T+Z),xi], 3-[V_s(xi),xi], (4-[V_s(T+Z),rho_0+xi], 5-[V_s(xi),rho_0+xi] for testing)
+   printdipole=1, !0 - None, 1 - Excited State, Relaxed, Unrelaxed
+   solvent_model=11, ! 0 - None, 1 - LR, >2 SS :: 2-[V_s(T+Z),xi], 3-[V_s(xi),xi], (4-[V_s(T+Z),rho_0+xi], 5-[V_s(xi),rho_0+xi] for testing)
    potential_type=3, ! 1 - Constant Electric Field, 2 - Onsager, 3 - COSMO, 4 - Testing (CEF only in ES with solvent_model=4,5), 0-Normal Correlation
 &endqmmm
 
@@ -35,7 +35,7 @@
    !***** Dynamics parameters
    time_init=0.d0 ! initial time, fs
    time_step=0.05d0, ! time step, fs
-   n_class_steps=1000, !number of classical steps
+   n_class_steps=200, !number of classical steps
    n_quant_steps=1, ! number of quantum steps for each classical step
    moldyn_deriv_flag=1, ! 0-none, 1-analyt, 2-numeric
    num_deriv_step=1.d-5, ! displacement for numerical derivatives, A
@@ -65,8 +65,54 @@
 &endmoldyn
 
 &coord
-1 1.1 0.0 0.0
-9 0.0 0.0 0.0
+6         -7.58255        1.19838        0.10165
+6         -6.19610        1.37392        0.08820
+6         -8.12642       -0.08527        0.05896
+6          0.31959        3.74457       -0.02716
+6          2.86831        0.45151       -0.02703
+6         -7.28539       -1.19722        0.00273
+6          6.15810       -1.35567       -0.02294
+6         -5.33154        0.26421        0.03261
+6         -3.85826        0.52063        0.02260
+6         -5.89630       -1.03187       -0.01044
+6          3.81565       -0.51496       -0.02357
+6          5.28836       -0.25132       -0.02739
+6          5.84529        1.04670       -0.03629
+6         -2.91436       -0.44888       -0.01028
+6         -1.43070       -0.20048       -0.01671
+6          7.23237        1.22303       -0.04137
+6         -0.88422        1.09905       -0.01609
+6         -0.55540       -1.30782       -0.02376
+6          0.50997        1.30774       -0.02069
+6          8.09413        0.11405       -0.03763
+6          0.83941       -1.09910       -0.02662
+6          7.54389       -1.17649       -0.02801
+6         -0.36557       -3.74453       -0.03526
+6          1.38537        0.20074       -0.02438
+1         -8.23577        2.06035        0.14543
+1         -5.28720       -1.91969       -0.05496
+1         -7.71044       -2.19220       -0.03078
+1         -3.56237        1.55816        0.04815
+1         -3.23054       -1.47990       -0.02910
+1         -1.52837        1.95785       -0.01352
+1          5.23070        1.93172       -0.03996
+1          7.63272        2.22930       -0.04867
+1          1.48459       -1.95746       -0.03099
+1          3.18108        1.48339       -0.03143
+1          8.18577       -2.04854       -0.02481
+1          5.76092       -2.36357       -0.01595
+1          3.52312       -1.55399       -0.01778
+1         -5.79458        2.37953        0.12238
+1         -0.31369        3.81517        0.88279
+1         -0.30832        3.80920       -0.94138
+1          1.02842        4.59771       -0.02794
+1          0.26081       -3.80787       -0.95059
+1         -1.07446       -4.59766       -0.03616
+1          0.26927       -3.81670        0.87351
+8         -1.08290       -2.56518       -0.02637
+8          1.03705        2.56532       -0.02178
+1         -9.20048       -0.21870        0.06935
+1          9.11758        0.24658       -0.04190
 &endcoord
 
 &veloc

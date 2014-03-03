@@ -54,9 +54,9 @@ if (calc_Z) then
         if(solvent_model.gt.0) then
         tmp=0.d0
         if (potential_type.eq.3) then !COSMO Potential
-        call VxiM(qm2ds%eta_tz,tmp); tmp=2.d0*tmp
+        call VxiM(qm2ds%eta_tz,tmp); !tmp=2.d0*tmp
         elseif (potential_type.eq.2) then !Onsager Potential
-        call rcnfld(tmp,qm2ds%eta_tz,qm2ds%nb); tmp=2.d0*tmp 
+        call rcnfld(tmp,qm2ds%eta_tz,qm2ds%nb); !tmp=2.d0*tmp 
         end if
         call VxiM_end(qm2ds%tz_scratch(1),tmp); !Add selected potential to vacuum correlation
         endif
@@ -82,9 +82,9 @@ if (calc_Z) then
 if((solvent_model.eq.1).or.(solvent_model.eq.5)) then ![V_s(xi),rho_0]
         tmp=0.d0;
         if (potential_type.eq.3) then !COSMO Potential
-        call VxiM(qm2ds%tz_scratch(1),tmp); tmp=2.d0*tmp
+        call VxiM(qm2ds%tz_scratch(1),tmp); !tmp=2.d0*tmp
         elseif (potential_type.eq.2) then !Onsager Potential
-        call rcnfld(tmp,qm2ds%tz_scratch(1),qm2ds%nb); tmp=2.d0*tmp
+        call rcnfld(tmp,qm2ds%tz_scratch(1),qm2ds%nb); !tmp=2.d0*tmp
         end if
         call VxiM_end(qm2ds%eta_tz,tmp); !Add selected potential potential to vacuum correlation
 !else if (solvent_model.eq.4) then !4: State Specific Solvent Model with [V_s(T+Z),rho_0]**

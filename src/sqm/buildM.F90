@@ -41,15 +41,14 @@ subroutine Lxi_testing(u1,v1,solvent_model)
    call Vxi(qm2ds%xi,qm2ds%eta); !Calculate Vacuum Electron Correlation
    !!SELECT SOLVENT MODEL AND POTENTIAL TYPE
    if ((solvent_model.eq.1).or.(solvent_model.eq.99)) then !1:Linear Response,99:Z-vector eq.
-        !Commutator is not necessary here because it is performed below after
-        !rotation to M.O. basis
         tmp=0.d0;
         if (potential_type.eq.3) then !COSMO Potential
         call VxiM(qm2ds%xi,tmp);
-        tmp=2*tmp 
+	!There is already a factor of two in this for some reason, so the factor of two below has been removed
+        !tmp=2.0*tmp !Factor of two for the commutator with rho_0 
         elseif (potential_type.eq.2) then !Onsager Potential
         call rcnfld(tmp,qm2ds%xi,qm2ds%nb)
-        tmp=2*tmp
+        !tmp=2.0*tmp
         elseif (potential_type.eq.1) then !testing
         do i=1,qm2ds%nb; tmp(i,i)=qm2ds%eta(qm2ds%nb*(i-1)+i); enddo !double diag vac correlation
         endif         
@@ -58,7 +57,7 @@ subroutine Lxi_testing(u1,v1,solvent_model)
         !Commutator is performed here for State Specific Solvent Routines
         call commutator(v_solvent_difdens,qm2ds%xi,qm2ds%Nb,tmp,.false.)
         if (solvent_model.eq.4) then !4: State Specific Solvent Model with [V_s(T+Z),rho_0]**
-        tmp=tmp+2*v_solvent_difdens
+        tmp=tmp+2*v_solvent_difdens 
         endif
         call VxiM_end(qm2ds%eta,tmp)
    elseif((solvent_model.eq.3).or.(solvent_model.eq.5)) then !3: State Specific [V_s(xi),xi]
@@ -83,7 +82,7 @@ subroutine Lxi_testing(u1,v1,solvent_model)
         call VxiM_end(qm2ds%eta,tmp)
    endif
    
-   !add constant electric field potential
+   !add constant electric field potential [V_EF,xi]
    if(EF.eq.2) then!Constant Electric Field in ES onl
         !write(6,*)'Using Constant EF in Excited State only'
         tmp=0.d0; tmp2=0.d0
@@ -140,7 +139,7 @@ subroutine VxiM(xi,Vximmat)
   	_REAL_ :: p(qm2ds%nb*(qm2ds%nb+1)/2),fcon,INFO
   	integer:: i,im,j
 
-  	fcon=a0*ev
+  	fcon=fepsi*a0*ev !scaling factor
   	call packing(qm2ds%nb,xi,p,'s') !Note that the factor of two for diagonal elements which happens in this subroutine is corrected for by gden
   	! FIRST CALCULATE QDENEL FROM DENSITY MATRIX
   	! gden is -2 for diagonal and -1 for nondiagonal
@@ -281,6 +280,7 @@ end subroutine
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 subroutine calc_cosmo_2()
         use qm2_davidson_module
+	!use communism
         use qmmm_module,only:qm2_struct,qmmm_struct;
         use cosmo_C, only: v_solvent_difdens, cosmo_scf_ftol,potential_type;
         use constants, only : ZERO
@@ -299,6 +299,7 @@ subroutine calc_cosmo_2()
         
         !Initial Davidson Call (in vacuum) and T+Z calcualtion
         call davidson();
+	!call do_sqm_and_davidson_update()
         calc_Z=.true.
         qmmm_struct%qm_mm_first_call = .false.
         qm2ds%eta(:)=0.d0 !Clearing
@@ -321,6 +322,7 @@ subroutine calc_cosmo_2()
         e0_0 = qm2ds%e0(qmmm_struct%state_of_interest); !save vacuum energy
         e0_k_1 = e0_0 !initial energy
         call davidson(); !first davidson call with solvent potential
+        !call do_sqm_and_davidson_update()
         e0_k = qm2ds%e0(qmmm_struct%state_of_interest); !save first solventenergy
 
         !Write header for SCF iterations
@@ -346,15 +348,16 @@ subroutine calc_cosmo_2()
 
                 !Calculate Solvent Potential
                 if(potential_type.eq.3) then !COSMO
-                call VxiM(qm2ds%eta,v_solvent_difdens);
+                	call VxiM(qm2ds%eta,v_solvent_difdens);
                 elseif(potential_type.eq.2) then!ONSAGER
-                call rcnfld(v_solvent_difdens,qm2ds%eta,qm2ds%Nb)
+                	call rcnfld(v_solvent_difdens,qm2ds%eta,qm2ds%Nb)
                 elseif(potential_type.eq.0) then!Straight Correlation
-                call Vxi(qm2ds%eta,v_solvent_difdens)
+                	call Vxi(qm2ds%eta,v_solvent_difdens)
                 endif
                 
                 e0_k_1 = e0_k !Save last transition energy
                 call davidson(); !Calculate new excited states
+                !call do_sqm_and_davidson_update() !to include in the groundstate
                 e0_k = qm2ds%e0(qmmm_struct%state_of_interest);
                 
                 write(6,111)k, e0_k ,e0_k-e0_0,abs(e0_k-e0_k_1), e0_k_1-e0_k ,cosmo_scf_ftol
@@ -762,7 +765,7 @@ subroutine rcnfldgrad_full(dxyz,p,n)
                 enddo
         enddo
         do j=1,3 !Translation
-           dxyz(j,:)=dxyz(j,:)-4*2*q_elec/numat*scaled(j) !E-E
+           dxyz(j,:)=dxyz(j,:)-2*q_elec/numat*scaled(j) !E-E
         enddo
 end subroutine
 

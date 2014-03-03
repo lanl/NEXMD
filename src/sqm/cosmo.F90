@@ -65,841 +65,842 @@ endif
    s1=0.d0
    s3=0.d0
    do i=1,nps
-      iat=iatsp(i)
-      qscnet(i,2)=-fepsi*qscnet(i,2) ! scaling with COSMO factor
-      qsc3=qscnet(i,1)+qscnet(i,2) ! core + electrons
-      qscnet(i,3)=qsc3 ! SAS charge due to cores and electrons
-      ediel=ediel+qsc3*phinet(i,3) ! dielectric energy
-      s1=s1+qscnet(i,1) ! total SAS charge due to cores
-      s3=s3+qsc3 ! total SAS charge due to electrons
-      qscat(iat)=qscat(iat)+qsc3 ! total SAS charge per atom
-    end do
-    ediel=ediel*fcon/2
-   ! NOW ADD BMAT*QSCEL TO FOCK MATRIX
-   do i=1,lm61
-      im=ipiden(i)
-      fim=0.d0
-      do j=1,nps
-         fim=fim+bmat(i,j)*qscnet(j,2)
-      end do
-      f(im)=f(im)-fcon*fim !in eV
-   end do
-   return
-end subroutine addfck
+	iat=iatsp(i)
+	qscnet(i,2)=-fepsi*qscnet(i,2) ! scaling with COSMO factor
+	qsc3=qscnet(i,1)+qscnet(i,2) ! core + electrons
+	qscnet(i,3)=qsc3 ! SAS charge due to cores and electrons
+	ediel=ediel+qsc3*phinet(i,3) ! dielectric energy
+	s1=s1+qscnet(i,1) ! total SAS charge due to cores
+	s3=s3+qsc3 ! total SAS charge due to electrons
+	qscat(iat)=qscat(iat)+qsc3 ! total SAS charge per atom
+	end do
+	ediel=ediel*fcon/2
+	! NOW ADD BMAT*QSCEL TO FOCK MATRIX
+	do i=1,lm61
+im=ipiden(i)
+	fim=0.d0
+	do j=1,nps
+fim=fim+bmat(i,j)*qscnet(j,2)
+	end do
+	f(im)=f(im)-fcon*fim !in eV
+	end do
+	return
+	end subroutine addfck
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-!  Solving the system of linear equations using
-!  Cholesky factorization from coscl1 now stored in a
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	!  Solving the system of linear equations using
+	!  Cholesky factorization from coscl1 now stored in a
+	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 subroutine coscl2(a, id, x, y, n)
-   ! THIS ROUTINE SOLVES THE LINEAR SYSTEM CX = Y BASED ON
-   ! CHOLESKY FACTORIZATION
-   ! INPUT:   A =  UPPER TRIANGLE OF CHOLESKY MATRIX
-   ! INPUT:   Y =  VECTOR OF LENGTH N
-   !         ID =  INTEGER VECTOR OF LENGTH N CONTAINING THE INDICES I(I-1)
-   ! OUTPUT:  X =  VECTOR OF LENGTH N
-    implicit none
-    integer, intent (in) :: n
-    double precision, dimension (*), intent (in) :: a
-    integer, dimension (n), intent (in) :: id
-    double precision, dimension (n), intent (inout) :: x
-    double precision, dimension (n), intent (in) :: y
-    integer :: i, k, kk
-    double precision :: summe
-if(1==1) then !Make sure to use LAPACK in coscl1 as well
-  x=y
-  call  DPPTRS( 'U', n, 1, a,  x, n, i ) !LAPACK subroutine for this operation
-else
-    do k = 1, n
-      summe = y(k)
-      kk = id(k)
-      do i = k - 1, 1, -1
-        summe = summe - a(i+kk) * x(i)
-      end do
-      x(k) = summe * a(k+kk)
-    end do
-    do k = n, 1, -1
-      summe = x(k)
-      do i = k + 1, n
-        summe = summe - a(k+id(i)) * x(i)
-      end do
-      x(k) = summe * a(k+id(k))
-    end do
-endif
-!write(6,*)x; pause
-end subroutine coscl2
+	! THIS ROUTINE SOLVES THE LINEAR SYSTEM CX = Y BASED ON
+	! CHOLESKY FACTORIZATION
+	! INPUT:   A =  UPPER TRIANGLE OF CHOLESKY MATRIX
+	! INPUT:   Y =  VECTOR OF LENGTH N
+!         ID =  INTEGER VECTOR OF LENGTH N CONTAINING THE INDICES I(I-1)
+	! OUTPUT:  X =  VECTOR OF LENGTH N
+	implicit none
+	integer, intent (in) :: n
+	double precision, dimension (*), intent (in) :: a
+	integer, dimension (n), intent (in) :: id
+	double precision, dimension (n), intent (inout) :: x
+	double precision, dimension (n), intent (in) :: y
+	integer :: i, k, kk
+	double precision :: summe
+	if(1==1) then !Make sure to use LAPACK in coscl1 as well
+	x=y
+	call  DPPTRS( 'U', n, 1, a,  x, n, i ) !LAPACK subroutine for this operation
+	else
+	do k = 1, n
+	summe = y(k)
+kk = id(k)
+	do i = k - 1, 1, -1
+summe = summe - a(i+kk) * x(i)
+	end do
+x(k) = summe * a(k+kk)
+	end do
+	do k = n, 1, -1
+summe = x(k)
+	do i = k + 1, n
+summe = summe - a(k+id(i)) * x(i)
+	end do
+x(k) = summe * a(k+id(k))
+	end do
+	endif
+	!write(6,*)x; pause
+	end subroutine coscl2
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-!  addhcr adds the dielectric corrections for the electron-core
-!  interaction to the diagonal elements of H
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	!  addhcr adds the dielectric corrections for the electron-core
+	!  interaction to the diagonal elements of H
+	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 subroutine addhcr(h)
-    !use molkst_C, only: lm61
-    !use funcon_C, only: a0, ev
-    use cosmo_C, only : nps, bmat, qscnet, ipiden, &
-      lm61,a0,ev,mpack
-   ! use common_arrays_C, only : h ! one-electron part
-    
-   implicit none
+	!use molkst_C, only: lm61
+	!use funcon_C, only: a0, ev
+	use cosmo_C, only : nps, bmat, qscnet, ipiden, &
+	lm61,a0,ev,mpack
+	! use common_arrays_C, only : h ! one-electron part
 
-   real(8) h(mpack) ! single-electron matrix
+	implicit none
 
-   integer i,im,j
-   real(8) fcon,him
+	real(8) h(mpack) ! single-electron matrix
 
-   fcon=a0*ev
+	integer i,im,j
+	real(8) fcon,him
 
-    do i = 1, lm61
-      im = ipiden(i)
-      him = 0.d0
-      do j = 1, nps
-        him = him + bmat(i, j) * qscnet(j, 1) 
-      end do
-      h(im) = h(im) - fcon * him 
-    end do
-   return
-end subroutine addhcr
+	fcon=a0*ev
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-!COSMO NUCLEAR INTERACTION TERM AND GENERATION OF NUCLEAR CAVITY CHARGES
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	do i = 1, lm61
+im = ipiden(i)
+	him = 0.d0
+	do j = 1, nps
+him = him + bmat(i, j) * qscnet(j, 1) 
+	end do
+	h(im) = h(im) - fcon * him 
+	end do
+	return
+	end subroutine addhcr
+
+	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	!COSMO NUCLEAR INTERACTION TERM AND GENERATION OF NUCLEAR CAVITY CHARGES
+	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 subroutine addnuc(enuclr)
-!
-!********************************************************************
-!
-!  Correction to core-core interaction energy
-!  due to the presence of the cavity
-!
-!  As a byproduct it calculates SAS charge due to cores, qcnet(:,1),
-!  which is later used for constructing single-electron
-!  part of the Fock operator
-!
-!  How it works:
-!  bmat (B matrix) was primarily designed for interaction of SAS tiles
-!  with one-center electronic densities. However, it can also be used
-!  for ineraction of cores with SAS tiles, but to do that you have
-!  to put atomic charges to ss densities to have monopole contribution
-!  only. idenat indexes those ss places within the entire one-center
-!  density array.
-!
-!********************************************************************
-!
-   !use molkst_C, only: numat, lm61, enuclr
-   !use funcon_C, only: a0, ev
-   !use common_arrays_c, only : nat
-   use cosmo_C, only : nps, fepsi, &
-      amat, bmat, nsetf, phinet, qscnet, qdenet, idenat, &
-      numat,lm61,a0,ev
+	!
+	!********************************************************************
+	!
+	!  Correction to core-core interaction energy
+	!  due to the presence of the cavity
+	!
+	!  As a byproduct it calculates SAS charge due to cores, qcnet(:,1),
+	!  which is later used for constructing single-electron
+	!  part of the Fock operator
+	!
+	!  How it works:
+	!  bmat (B matrix) was primarily designed for interaction of SAS tiles
+	!  with one-center electronic densities. However, it can also be used
+	!  for ineraction of cores with SAS tiles, but to do that you have
+	!  to put atomic charges to ss densities to have monopole contribution
+	!  only. idenat indexes those ss places within the entire one-center
+	!  density array.
+	!
+	!********************************************************************
+	!
+	!use molkst_C, only: numat, lm61, enuclr
+	!use funcon_C, only: a0, ev
+	!use common_arrays_c, only : nat
+	use cosmo_C, only : nps, fepsi, &
+	amat, bmat, nsetf, phinet, qscnet, qdenet, idenat, &
+	numat,lm61,a0,ev
 
-   use qmmm_module,only:qm2_params,qmmm_struct,qmmm_nml
+	use qmmm_module,only:qm2_params,qmmm_struct,qmmm_nml
 
-   !use parameters_C, only: tore
+	!use parameters_C, only: tore
 
-   implicit none
-   real(8) enuclr
-   integer i,j,ips;
-   real(8) enclr, fcon, phi
-   _REAL_, dimension(:,:), allocatable :: A;
-   integer, dimension(:), allocatable :: IPIV;
-   integer INFO;
-   if (qmmm_nml%verbosity > 4) print*,'cosmo_call addnuc'
-   !print*,' COSMO addnuc: dielectric corrections to the core-core interaction'
- 
-   ! FIRST CALCULATE QDENNUC
-   fcon=a0*ev
+	implicit none
+	real(8) enuclr
+	integer i,j,ips;
+	real(8) enclr, fcon, phi
+	_REAL_, dimension(:,:), allocatable :: A;
+	integer, dimension(:), allocatable :: IPIV;
+	integer INFO;
+	if (qmmm_nml%verbosity > 4) print*,'cosmo_call addnuc'
+	!print*,' COSMO addnuc: dielectric corrections to the core-core interaction'
 
-   do i=1,lm61
-      qdenet(i,1)=0
-   end do
+	! FIRST CALCULATE QDENNUC
+	fcon=a0*ev
 
-   do i=1,numat
-      !qdenet(idenat(i), 1) = tore(nat(i))
-      qdenet(idenat(i),1)=qm2_params%core_chg(i) ! kav substitution
-      ! qdenet(:,1) contains core charges only in places
-      ! corresponding to monopole contributions to one-center densities,
-      ! i.e., ss
-   end do
-         
-   ! NOW CALCULATE PHINUC AS BMAT*QDENUC
-   ! phinet(:,1) contains the potential at position of SAS tiles
-   ! generated by atomic cores treated as monopoles
-   do i=1,nps
-      phi=0.d0
-      do j=1,lm61
-         phi=phi+bmat(j,i)*qdenet(j,1)
-      end do
-      phinet(i,1)=phi
-   end do
+	do i=1,lm61
+	qdenet(i,1)=0
+	end do
 
-   ! NOW CALCULATE QSCNUC FROM  AMAT*QSCNUC=PHINUC
-if (1==1) then
-   call coscl2(amat,nsetf,qscnet(1,1),phinet(1,1),nps)
-else
-    allocate(A(nps,nps),IPIV(nps));
-    do i=1,nps
-  do j=1,i
-        A(i,j)=amat((i-1)*i/2+j);
-        A(j,i)=A(i,j);
-      end do
-      qscnet(i,1)=phinet(i,1);
-    end do
-    i=1;
-    CALL DGESV(nps,i,A,nps,IPIV,qscnet(1,1),nps,INFO);
-    deallocate(A,IPIV)
-endif
+	do i=1,numat
+!qdenet(idenat(i), 1) = tore(nat(i))
+	qdenet(idenat(i),1)=qm2_params%core_chg(i) ! kav substitution
+	! qdenet(:,1) contains core charges only in places
+	! corresponding to monopole contributions to one-center densities,
+	! i.e., ss
+	end do
 
-   ! SCALE QSCNUC AND CALCULATE INTERACTION ENERGY
-   enclr=0.d0
-   do i=1,nps
-      qscnet(i,1)=-fepsi*qscnet(i,1)
-      enclr=enclr+qscnet(i,1)*phinet(i,1)
-   end do
+	! NOW CALCULATE PHINUC AS BMAT*QDENUC
+	! phinet(:,1) contains the potential at position of SAS tiles
+	! generated by atomic cores treated as monopoles
+	do i=1,nps
+	phi=0.d0
+	do j=1,lm61
+phi=phi+bmat(j,i)*qdenet(j,1)
+	end do
+	phinet(i,1)=phi
+	end do
 
-   enuclr=enuclr+fcon*enclr/2
+	! NOW CALCULATE QSCNUC FROM  AMAT*QSCNUC=PHINUC
+	if (1==1) then
+call coscl2(amat,nsetf,qscnet(1,1),phinet(1,1),nps)
+	else
+	allocate(A(nps,nps),IPIV(nps));
+	do i=1,nps
+	do j=1,i
+	A(i,j)=amat((i-1)*i/2+j);
+	A(j,i)=A(i,j);
+	end do
+	qscnet(i,1)=phinet(i,1);
+	end do
+	i=1;
+	CALL DGESV(nps,i,A,nps,IPIV,qscnet(1,1),nps,INFO);
+deallocate(A,IPIV)
+	endif
 
-   return
-end subroutine addnuc
+	! SCALE QSCNUC AND CALCULATE INTERACTION ENERGY
+	enclr=0.d0
+	do i=1,nps
+	qscnet(i,1)=-fepsi*qscnet(i,1)
+enclr=enclr+qscnet(i,1)*phinet(i,1)
+	end do
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-!COSMO GRADIENT TERM USING ONE SET OF CHARGES STORED IN MODULE
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	enuclr=enuclr+fcon*enclr/2
+
+	return
+	end subroutine addnuc
+
+	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	!COSMO GRADIENT TERM USING ONE SET OF CHARGES STORED IN MODULE
+	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 subroutine diegrd(dxyz)
 
-    use cosmo_C, only: nps, fepsi, nipc, &
-     cosurf, iatsp, isude, sude, qscnet, &
-    qdenet, qscat, arat,numat,ev, a0
-    use constants, only: EV_TO_KCAL
-    !use parameters_C, only: dd, qq
-    !use common_arrays_c, only : coord, nfirst, nlast, nat
-    use qmmm_module,only:qm2_params,qmmm_struct,qmmm_nml
-    implicit none
+	use cosmo_C, only: nps, fepsi, nipc, &
+	cosurf, iatsp, isude, sude, qscnet, &
+	qdenet, qscat, arat,numat,ev, a0
+	use constants, only: EV_TO_KCAL
+	!use parameters_C, only: dd, qq
+	!use common_arrays_c, only : coord, nfirst, nlast, nat
+	use qmmm_module,only:qm2_params,qmmm_struct,qmmm_nml
+	implicit none
 
-    integer :: i, ia, iak, ial, ib, idel, iden, ix, j, k, l, nati, iii
-    double precision :: bsurf, ddi, deab, dist2, dx, fact, ff, ff0, &
-   & qqi2, qsk, rm2, rm4, xxx
-    double precision, dimension (3) :: xk, xl, xx
-    double precision, dimension (0:3, 10) :: db
-    double precision, dimension (3,numat), intent (inout) :: dxyz
-    intrinsic Min, Sqrt
-    if (qmmm_nml%verbosity > 4) print*,'cosmo_call diegrd'
+	integer :: i, ia, iak, ial, ib, idel, iden, ix, j, k, l, nati, iii
+	double precision :: bsurf, ddi, deab, dist2, dx, fact, ff, ff0, &
+	& qqi2, qsk, rm2, rm4, xxx
+	double precision, dimension (3) :: xk, xl, xx
+	double precision, dimension (0:3, 10) :: db
+	double precision, dimension (3,numat), intent (inout) :: dxyz
+	intrinsic Min, Sqrt
+	if (qmmm_nml%verbosity > 4) print*,'cosmo_call diegrd'
 
-    do i = 1, 10
-      do ix = 1, 3
-        db(ix, i) = 0.d0
-      end do
-    end do
-    db(0, 1) = 1.d0
-    fact = -ev * a0 * EV_TO_KCAL
+	do i = 1, 10
+	do ix = 1, 3
+	db(ix, i) = 0.d0
+	end do
+	end do
+	db(0, 1) = 1.d0
+	fact = -ev * a0 * EV_TO_KCAL
 
-!Calculate q*del(A)*q
-    do k = 1, nps
-      iak = iatsp(k)
-      do ix = 1, 3
-        xk(ix) = cosurf(ix, k)
-      end do
-      qsk = qscnet(k, 3)
-      do l = 1, k - 1
-        ial = iatsp(l)
-        if (ial /= iak) then
-          dist2 = 0.d0
-          do ix = 1, 3
-            xxx = cosurf(ix, l) - xk(ix)
-            xl(ix) = xxx
-            dist2 = dist2 + xxx * xxx
-          end do
-          ff = qsk * qscnet(l, 3) * fact * dist2 ** (-1.5d0) / fepsi
-          do ix = 1, 3
-            dxyz(ix, iak) = dxyz(ix, iak) - xl(ix) * ff
-            dxyz(ix, ial) = dxyz(ix, ial) + xl(ix) * ff
-          end do
-        end if
-      end do
-    end do
-!Surface Closure
-    !bsurf = 0.d0
-    !do i = 1, nipc
-    !  ia = isude(1, i)
-    !  ib = isude(2, i)
-    !  deab = -0.25d0 * (qscat(ia)**2*sude(1, i)/arat(ia)+qscat(ib)**2*sude(2, &
-    ! & i)/arat(ib)+bsurf*(sude(1, i)+sude(2, i)))
-    !  xk(1) = qmmm_struct%qm_coords(1, ib) - qmmm_struct%qm_coords(1, ia)
-    !  xk(2) = qmmm_struct%qm_coords(2, ib) - qmmm_struct%qm_coords(2, ia)
-    !  xk(3) = qmmm_struct%qm_coords(3, ib) - qmmm_struct%qm_coords(3, ia)
-    !  deab = deab / Sqrt (xk(1)**2+xk(2)**2+xk(3)**2)
-    !  do ix = 1, 3
-    !    dxyz(ix, ia) = dxyz(ix, ia) - xk(ix) * deab
-    !    dxyz(ix, ib) = dxyz(ix, ib) + xk(ix) * deab
-    !  end do
-    !end do
+	!Calculate q*del(A)*q
+	do k = 1, nps
+iak = iatsp(k)
+	do ix = 1, 3
+xk(ix) = cosurf(ix, k)
+	end do
+qsk = qscnet(k, 3)
+	do l = 1, k - 1
+ial = iatsp(l)
+	if (ial /= iak) then
+	dist2 = 0.d0
+	do ix = 1, 3
+xxx = cosurf(ix, l) - xk(ix)
+	xl(ix) = xxx
+	dist2 = dist2 + xxx * xxx
+	end do
+	ff = qsk * qscnet(l, 3) * fact * dist2 ** (-1.5d0) / fepsi
+	do ix = 1, 3
+	dxyz(ix, iak) = dxyz(ix, iak) - xl(ix) * ff
+	dxyz(ix, ial) = dxyz(ix, ial) + xl(ix) * ff
+	end do
+	end if
+	end do
+	end do
+	!Surface Closure
+	!bsurf = 0.d0
+	!do i = 1, nipc
+	!  ia = isude(1, i)
+!  ib = isude(2, i)
+	!  deab = -0.25d0 * (qscat(ia)**2*sude(1, i)/arat(ia)+qscat(ib)**2*sude(2, &
+				! & i)/arat(ib)+bsurf*(sude(1, i)+sude(2, i)))
+	!  xk(1) = qmmm_struct%qm_coords(1, ib) - qmmm_struct%qm_coords(1, ia)
+	!  xk(2) = qmmm_struct%qm_coords(2, ib) - qmmm_struct%qm_coords(2, ia)
+	!  xk(3) = qmmm_struct%qm_coords(3, ib) - qmmm_struct%qm_coords(3, ia)
+!  deab = deab / Sqrt (xk(1)**2+xk(2)**2+xk(3)**2)
+	!  do ix = 1, 3
+	!    dxyz(ix, ia) = dxyz(ix, ia) - xk(ix) * deab
+	!    dxyz(ix, ib) = dxyz(ix, ib) + xk(ix) * deab
+	!  end do
+	!end do
 
-!Calculate q*del(B)*Q
-   do k = 1, nps
-      iak = iatsp(k)                    !restore atom's number from cavity teseese.
-      do ix = 1, 3
-        xk(ix) = cosurf(ix, k)
-      end do
-      qsk = qscnet(k, 3)
-      iden = 0
-      do i = 1, numat
-        !idel = nlast(2,i)+1 - nfirst(1,i)
-        idel = qm2_params%orb_loc(2,i)+ 1 - qm2_params%orb_loc(1,i); !#orbs
-        if (i /= iak) then
-          !nati = nat(i)
-          nati=qmmm_struct%iqm_atomic_numbers(i);
-          dist2 = 0.d0
-          do ix = 1, 3
-            xxx = xk(ix) - qmmm_struct%qm_coords(ix, i)
-            xx(ix) = xxx
-            dist2 = dist2 + xxx * xxx
-          end do
-          ddi = qm2_params%multip_2c_elec_params(1,i) * a0
-          qqi2 = (a0*qm2_params%multip_2c_elec_params(2,i)) ** 2
-          ff0 = - qsk * fact * dist2 ** (-1.5d0)
-          if (idel .gt. 1) then
-            rm2 = 1.d0 / dist2
-            rm4 = rm2 ** 2
-            db(0, 2) = ddi * 3 * xx(1) * rm2
-            db(0, 4) = ddi * 3 * xx(2) * rm2
-            db(0, 7) = ddi * 3 * xx(3) * rm2
-            db(0, 3) = 1.d0 + qqi2 * (15*xx(1)**2*rm2-3.d0) * rm2
-            db(0, 6) = 1.d0 + qqi2 * (15*xx(2)**2*rm2-3.d0) * rm2
-            db(0, 10) = 1.d0 + qqi2 * (15*xx(3)**2*rm2-3.d0) * rm2
-            db(0, 5) = qqi2 * 15 * xx(1) * xx(2) * rm4
-            db(0, 8) = qqi2 * 15 * xx(1) * xx(3) * rm4
-            db(0, 9) = qqi2 * 15 * xx(3) * xx(2) * rm4
-            db(1, 2) = ddi
-            db(2, 4) = db(1, 2)
-            db(3, 7) = db(1, 2)
-            db(1, 3) = 6 * qqi2 * xx(1) * rm2
-            db(2, 6) = 6 * qqi2 * xx(2) * rm2
-            db(3, 10) = 6 * qqi2 * xx(3) * rm2
-            db(1, 5) = db(2, 6)
-            db(2, 5) = db(1, 3)
-            db(1, 8) = db(3, 10)
-            db(3, 8) = db(1, 3)
-            db(2, 9) = db(3, 10)
-            db(3, 9) = db(2, 6)
-          end if
-          do j = 1, min(10,(idel*(idel+1))/2)
-            ff = -ff0 * qdenet(iden+j, 3)
-            if(j.eq.1 .and. idel.eq.9) then
-              do iii=5,9
-                ff = ff-ff0 * qdenet(iden+(iii*(iii+1))/2, 3)
-              end do
-            end if
-            do ix = 1, 3
-              dx = (xx(ix)*db(0, j)-db(ix, j)) * ff
-              dxyz(ix, iak) = dxyz(ix, iak) + dx
-              dxyz(ix, i) = dxyz(ix, i) - dx
-            end do
-          end do
-        end if
-        iden = iden + (idel*(idel+1))/2
-      end do
-    end do
-end subroutine diegrd
+	!Calculate q*del(B)*Q
+	do k = 1, nps
+	iak = iatsp(k)                    !restore atom's number from cavity teseese.
+	do ix = 1, 3
+xk(ix) = cosurf(ix, k)
+	end do
+qsk = qscnet(k, 3)
+	iden = 0
+	do i = 1, numat
+!idel = nlast(2,i)+1 - nfirst(1,i)
+	idel = qm2_params%orb_loc(2,i)+ 1 - qm2_params%orb_loc(1,i); !#orbs
+	if (i /= iak) then
+!nati = nat(i)
+	nati=qmmm_struct%iqm_atomic_numbers(i);
+	dist2 = 0.d0
+	do ix = 1, 3
+xxx = xk(ix) - qmmm_struct%qm_coords(ix, i)
+	xx(ix) = xxx
+	dist2 = dist2 + xxx * xxx
+	end do
+	ddi = qm2_params%multip_2c_elec_params(1,i) * a0
+	qqi2 = (a0*qm2_params%multip_2c_elec_params(2,i)) ** 2
+ff0 = - qsk * fact * dist2 ** (-1.5d0)
+	if (idel .gt. 1) then
+	rm2 = 1.d0 / dist2
+	rm4 = rm2 ** 2
+	db(0, 2) = ddi * 3 * xx(1) * rm2
+	db(0, 4) = ddi * 3 * xx(2) * rm2
+	db(0, 7) = ddi * 3 * xx(3) * rm2
+	db(0, 3) = 1.d0 + qqi2 * (15*xx(1)**2*rm2-3.d0) * rm2
+	db(0, 6) = 1.d0 + qqi2 * (15*xx(2)**2*rm2-3.d0) * rm2
+	db(0, 10) = 1.d0 + qqi2 * (15*xx(3)**2*rm2-3.d0) * rm2
+	db(0, 5) = qqi2 * 15 * xx(1) * xx(2) * rm4
+	db(0, 8) = qqi2 * 15 * xx(1) * xx(3) * rm4
+	db(0, 9) = qqi2 * 15 * xx(3) * xx(2) * rm4
+	db(1, 2) = ddi
+	db(2, 4) = db(1, 2)
+db(3, 7) = db(1, 2)
+	db(1, 3) = 6 * qqi2 * xx(1) * rm2
+	db(2, 6) = 6 * qqi2 * xx(2) * rm2
+	db(3, 10) = 6 * qqi2 * xx(3) * rm2
+	db(1, 5) = db(2, 6)
+	db(2, 5) = db(1, 3)
+	db(1, 8) = db(3, 10)
+	db(3, 8) = db(1, 3)
+	db(2, 9) = db(3, 10)
+db(3, 9) = db(2, 6)
+	end if
+	do j = 1, min(10,(idel*(idel+1))/2)
+ff = -ff0 * qdenet(iden+j, 3)
+	if(j.eq.1 .and. idel.eq.9) then
+	do iii=5,9
+ff = ff-ff0 * qdenet(iden+(iii*(iii+1))/2, 3)
+	end do
+	end if
+	do ix = 1, 3
+	dx = (xx(ix)*db(0, j)-db(ix, j)) * ff
+	dxyz(ix, iak) = dxyz(ix, iak) + dx
+	dxyz(ix, i) = dxyz(ix, i) - dx
+	end do
+	end do
+	end if
+	iden = iden + (idel*(idel+1))/2
+	end do
+	end do
+	end subroutine diegrd
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !COSMO GRADIENT TERM WITH TWO SETS OF CHARGES, i.e. tr(F(rho)(T+Z))
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 subroutine diegrd2(dxyz,density2,charges2,acharges2)
-    !This subroutine calculated COSMO derivatives for terms with two different
-    !density matrices
-    !qdenet:one center charge from density matrix filled by addfock routine
-    !qscnet:cavity surface charges
-    !charges2:charges for second density matrix
-    !acharges2:same as above but coarsegrained to atoms
+	!This subroutine calculated COSMO derivatives for terms with two different
+	!density matrices
+	!qdenet:one center charge from density matrix filled by addfock routine
+	!qscnet:cavity surface charges
+	!charges2:charges for second density matrix
+	!acharges2:same as above but coarsegrained to atoms
 
-    use cosmo_C, only: nps, fepsi, nipc, &
-     cosurf, iatsp, isude, sude, qscnet, &
-    qdenet, qscat, arat,numat,ev, a0, lm61
-    use constants, only: EV_TO_KCAL
-    !use parameters_C, only: dd, qq
-    !use common_arrays_c, only : coord, nfirst, nlast, nat
-    use qmmm_module,only:qm2_params,qmmm_struct,qmmm_nml
-    implicit none
+	use cosmo_C, only: nps, fepsi, nipc, &
+	cosurf, iatsp, isude, sude, qscnet, &
+	qdenet, qscat, arat,numat,ev, a0, lm61
+	use constants, only: EV_TO_KCAL
+	!use parameters_C, only: dd, qq
+	!use common_arrays_c, only : coord, nfirst, nlast, nat
+	use qmmm_module,only:qm2_params,qmmm_struct,qmmm_nml
+	implicit none
 
-    integer :: i, ia, iak, ial, ib, idel, iden, ix, j, k, l, nati, iii
-    double precision :: bsurf, ddi, deab, dist2, dx, dxt, fact, ff, fft, ff0, ff0t, &
-   & qqi2, qsk, rm2, rm4, xxx
-    double precision, dimension (3) :: xk, xl, xx
-    double precision, dimension (0:3, 10) :: db
-    double precision, dimension (3,numat), intent (inout) :: dxyz
-    double precision, dimension (nps) :: charges2
-    double precision, dimension (numat) :: acharges2
-    double precision, dimension (lm61) :: density2
-    intrinsic Min, Sqrt
-    if (qmmm_nml%verbosity > 4) print*,'cosmo_call diegrd2'
+	integer :: i, ia, iak, ial, ib, idel, iden, ix, j, k, l, nati, iii
+	double precision :: bsurf, ddi, deab, dist2, dx, dxt, fact, ff, fft, ff0, ff0t, &
+	& qqi2, qsk, rm2, rm4, xxx
+	double precision, dimension (3) :: xk, xl, xx
+	double precision, dimension (0:3, 10) :: db
+	double precision, dimension (3,numat), intent (inout) :: dxyz
+	double precision, dimension (nps) :: charges2
+	double precision, dimension (numat) :: acharges2
+	double precision, dimension (lm61) :: density2
+	intrinsic Min, Sqrt
+	if (qmmm_nml%verbosity > 4) print*,'cosmo_call diegrd2'
 
-    do i = 1, 10
-      do ix = 1, 3
-        db(ix, i) = 0.d0
-      end do
-    end do
-    db(0, 1) = 1.d0
-    fact = -ev * a0 * EV_TO_KCAL
+	do i = 1, 10
+	do ix = 1, 3
+	db(ix, i) = 0.d0
+	end do
+	end do
+	db(0, 1) = 1.d0
+	fact = -ev * a0 * EV_TO_KCAL
 
-!Calculate q1*del(A)*q2=sum_n,m {q_n*q_m*del(A_n,m)} for n and m associated with different atoms
-    do k = 1, nps
-      iak = iatsp(k)
-      do ix = 1, 3
-        xk(ix) = cosurf(ix, k)
-      end do
-      do l = 1, nps
-        ial = iatsp(l)
-        if (ial /= iak) then
-          dist2 = 0.d0
-          do ix = 1, 3
-            xxx = xk(ix) - cosurf(ix, l)
-            xl(ix) = xxx
-            dist2 = dist2 + xxx * xxx
-          end do
-          !ff = qscnet(k,3) * (charges2(l)+qscnet(l,1)) * fact * dist2 ** (-1.5d0) / fepsi !Testing
-          !fft = (charges2(k)+qscnet(k,1)) * qscnet(l,3) * fact * dist2 ** (-1.5d0) / fepsi !Testing
-          ff = qscnet(k,3) * charges2(l) * fact * dist2 ** (-1.5d0) / fepsi
-          fft = charges2(k)  * qscnet(l,3) * fact * dist2 ** (-1.5d0) / fepsi
-          !write(6,*)k,l,ial,iak,ff
-          do ix= 1,3
-            dxyz(ix, iak) = dxyz(ix, iak) + xl(ix) * (ff+fft) 
-          end do
-        end if
-      end do
-    end do
-!write(6,*)dxyz
-!write(6,*)'charges2:',sum(charges2+qscnet(:,1)-qscnet(:,3))
+	!Calculate q1*del(A)*q2=sum_n,m {q_n*q_m*del(A_n,m)} for n and m associated with different atoms
+	do k = 1, nps
+iak = iatsp(k)
+	do ix = 1, 3
+xk(ix) = cosurf(ix, k)
+	end do
+	do l = 1, nps
+ial = iatsp(l)
+	if (ial /= iak) then
+	dist2 = 0.d0
+	do ix = 1, 3
+xxx = xk(ix) - cosurf(ix, l)
+	xl(ix) = xxx
+	dist2 = dist2 + xxx * xxx
+	end do
+	!ff = qscnet(k,3) * (charges2(l)+qscnet(l,1)) * fact * dist2 ** (-1.5d0) / fepsi !Testing
+	!fft = (charges2(k)+qscnet(k,1)) * qscnet(l,3) * fact * dist2 ** (-1.5d0) / fepsi !Testing
+	ff = qscnet(k,3) * charges2(l) * fact * dist2 ** (-1.5d0) / fepsi
+	fft = charges2(k)  * qscnet(l,3) * fact * dist2 ** (-1.5d0) / fepsi
+	!write(6,*)k,l,ial,iak,ff
+	do ix= 1,3
+dxyz(ix, iak) = dxyz(ix, iak) + xl(ix) * (ff+fft) 
+	end do
+	end if
+	end do
+	end do
+	!write(6,*)dxyz
+	!write(6,*)'charges2:',sum(charges2+qscnet(:,1)-qscnet(:,3))
 
-!Correction for cavity area?? qscat is charges associated with atoms. sude
-!involves derivatives of cavity area wrt atomic positions
-!modify for ES der through qscat?  !!JAB This contribution is very small
-    !bsurf = 0.d0
-    !do i = 1, nipc
-    !  ia = isude(1, i)
-    !  ib = isude(2, i)
-    !  deab = -0.25d0 * ((acharges2(ia)*qscat(ia))*sude(1,i)/arat(ia)+(acharges2(ib)*qscat(ib))*sude(2, &
-    ! & i)/arat(ib)+bsurf*(sude(1, i)+sude(2, i)))
-    !  xk(1) = qmmm_struct%qm_coords(1, ib) - qmmm_struct%qm_coords(1, ia)
-    !  xk(2) = qmmm_struct%qm_coords(2, ib) - qmmm_struct%qm_coords(2, ia)
-    !  xk(3) = qmmm_struct%qm_coords(3, ib) - qmmm_struct%qm_coords(3, ia)
-    !  deab = deab / Sqrt (xk(1)**2+xk(2)**2+xk(3)**2)
-    !  !write(6,*)'testing surface derivative',xk*deab
-    !  do ix = 1, 3
-    !    dxyz(ix, ia) = dxyz(ix, ia) - xk(ix) * deab
-    !    dxyz(ix, ib) = dxyz(ix, ib) + xk(ix) * deab
-    !  end do
-    !end do
+	!Correction for cavity area?? qscat is charges associated with atoms. sude
+	!involves derivatives of cavity area wrt atomic positions
+	!modify for ES der through qscat?  !!JAB This contribution is very small
+	!bsurf = 0.d0
+	!do i = 1, nipc
+	!  ia = isude(1, i)
+!  ib = isude(2, i)
+	!  deab = -0.25d0 * ((acharges2(ia)*qscat(ia))*sude(1,i)/arat(ia)+(acharges2(ib)*qscat(ib))*sude(2, &
+				! & i)/arat(ib)+bsurf*(sude(1, i)+sude(2, i)))
+	!  xk(1) = qmmm_struct%qm_coords(1, ib) - qmmm_struct%qm_coords(1, ia)
+	!  xk(2) = qmmm_struct%qm_coords(2, ib) - qmmm_struct%qm_coords(2, ia)
+	!  xk(3) = qmmm_struct%qm_coords(3, ib) - qmmm_struct%qm_coords(3, ia)
+!  deab = deab / Sqrt (xk(1)**2+xk(2)**2+xk(3)**2)
+	!  !write(6,*)'testing surface derivative',xk*deab
+	!  do ix = 1, 3
+	!    dxyz(ix, ia) = dxyz(ix, ia) - xk(ix) * deab
+	!    dxyz(ix, ib) = dxyz(ix, ib) + xk(ix) * deab
+	!  end do
+	!end do
 
-!Calculate q1*del(B)*Q2+Q1*del(B)*q2
-   do k = 1, nps
-      iak = iatsp(k)
-      do ix = 1, 3
-        xk(ix) = cosurf(ix, k)
-      end do
-      iden = 0
-      do i = 1, numat
-        !idel = nlast(2,i)+1 - nfirst(1,i)
-        idel = qm2_params%orb_loc(2,i)+ 1 - qm2_params%orb_loc(1,i); !#orbs
-        if (i /= iak) then
-          !nati = nat(i)
-          nati=qmmm_struct%iqm_atomic_numbers(i);
-          dist2 = 0.d0
-          do ix = 1, 3
-            xxx = cosurf(ix, k) - qmmm_struct%qm_coords(ix, i)
-            xx(ix) = xxx
-            dist2 = dist2 + xxx * xxx
-          end do
-          ddi = qm2_params%multip_2c_elec_params(1,i) * a0
-          qqi2 = (a0*qm2_params%multip_2c_elec_params(2,i)) ** 2
-          ff0 = - qscnet(k, 3) * fact * dist2 ** (-1.5d0)
-          ff0t= - charges2(k) * fact * dist2 ** (-1.5d0) !JAB sec term
-          !ff0t= - (charges2(k)+qscnet(k,1)) * fact * dist2 ** (-1.5d0) !testing sec term
-          if (idel .gt. 1) then
-            rm2 = 1.d0 / dist2
-            rm4 = rm2 ** 2
-            db(0, 2) = ddi * 3 * xx(1) * rm2
-            db(0, 4) = ddi * 3 * xx(2) * rm2
-            db(0, 7) = ddi * 3 * xx(3) * rm2
-            db(0, 3) = 1.d0 + qqi2 * (15*xx(1)**2*rm2-3.d0) * rm2
-            db(0, 6) = 1.d0 + qqi2 * (15*xx(2)**2*rm2-3.d0) * rm2
-            db(0, 10) = 1.d0 + qqi2 * (15*xx(3)**2*rm2-3.d0) * rm2
-            db(0, 5) = qqi2 * 15 * xx(1) * xx(2) * rm4
-            db(0, 8) = qqi2 * 15 * xx(1) * xx(3) * rm4
-            db(0, 9) = qqi2 * 15 * xx(3) * xx(2) * rm4
-            db(1, 2) = ddi
-            db(2, 4) = db(1, 2)
-            db(3, 7) = db(1, 2)
-            db(1, 3) = 6 * qqi2 * xx(1) * rm2
-            db(2, 6) = 6 * qqi2 * xx(2) * rm2
-            db(3, 10) = 6 * qqi2 * xx(3) * rm2
-            db(1, 5) = db(2, 6)
-            db(2, 5) = db(1, 3)
-            db(1, 8) = db(3, 10)
-            db(3, 8) = db(1, 3)
-            db(2, 9) = db(3, 10)
-            db(3, 9) = db(2, 6)
-          end if
-          do j = 1, min(10,(idel*(idel+1))/2)
-            ff = -ff0 * density2(iden+j) !fir term
-            !ff = - ff0 * (density2(iden+j) + qdenet(iden+j,1)) !testing
-            fft = - ff0t * qdenet(iden+j, 3) !sec term
-            !if(j.eq.1 .and. idel.eq.9) then !this if block is for d-orbitals
-            !  do iii=5,9
-            !    fft = fft-ff0t * qdenet(iden+(iii*(iii+1))/2, 3) !fir term
-            !    ff= ff-ff0 * density2(iden+(iii*(iii+1))/2) !sec term
-            !    !ff= ff-ff0 * (density2(iden+(iii*(iii+1))/2) + qdenet(iden+(iii*(iii+1))/2,1)) !testing
-            !  end do
-            !end if
-            do ix = 1, 3
-              dx = (xx(ix)*db(0, j)-db(ix, j)) * (ff + fft) 
-              dxyz(ix, iak) = dxyz(ix, iak) + dx
-              dxyz(ix, i) = dxyz(ix, i) - dx
-            end do
-            !write(6,*)'testing surface B derivative:',dx
-          end do
-          !write(6,*)'TEST',dxyz
-        end if
-        iden = iden + (idel*(idel+1))/2
-      end do
-    end do
-end subroutine diegrd2
+	!Calculate q1*del(B)*Q2+Q1*del(B)*q2
+	do k = 1, nps
+iak = iatsp(k)
+	do ix = 1, 3
+xk(ix) = cosurf(ix, k)
+	end do
+	iden = 0
+	do i = 1, numat
+!idel = nlast(2,i)+1 - nfirst(1,i)
+	idel = qm2_params%orb_loc(2,i)+ 1 - qm2_params%orb_loc(1,i); !#orbs
+	if (i /= iak) then
+!nati = nat(i)
+	nati=qmmm_struct%iqm_atomic_numbers(i);
+	dist2 = 0.d0
+	do ix = 1, 3
+xxx = cosurf(ix, k) - qmmm_struct%qm_coords(ix, i)
+	xx(ix) = xxx
+	dist2 = dist2 + xxx * xxx
+	end do
+	ddi = qm2_params%multip_2c_elec_params(1,i) * a0
+	qqi2 = (a0*qm2_params%multip_2c_elec_params(2,i)) ** 2
+ff0 = - qscnet(k, 3) * fact * dist2 ** (-1.5d0)
+	ff0t= - charges2(k) * fact * dist2 ** (-1.5d0) !JAB sec term
+	!ff0t= - (charges2(k)+qscnet(k,1)) * fact * dist2 ** (-1.5d0) !testing sec term
+	if (idel .gt. 1) then
+	rm2 = 1.d0 / dist2
+	rm4 = rm2 ** 2
+	db(0, 2) = ddi * 3 * xx(1) * rm2
+	db(0, 4) = ddi * 3 * xx(2) * rm2
+	db(0, 7) = ddi * 3 * xx(3) * rm2
+	db(0, 3) = 1.d0 + qqi2 * (15*xx(1)**2*rm2-3.d0) * rm2
+	db(0, 6) = 1.d0 + qqi2 * (15*xx(2)**2*rm2-3.d0) * rm2
+	db(0, 10) = 1.d0 + qqi2 * (15*xx(3)**2*rm2-3.d0) * rm2
+	db(0, 5) = qqi2 * 15 * xx(1) * xx(2) * rm4
+	db(0, 8) = qqi2 * 15 * xx(1) * xx(3) * rm4
+	db(0, 9) = qqi2 * 15 * xx(3) * xx(2) * rm4
+	db(1, 2) = ddi
+	db(2, 4) = db(1, 2)
+db(3, 7) = db(1, 2)
+	db(1, 3) = 6 * qqi2 * xx(1) * rm2
+	db(2, 6) = 6 * qqi2 * xx(2) * rm2
+	db(3, 10) = 6 * qqi2 * xx(3) * rm2
+	db(1, 5) = db(2, 6)
+	db(2, 5) = db(1, 3)
+	db(1, 8) = db(3, 10)
+	db(3, 8) = db(1, 3)
+	db(2, 9) = db(3, 10)
+db(3, 9) = db(2, 6)
+	end if
+do j = 1, min(10,(idel*(idel+1))/2)
+	ff = -ff0 * density2(iden+j) !fir term
+	!ff = - ff0 * (density2(iden+j) + qdenet(iden+j,1)) !testing
+	fft = - ff0t * qdenet(iden+j, 3) !sec term
+	!if(j.eq.1 .and. idel.eq.9) then !this if block is for d-orbitals
+	!  do iii=5,9
+	!    fft = fft-ff0t * qdenet(iden+(iii*(iii+1))/2, 3) !fir term
+	!    ff= ff-ff0 * density2(iden+(iii*(iii+1))/2) !sec term
+	!    !ff= ff-ff0 * (density2(iden+(iii*(iii+1))/2) + qdenet(iden+(iii*(iii+1))/2,1)) !testing
+	!  end do
+	!end if
+	do ix = 1, 3
+dx = (xx(ix)*db(0, j)-db(ix, j)) * (ff + fft) 
+	dxyz(ix, iak) = dxyz(ix, iak) + dx
+	dxyz(ix, i) = dxyz(ix, i) - dx
+	end do
+	!write(6,*)'testing surface B derivative:',dx
+	end do
+	!write(6,*)'TEST',dxyz
+	end if
+	iden = iden + (idel*(idel+1))/2
+	end do
+	end do
+	end subroutine diegrd2
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-!CALCULATE CAVITY CHARGES FOR FULL DENSITY MATRIX AND 
-!STORE IN MODULE VARIABLES
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	!CALCULATE CAVITY CHARGES FOR FULL DENSITY MATRIX AND 
+	!STORE IN MODULE VARIABLES
+	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 subroutine cosmo_1(exc_p)
-   use cosmo_C,only:fepsi,nps,lm61,numat,mpack,a0,ev, &
-      amat,bmat,iatsp,nsetf,phinet,qscnet,qdenet,ipiden,gden,qscat,mmat,idenat
+	use cosmo_C,only:fepsi,nps,lm61,numat,mpack,a0,ev, &
+	amat,bmat,iatsp,nsetf,phinet,qscnet,qdenet,ipiden,gden,qscat,mmat,idenat
 
-   use qmmm_module,only:qm2_params,qmmm_struct,qm2_struct,qmmm_nml
+	use qmmm_module,only:qm2_params,qmmm_struct,qm2_struct,qmmm_nml
 
-   implicit none
-   _REAL_,dimension(mpack)::p ! triaungular density matrix
-   _REAL_,dimension(qm2_struct%norbs,qm2_struct%norbs), intent(in) ::exc_p !
-   _REAL_, dimension(:,:), allocatable :: A;
-   integer, dimension(:), allocatable :: IPIV;
-   integer i,iat,im,j,INFO
-   real(8) fcon,fim,phi,qsc3
-   if (qmmm_nml%verbosity > 4) print*,'cosmo_call cosmo_1'
+	implicit none
+	_REAL_,dimension(mpack)::p ! triaungular density matrix
+	_REAL_,dimension(qm2_struct%norbs,qm2_struct%norbs), intent(in) ::exc_p !
+	_REAL_, dimension(:,:), allocatable :: A;
+	integer, dimension(:), allocatable :: IPIV;
+	integer i,iat,im,j,INFO
+	real(8) fcon,fim,phi,qsc3
+	if (qmmm_nml%verbosity > 4) print*,'cosmo_call cosmo_1'
 
-   do i=1,qm2_struct%norbs
-  do j=1,i
-     p((i-1)*i/2+j)=exc_p(i,j) !form triangular 
-        end do
-    end do
+	do i=1,qm2_struct%norbs
+	do j=1,i
+	p((i-1)*i/2+j)=exc_p(i,j) !form triangular 
+	end do
+	end do
 
-   fcon=a0*ev
+	fcon=a0*ev
 
-   !do i=1,numat
-      qscat(1:numat)=0.d0
-   !end do
+	!do i=1,numat
+	qscat(1:numat)=0.d0
+	!end do
 
-  ! FIRST CALCULATE QDENEL FROM DENSITY MATRIX
-   ! qdenet(:,1) contains core charges in monopole positions
-   do i=1,lm61
-      ! one-center electronic "charges"
-      qdenet(i,2)=gden(i)*p(ipiden(i))
-      ! one-center "charges" - electronic and nuclear
-      qdenet(i,3)=qdenet(i,2)+qdenet(i,1)
-    end do
+	! FIRST CALCULATE QDENEL FROM DENSITY MATRIX
+	! qdenet(:,1) contains core charges in monopole positions
+	do i=1,lm61
+	! one-center electronic "charges"
+qdenet(i,2)=gden(i)*p(ipiden(i))
+	! one-center "charges" - electronic and nuclear
+qdenet(i,3)=qdenet(i,2)+qdenet(i,1)
+	end do
 
-   !  NOW CALCULATE PHIEL FROM BMAT*QDENEL
-  do i=1,nps ! running over SAS tiles
-      phi=0.d0
+	!  NOW CALCULATE PHIEL FROM BMAT*QDENEL
+	do i=1,nps ! running over SAS tiles
+	phi=0.d0
 
-      do j=1,lm61
-         phi=phi+bmat(j,i)*qdenet(j,2);
-      end do
-      phinet(i,2)=phi;    
-      phinet(i,3)=phinet(i,1)+phi
-  end do
-  call coscl2(amat,nsetf,qscnet(1,2),phinet(1,2),nps)
+	do j=1,lm61
+	phi=phi+bmat(j,i)*qdenet(j,2);
+	end do
+	phinet(i,2)=phi;    
+	phinet(i,3)=phinet(i,1)+phi
+	end do
+call coscl2(amat,nsetf,qscnet(1,2),phinet(1,2),nps)
 
-  do i=1,nps
-    iat=iatsp(i)
-    qscnet(i,2)=-fepsi*qscnet(i,2) ! scaling with COSMO factor
-    qscnet(i,3)=qscnet(i,1)+qscnet(i,2) ! core + electrons
-    qscat(iat)=qscat(iat)+qscnet(i,3) ! total charge associated with each atom
-  end do
-  return
-end subroutine
+	do i=1,nps
+iat=iatsp(i)
+	qscnet(i,2)=-fepsi*qscnet(i,2) ! scaling with COSMO factor
+	qscnet(i,3)=qscnet(i,1)+qscnet(i,2) ! core + electrons
+	qscat(iat)=qscat(iat)+qscnet(i,3) ! total charge associated with each atom
+	end do
+	return
+	end subroutine
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-!CALCULATE CAVITY CHARGES FOR TRIANGULAR DENSITY MATRIX
-!AND STORE IN MODULE VARIABLES
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	!CALCULATE CAVITY CHARGES FOR TRIANGULAR DENSITY MATRIX
+	!AND STORE IN MODULE VARIABLES
+	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 subroutine cosmo_1_tri(p)
-   use cosmo_C,only:fepsi,nps,lm61,numat,mpack,a0,ev, &
-      amat,bmat,iatsp,nsetf,phinet,qscnet,qdenet,ipiden,gden,qscat,mmat,idenat
-   use qmmm_module,only:qm2_params,qmmm_struct,qm2_struct,qmmm_nml
+	use cosmo_C,only:fepsi,nps,lm61,numat,mpack,a0,ev, &
+	amat,bmat,iatsp,nsetf,phinet,qscnet,qdenet,ipiden,gden,qscat,mmat,idenat
+	use qmmm_module,only:qm2_params,qmmm_struct,qm2_struct,qmmm_nml
 
-   implicit none
-   _REAL_,dimension(mpack)::p ! triangular density matrix
-   _REAL_, dimension(:,:), allocatable :: A
-   integer, dimension(:), allocatable :: IPIV
-   integer i,iat,im,j,INFO
-   real(8) fcon,fim,phi,qsc3,s1,s3
-   real(8) ALPHA
-   real(8) BETA
-   if (qmmm_nml%verbosity > 4) print*,'cosmo_call cosmo_1_tri'
+	implicit none
+	_REAL_,dimension(mpack)::p ! triangular density matrix
+	_REAL_, dimension(:,:), allocatable :: A
+	integer, dimension(:), allocatable :: IPIV
+	integer i,iat,im,j,INFO
+	real(8) fcon,fim,phi,qsc3,s1,s3
+	real(8) ALPHA
+	real(8) BETA
+	if (qmmm_nml%verbosity > 4) print*,'cosmo_call cosmo_1_tri'
 
-   fcon=a0*ev
+	fcon=a0*ev
 
-   !do i=1,numat
-      qscat(1:numat)=0.d0
-   !end do
+	!do i=1,numat
+	qscat(1:numat)=0.d0
+	!end do
 
-  ! FIRST CALCULATE QDENEL FROM DENSITY MATRIX
-   ! qdenet(:,1) contains core charges in monopole positions
-   do i=1,lm61
-      ! one-center electronic "charges"
-      qdenet(i,2)=gden(i)*p(ipiden(i))
-      ! one-center "charges" - electronic and nuclear
-      qdenet(i,3)=qdenet(i,2)+qdenet(i,1)
-    end do
+	! FIRST CALCULATE QDENEL FROM DENSITY MATRIX
+	! qdenet(:,1) contains core charges in monopole positions
+	do i=1,lm61
+	! one-center electronic "charges"
+qdenet(i,2)=gden(i)*p(ipiden(i))
+	! one-center "charges" - electronic and nuclear
+qdenet(i,3)=qdenet(i,2)+qdenet(i,1)
+	end do
 
-   !  NOW CALCULATE PHIEL FROM BMAT*QDENEL
-   do i=1,nps ! running over SAS tiles
-      phi=0.d0
-      ! phi is the potential at SAS tile from
-      ! one center electronic "charges"
-      do j=1,lm61
-         phi=phi+bmat(j,i)*qdenet(j,2);
-      end do
-      phinet(i,2)=phi;
-      ! write(*,*)"Phi_(",i,")=",phi
-      ! phinet(:,1) contains potential at SAS tiles
-      ! from core charge monopoles
-     phinet(i,3)=phinet(i,1)+phi
-    end do
+	!  NOW CALCULATE PHIEL FROM BMAT*QDENEL
+	do i=1,nps ! running over SAS tiles
+	phi=0.d0
+	! phi is the potential at SAS tile from
+	! one center electronic "charges"
+	do j=1,lm61
+	phi=phi+bmat(j,i)*qdenet(j,2);
+	end do
+	phinet(i,2)=phi;
+	! write(*,*)"Phi_(",i,")=",phi
+	! phinet(:,1) contains potential at SAS tiles
+	! from core charge monopoles
+	phinet(i,3)=phinet(i,1)+phi
+	end do
 
-   !  NOW CALCULATE QSCEL FROM A*QSCEL = -PHIEL
-   ! calculation of charges, qscnet(:,2), accumulated on metallic SAS
-   ! due to potential generated by single-center
-   ! electronic densities
+	!  NOW CALCULATE QSCEL FROM A*QSCEL = -PHIEL
+	! calculation of charges, qscnet(:,2), accumulated on metallic SAS
+	! due to potential generated by single-center
+	! electronic densities
 
-    call coscl2(amat,nsetf,qscnet(1,2),phinet(1,2),nps)
+call coscl2(amat,nsetf,qscnet(1,2),phinet(1,2),nps)
 
-!    allocate(A(nps,nps),IPIV(nps));
-!    do i=1,nps
-! do j=1,i
-!           A(i,j)=amat((i-1)*i/2+j);
-!           A(j,i)=A(i,j);
-!        end do
-! qscnet(i,2)=phinet(i,2);
-!    end do
+	!    allocate(A(nps,nps),IPIV(nps));
+	!    do i=1,nps
+	! do j=1,i
+	!           A(i,j)=amat((i-1)*i/2+j);
+	!           A(j,i)=A(i,j);
+	!        end do
+	! qscnet(i,2)=phinet(i,2);
+	!    end do
 
-!   ! NOW ADD BMAT*QSCEL TO FOCK MATRIX
-!    i=1;
-!    CALL DGESV(nps,i,A,nps,IPIV,qscnet(1,2),nps,INFO);
+	!   ! NOW ADD BMAT*QSCEL TO FOCK MATRIX
+	!    i=1;
+	!    CALL DGESV(nps,i,A,nps,IPIV,qscnet(1,2),nps,INFO);
 !    deallocate(A,IPIV)
 
-   s1=0.d0
-   s3=0.d0
+	s1=0.d0
+	s3=0.d0
 
-   do i=1,nps
-      iat=iatsp(i)
-      qscnet(i,2)=-fepsi*qscnet(i,2) ! scaling with COSMO factor
-      qscnet(i,3)=qscnet(i,1)+qscnet(i,2) ! core + electrons
-      qscat(iat)=qscat(iat)+qscnet(i,3) ! ???
-    end do
-   return
-end subroutine
+	do i=1,nps
+iat=iatsp(i)
+	qscnet(i,2)=-fepsi*qscnet(i,2) ! scaling with COSMO factor
+	qscnet(i,3)=qscnet(i,1)+qscnet(i,2) ! core + electrons
+	qscat(iat)=qscat(iat)+qscnet(i,3) ! ???
+	end do
+	return
+	end subroutine
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-!Calcualte charges without storing in module variable for calculating excited state !derivatives involving two density matrices
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	!Calcualte charges without storing in module variable for calculating excited state !derivatives involving two density matrices
+	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 subroutine cosmo_1_tri_2(p,density2,charges2,acharges2)
-   use cosmo_C,only:fepsi,nps,lm61,mpack,a0,ev,nsetf, &
-      amat,bmat,qdenet,ipiden,gden,iatsp,numat,qscnet,qscat
+	use cosmo_C,only:fepsi,nps,lm61,mpack,a0,ev,nsetf, &
+	amat,bmat,qdenet,ipiden,gden,iatsp,numat,qscnet,qscat
 
-   use qmmm_module,only:qm2_params,qmmm_struct,qm2_struct,qmmm_nml
+	use qmmm_module,only:qm2_params,qmmm_struct,qm2_struct,qmmm_nml
 
-   implicit none
-   _REAL_, intent(in)::p(mpack) ! triangular density matrix
-   _REAL_, dimension(:,:), allocatable :: A;
-   _REAL_, intent(out):: charges2(nps),acharges2(numat),density2(lm61)
-   integer, dimension(:), allocatable :: IPIV;
-   integer i,iat,im,j,INFO
-   _REAL_ :: phi(nps), fcon
-   fcon=a0*ev
-   density2=0.d0; charges2=0.d0; acharges2=0.d0;
+	implicit none
+	_REAL_, intent(in)::p(mpack) ! triangular density matrix
+	_REAL_, dimension(:,:), allocatable :: A;
+_REAL_, intent(out):: charges2(nps),acharges2(numat),density2(lm61)
+	integer, dimension(:), allocatable :: IPIV;
+	integer i,iat,im,j,INFO
+	_REAL_ :: phi(nps), fcon
+	fcon=a0*ev
+	density2=0.d0; charges2=0.d0; acharges2=0.d0;
 
-  ! FIRST CALCULATE QDENEL FROM DENSITY MATRIX
-    do i=1,lm61
-      ! one-center electronic "charges"
-      density2(i)=gden(i)*p(ipiden(i))
-    end do
-   !  NOW CALCULATE PHIEL FROM BMAT*QDENEL    
-   do i=1,nps ! running over SAS tiles
-      phi(i)=0.d0
-      do j=1,lm61
-         phi(i)=phi(i)+bmat(j,i)*density2(j)
-      end do
-   end do
-    call coscl2(amat,nsetf,charges2,phi,nps)
-   !  NOW CALCULATE QSCEL FROM A*QSCEL = -PHIEL
-!    allocate(A(nps,nps),IPIV(nps));
-!    do i=1,nps
-! do j=1,i
-!           A(i,j)=amat((i-1)*i/2+j);
-!           A(j,i)=A(i,j);
-!        end do
-!    end do
-!    i=1;
-!    CALL DGESV(nps,i,A,nps,IPIV,charges2,nps,INFO);
+	! FIRST CALCULATE QDENEL FROM DENSITY MATRIX
+	do i=1,lm61
+	! one-center electronic "charges"
+density2(i)=gden(i)*p(ipiden(i))
+	end do
+	!  NOW CALCULATE PHIEL FROM BMAT*QDENEL    
+	do i=1,nps ! running over SAS tiles
+	phi(i)=0.d0
+	do j=1,lm61
+phi(i)=phi(i)+bmat(j,i)*density2(j)
+	end do
+	end do
+call coscl2(amat,nsetf,charges2,phi,nps)
+	!  NOW CALCULATE QSCEL FROM A*QSCEL = -PHIEL
+	!    allocate(A(nps,nps),IPIV(nps));
+	!    do i=1,nps
+	! do j=1,i
+	!           A(i,j)=amat((i-1)*i/2+j);
+	!           A(j,i)=A(i,j);
+	!        end do
+	!    end do
+	!    i=1;
+	!    CALL DGESV(nps,i,A,nps,IPIV,charges2,nps,INFO);
 !    deallocate(A,IPIV)
 
-    acharges2=0.d0
-    charges2=-fepsi*charges2 ! scaling with COSMO factor
-    do i=1,nps
-      iat=iatsp(i)
-      acharges2(iat)=acharges2(iat)+charges2(i)
-    end do
-    return
-end subroutine
+	acharges2=0.d0
+	charges2=-fepsi*charges2 ! scaling with COSMO factor
+	do i=1,nps
+	iat=iatsp(i)
+acharges2(iat)=acharges2(iat)+charges2(i)
+	end do
+	return
+	end subroutine
 
-!********************************************************************
-!
-!  THIS ROUTINE PERFORMS A CHOLESKY FACTORIZATION
-!  INPUT:   A =  PACKED LOWER TRIANGLE OF A
-!               SYMMETRIC POSITIVE DEFINITE N*N MATRIX
-!  OUTPUT:  A =  LOWER TRIANGLE OF CHOLESKY MATRIX ( INVERSE PIVOT ELEMEN
-!         ID =  INTEGER VECTOR OF LENGTH N CONTAINING THE INDICES I(I-1)
-!
-!********************************************************************
-!
-subroutine coscl1 (a, id, n, info)
-    implicit none
-    integer, intent (in) :: n
-    double precision, dimension (*), intent (inout) :: a
-    integer, dimension (n), intent (inout) :: id
-    integer, intent (out) :: info
-    integer :: i, indi, indk, j, k, kk
-    double precision :: summe
-    double precision :: ap(n*(n+1)/2)
-    indi = 0
-if (1==1) then !use LAPACK but must also use LAPACK in coscl2
-    call DPPTRF( 'U', n, a, i ) !LAPACK Subroutine for this
-else !Use normal COSMO routine
-    do i = 1, n 
-      id(i) = indi
-      indi = indi + i
-    end do
-    info = 0
-    do k = 1, n
-      indk = id(k)
-      kk = k + indk
-      do i = k, n
-        indi = id(i)
-        summe = 0.d0
-        do j = 1, k - 1
-          summe = summe + a(j+indi) * a(j+indk)
-        end do
-        summe = a(k+indi) - summe
-        if (i == k) then
-          if (summe < 0.0d0) then
-            info = -1
-            summe = a(kk)
-          end if
-          a(kk) = 1.d0 / Sqrt (summe)
-        else
-          a(k+indi) = summe * a(kk)
-        end if
-      end do
-    end do
-endif
-end subroutine coscl1
+	!********************************************************************
+	!
+	!  THIS ROUTINE PERFORMS A CHOLESKY FACTORIZATION
+	!  INPUT:   A =  PACKED LOWER TRIANGLE OF A
+	!               SYMMETRIC POSITIVE DEFINITE N*N MATRIX
+	!  OUTPUT:  A =  LOWER TRIANGLE OF CHOLESKY MATRIX ( INVERSE PIVOT ELEMEN
+			!         ID =  INTEGER VECTOR OF LENGTH N CONTAINING THE INDICES I(I-1)
+			!
+			!********************************************************************
+			!
+			subroutine coscl1 (a, id, n, info)
+			implicit none
+			integer, intent (in) :: n
+			double precision, dimension (*), intent (inout) :: a
+			integer, dimension (n), intent (inout) :: id
+			integer, intent (out) :: info
+			integer :: i, indi, indk, j, k, kk
+			double precision :: summe
+			double precision :: ap(n*(n+1)/2)
+			indi = 0
+			if (1==1) then !use LAPACK but must also use LAPACK in coscl2
+			call DPPTRF( 'U', n, a, i ) !LAPACK Subroutine for this
+			else !Use normal COSMO routine
+			do i = 1, n 
+			id(i) = indi
+			indi = indi + i
+	end do
+	info = 0
+	do k = 1, n
+indk = id(k)
+	kk = k + indk
+	do i = k, n
+indi = id(i)
+	summe = 0.d0
+	do j = 1, k - 1
+summe = summe + a(j+indi) * a(j+indk)
+	end do
+	summe = a(k+indi) - summe
+	if (i == k) then
+	if (summe < 0.0d0) then
+	info = -1
+summe = a(kk)
+	end if
+a(kk) = 1.d0 / Sqrt (summe)
+	else
+a(k+indi) = summe * a(kk)
+	end if
+	end do
+	end do
+	endif
+	end subroutine coscl1
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-!  Initializaton of cosmo
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine cosini 
-    use cosmo_C, only: n0, ioldcv, fnsq, nps, rsolv, nspa, disex2, &
-    dirsm, dirvec, srad, ipiden, gden, idenat, qdenet, amat, &
-    cmat, lenabc, arat, sude, isude, bh,qden, nar_csm, nsetf, phinet, &
-    qscnet, bmat, nset, xsp, abcmat, iatsp, nn, qscat, cosurf, nppa, &
-    coserr, lm61, numat,mpack,fepsi,mmat,tri_2D,v_solvent_difdens,xi_k, &
-    ceps, v_solvent_xi
-!    use cosmo_C
-    
-    use qmmm_module,only:qm2_params,qmmm_struct,qm2_struct,qmmm_nml
-    use qm2_davidson_module
+	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	!  Initializaton of cosmo
+	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	subroutine cosini 
+	use cosmo_C, only: n0, ioldcv, fnsq, nps, rsolv, nspa, disex2, &
+	dirsm, dirvec, srad, ipiden, gden, idenat, qdenet, amat, &
+	cmat, lenabc, arat, sude, isude, bh,qden, nar_csm, nsetf, phinet, &
+	qscnet, bmat, nset, xsp, abcmat, iatsp, nn, qscat, cosurf, nppa, &
+	coserr, lm61, numat,mpack,fepsi,mmat,tri_2D,v_solvent_difdens,xi_k, &
+	ceps, v_solvent_xi
+	!    use cosmo_C
 
-    !use common_arrays_C, only : nat, nfirst, nlast
-    !    nat will be substituted with iqm_atomic_numbers
-    !    nfirst and nlast will be substituted with orb_loc(1,:)
-    !    and orb_lor(2,:), respectively
-    
-    !use molkst_C, only: numat, keywrd, moperr, lm61, mozyme
-    !use chanel_C, only: iw
-    !use reada_I
+	use qmmm_module,only:qm2_params,qmmm_struct,qm2_struct,qmmm_nml
+	use qm2_davidson_module
 
-    implicit none
-    integer :: i, i0, iat, idel, iden, incif, indise, inrsol, j, k, n1, &
-      n2, nfi, nfj
+	!use common_arrays_C, only : nat, nfirst, nlast
+	!    nat will be substituted with iqm_atomic_numbers
+!    nfirst and nlast will be substituted with orb_loc(1,:)
+	!    and orb_lor(2,:), respectively
 
-   integer iw,n4,n9,T2DS
-    double precision :: disex, ri1, x
-    double precision, dimension (107) :: rvdw, usevdw
-    !integer, external :: ijbo ! is need if mozyme=.true. which is not the case
-    !here
-    data rvdw / &
-   1.30d0,   1.64d0,   2.13d0,   2.19d0,   2.05d0,   2.00d0,   1.83d0,   1.72d0, &
-   1.72d0,   1.80d0,   2.66d0,   2.02d0,   2.41d0,   2.46d0,   2.11d0,   2.16d0, &
-   2.05d0,   2.20d0,   3.22d0,   2.54d0,   2.64d0,   2.64d0,   2.52d0,   2.40d0, &
-   2.46d0,   2.41d0,   2.40d0,   1.91d0,   1.64d0,   1.63d0,   2.19d0,   2.46d0, &
-   2.22d0,   2.22d0,   2.16d0,   2.36d0,   3.78d0,   3.44d0,   3.39d0,   3.33d0, &
-   3.28d0,   2.57d0,   2.57d0,   2.57d0,   2.57d0,   1.91d0,   2.01d0,   1.85d0, &
-   2.26d0,   2.54d0,   2.53d0,   2.41d0,   2.32d0,   2.53d0,   4.00d0,   3.47d0, &
-   2.81d0,   2.81d0,   2.81d0,   2.81d0,   2.81d0,   2.81d0,   2.81d0,   2.81d0, &
-   2.81d0,   2.81d0,   2.81d0,   2.81d0,   2.81d0,   2.81d0,   2.81d0,   2.57d0, &
-   2.57d0,   2.57d0,   2.57d0,   2.57d0,   2.57d0,   2.05d0,   1.94d0,   1.81d0, &
-   2.29d0,   2.36d0,   2.64d0,   2.64d0,   2.63d0,   2.69d0,   2.57d0,   2.57d0, &
-   2.57d0,   2.57d0,   2.57d0,   2.18d0,   2.57d0,   2.57d0,   2.57d0,   2.57d0, &
-   2.57d0,   2.57d0,   2.57d0,   2.57d0,   2.57d0,   2.57d0,   5*2.d0/
+	!use molkst_C, only: numat, keywrd, moperr, lm61, mozyme
+	!use chanel_C, only: iw
+	!use reada_I
 
-   logical mozyme
+	implicit none
+	integer :: i, i0, iat, idel, iden, incif, indise, inrsol, j, k, n1, &
+	n2, nfi, nfj
 
-   if (qmmm_nml%verbosity > 4) print*,'cosmo_call cosini'
+	integer iw,n4,n9,T2DS
+	double precision :: disex, ri1, x
+	double precision, dimension (107) :: rvdw, usevdw
+	!integer, external :: ijbo ! is need if mozyme=.true. which is not the case
+	!here
+	data rvdw / &
+	1.30d0,   1.64d0,   2.13d0,   2.19d0,   2.05d0,   2.00d0,   1.83d0,   1.72d0, &
+	1.72d0,   1.80d0,   2.66d0,   2.02d0,   2.41d0,   2.46d0,   2.11d0,   2.16d0, &
+	2.05d0,   2.20d0,   3.22d0,   2.54d0,   2.64d0,   2.64d0,   2.52d0,   2.40d0, &
+	2.46d0,   2.41d0,   2.40d0,   1.91d0,   1.64d0,   1.63d0,   2.19d0,   2.46d0, &
+	2.22d0,   2.22d0,   2.16d0,   2.36d0,   3.78d0,   3.44d0,   3.39d0,   3.33d0, &
+	3.28d0,   2.57d0,   2.57d0,   2.57d0,   2.57d0,   1.91d0,   2.01d0,   1.85d0, &
+	2.26d0,   2.54d0,   2.53d0,   2.41d0,   2.32d0,   2.53d0,   4.00d0,   3.47d0, &
+	2.81d0,   2.81d0,   2.81d0,   2.81d0,   2.81d0,   2.81d0,   2.81d0,   2.81d0, &
+	2.81d0,   2.81d0,   2.81d0,   2.81d0,   2.81d0,   2.81d0,   2.81d0,   2.57d0, &
+	2.57d0,   2.57d0,   2.57d0,   2.57d0,   2.57d0,   2.05d0,   1.94d0,   1.81d0, &
+	2.29d0,   2.36d0,   2.64d0,   2.64d0,   2.63d0,   2.69d0,   2.57d0,   2.57d0, &
+	2.57d0,   2.57d0,   2.57d0,   2.18d0,   2.57d0,   2.57d0,   2.57d0,   2.57d0, &
+	2.57d0,   2.57d0,   2.57d0,   2.57d0,   2.57d0,   2.57d0,   5*2.d0/
 
-   ! dielectric scaling factor
-   fepsi=(ceps-1.d0)/(ceps+0.5d0)
+	logical mozyme
 
-   numat=qmmm_struct%nquant ! number of atoms
-   mpack=qm2_struct%matsize
+	if (qmmm_nml%verbosity > 4) print*,'cosmo_call cosini'
 
-   iw=6 ! standard output
+	! dielectric scaling factor
+fepsi=(ceps-1.d0)/(ceps+0.5d0)
 
-   ! kav addition
-   ! Evaluation of lm61 - cumulative number of one-center densities
-   ! only one for hydrogen (ss)
-   ! 10 for an sp-atom (ss,sx,xx,sy,...)
-   n9=0
-   n4=0
-   n1=0
+	numat=qmmm_struct%nquant ! number of atoms
+	mpack=qm2_struct%matsize
 
-   do i=1,numat
-      k=qm2_params%orb_loc(2,i)-qm2_params%orb_loc(1,i)+1
+	iw=6 ! standard output
 
-      if(k==1) then
-         n1=n1+1
-      else if(k==4) then
-         n4=n4+1
-      else if(k==9) then
-         n9=n9+1
-      end if
-   end do
+	! kav addition
+	! Evaluation of lm61 - cumulative number of one-center densities
+	! only one for hydrogen (ss)
+! 10 for an sp-atom (ss,sx,xx,sy,...)
+	n9=0
+	n4=0
+	n1=0
 
-   lm61=45*n9+10*n4+n1
+	do i=1,numat
+	k=qm2_params%orb_loc(2,i)-qm2_params%orb_loc(1,i)+1
 
-   ! kav addition
-   mozyme=.false. ! we are not doing linear scaling here
+	if(k==1) then
+	n1=n1+1
+	else if(k==4) then
+	n4=n4+1
+	else if(k==9) then
+	n9=n9+1
+	end if
+	end do
 
-   ! in mopac nspa can be redifined from input
-   ! here we would just set it to default value of 42
-   ! for simplicity, kav
-   nspa=42
-   !nspa=100
+	lm61=45*n9+10*n4+n1
+
+	! kav addition
+	mozyme=.false. ! we are not doing linear scaling here
+
+	! in mopac nspa can be redifined from input
+	! here we would just set it to default value of 42
+	! for simplicity, kav
+	!nspa=21
+	!nspa=42
+   nspa=40
    !nspa=336
    !nspa=1 !testing JAB
 
@@ -2594,9 +2595,9 @@ subroutine cosini_testing
    ! here we would just set it to default value of 42
    ! for simplicity, kav
    !nspa=42
-   !nspa=100
+    nspa=100
    !nspa=200
-    nspa=1 !testing JAB
+    !nspa=1 !testing JAB
 
     !lenabc = max(100, nspa*numat) 
     lenabc = nspa*numat

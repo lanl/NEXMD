@@ -57,7 +57,7 @@ if(qmmm_struct%ideriv.eq.1) then !analytical derivatives
       !add solvent part (nuclear and electronic for ground state with COSMO
       !surface derivatives)
       if((solvent_model.gt.0).and.(solvent_model.ne.10)) then
-        if(potential_type.eq.3) then
+        if((potential_type.eq.3).and.(ceps.gt.1.0)) then !have to specify ceps here because of division by 0 when eq 1
           call cosmo_1_tri(qm2_struct%den_matrix) !put qm2ds%den_matrix in the right place
           call diegrd(dxyz1_test) !derivative
         elseif(potential_type.eq.2) then
@@ -94,20 +94,13 @@ if (ihop>0) then
       call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%tz_scratch(1),qm2ds%rhoLZ, &
          qm2ds%tz_scratch(qm2ds%Nb**2+1))
 
-!Testing with rhoT
-      !call calc_rhotz(ihop, qm2ds%rhoT,.false.)
-      !call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoT,qm2ds%tz_scratch(1), &
-      !   qm2ds%tz_scratch(qm2ds%Nb**2+1))
-      !call packing(qm2ds%Nb,qm2ds%tz_scratch(1),qm2ds%rhoT,'s')
-!End testing
-
          dxyz1=0.d0; dxyz1_test=0.d0;
 
          !calculate vacuum derivative for term 1
          call dcart1(dxyz1,qm2_struct%den_matrix,qm2ds%rhoTZ,qmmm_struct%qm_coords)
          !add solvent part (symmetric only b/c symmetric matrix)  
          if(solvent_model.gt.0) then
-                if(potential_type.eq.3) then
+                if((potential_type.eq.3).and.(ceps.gt.1.0)) then
                   call cosmo_1_tri_2(qm2ds%rhoTZ,density2,charges2,acharges2) !solvent and solute charges 
                   call diegrd2(dxyz1_test,density2,charges2,acharges2) !derivative
                 elseif(potential_type.eq.2) then
@@ -132,15 +125,16 @@ if (ihop>0) then
          call dcart2(dxyz1,qm2ds%tz_scratch(1),qmmm_struct%qm_coords)
          call dcart2(dxyz1,qm2ds%tz_scratch(qm2ds%nb**2+1),qmmm_struct%qm_coords)
          if(solvent_model.eq.1) then
-         if(potential_type.eq.3) then
+         if((potential_type.eq.3).and.(ceps.gt.1.0)) then
             qscnet(:,1)=0.d0; qdenet(:,1)=0.d0; !Clear Nuclear Charges
             call cosmo_1_tri(qm2ds%tz_scratch(1)) !Fill Electronic Chrages
             call diegrd(dxyz1_test); !derivative
             !call cosmo_1_tri(qm2ds%tz_scratch(qm2ds%nb**2+1)) !Fill Electronic Chrages
             !call diegrd(dxyz1_test); !derivative
-		dxyz1_test=4.0*dxyz1_test
+		dxyz1_test=2.0*dxyz1_test !Don't know why this factor of two is here
          elseif(potential_type.eq.2) then
-            call rcnfldgrad_full(dxyz1_test,qm2ds%rhoLZ,qm2ds%nb)
+            call rcnfldgrad_full(dxyz1_test,qm2ds%rhoLZ,qm2ds%nb); 
+		dxyz1_test=2.0*dxyz1_test !Don't know what's up with this either
          end if
          end if
          dxyz1=dxyz1+dxyz1_test
