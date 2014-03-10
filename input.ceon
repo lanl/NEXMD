@@ -1,27 +1,37 @@
 &qmmm
-   qm_theory='AM1',
+   !***** Ground state and output parameters
+   qm_theory='AM1', !Integral type
+   scfconv=1.0d-9, !Ground state scf convergence criteria
+   verbosity=4, !
+   printcharges=0, ! Mulliken charges for ground state
+   printdipole=1, ! (0) None, (1) Transition, Relaxed, and Unrelaxed
+   printbondorders=0, ! (0) No, (1) Yes
+   density_predict=2, !(0) None, (1) Reversible MD, (2) XL-BOMD
+   itrmax=-3, ! Maximum number of scf iterations for ground state, negative to ignore convergence
+
+   !***** Excited state parameters
    exst_method=1, ! CIS (1) or RPA (2)
    davidson_guess=1, ! restart Davidson from previous (1) or from scratch (0)
    ftol=0.d0, !   Min tolerance (|emin-eold|)
    ftol0=1.d-7, !  Acceptance tol.(|emin-eold|)
    ftol1=1.d-8, ! Accept.tol.for residual norm
-   verbosity=4,
-   scfconv=1.0d-9,
-   qmcharge=0,
-   maxcyc=0,
-   ntpr=1,
-   grms_tol=0.01,
-   ceps=1000,
-   cosmo_scf_ftol=1.0d-8
-   EF=0,
-   Ex=0, !Electric Field Vector X for potential_type 1
-   Ez=0, !Electric Field Vector Z for potential_type 1
-   Ey=0.01, !Electric Field Vector Y for potential_type 1
+
+   !***** Geometry optimization
+   maxcyc=0, !Number of cycles for geometry optimization
+   ntpr=1, !Print results every ntpr cycles
+   grms_tol=0.01, !Tolerance in eV/A (derivatives)
+
+   !***** Solvent models
+   ceps=1000, !Dielectric constant
+   cosmo_scf_ftol=1.0d-8, !State specific scf tolerance
+   EF=0, !(1) Electric field in ground and excited state, (2) Electric field in excited state only
+   Ex=0, !Electric Field Vector X 
+   Ez=0, !Electric Field Vector Z
+   Ey=0.01, !Electric Field Vector Y
    onsager_radius=2, ! Onsager radius
-   printcharges=0, ! Mulliken charges for ground state
-   printdipole=1, !0 - None, 1 - Excited State, Relaxed, Unrelaxed
-   solvent_model=11, ! 0 - None, 1 - LR, >2 SS :: 2-[V_s(T+Z),xi], 3-[V_s(xi),xi], (4-[V_s(T+Z),rho_0+xi], 5-[V_s(xi),rho_0+xi] for testing)
-   potential_type=3, ! 1 - Constant Electric Field, 2 - Onsager, 3 - COSMO, 4 - Testing (CEF only in ES with solvent_model=4,5), 0-Normal Correlation
+   solvent_model=0, ! (0) None, (1) LR, (>1) SS 
+		!2-[V_s(T+Z),xi], 3-[V_s(xi),xi], (4-[V_s(T+Z),rho_0+xi], 5-[V_s(xi),rho_0+xi] for testing)
+   potential_type=3, ! (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
 &endqmmm
 
 

@@ -36,7 +36,8 @@
                             qmmm_mpi, qmmm_scratch, qmmm_opnq
     use MNDOChargeSeparation, only : GetDDAndPho
     use qm2_diagonalizer_module, only : qm2_diagonalizer_setup
-                                
+    use xlbomd_module, only : init_xlbomd                                
+
     implicit none
 
 !Locals
@@ -197,8 +198,10 @@
       REQUIRE(ier == 0)
 
       qm2_struct%matsize = ishft(qm2_struct%norbs*(qm2_struct%norbs+1),-1) !ishift(x,-1) = integer divide by 2
+
       allocate ( qm2_struct%den_matrix(qm2_struct%matsize), stat=ier )
       REQUIRE ( ier == 0 )
+
       allocate ( qm2_struct%old_den_matrix(qm2_struct%matsize), stat=ier )
       REQUIRE ( ier == 0 )
       !zero the entire density matrix on the first call
@@ -213,6 +216,9 @@
         REQUIRE ( ier == 0 )
         allocate ( qm2_struct%md_den_mat_guess2(qm2_struct%matsize), stat=ier )
         REQUIRE ( ier == 0 )
+      elseif (qmmm_nml%density_predict == 2) then
+	!We are using XL-BOMD
+	call init_xlbomd(qm2_struct%matsize)
       end if
 
       if (qmmm_nml%fock_predict == 1) then

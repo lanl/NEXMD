@@ -542,7 +542,8 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
    use ParameterReader, only : ReadParameterFile
    use cosmo_C, only: solvent_model,potential_type,ceps,cosmo_scf_ftol,index_of_refraction, &
    onsager_radius,Ex,Ey,Ez,EF !COSMO parameters
- 
+   use xlbomd_module, only: xlbomd_flag,K,dt2w2,xlalpha,coef
+ !XL-BOMD parameters
    implicit none
 
    !STATIC MEMORY
@@ -714,10 +715,14 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
                    qmmm_omp_max_threads, &
 #endif
                    maxcyc, ntpr, grms_tol, &
-                  struct_opt_state,exst_method,davidson_guess, &
-                  ftol,ftol0,ftol1, &
-                  ceps, & ! COSMO parameters
-                   chg_lambda, vsolv, solvent_model,potential_type,cosmo_scf_ftol,onsager_radius,EF,Ex,Ey,Ez
+                struct_opt_state,exst_method,davidson_guess, &
+                ftol,ftol0,ftol1, &
+!Solvent Model and E-Field parameters
+                ceps, chg_lambda, vsolv, solvent_model,potential_type,cosmo_scf_ftol,index_of_refraction, &
+		onsager_radius,EF,Ex,Ey,Ez, &
+!XL-BOMD parameters
+		xlbomd_flag,K,dt2w2,xlalpha
+
    !the input value of excNin MUST NOT be changed.
    excN=excNin;   
    ! Setup defaults
@@ -736,17 +741,19 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
    ftol=0.d0   ! Min tolerance (|emin-eold|)
    ftol0=1.d-5 !  Acceptance tol.(|emin-eold|)
    ftol1=1.d-4 ! Accept.tol.for residual norm
-   cosmo_scf_ftol=1.d-3
-   ! Default for COSMO
+   ! Default for COSM and Solvent
    ceps=1.d0 ! no dielectric screening by default
    index_of_refraction=1.d0
    onsager_radius=4.0
    solvent_model=0 !no solvent model
    potential_type=3 !COSMO default
+   cosmo_scf_ftol=1.d-3
    EF=0; !Electric Field Flag (0:none,1:GS+ES,2:ES only)
    Ex=0.0; !Electric field vectors a.u.
    Ey=0.0;
    Ez=1.0;
+
+   !Other parameters
    lnk_dis=1.09d0  !Methyl C-H distance
    lnk_atomic_no=1 !Hydrogen
    lnk_method=1 !treat MMLink as being MM atom.
@@ -760,6 +767,12 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
    verbosity = 0
    parameter_file=''
    qxd=.false.
+
+   ! Defaults for XL-BOMD
+   xlbomd_flag = 0
+   K = 5
+   dt2w2 = 1.82
+   xlalpha = 18d-3
 
    !+TJG 01/26/2010
 
@@ -834,11 +847,6 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
      write(fdes_out, '(1x,a,/)') 'Could not find qmmm namelist'
      call mexit(fdes_out,1)
    endif
-   !if ((solvent_model.eq.0).and.(ceps>1.d0)) then !This requirement is nolonger
-   !necessary !!JAB
-   !  write(fdes_out, '(1x,a,/)') 'You must specify solvent model > 0 because Epsilon > 1.0'
-   !  call mexit(fdes_out,1)
-   !endif
 
    !AWG NEW
    call CheckRetiredQmTheoryInputOption(qmtheory)
@@ -952,7 +960,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
 #ifdef OPENMP
    call int_legal_range('QMMM: (QM-MM qmmm_omp_max_threads) ',qmmm_omp_max_threads,1,32)
 #endif
-   call int_legal_range('QMMM: (QM-MM density_predict) ',density_predict,0,1)
+   call int_legal_range('QMMM: (QM-MM density_predict) ',density_predict,0,2)
    call int_legal_range('QMMM: (QM-MM fock_predict) ',fock_predict,0,1)
    call float_legal_range('QMMM: (Pseudo Diag Criteria) ',pseudo_diag_criteria,1.0D-12,1.0D0)
    call int_legal_range('QMMM: (QM-MM qmmm_switch) ',qmmm_switch,0,1)

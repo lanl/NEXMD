@@ -20,6 +20,8 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
    use dh_correction_module, only : dh_correction
    use constants, only : EV_TO_KCAL, zero
    use cosmo_C, only : solvent_model, potential_type
+   use xlbomd_module, only : predictdens_xlbomd
+
    implicit none
 
 #ifdef MPI
@@ -241,14 +243,15 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
       !==========================================================
       !   Setup Density Matrix Prediction Prior to Calling SCF
       !==========================================================
-      !By default if we do not have a density matrix prediction routine
-      !defined (qmmm_nml%density_predict==0) then we don't do anything
-      !and the density matrix from the previous SCF step will be used.
-      if (qmmm_nml%density_predict == 1) then
+      if (qmmm_nml%density_predict == 1) then !Use simple time-reversible MD algorithm
         call timer_start(TIME_QMMMENERGYSCFDENPRED)
         call qm2_density_predict(qmmm_struct%num_qmmm_calls,qm2_struct%matsize, &
                                  qm2_struct%den_matrix,qm2_struct%md_den_mat_guess1, &
                                  qm2_struct%md_den_mat_guess2 )
+        call timer_stop(TIME_QMMMENERGYSCFDENPRED)
+      elseif (qmmm_nml%density_predict == 2) then !Use full XL-BOMD algorithm
+	call timer_start(TIME_QMMMENERGYSCFDENPRED)
+	call predictdens_xlbomd(qmmm_struct%num_qmmm_calls,qm2_struct%den_matrix)
         call timer_stop(TIME_QMMMENERGYSCFDENPRED)
       end if
       !=============================================================
@@ -299,11 +302,6 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
 #endif
 
       !Add the nuclear-nuclear energy into the scf energy
-      !if (solvent_model.gt.0) then !Solvent Energy contributions
-        !if (potential_type.eq.3) write(6,*)'Is a COSMO N-E term necessary?'
-      !  if (potential_type.eq.2) call rcnfldnuc(qmmm_struct%enuclr_qmqm) 
-      !endif
-
       escf = escf + (qmmm_struct%enuclr_qmqm+qmmm_struct%enuclr_qmmm)*EV_TO_KCAL
       if (qmmm_opnq%useOPNQ) then
          escf=escf+(qmmm_opnq%vdWCorrection+qmmm_opnq%OPNQCorrection)*EV_TO_KCAL
@@ -350,6 +348,9 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
    RETURN                                                                    
 end subroutine qm2_energy
 
+!Note by JAB:
+!This is one Niklasson et al algorithm
+!Another algorithm (XL-BOMD) is available by setting density_predict=2 and is in the xlbomd module
 subroutine qm2_density_predict(num_qmmm_calls,matsize,den_matrix,md_den_mat_guess1,md_den_mat_guess2)
 
    implicit none

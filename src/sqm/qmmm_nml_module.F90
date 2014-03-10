@@ -176,6 +176,7 @@ module qmmm_nml_module
      !   0 = Use final converged density matrix from previous MD step. (default)
      !   1 = Use predictive algorithm based on Phys. Rev. Lett., 2006, 97, 123001
      !       Here Pguess(t) = 2Pconv(t-dt) - Pguess(t-2dt)
+     !   2 = xl-bomd, see xlbomd module for more information! Added by JAB (LANL, 2014)
      integer :: density_predict
 
      ! Are we using variable solvent or adaptive QM/MM?

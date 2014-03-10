@@ -35,6 +35,7 @@ OBJSQM = \
 	$(OBJDIR)/$(SQMDIR)/utilitiesModule.o \
 	$(OBJDIR)/$(SQMDIR)/qmmm_qmtheorymodule.o \
 	$(OBJDIR)/$(SQMDIR)/qmmm_nml_module.o \
+	$(OBJDIR)/$(SQMDIR)/xlbomd_module.o \
 	$(OBJDIR)/$(SQMDIR)/elementOrbitalIndex.o \
 	$(OBJDIR)/$(SQMDIR)/parameterReader.o \
 	$(OBJDIR)/$(SQMDIR)/rotation.o \
