@@ -7,6 +7,7 @@
    printdipole=1, ! (0) None, (1) Transition, Relaxed, and Unrelaxed
    printbondorders=0, ! (0) No, (1) Yes
    density_predict=2, !(0) None, (1) Reversible MD, (2) XL-BOMD
+   K=9, ! XL-BOMD Parameter (3-9)
    itrmax=-3, ! Maximum number of scf iterations for ground state, negative to ignore convergence
 
    !***** Excited state parameters
@@ -37,15 +38,14 @@
 
 &moldyn
    !***** General parameters
-   rnd_seed=1, ! seed for the random number generator
+   exc_state_init=0, ! initial excited state (0 - ground state)
+   n_exc_states_propagate=0, ! number of excited states
    bo_dynamics_flag=1, ! 0-non-BO, 1-BO
-   exc_state_init=1, ! initial excited state (0 - ground state)
-   n_exc_states_propagate=1, ! number of excited states
+   rnd_seed=1, ! seed for the random number generator
 
-   !***** Dynamics parameters
    time_init=0.d0 ! initial time, fs
-   time_step=0.05d0, ! time step, fs
-   n_class_steps=200, !number of classical steps
+   time_step=0.1d0, ! time step, fs
+   n_class_steps=100, !number of classical steps
    n_quant_steps=1, ! number of quantum steps for each classical step
    moldyn_deriv_flag=1, ! 0-none, 1-analyt, 2-numeric
    num_deriv_step=1.d-5, ! displacement for numerical derivatives, A

@@ -38,7 +38,7 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
     use qm2_iterator_mod, only : remaining_diis_tokens  ! this is an integer function
 
    use qm2_davidson_module ! CML TEST 7/15/12
-
+    use xlbomd_module, only : K
     implicit none
 
 
@@ -117,6 +117,7 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
     save abstol !Underflow limit for dspevr
 
 !Initialisation on first call
+if(qmmm_nml%density_predict.gt.0) then
    if(qmmm_struct%qm2_scf_first_call) then
       ! for fixed number of iterations the very first call has to be regular one
       ! with high accuracy
@@ -135,13 +136,16 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
 !      smallsum = 10.0D0 * sqrt(smallsum)
       abstol = 2.0d0 * dlamch('S') !tolerance for dspevr
       qmmm_struct%qm2_scf_first_call=.false.
+   elseif((qmmm_nml%density_predict==2).and.(qmmm_struct%num_qmmm_calls.lt.(K+1))) then
+      !Do nothing until all Phi are full for XL-BOMD
+      !write(6,*) 'Filling Phi_',qmmm_struct%num_qmmm_calls+1,'with fully converged result'
    else
       if(itrmax_local<0) then
          ! restoring fixed-number-of-iterations itrmax
          qmmm_nml%itrmax=itrmax_local
       end if
    end if   
-
+end if
 !Initialisation on every call
     converged = .false.
     first_iteration = .true.

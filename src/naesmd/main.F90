@@ -232,6 +232,7 @@ program MD_Geometry
       write(6,*)"Begin classical propagation step #",imdqt
       tfemto=tfemto+dtmdqt*convtf
          qmmm_struct%state_of_interest=ihop;
+         qmmm_struct%num_qmmm_calls=imdqt !for BO dynamics
 
       if(state.eq.'exct'.and.ibo.ne.1) then
          call verlet1(sim)
