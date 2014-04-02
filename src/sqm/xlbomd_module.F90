@@ -82,8 +82,22 @@ contains
 
 		integer		::	n,num_calls
 		_REAL_		::	P(:)
-		if(num_calls>K) then !this is after the initial 'burn in'
+
+		if (num_calls<K+2) then !Initial burnin
+                        !Add the solved density matrix as the initial guess for 'burn in'
+                        write(6,*)'XL-BOMD Burn in:',num_calls
+                        if (num_calls>0) then
+                        	phi_point(K+2-num_calls)%guess=P
+			endif
+                        write(6,*)'Density matrix from burnin', num_calls
+                        write(6,*)P
+			write(6,*)'***********************************************************************'
+                endif   
+		if (num_calls>K+1) then !this is after the initial 'burn in' and on the first step
 			!Test
+			write(6,*)'Input density matrix D'
+			write(6,*)P
+			write(6,*)'----------------------------------------------------------------------'
 			do n=1,K+1
 				write(6,*)'Initial Density Matrix',n
 				write(6,*)phi_point(n)%guess
@@ -121,13 +135,6 @@ contains
 			!write(6,*)'P'
 			!write(6,*)P
 			!write(6,*)'---------------------------------------------------------------------'
-		
-		else !this is before the initial 'burn in'
-			!Add the solved density matrix as the initial guess for 'burn in'
-			write(6,*)'XL-BOMD Burn in:',num_calls+1
-			phi_point(K+1-num_calls)%guess=P
-			write(6,*)'Density matrix from burnin', num_calls+1
-			write(6,*)P
 		endif	
 	end subroutine predictdens_xlbomd
 

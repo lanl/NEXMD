@@ -1,14 +1,14 @@
 &qmmm
    !***** Ground state and output parameters
    qm_theory='AM1', !Integral type
-   scfconv=1.0d-9, !Ground state scf convergence criteria
+   scfconv=1.0d-10, !Ground state scf convergence criteria
    verbosity=5, !
    printcharges=0, ! Mulliken charges for ground state
    printdipole=1, ! (0) None, (1) Transition, Relaxed, and Unrelaxed
    printbondorders=0, ! (0) No, (1) Yes
-   density_predict=2, !(0) None, (1) Reversible MD, (2) XL-BOMD
-   K=3, ! XL-BOMD Parameter (3-9)
-   itrmax=-4, ! Maximum number of scf iterations for ground state, negative to ignore convergence
+   density_predict=0, !(0) None, (1) Reversible MD, (2) XL-BOMD
+   K=9, ! XL-BOMD Parameter (3-9)
+   itrmax=-5, ! Maximum number of scf iterations for ground state, negative to ignore convergence
 
    !***** Excited state parameters
    exst_method=1, ! CIS (1) or RPA (2)
@@ -24,13 +24,13 @@
 
    !***** Solvent models
    ceps=1000, !Dielectric constant
-   cosmo_scf_ftol=1.0d-8, !State specific scf tolerance
+   cosmo_scf_ftol=1.0d-7, !State specific scf tolerance
    EF=0, !(1) Electric field in ground and excited state, (2) Electric field in excited state only
    Ex=0, !Electric Field Vector X 
    Ez=0, !Electric Field Vector Z
    Ey=0.01, !Electric Field Vector Y
    onsager_radius=2, ! Onsager radius
-   solvent_model=0, ! (0) None, (1) LR, (>1) SS 
+   solvent_model=2, ! (0) None, (1) LR, (>1) SS 
 		!2-[V_s(T+Z),xi], 3-[V_s(xi),xi], (4-[V_s(T+Z),rho_0+xi], 5-[V_s(xi),rho_0+xi] for testing)
    potential_type=3, ! (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
 &endqmmm
@@ -39,13 +39,13 @@
    !***** General parameters
    rnd_seed=1, ! seed for the random number generator
    bo_dynamics_flag=1, ! 0-non-BO, 1-BO
-   exc_state_init=0, ! initial excited state (0 - ground state)
-   n_exc_states_propagate=0, ! number of excited states
+   exc_state_init=2, ! initial excited state (0 - ground state)
+   n_exc_states_propagate=2, ! number of excited states
 
    !***** Dynamics parameters
    time_init=0.d0, ! initial time, fs
    time_step=0.5, !time step, fs
-   n_class_steps=6, !number of classical steps
+   n_class_steps=0, !number of classical steps
    n_quant_steps=1, ! number of quantum steps for each classical step
    moldyn_deriv_flag=1, ! 0-none, 1-analyt, 2-numeric
    num_deriv_step=1.d-5, ! displacement for numerical derivatives, A
@@ -75,8 +75,8 @@
 &endmoldyn
 
 &coord
-   1   1.1  0.0  0.0
-   1   0.0  0.0  0.0
+   6   1.1  0.0  0.0
+   8   0.0  0.0  0.0
 &endcoord
 
 &veloc

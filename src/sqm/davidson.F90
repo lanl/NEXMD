@@ -358,7 +358,7 @@
       nd,nd1,vexp1,vexp,ray,rayv,rayvL,rayvR,raye,raye1, &
       ray1,ray1a,ray2,idav,istore)
    use qm2_davidson_module   
-  use cosmo_C,only:solvent_model 
+   use cosmo_C,only:solvent_model 
    implicit none
 
    logical check_symmetry; !!JAB Testing

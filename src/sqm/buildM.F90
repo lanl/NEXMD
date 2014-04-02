@@ -55,15 +55,15 @@ subroutine Lxi_testing(u1,v1,solvent_model)
         call VxiM_end(qm2ds%eta,tmp); !Add selected potential to vacuum correlation
    elseif((solvent_model.eq.2).or.(solvent_model.eq.4)) then ! 2: State Specific [V_s(T+Z),xi]
         !Commutator is performed here for State Specific Solvent Routines
-        call commutator(v_solvent_difdens,qm2ds%xi,qm2ds%Nb,tmp,.false.)
+        call commutator(v_solvent_difdens/2.0,qm2ds%xi,qm2ds%Nb,tmp,.false.)
         if (solvent_model.eq.4) then !4: State Specific Solvent Model with [V_s(T+Z),rho_0]**
-        tmp=tmp+2*v_solvent_difdens 
+        tmp=tmp+v_solvent_difdens 
         endif
         call VxiM_end(qm2ds%eta,tmp)
    elseif((solvent_model.eq.3).or.(solvent_model.eq.5)) then !3: State Specific [V_s(xi),xi]
-        call commutator(v_solvent_xi,qm2ds%xi,qm2ds%Nb,tmp,.false.)
+        call commutator(v_solvent_xi/2.d0,qm2ds%xi,qm2ds%Nb,tmp,.false.)
         if (solvent_model.eq.5) then !5: State Specific Solvent Model with [V_s(xi),rho_0]
-        tmp=tmp+2*v_solvent_xi
+        tmp=tmp+v_solvent_xi
         end if
         call VxiM_end(qm2ds%eta,tmp)
    elseif(solvent_model.eq.6) then!6: Solve nonlinear Liouville equation testing
@@ -264,7 +264,7 @@ subroutine solvent_scf_and_davidson_test();
   INTRINSIC        INT, MIN
   integer two;
         
-        write(6,*) 'STATE SPECIFIC SOLVENT' !!JAB Testing
+  write(6,*) 'STATE SPECIFIC SOLVENT' !!JAB Testing
         
   if ((solvent_model.eq.3).or.(solvent_model.eq.5)) then
     call calc_cosmo_3();
@@ -294,9 +294,7 @@ subroutine calc_cosmo_2()
         integer k,p,h
         _REAL_ e0_0,e0_k,e0_k_1;
         logical calc_Z;
-        
-        
-        
+         
         !Initial Davidson Call (in vacuum) and T+Z calcualtion
         call davidson();
 	!call do_sqm_and_davidson_update()
@@ -321,6 +319,7 @@ subroutine calc_cosmo_2()
         qm2ds%verbosity=0; !turn off davidson output
         e0_0 = qm2ds%e0(qmmm_struct%state_of_interest); !save vacuum energy
         e0_k_1 = e0_0 !initial energy
+	write(6,*)'Calling Davidson'
         call davidson(); !first davidson call with solvent potential
         !call do_sqm_and_davidson_update()
         e0_k = qm2ds%e0(qmmm_struct%state_of_interest); !save first solventenergy

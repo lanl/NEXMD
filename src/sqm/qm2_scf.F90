@@ -125,7 +125,6 @@ if(qmmm_nml%density_predict.gt.0) then
          itrmax_local=qmmm_nml%itrmax
          qmmm_nml%itrmax=1000 ! default value
       end if   
-
       !Find precision limits of this machine
       call qm2_smallest_number(small,smallsum)
       ! smallsum should be the smallest number for which 1.0D0 + smallsum /= 1.0D0
@@ -136,9 +135,11 @@ if(qmmm_nml%density_predict.gt.0) then
 !      smallsum = 10.0D0 * sqrt(smallsum)
       abstol = 2.0d0 * dlamch('S') !tolerance for dspevr
       qmmm_struct%qm2_scf_first_call=.false.
-   elseif((qmmm_nml%density_predict==2).and.(qmmm_struct%num_qmmm_calls.lt.(K+1))) then
+      write(6,*) 'Filling Phi first iteration full convergence'
+   elseif((qmmm_nml%density_predict==2).and.(qmmm_struct%num_qmmm_calls.lt.(K+2))) then
+      
       !Do nothing until all Phi are full for XL-BOMD
-      !write(6,*) 'Filling Phi_',qmmm_struct%num_qmmm_calls+1,'with fully converged result'
+      write(6,*) 'Filling Phi_',qmmm_struct%num_qmmm_calls+1,'with fully converged result'
    else
       if(itrmax_local<0) then
          ! restoring fixed-number-of-iterations itrmax
