@@ -126,6 +126,8 @@ contains
 			!Add the solved density matrix as the initial guess for 'burn in'
 			write(6,*)'XL-BOMD Burn in:',num_calls+1
 			phi_point(K+1-num_calls)%guess=P
+			write(6,*)'Density matrix from burnin', num_calls+1
+			write(6,*)P
 		endif	
 	end subroutine predictdens_xlbomd
 
