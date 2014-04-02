@@ -37,7 +37,7 @@ contains
 		!Allocate and assign coefficients
 		allocate(coef(K+1))
 		allocate(phi(mat_size,K+1))
-		allocate(phi_point(K+1))
+		allocate(phi_point(K+2)) !K+2 is here for rotating the pointers
 		phi=0.d0 !Clear phi
 		select case (K)	
 			case(3)
@@ -83,6 +83,12 @@ contains
 		integer		::	n,num_calls
 		_REAL_		::	P(:)
 		if(num_calls>K) then !this is after the initial 'burn in'
+			!Test
+			do n=1,K+1
+				write(6,*)'Initial Density Matrix',n
+				write(6,*)phi_point(n)%guess
+				write(6,*)'------------------------------------------------------------------'
+			enddo
 			!Calculate new initial guess
 			write(6,*)'XL-BOMD Predicted Initial Guess'
 			P=2.0*phi_point(1)%guess-phi_point(2)%guess+dt2w2*(P-phi_point(1)%guess)
@@ -90,13 +96,32 @@ contains
 				P=P+xlalpha*coef(n)*phi_point(n)%guess
 			enddo
 			
+			phi_point(K+2)%guess=>phi_point(K+1)%guess !extra pointer for rotating
 			!Increment the stack of initial guesses
-			phi_point(1)%guess=>phi_point(K+1)%guess!points to last member of the stack for replacement
 			do n=K,1,-1 !Increment stack
 				phi_point(n+1)%guess=>phi_point(n)%guess
 			enddo
-			phi_point(1)%guess=P !Push new guess onto stack
+                        phi_point(1)%guess=>phi_point(K+2)%guess!points to last member of the previous stack for replacement
 
+			!Test 1
+                        !do n=1,K+1
+                        !        write(6,*)'Final Density Matrix 1',n
+                        !        write(6,*)phi_point(n)%guess
+                        !        write(6,*)'--------------------------------------------------------------------'
+                        !enddo
+
+			phi_point(1)%guess=P !Push new guess onto stack
+			
+			!Test 2
+			!do n=1,K+1
+			!	write(6,*)'Final Density Matrix 2',n
+			!	write(6,*)phi_point(n)%guess
+			!	write(6,*)'--------------------------------------------------------------------'
+			!enddo
+			!write(6,*)'P'
+			!write(6,*)P
+			!write(6,*)'---------------------------------------------------------------------'
+		
 		else !this is before the initial 'burn in'
 			!Add the solved density matrix as the initial guess for 'burn in'
 			write(6,*)'XL-BOMD Burn in:',num_calls+1
