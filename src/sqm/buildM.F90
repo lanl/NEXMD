@@ -59,6 +59,9 @@ subroutine Lxi_testing(u1,v1,solvent_model)
         if (solvent_model.eq.4) then !4: State Specific Solvent Model with [V_s(T+Z),rho_0]**
         tmp=tmp+v_solvent_difdens 
         endif
+        write(6,*)'v_solvent_difdens',v_solvent_xi
+        write(6,*)'qm2ds%eta',qm2ds%eta
+	write(6,*)'qm2ds%rhoTZ',qm2ds%rhoTZ
         call VxiM_end(qm2ds%eta,tmp)
    elseif((solvent_model.eq.3).or.(solvent_model.eq.5)) then !3: State Specific [V_s(xi),xi]
         call commutator(v_solvent_xi/2.d0,qm2ds%xi,qm2ds%Nb,tmp,.false.)
