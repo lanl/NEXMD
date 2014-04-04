@@ -1948,14 +1948,14 @@ SUBROUTINE qm2_densmat(scf_iteration,n,den_matrix,density_diff)
 !     density_diff = 0.d0
      !OPENMP PARALLEL
 
-     if(qmmm_nml%itrmax>0) then ! standard sqm mixing
+     !if(qmmm_nml%itrmax>0) then ! standard sqm mixing
         call qm2_cnvg(den_matrix, qm2_struct%old_den_matrix, &
            qm2_struct%old2_density,qm2_struct%norbs,scf_iteration,density_diff)
-     else
-        print*,'Simple mixing'
-        call qm2_cnvg_simple(den_matrix, qm2_struct%old_den_matrix, &
-           qm2_struct%old2_density,qm2_struct%norbs,scf_iteration,density_diff)
-     end if
+     !else
+     !   print*,'Simple mixing'
+     !   call qm2_cnvg_simple(den_matrix, qm2_struct%old_den_matrix, &
+     !      qm2_struct%old2_density,qm2_struct%norbs,scf_iteration,density_diff)
+     !end if
 
 !==============
 ! prevent cnvg

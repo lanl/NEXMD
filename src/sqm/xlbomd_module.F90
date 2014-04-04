@@ -85,26 +85,26 @@ contains
 
 		if (num_calls<K+2) then !Initial burnin
                         !Add the solved density matrix as the initial guess for 'burn in'
-                        write(6,*)'XL-BOMD Burn in:',num_calls
+                        !write(6,*)'XL-BOMD Burn in:',num_calls
                         if (num_calls>0) then
                         	phi_point(K+2-num_calls)%guess=P
 			endif
-                        write(6,*)'Density matrix from burnin', num_calls
-                        write(6,*)P
-			write(6,*)'***********************************************************************'
+                        !write(6,*)'Density matrix from burnin', num_calls
+                        !write(6,*)P
+			!write(6,*)'***********************************************************************'
                 endif   
 		if (num_calls>K+1) then !this is after the initial 'burn in' and on the first step
 			!Test
 			write(6,*)'Input density matrix D'
 			write(6,*)P
 			write(6,*)'----------------------------------------------------------------------'
-			do n=1,K+1
-				write(6,*)'Initial Density Matrix',n
-				write(6,*)phi_point(n)%guess
-				write(6,*)'------------------------------------------------------------------'
-			enddo
+			!do n=1,K+1
+			!	write(6,*)'Initial Density Matrix',n
+			!	write(6,*)phi_point(n)%guess
+			!	write(6,*)'------------------------------------------------------------------'
+			!enddo
 			!Calculate new initial guess
-			write(6,*)'XL-BOMD Predicted Initial Guess'
+			!write(6,*)'XL-BOMD Predicted Initial Guess'
 			P=2.0*phi_point(1)%guess-phi_point(2)%guess+dt2w2*(P-phi_point(1)%guess)
 			do n=1,K+1
 				P=P+xlalpha*coef(n)*phi_point(n)%guess
@@ -116,7 +116,11 @@ contains
 				phi_point(n+1)%guess=>phi_point(n)%guess
 			enddo
                         phi_point(1)%guess=>phi_point(K+2)%guess!points to last member of the previous stack for replacement
-
+			
+			!Test 0
+			write(6,*)'Predicted Density Matrix'
+			write(6,*)P
+			write(6,*)'--------------------------------------------------------------------'
 			!Test 1
                         !do n=1,K+1
                         !        write(6,*)'Final Density Matrix 1',n
