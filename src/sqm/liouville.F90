@@ -167,7 +167,14 @@
       eta(i,i)=qm2ds%etas(l)
    end do
 
-!  antisymmetric part:
+        !write(6,"('eta9:','00',':',10i8)")1,2,3,4,5,6,7,8,9,10
+        !do i=1,qm2ds%Nb
+        !write(6,"('eta9:',i2,':',10f8.4)")i,eta(:,i);
+        !enddo
+
+
+!  antisymmetric part: !This isn't necessary and is a bug JAB
+if(1==0) then !Removed by JAB
    l=0
    do i=1,qm2ds%Nb
     do j = 1,i
@@ -188,6 +195,13 @@
       l = l + 1
 !     if (abs(etas(l)).gt.1d-10) stop 'Vxi: design'
    end do
+endif
+        write(6,"('eta99:','00',':',10i8)")1,2,3,4,5,6,7,8,9,10
+        do i=1,qm2ds%Nb
+        write(6,"('eta99:',i2,':',10f8.4)")i,eta(:,i);
+        enddo
+        
+
 
    return
 

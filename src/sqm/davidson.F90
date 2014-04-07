@@ -695,29 +695,29 @@
 
    !!JAB Testing
    !Check matrix symmetry as required by dsyev eigenproblem routine
-        !if(.not.check_symmetry(rayvR,nd)) then
+        if(.not.check_symmetry(rayvR,nd)) then
                         
-        !write(6,*) 'M4',M4,'qm2ds%nb',qm2ds%nb,'size(vexp(:,1))',size(vexp(:,1))
-        !write(6,*) 'TEST nd1    nd1     orb     orb        rayvR(i.j)      rayvR(j.i)      vexp    vexp1'
-        !do i=1,nd1
-        !do j=1,nd1
-        !c=0
-        !do k=1,qm2ds%nb
-        !do l=1,qm2ds%nb/2
-        !u=(k-1)*qm2ds%nb/2+l
-        !c=c+1
-        !write(6,"(5I4,8g15.5)")&
-        ! i,j,k,l,c,rayvR(i,j),rayvR(j,i),vexp1(u,i),vexp(u,j),vexp1(u,j),vexp(u,i),&
-        ! vexp1(u,i)*vexp(u,j),vexp1(u,j)*vexp(u,i)
-        !end do
-        !end do
-        !end do
-        !end do
-        !write(6,*)"Error: rayvR non-symmetric. Something is wrong&
-        !                 with the Liouville equation.(x_n|L(x_m)).ne.(x_m|L(x_n))"
+        write(6,*) 'M4',M4,'qm2ds%nb',qm2ds%nb,'size(vexp(:,1))',size(vexp(:,1))
+        write(6,*) 'TEST nd1    nd1     orb     orb        rayvR(i.j)      rayvR(j.i)      vexp    vexp1'
+        do i=1,nd1
+        do j=1,nd1
+        c=0
+        do k=1,qm2ds%nb
+        do l=1,qm2ds%nb/2
+        u=(k-1)*qm2ds%nb/2+l
+        c=c+1
+        write(6,"(5I4,8g15.5)")&
+         i,j,k,l,c,rayvR(i,j),rayvR(j,i),vexp1(u,i),vexp(u,j),vexp1(u,j),vexp(u,i),&
+         vexp1(u,i)*vexp(u,j),vexp1(u,j)*vexp(u,i)
+        end do
+        end do
+        end do
+        end do
+        write(6,*)"Error: rayvR non-symmetric. Something is wrong&
+                         with the Liouville equation.(x_n|L(x_m)).ne.(x_m|L(x_n))"
 
-        !stop
-        !end if
+        stop
+        end if
    !!End JAB Testing
   
  call dsyev ('v','u',nd1,rayvR,nd,raye,xi,qm2ds%Nrpa,info) 
@@ -755,12 +755,10 @@
 
    !!JAB Testing
    !Check matrix symmetry as required by dsyev eigenproblem routine
-        !if(.not.check_symmetry(rayv,nd)) then
-                 !write(6,*) "rayv symmetric"
-        !else
-        !         write(6,*) "Error: rayv non-symmetric"
-        !         stop
-        !end if
+        if(check_symmetry(rayv,nd)) then
+                 write(6,*) "Error: rayv non-symmetric"
+                 stop
+        end if
    !!End JAB Testing
 
 ! find eigenvalues and eigenvectors of ray

@@ -39,7 +39,13 @@ subroutine Lxi_testing(u1,v1,solvent_model)
    call mo2site(u1,qm2ds%xi,qm2ds%eta) !Change basis of guess vector of Davidson from M.O to A.O
    qm2ds%eta=0.0;
    call Vxi(qm2ds%xi,qm2ds%eta); !Calculate Vacuum Electron Correlation
+        write(6,"('eta1:','00',':',10i8)")1,2,3,4,5,6,7,8,9,10
+        do i=1,qm2ds%Nb
+        write(6,"('eta1:',i2,':',10f8.4)")i,qm2ds%eta(qm2ds%Nb*(i-1)+1:qm2ds%Nb*i);
+        enddo
+	
    !!SELECT SOLVENT MODEL AND POTENTIAL TYPE
+	!write(6,*)'qm2ds%eta',qm2ds%eta;
    if ((solvent_model.eq.1).or.(solvent_model.eq.99)) then !1:Linear Response,99:Z-vector eq.
         tmp=0.d0;
         if (potential_type.eq.3) then !COSMO Potential
@@ -54,15 +60,23 @@ subroutine Lxi_testing(u1,v1,solvent_model)
         endif         
         call VxiM_end(qm2ds%eta,tmp); !Add selected potential to vacuum correlation
    elseif((solvent_model.eq.2).or.(solvent_model.eq.4)) then ! 2: State Specific [V_s(T+Z),xi]
+	tmp=0.d0
         !Commutator is performed here for State Specific Solvent Routines
         call commutator(v_solvent_difdens/2.0,qm2ds%xi,qm2ds%Nb,tmp,.false.)
         if (solvent_model.eq.4) then !4: State Specific Solvent Model with [V_s(T+Z),rho_0]**
         tmp=tmp+v_solvent_difdens 
         endif
-        write(6,*)'v_solvent_difdens',v_solvent_xi
-        write(6,*)'qm2ds%eta',qm2ds%eta
-	write(6,*)'qm2ds%rhoTZ',qm2ds%rhoTZ
+        !write(6,"('eta1:','00',':',10i8)")1,2,3,4,5,6,7,8,9,10
+	!do i=1,qm2ds%Nb
+        !write(6,"('difdens:',i2,':',10f8.4)")i,tmp(i,:);
+	!enddo
+        !write(6,*)'qm2ds%eta',qm2ds%eta; pause;
+	!write(6,*)'qm2ds%rhoTZ',qm2ds%rhoTZ
         call VxiM_end(qm2ds%eta,tmp)
+	write(6,"('eta1:','00',':',10i8)")1,2,3,4,5,6,7,8,9,10
+	do i=1,qm2ds%Nb
+        write(6,"('eta2:',i2,':',10f8.4)")i,qm2ds%eta(qm2ds%Nb*(i-1)+1:qm2ds%Nb*i);
+        enddo
    elseif((solvent_model.eq.3).or.(solvent_model.eq.5)) then !3: State Specific [V_s(xi),xi]
         call commutator(v_solvent_xi/2.d0,qm2ds%xi,qm2ds%Nb,tmp,.false.)
         if (solvent_model.eq.5) then !5: State Specific Solvent Model with [V_s(xi),rho_0]
@@ -267,7 +281,7 @@ subroutine solvent_scf_and_davidson_test();
   INTRINSIC        INT, MIN
   integer two;
         
-  write(6,*) 'STATE SPECIFIC SOLVENT' !!JAB Testing
+  write(6,*) 'Using state specific solvent model',solvent_model !!JAB Testing
         
   if ((solvent_model.eq.3).or.(solvent_model.eq.5)) then
     call calc_cosmo_3();
@@ -297,24 +311,26 @@ subroutine calc_cosmo_2()
         integer k,p,h
         _REAL_ e0_0,e0_k,e0_k_1;
         logical calc_Z;
-         
+	_REAL_ temp(qm2ds%Nb**2)        
+
+	write(6,*)'Initializing' 
         !Initial Davidson Call (in vacuum) and T+Z calcualtion
         call davidson();
 	!call do_sqm_and_davidson_update()
         calc_Z=.true.
+	qm2ds%tz_scratch=0.d0
         qmmm_struct%qm_mm_first_call = .false.
-        qm2ds%eta(:)=0.d0 !Clearing
         call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
-        call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
-        v_solvent_difdens=0.d0;
+        call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,temp,qm2ds%tz_scratch)
 
+        v_solvent_difdens=0.d0;
         !Calculate Solvent Potential
         if(potential_type.eq.3) then !COSMO
-        call VxiM(qm2ds%eta,v_solvent_difdens);
+        call VxiM(temp,v_solvent_difdens);
         elseif(potential_type.eq.2) then!ONSAGER
-        call rcnfld(v_solvent_difdens,qm2ds%eta,qm2ds%Nb)
+        call rcnfld(v_solvent_difdens,temp,qm2ds%Nb)
         elseif(potential_type.eq.1) then!Straight Correlation
-        call Vxi(qm2ds%eta,v_solvent_difdens)
+        call Vxi(temp,v_solvent_difdens)
         endif
 
         !First SCF step
@@ -346,15 +362,15 @@ subroutine calc_cosmo_2()
                 !Save last transition density in AO Basis could easily switch
                 !this to RhoT
                 call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
-                call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
+                call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,temp,qm2ds%tz_scratch);
 
                 !Calculate Solvent Potential
                 if(potential_type.eq.3) then !COSMO
-                	call VxiM(qm2ds%eta,v_solvent_difdens);
+                	call VxiM(temp,v_solvent_difdens);
                 elseif(potential_type.eq.2) then!ONSAGER
-                	call rcnfld(v_solvent_difdens,qm2ds%eta,qm2ds%Nb)
+                	call rcnfld(v_solvent_difdens,temp,qm2ds%Nb)
                 elseif(potential_type.eq.0) then!Straight Correlation
-                	call Vxi(qm2ds%eta,v_solvent_difdens)
+                	call Vxi(temp,v_solvent_difdens)
                 endif
                 
                 e0_k_1 = e0_k !Save last transition energy
@@ -426,7 +442,7 @@ subroutine calc_cosmo_3()
         elseif(potential_type.eq.0) then!Straight Correlation
         call Vxi(qm2ds%eta,v_solvent_xi)
         endif
-
+        
         !First SCF step
         verbosity_save=qm2ds%verbosity; 
         qm2ds%verbosity=0; !turn off davidson output
