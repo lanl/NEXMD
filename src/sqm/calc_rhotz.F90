@@ -13,8 +13,10 @@ subroutine calc_rhotz(state, rhoTZ,calc_Z)
         integer i,ii,j,k,im,one,istate,mdflag,ip,ih,solvent_model_1
 
 	!Solvent for lhs of Z-vector equation
-	if((solvent_model.gt.0).and.(solvent_model.ne.4)) then
+	if(solvent_model.gt.0) then
 		solvent_model_1=99 !Use linear response solvent model for nonequillibrium
+	else
+		solvent_model_1=0
 	endif
 
         tmp=0.d0
@@ -87,8 +89,6 @@ if((solvent_model.eq.1)) then !Linear Response solvent
         call rcnfld(tmp,qm2ds%tz_scratch(1),qm2ds%nb);
         end if
         call VxiM_end(qm2ds%eta_tz,tmp); !Add selected potential to vacuum correlation
-else if (solvent_model.eq.2) then !State Specific
-        call VxiM_end(qm2ds%eta_tz,v_solvent_difdens/2.0);
 end if
 !!************END SOLVENT BLOCK
 

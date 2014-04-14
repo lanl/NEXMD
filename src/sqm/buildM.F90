@@ -52,10 +52,10 @@ subroutine Lxi_testing(u1,v1,solvent_model)
         call VxiM_end(qm2ds%eta,tmp); !Add selected potential to vacuum correlation
    elseif(solvent_model.eq.2) then ! 2: State Specific [V_s(T+Z),xi]
         !Commutator is performed here for State Specific Solvent Routines
-        call commutator(v_solvent_difdens/2.0,qm2ds%xi,qm2ds%Nb,tmp,.false.)
+        call commutator(v_solvent_difdens,qm2ds%xi,qm2ds%Nb,tmp,.false.)
         call VxiM_end(qm2ds%eta,tmp)
    elseif(solvent_model.eq.3) then !3: State Specific [V_s(xi),xi]
-        call commutator(v_solvent_xi/2.0,qm2ds%xi,qm2ds%Nb,tmp,.false.)
+        call commutator(v_solvent_xi,qm2ds%xi,qm2ds%Nb,tmp,.false.)
         call VxiM_end(qm2ds%eta,tmp)
    elseif(solvent_model.eq.6) then!6: Solve nonlinear Liouville equation testing
         call commutator(qm2ds%eta,qm2ds%xi,qm2ds%Nb,tmp,.false.)
