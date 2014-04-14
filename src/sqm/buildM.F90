@@ -44,30 +44,18 @@ subroutine Lxi_testing(u1,v1,solvent_model)
         tmp=0.d0;
         if (potential_type.eq.3) then !COSMO Potential
         call VxiM(qm2ds%xi,tmp);
-	!There is already a factor of two in this for some reason, so the factor of two below has been removed
-        !tmp=2.0*tmp !Factor of two for the commutator with rho_0 
         elseif (potential_type.eq.2) then !Onsager Potential
         call rcnfld(tmp,qm2ds%xi,qm2ds%nb)
-        !tmp=2.0*tmp
         elseif (potential_type.eq.1) then !testing
         do i=1,qm2ds%nb; tmp(i,i)=qm2ds%eta(qm2ds%nb*(i-1)+i); enddo !double diag vac correlation
         endif         
         call VxiM_end(qm2ds%eta,tmp); !Add selected potential to vacuum correlation
-   elseif((solvent_model.eq.2).or.(solvent_model.eq.4)) then ! 2: State Specific [V_s(T+Z),xi]
+   elseif(solvent_model.eq.2) then ! 2: State Specific [V_s(T+Z),xi]
         !Commutator is performed here for State Specific Solvent Routines
         call commutator(v_solvent_difdens/2.0,qm2ds%xi,qm2ds%Nb,tmp,.false.)
-        if (solvent_model.eq.4) then !4: State Specific Solvent Model with [V_s(T+Z),rho_0]**
-        tmp=tmp+v_solvent_difdens 
-        endif
-        write(6,*)'v_solvent_difdens',v_solvent_xi
-        write(6,*)'qm2ds%eta',qm2ds%eta
-	write(6,*)'qm2ds%rhoTZ',qm2ds%rhoTZ
         call VxiM_end(qm2ds%eta,tmp)
-   elseif((solvent_model.eq.3).or.(solvent_model.eq.5)) then !3: State Specific [V_s(xi),xi]
-        call commutator(v_solvent_xi/2.d0,qm2ds%xi,qm2ds%Nb,tmp,.false.)
-        if (solvent_model.eq.5) then !5: State Specific Solvent Model with [V_s(xi),rho_0]
-        tmp=tmp+v_solvent_xi
-        end if
+   elseif(solvent_model.eq.3) then !3: State Specific [V_s(xi),xi]
+        call commutator(v_solvent_xi/2.0,qm2ds%xi,qm2ds%Nb,tmp,.false.)
         call VxiM_end(qm2ds%eta,tmp)
    elseif(solvent_model.eq.6) then!6: Solve nonlinear Liouville equation testing
         call commutator(qm2ds%eta,qm2ds%xi,qm2ds%Nb,tmp,.false.)

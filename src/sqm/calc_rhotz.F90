@@ -11,10 +11,10 @@ subroutine calc_rhotz(state, rhoTZ,calc_Z)
         _REAL_ tmp(qm2ds%Nb,qm2ds%Nb)
         _REAL_ f,t,d,d1,ff,ff0,ff1,ff11
         integer i,ii,j,k,im,one,istate,mdflag,ip,ih,solvent_model_1
-	if((solvent_model.gt.0).and.(solvent_model.ne.10)) then
-		solvent_model_1=99 !Use linear response solvent model
-	else
-		solvent_model_1=0 !No solvent model by default
+
+	!Solvent for lhs of Z-vector equation
+	if((solvent_model.gt.0).and.(solvent_model.ne.4)) then
+		solvent_model_1=99 !Use linear response solvent model for nonequillibrium
 	endif
 
         tmp=0.d0
@@ -78,8 +78,8 @@ if (calc_Z) then
         call Vxi(qm2ds%tz_scratch(1),qm2ds%eta_tz)
 !**************END GAS PHASE BLOCK
 
-!**************SOLVENT BLOCK for V_s(xi) only calculated if [V_s(xi),rho_0] or[V_s(T+Z),rho_0]
-if((solvent_model.eq.1).or.(solvent_model.eq.5)) then ![V_s(xi),rho_0]
+!**************SOLVENT BLOCK for V_s(xi)
+if((solvent_model.eq.1)) then !Linear Response solvent
         tmp=0.d0;
         if (potential_type.eq.3) then !COSMO Potential
         call VxiM(qm2ds%tz_scratch(1),tmp); 
@@ -87,13 +87,8 @@ if((solvent_model.eq.1).or.(solvent_model.eq.5)) then ![V_s(xi),rho_0]
         call rcnfld(tmp,qm2ds%tz_scratch(1),qm2ds%nb);
         end if
         call VxiM_end(qm2ds%eta_tz,tmp); !Add selected potential to vacuum correlation
-else if (solvent_model.eq.4) then !4: State Specific Solvent Model with [V_s(T+Z),rho_0]**
-        !if (potential_type.eq.3) then !COSMO Potential
-        !call VxiM(unrelaxed_plus_relaxed_part,tmp);
-        !elseif (potential_type.eq.2) then !Onsager Potential
-        !call rcnfld(tmp,v_solvent_difdens,qm2ds%nb)
-        !endif
-        call VxiM_end(qm2ds%eta_tz,v_solvent_difdens);
+else if (solvent_model.eq.2) then !State Specific
+        call VxiM_end(qm2ds%eta_tz,v_solvent_difdens/2.0);
 end if
 !!************END SOLVENT BLOCK
 

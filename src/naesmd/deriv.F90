@@ -100,7 +100,7 @@ if (ihop>0) then
          call dcart1(dxyz1,qm2_struct%den_matrix,qm2ds%rhoTZ,qmmm_struct%qm_coords)
          !add solvent part (symmetric only b/c symmetric matrix)  
          if(solvent_model.gt.0) then
-                if((potential_type.eq.3).and.(ceps.gt.1.0)) then
+                if((potential_type.eq.3).and.(ceps.gt.1.0)) then !ceps.gt.1.0 because of singularity in cosmo subroutines
                   call cosmo_1_tri_2(qm2ds%rhoTZ,density2,charges2,acharges2) !solvent and solute charges 
                   call diegrd2(dxyz1_test,density2,charges2,acharges2) !derivative
                 elseif(potential_type.eq.2) then
@@ -129,8 +129,6 @@ if (ihop>0) then
             qscnet(:,1)=0.d0; qdenet(:,1)=0.d0; !Clear Nuclear Charges
             call cosmo_1_tri(qm2ds%tz_scratch(1)) !Fill Electronic Chrages
             call diegrd(dxyz1_test); !derivative
-            !call cosmo_1_tri(qm2ds%tz_scratch(qm2ds%nb**2+1)) !Fill Electronic Chrages
-            !call diegrd(dxyz1_test); !derivative
 		dxyz1_test=2.0*dxyz1_test !Don't know why this factor of two is here
          elseif(potential_type.eq.2) then
             call rcnfldgrad_full(dxyz1_test,qm2ds%rhoLZ,qm2ds%nb); 
@@ -143,7 +141,36 @@ if (ihop>0) then
                dxyz((i-1)*3+j)=dxyz((i-1)*3+j)-dxyz1(j,i)*KCAL_TO_EV
             end do
          end do
-         end if !ihop>0
+
+!STATE SPECIFIC SOLVENT TERMS
+         if(solvent_model.eq.2) then
+		!Get unrelaxed density matrix
+		call calc_rhotz(ihop, qm2ds%rhoT,.false.)
+      		call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoT,qm2ds%tz_scratch(1), &
+         		qm2ds%tz_scratch(qm2ds%Nb**2+1))
+      		call packing(qm2ds%Nb,qm2ds%tz_scratch(1),qm2ds%rhoT,'s')
+		!Get relaxed density matrix for the state specific state
+	        call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,.true.);
+                call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%tz_scratch(1), &
+                        qm2ds%tz_scratch(qm2ds%Nb**2+1))
+                call packing(qm2ds%Nb,qm2ds%tz_scratch(1),qm2ds%rhoTZ,'s')
+
+                if((potential_type.eq.3).and.(ceps.gt.1.0)) then !ceps.gt.1.0 because of singularity in cosmo subroutines
+		  call cosmo_1_tri(qm2ds%rhoTZ) !fill solvent charges
+                  call cosmo_1_tri_2(qm2ds%rhoT,density2,charges2,acharges2) !fill solute charges 
+                  call diegrd2(dxyz1_test,density2,charges2,acharges2) !derivative
+                elseif(potential_type.eq.2) then
+                  call rcnfldgrad2(dxyz1_test,qm2ds%rhoTZ,qm2ds%rhoT,qm2ds%nb,.true.)
+                endif
+         dxyz1=dxyz1+dxyz1_test
+
+         	do i=1,qmmm_struct%nquant_nlink
+            		do j=1,3
+               			dxyz((i-1)*3+j)=dxyz((i-1)*3+j)-dxyz1(j,i)*KCAL_TO_EV
+            		end do
+         	end do
+	endif
+end if !ihop>0
 
 !NUMERICAL DERIVATIVES
         !Currently wastes many resources by running full calculations for each
