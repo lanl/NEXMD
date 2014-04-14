@@ -24,7 +24,7 @@
    _REAL_ :: Escf_right,Escf_left,E_ES_right,E_ES_left,h
    _REAL_ :: tmp(qm2_struct%norbs,qm2_struct%norbs)
    simpoint=>sim
-write(6,*)'Calculating Derivatives'
+write(6,*)'Calculating GS Derivatives'
 !Collect coordinates in vector
    do i=1,qmmm_struct%nquant_nlink
       do j = 1,3
@@ -277,7 +277,6 @@ end if !ihop>0
    qmmm_nml%verbosity=oldverbosity
 
    end if !deriv flag
-write(6,*)'test'
 !WRITE RESULTS 
    if(qmmm_mpi%commqmmm_master .AND. qmmm_nml%verbosity > 3) then
       !If verbosity level is greater than 3 we also print the force array on the
