@@ -361,7 +361,7 @@ subroutine calc_cosmo_4(sim_target)
         use communism
         use qmmm_module,only:qm2_struct,qmmm_struct,qmmm_nml;
         use cosmo_C, only: v_solvent_difdens, rhotzpacked_k,cosmo_scf_ftol,potential_type;
-        use constants, only : ZERO
+        use constants, only : ZERO,AU_TO_EV
 
         implicit none
         type(simulation_t),target::sim_target
@@ -394,10 +394,10 @@ subroutine calc_cosmo_4(sim_target)
         qmmm_nml%verbosity=0
         qm2ds%verbosity=0; !turn off davidson output
 	qmmm_nml%printdipole=0;
-        e0_0 = sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0; !save vacuum energy
+        e0_0 = (sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0)*AU_TO_EV; !save vacuum energy
         e0_k_1 = e0_0 !initial energy
         call do_sqm_davidson_update(sim)
-        e0_k = sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0; !save first solventenergy
+        e0_k = (sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0)*AU_TO_EV; !save first solventenergy
 
         !Write header for SCF iterations
         write(6,*)'Start equilibrium state-specific COSMO SCF'
@@ -420,7 +420,7 @@ subroutine calc_cosmo_4(sim_target)
 
                 e0_k_1 = e0_k !Save last transition energy
                 call do_sqm_davidson_update(sim) !to include in the groundstate
-                e0_k = sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0;
+                e0_k = (sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0)*AU_TO_EV;
 
                 write(6,111)k, e0_k ,e0_k-e0_0,abs(e0_k-e0_k_1), e0_k_1-e0_k ,cosmo_scf_ftol
         end do
