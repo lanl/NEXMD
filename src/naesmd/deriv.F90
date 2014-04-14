@@ -24,7 +24,7 @@
    _REAL_ :: Escf_right,Escf_left,E_ES_right,E_ES_left,h
    _REAL_ :: tmp(qm2_struct%norbs,qm2_struct%norbs)
    simpoint=>sim
-
+write(6,*)'Calculating Derivatives'
 !Collect coordinates in vector
    do i=1,qmmm_struct%nquant_nlink
       do j = 1,3
@@ -76,7 +76,7 @@ if(qmmm_struct%ideriv.eq.1) then !analytical derivatives
       end do
 
 if (ihop>0) then
-
+write(6,*)'Calculating Excited State Derivatives'
 !CALCULATE EXCITED STATE DERIVATIVES
 !Omega^x=Tr(F^x rhoTZ)+Tr(V^x(xi) xi^+)
 !TERM 1: Tr(F^x rhoTZ)
@@ -85,6 +85,7 @@ if (ihop>0) then
       ! add allocation to the big allocation/dealloc regime
       
       ! Get excited state density
+!	write(6,*)'test1'
       call calc_rhotz(ihop, qm2ds%rhoTZ,.true.)
       call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%tz_scratch(1), &
          qm2ds%tz_scratch(qm2ds%Nb**2+1))
@@ -93,7 +94,7 @@ if (ihop>0) then
          ihop,qm2ds%v0,qm2ds%tz_scratch(1))
       call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%tz_scratch(1),qm2ds%rhoLZ, &
          qm2ds%tz_scratch(qm2ds%Nb**2+1))
-
+!write(6,*)'test2'
          dxyz1=0.d0; dxyz1_test=0.d0;
 
          !calculate vacuum derivative for term 1
@@ -143,12 +144,16 @@ if (ihop>0) then
          end do
 
 !STATE SPECIFIC SOLVENT TERMS
-         if(solvent_model.eq.2) then
+         if((solvent_model.eq.2).or.(solvent_model.eq.4)) then
 		!Get unrelaxed density matrix
-		call calc_rhotz(ihop, qm2ds%rhoT,.false.)
-      		call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoT,qm2ds%tz_scratch(1), &
-         		qm2ds%tz_scratch(qm2ds%Nb**2+1))
-      		call packing(qm2ds%Nb,qm2ds%tz_scratch(1),qm2ds%rhoT,'s')
+		if(solvent_model.eq.2) then
+			call calc_rhotz(ihop, qm2ds%rhoT,.false.)
+      			call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoT,qm2ds%tz_scratch(1), &
+         			qm2ds%tz_scratch(qm2ds%Nb**2+1))
+      			call packing(qm2ds%Nb,qm2ds%tz_scratch(1),qm2ds%rhoT,'s')
+		elseif(solvent_model.eq.4) then
+			qm2ds%rhoT(1:qm2ds%nb*(qm2ds%nb+1)/2)=qm2ds%rhoTZ(1:qm2ds%nb*(qm2ds%nb+1)/2)+qm2_struct%den_matrix
+		endif
 		!Get relaxed density matrix for the state specific state
 	        call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,.true.);
                 call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%tz_scratch(1), &
@@ -163,7 +168,7 @@ if (ihop>0) then
                   call rcnfldgrad2(dxyz1_test,qm2ds%rhoTZ,qm2ds%rhoT,qm2ds%nb,.true.)
                 endif
          dxyz1=dxyz1+dxyz1_test
-
+   
          	do i=1,qmmm_struct%nquant_nlink
             		do j=1,3
                			dxyz((i-1)*3+j)=dxyz((i-1)*3+j)-dxyz1(j,i)*KCAL_TO_EV
@@ -231,18 +236,19 @@ end if !ihop>0
    qmmm_nml%verbosity=oldverbosity
 
    end if !deriv flag
+write(6,*)'test'
 !WRITE RESULTS 
    if(qmmm_mpi%commqmmm_master .AND. qmmm_nml%verbosity > 3) then
       !If verbosity level is greater than 3 we also print the force array on the
       !QM atoms
-      write (6,'("QMMM:")')
+      !write (6,'("QMMM:")')
       write (6,'("QMMM: Forces on QM atoms ground state calculation (eV)")')
       write (6,'("QMMM: state=",2i3)') ihop, qm2ds%struct_opt_state
       write (6,'("QMMM: Atm ",i6,": ",3f20.14)') (j,-dxyz_gs(1+3*(j-1)), &
          -dxyz_gs(2+3*(j-1)), &
          -dxyz_gs(3+3*(j-1)), j=1,qmmm_struct%nquant_nlink)
 	if(ihop>0) then
-      write (6,'("QMMM:")')
+      !write (6,'("QMMM:")')
       write (6,'("QMMM: Forces on QM atoms excited state calculation (eV)")')
       write (6,'("QMMM: state=",2i3)') ihop, qm2ds%struct_opt_state
       write (6,'("QMMM: Atm ",i6,": ",3f20.14)') (j,-dxyz(1+3*(j-1)),&
@@ -252,7 +258,7 @@ end if !ihop>0
 
       if (qmmm_nml%verbosity > 4) then
          !Also print info in KJ/mol
-         write (6,'("QMMM:")')
+         !write (6,'("QMMM:")')
          write (6,'("QMMM: Excited State Forces on QM atoms from SCF calculation (KJ/mol)")')
          write (6,'("QMMM: Atm ",i6,": ",3f20.14)') (j, &
             -dxyz(1+3*(j-1))*EV_TO_KCAL*4.184d0, &

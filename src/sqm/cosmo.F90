@@ -24,7 +24,7 @@ subroutine addfck(f,p)
    integer i,iat,im,j,INFO
    _REAL_ fcon,fim,phi,qsc3,s1,s3
 
-   if (qmmm_nml%verbosity > 4)  print*,'cosmo_call addfck'
+   if (qmmm_nml%verbosity > 5)  print*,'cosmo_call addfck'
    fcon=a0*ev
    do i=1,numat
       qscat(i)=0.d0
@@ -202,7 +202,7 @@ subroutine addnuc(enuclr)
 	_REAL_, dimension(:,:), allocatable :: A;
 	integer, dimension(:), allocatable :: IPIV;
 	integer INFO;
-	if (qmmm_nml%verbosity > 4) print*,'cosmo_call addnuc'
+	if (qmmm_nml%verbosity > 5) print*,'cosmo_call addnuc'
 	!print*,' COSMO addnuc: dielectric corrections to the core-core interaction'
 
 	! FIRST CALCULATE QDENNUC
@@ -281,7 +281,7 @@ subroutine diegrd(dxyz)
 	double precision, dimension (0:3, 10) :: db
 	double precision, dimension (3,numat), intent (inout) :: dxyz
 	intrinsic Min, Sqrt
-	if (qmmm_nml%verbosity > 4) print*,'cosmo_call diegrd'
+	if (qmmm_nml%verbosity > 5) print*,'cosmo_call diegrd'
 
 	do i = 1, 10
 	do ix = 1, 3
@@ -429,7 +429,7 @@ subroutine diegrd2(dxyz,density2,charges2,acharges2)
 	double precision, dimension (numat) :: acharges2
 	double precision, dimension (lm61) :: density2
 	intrinsic Min, Sqrt
-	if (qmmm_nml%verbosity > 4) print*,'cosmo_call diegrd2'
+	if (qmmm_nml%verbosity > 5) print*,'cosmo_call diegrd2'
 
 	do i = 1, 10
 	do ix = 1, 3
@@ -579,7 +579,7 @@ subroutine cosmo_1(exc_p)
 	integer, dimension(:), allocatable :: IPIV;
 	integer i,iat,im,j,INFO
 	real(8) fcon,fim,phi,qsc3
-	if (qmmm_nml%verbosity > 4) print*,'cosmo_call cosmo_1'
+	if (qmmm_nml%verbosity > 5) print*,'cosmo_call cosmo_1'
 
 	do i=1,qm2_struct%norbs
 	do j=1,i
@@ -640,7 +640,7 @@ subroutine cosmo_1_tri(p)
 	real(8) fcon,fim,phi,qsc3,s1,s3
 	real(8) ALPHA
 	real(8) BETA
-	if (qmmm_nml%verbosity > 4) print*,'cosmo_call cosmo_1_tri'
+	if (qmmm_nml%verbosity > 5) print*,'cosmo_call cosmo_1_tri'
 
 	fcon=a0*ev
 
@@ -819,7 +819,7 @@ a(k+indi) = summe * a(kk)
 	cmat, lenabc, arat, sude, isude, bh,qden, nar_csm, nsetf, phinet, &
 	qscnet, bmat, nset, xsp, abcmat, iatsp, nn, qscat, cosurf, nppa, &
 	coserr, lm61, numat,mpack,fepsi,mmat,tri_2D,v_solvent_difdens,xi_k, &
-	ceps, v_solvent_xi
+	ceps, v_solvent_xi, rhotzpacked_k
 	!    use cosmo_C
 
 	use qmmm_module,only:qm2_params,qmmm_struct,qm2_struct,qmmm_nml
@@ -860,7 +860,7 @@ a(k+indi) = summe * a(kk)
 
 	logical mozyme
 
-	if (qmmm_nml%verbosity > 4) print*,'cosmo_call cosini'
+	if (qmmm_nml%verbosity > 5) print*,'cosmo_call cosini'
 
 	! dielectric scaling factor
 fepsi=(ceps-1.d0)/(ceps+0.5d0)
@@ -936,12 +936,14 @@ fepsi=(ceps-1.d0)/(ceps+0.5d0)
     if (allocated(xi_k)) deallocate (xi_k)  
     if (allocated(v_solvent_difdens)) &
     deallocate (v_solvent_difdens)
+    if (allocated(rhotzpacked_k)) deallocate (rhotzpacked_k)
     T2DS=qm2_struct%norbs*(qm2_struct%norbs-1)/2.0+qm2_struct%norbs;    
     allocate(ipiden(lm61), idenat(numat), gden(lm61), & 
           qdenet(lm61,3), phinet(lenabc + 1,3), qscnet(lenabc + 1, 3), &
           qscat(numat),tri_2D(4,T2DS), &
-    xi_k(qm2_struct%norbs**2), &  
-    v_solvent_difdens(qm2_struct%norbs,qm2_struct%norbs),stat = i)  
+    	  xi_k(qm2_struct%norbs**2), &  
+          v_solvent_difdens(qm2_struct%norbs,qm2_struct%norbs),stat = i)
+    allocate(rhotzpacked_k(qm2_struct%norbs*(qm2_struct%norbs+1)/2))  
 
    qscat = 0.d0
    if (i /= 0) then
@@ -1157,7 +1159,7 @@ subroutine coscav
    real(8),allocatable,save::coord(:,:)
    integer iw
 
-   if (qmmm_nml%verbosity > 4) print*,'cosmo_call coscav'
+   if (qmmm_nml%verbosity > 5) print*,'cosmo_call coscav'
    
    iw=6 ! standard output
 
@@ -2388,7 +2390,7 @@ subroutine mkbmat
    double precision :: ddi, dist, qqi2, rm1, rm3, rm5
    double precision, dimension (3) :: xa
    logical first;
-   if (qmmm_nml%verbosity > 4) print*,'cosmo_call mkbmat'
+   if (qmmm_nml%verbosity > 5) print*,'cosmo_call mkbmat'
    
    ! FILLING B-MATRIX
    iden = 0
@@ -2556,7 +2558,7 @@ subroutine cosini_testing
 
    logical mozyme
 
-   if (qmmm_nml%verbosity > 4) print*,'cosmo_call cosini_testing'
+   if (qmmm_nml%verbosity > 5) print*,'cosmo_call cosini_testing'
 
    ! dielectric scaling factor
    fepsi=(ceps-1.d0)/(ceps+0.5d0)

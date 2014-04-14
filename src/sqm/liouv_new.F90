@@ -23,12 +23,12 @@ subroutine dav_wrap()
 
 	! Finding excited states
 
-	!Vacuum and Linear Response Solvent have the single Davidson routine, State Specific
-	!has iterative Davidson Wrapper
-	if ((solvent_model.gt.1).and.(solvent_model.lt.10)) then
-		call solvent_scf_and_davidson_test();
-	else 
+	!Vacuum, Linear Response Solvent have the single Davidson routine, Nonequilibrium State Specific
+	!has iterative Davidson Wrapper, Equilibrium State Specific routine has scf and Davidson wrapper above this subroutine.
+	if ((solvent_model.lt.2).or.(solvent_model.gt.3)) then
 		call davidson();
+	elseif ((solvent_model.eq.2).or.(solvent_model.eq.3)) then
+		call solvent_scf_and_davidson_test();
 	end if 
 
 	! Total energy of the ground state
@@ -44,7 +44,7 @@ subroutine dav_wrap()
 		qm2ds%Ereq=qm2ds%Eground
 	end if
 
-	! Checking if some transition densities are suddenly chaning signs
+	! Checking if some transition densities are suddenly changing signs
 	! correcting for this
 	if(qm2ds%mdflag==2) then ! relevant only if molecular dynamics
 		do i=1,qm2ds%Mx

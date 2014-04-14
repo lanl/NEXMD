@@ -1728,7 +1728,7 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
   use qm2_fock_d, only : qm2_fock1_d, qm2_fock2_d
   use opnq, only : Opnq_fock
   use qm2_davidson_module
-  use cosmo_C , only : ceps, SOLVENT_MODEL, potential_type, onsagE, EF
+  use cosmo_C , only : ceps, SOLVENT_MODEL, potential_type, onsagE, EF, rhotzpacked_k
 
   IMPLICIT NONE
 
@@ -1776,12 +1776,19 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
   ! Add Solvent Model or Electric Field
   ! SOLVENT MODEL BLOCK !!JAB
    if ((solvent_model.gt.0).and.(solvent_model.ne.10)) then !IF USING SOLVENT MODEL
-   if (potential_type.eq.3) then !USE COSMO
-        call addfck(fock_matrix,den_matrix);
-   else if (potential_type.eq.2) then !USE ONSAGER
-        call rcnfld_fock(fock_matrix,den_matrix,qm2_struct%norbs);
-        !write(6,*)'gs',fock_matrix+hmatrix
-   endif
+        if ((solvent_model.eq.4).and.(.not.qmmm_struct%qm_mm_first_call)) then !Use the excited state density matrix
+                if (potential_type.eq.3) then !USE COSMO
+                        call addfck(fock_matrix,den_matrix+rhotzpacked_k);
+                else if (potential_type.eq.2) then !USE ONSAGER
+                        call rcnfld_fock(fock_matrix,den_matrix+rhotzpacked_k,qm2_struct%norbs);
+                endif
+	else !Use the ground state density matrix
+   		if (potential_type.eq.3) then !USE COSMOO
+        		call addfck(fock_matrix,den_matrix);
+   		else if (potential_type.eq.2) then !USE ONSAGER
+        		call rcnfld_fock(fock_matrix,den_matrix,qm2_struct%norbs);
+   		endif
+	endif
    endif
    if (EF.eq.1) then !USE CONSTANT ELECTRIC FIELD
         write(6,*) 'Adding Constant Electric Field to Fock Operator'

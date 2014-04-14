@@ -8,7 +8,7 @@
    printbondorders=0, ! (0) No, (1) Yes
    density_predict=0, !(0) None, (1) Reversible MD, (2) XL-BOMD
    K=9, ! XL-BOMD Parameter (3-9)
-   itrmax=-5, ! Maximum number of scf iterations for ground state, negative to ignore convergence
+   itrmax=100, ! Maximum number of scf iterations for ground state, negative to ignore convergence
 
    !***** Excited state parameters
    exst_method=1, ! CIS (1) or RPA (2)
@@ -23,14 +23,14 @@
    grms_tol=0.01, !Tolerance in eV/A (derivatives)
 
    !***** Solvent models
-   ceps=1000.00, !Dielectric constant
+   ceps=10.00, !Dielectric constant
    cosmo_scf_ftol=1.0d-7, !State specific scf tolerance
    EF=0, !(1) Electric field in ground and excited state, (2) Electric field in excited state only
    Ex=0, !Electric Field Vector X 
    Ez=0, !Electric Field Vector Z
    Ey=0.01, !Electric Field Vector Y
    onsager_radius=2, ! Onsager radius
-   solvent_model=2, ! (0) None, (1) LR, (>1) SS 
+   solvent_model=1, ! (0) None, (1) LR, (>1) SS 
 		!2-[V_s(T+Z),xi], 3-[V_s(xi),xi], (4-[V_s(T+Z),rho_0+xi], 5-[V_s(xi),rho_0+xi] for testing)
    potential_type=3, ! (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
 &endqmmm

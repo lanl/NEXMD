@@ -177,12 +177,13 @@
 	call coscav ! constructing COSMO cavity
 	call mkbmat ! constructing B matrix
 
+      !This part is for calculating the COSMO potential operator with matrix inversion
       !init indices array;
       !size of triangular = i(i-1)/2+j (i==j)
       !T2DS=qm2_struct%norbs*(qm2_struct%norbs-1)/2.0+qm2_struct%norbs;	
       !call init_tri_2D(tri_2D,T2DS);
 
-   !build M-matrix
+      !build M-matrix
       !call buildM_testing();
    end if
 
@@ -291,7 +292,6 @@
    if(qmmm_mpi%commqmmm_master) then
       call qm2_print_energy(qmmm_nml%verbosity,qmmm_nml%qmtheory,escf,qmmm_struct)
    end if
-
    return
    end subroutine sqm_energy
 !

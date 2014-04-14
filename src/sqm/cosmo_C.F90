@@ -1,3 +1,4 @@
+#include "dprec.fh"
 module cosmo_C
   !USE vast_kind_param, ONLY:  double
   implicit none
@@ -61,6 +62,7 @@ module cosmo_C
   & bh,      & ! 
   & cdiag,   & !
   & xi_k
+  _REAL_, dimension(:),allocatable :: rhotzpacked_k
   double precision, dimension(:,:), target, allocatable :: v_solvent_difdens;
   double precision, dimension(:,:), pointer :: v_solvent_xi;	
   double precision, dimension(:,:), allocatable :: &

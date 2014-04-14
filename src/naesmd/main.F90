@@ -158,7 +158,6 @@ program MD_Geometry
 
    nbasis=sim%dav%Nb  ! this is number of atomic orbitals
    sim%nbasis=nbasis  ! not to confuse with Ncis or Nrpa !!!
-      
    ! calling the first time to check the quirality in what follows
 !  uumdqtflag =0 means that ceo is called by the first time,
 !     so m.o. matrix is stored
@@ -185,7 +184,6 @@ program MD_Geometry
 
    itime2=get_time() 
    time12=real(itime2-itime1)/100
-
 !  open (13,file='diff') ! FIXME is not used now
 !  the file diff is going to be used to detect errors in the deriv calculations
 
@@ -216,7 +214,6 @@ program MD_Geometry
 !****************************************
 ! Open output files
 !****************************************
-
    call open_output(ibo,tfemto,imdtype,lprint)
        
    if(tfemto.eq.0.d0) call writeoutputini(sim,ibo,yg,lprint)

@@ -265,7 +265,6 @@ module communism
    integer i
 
    sim%dav%mdflag=2
-
    call do_sqm_and_davidson(sim,rx,ry,rz,r)
    call dav2naesmd_Omega(sim) ! energy conversion
    if(present(vgs)) vgs=sim%naesmd%E0
@@ -311,6 +310,7 @@ module communism
    use qm2_pm6_hof_module,only:cct,nsp2,print,strlen
    use file_io_dat,only:MAX_FN_LEN
    use qm2_davidson_module ! CML 7/11/12
+   use Cosmo_C,only:solvent_model
 
    implicit none
 
@@ -404,7 +404,11 @@ module communism
 	   call naesmd2qmmm_r(sim)
 	   !sim%dav%Mx = sim%excN
 	   !sim%dav%mdflag=2
-	call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs)
+	if (solvent_model.eq.4) then !solvent model that loops over ground state
+		call calc_cosmo_4(sim)
+	else
+		call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs)
+	endif
    else if (nstep<1) then ! nstep - number of classical steps for dynamics
 	
 	qm2ds%minimization = .TRUE.
@@ -425,7 +429,6 @@ module communism
 	write(6,*)"You must run Dynamics(n_class_steps>0) or Geom. optimization (maxcyc>0). Running both of them are not possible"	
 	STOP 0;
    end if	
-
    return      
 end subroutine
 
@@ -442,6 +445,7 @@ subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
    use qmmm_module, only : qmmm_nml,qmmm_struct
    use constants, only : zero, AU_TO_EV
    use iso_c_binding
+   use Cosmo_C, only : solvent_model
    implicit none
 
    ! ------ External functions -----------------
@@ -594,7 +598,11 @@ subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
 		is_error = status_flag < 0
 		if ( .not. is_error ) then
 			call qmmm2naesmd_r(sim_pass)
-			call do_sqm_davidson_update(sim_pass)   
+			if(solvent_model.eq.4) then
+				call calc_cosmo_4(sim_pass)
+			else
+				call do_sqm_davidson_update(sim_pass)   
+			endif
 			call deriv(sim_pass,qmmm_struct%state_of_interest)
 			fg(1:3*natom)=-sim_pass%deriv_forces(1:3*natom)
 			if(qmmm_struct%state_of_interest>0) then
@@ -618,7 +626,11 @@ subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
 				write(6,'(a,i5,f16.6,a,f16.6,a)') 'xmin ', xmin_iter, energy,' eV', grms, ' eV/A'
 			end if
 			call qmmm2naesmd_r(sim_pass);
-			call do_sqm_davidson_update(sim_pass)
+                        if(solvent_model.eq.4) then
+                                call calc_cosmo_4(sim_pass)
+                        else
+                                call do_sqm_davidson_update(sim_pass)
+                        endif
 			call deriv(sim_pass,qmmm_struct%state_of_interest)
 			if(qmmm_struct%state_of_interest>0) then
                                 energy=(sim_pass%naesmd%Omega(qmmm_struct%state_of_interest)+sim_pass%naesmd%E0)*AU_TO_EV
@@ -634,6 +646,11 @@ subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
 		if ( .not. is_error ) then
 			call qmmm2naesmd_r(sim_pass);
 			call do_sqm_davidson_update(sim_pass);
+                        if(solvent_model.eq.4) then
+                                call calc_cosmo_4(sim_pass)
+                        else
+                                call do_sqm_davidson_update(sim_pass)
+                        endif
 			call deriv(sim_pass,qmmm_struct%state_of_interest)
                         if(qmmm_struct%state_of_interest>0) then
                                 energy=(sim_pass%naesmd%Omega(qmmm_struct%state_of_interest)+sim_pass%naesmd%E0)*AU_TO_EV
