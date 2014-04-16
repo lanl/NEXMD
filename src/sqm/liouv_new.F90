@@ -107,8 +107,7 @@ subroutine outDavidson()
 
 
 
-	write(6,*) ' Total energy of ground state (eV)'
-	write(6,*) qm2ds%Eground
+	write(6,*) ' Total energy of ground state (eV)',qm2ds%Eground
 
 	write(6,*) ' Total energies of excited states (eV,AU)'
 	do i=1,qm2ds%Mx

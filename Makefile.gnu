@@ -1,4 +1,9 @@
 
+FFLAG = -O3
+#-mcmodel=medium
+LDFLAGS = $(FFLAG)
+LINK =  -llapack -lblas
+
 FC = gfortran
 CC = gcc
 
@@ -23,7 +28,7 @@ AMOEBAINC = -I$(MODDIR)/$(AMOEBADIR)/
 
 INC= -Iinc/ -Iinc/$(SANDERDIR) -Iinc/$(PBSADIR)/ -Imod/$(PBSADIR)/ -Iinc/$(LIBDIR)/ -Iinc/$(PMEMDDIR)/ -Iinc/$(NAESMDDIR)/old/ -Iinc/$(SQMDIR) -Imod/$(SQMDIR)/ -Imod/$(NAESMDDIR)
 
-DIRECTORIES= $(MODDIR)/$(SQMDIR) $(MODDIR)/$(NAESMDDIR) $(MODDIR)/$(AMEOBADIR) $(MODDIR)/$(PBSADIR) inc/$(SANDERDIR) inc/$(PBSADIR) inc/$(LIBDIR) inc/$(PMEMDDIR) inc/$(NAESMDDIR) inc/$(NAESMDDIR)/old $(OBJDIR)/$(SQMDIR) $(OBJDIR)/$(NAESMDDIR) $(OBJDIR)/$(SANDERDIR) $(OBJDIR)/$(PMEMDIR) $(OBJDIR)/$(PBSADIR) $(OBJDIR)/$(AMOEBADIR) $(OBJDIR)/$(DIRSFF) $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME) $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC) $(OBJDIR)/$(LIBDIR)
+DIRECTORIES= $(MODDIR)/$(SQMDIR) $(MODDIR)/$(NAESMDDIR) $(MODDIR)/$(AMEOBADIR) $(MODDIR)/$(PBSADIR) inc/$(SQMDIR) inc/$(SANDERDIR) inc/$(PBSADIR) inc/$(LIBDIR) inc/$(PMEMDDIR) inc/$(NAESMDDIR) inc/$(NAESMDDIR)/old $(OBJDIR)/$(SQMDIR) $(OBJDIR)/$(NAESMDDIR) $(OBJDIR)/$(SANDERDIR) $(OBJDIR)/$(PMEMDIR) $(OBJDIR)/$(PBSADIR) $(OBJDIR)/$(AMOEBADIR) $(OBJDIR)/$(DIRSFF) $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME) $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC) $(OBJDIR)/$(LIBDIR)
 
 $(shell   mkdir -p $(DIRECTORIES)) 
 
@@ -148,6 +153,7 @@ OBJNAESMD = \
 	$(OBJDIR)/$(NAESMDDIR)/random.o \
 	$(OBJDIR)/$(NAESMDDIR)/langevin-temperature.o \
 	$(OBJDIR)/$(NAESMDDIR)/communism.o \
+        $(OBJDIR)/$(NAESMDDIR)/statespecific.o \
 	$(OBJDIR)/$(NAESMDDIR)/nacT_analytic.o \
 	$(OBJDIR)/$(NAESMDDIR)/fewest-switches.o \
 	$(OBJDIR)/$(NAESMDDIR)/coherence.o \
@@ -447,12 +453,6 @@ OBJLIB = \
 	$(OBJDIR)/$(LIBDIR)/wallclock.o \
 	$(OBJDIR)/$(LIBDIR)/random.o
 
-FFLAG = -O3 -pg 
-#-mcmodel=medium
-LDFLAGS = $(FFLAG)
-LINK =  -llapack -lblas 
-
-
 $(OBJDIR)/$(LIBDIR)/%.o: $(SRCDIR)/$(LIBDIR)/%.F90
 	$(FC) $(INC) $(FFLAG) -o $@ -c $<
 
@@ -511,7 +511,7 @@ $(OBJDIR)/$(PMEMDDIR)/%.o: $(SRCDIR)/$(PMEMDDIR)/%.c
 
 
 
-naesmd.exe: $(OBJSQM) $(OBJLIB) $(OBJNAESMD) $(OBJSFF)
+sqmceonaesmd.exe: $(OBJSQM) $(OBJLIB) $(OBJNAESMD) $(OBJSFF)
 	$(FC) $(LDFLAGS) -o naesmd.exe $(OBJNAESMD) $(OBJSQM) $(OBJLIB) $(OBJSFF) -L$(LIB) $(LINK) 
 		
 clean :
