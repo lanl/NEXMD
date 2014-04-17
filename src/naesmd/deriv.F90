@@ -24,7 +24,7 @@
    _REAL_ :: Escf_right,Escf_left,E_ES_right,E_ES_left,h
    _REAL_ :: tmp(qm2_struct%norbs,qm2_struct%norbs)
    simpoint=>sim
-write(6,*)'Calculating GS Derivatives'
+!write(6,*)'Calculating GS Derivatives'
 !Collect coordinates in vector
    do i=1,qmmm_struct%nquant_nlink
       do j = 1,3
@@ -68,7 +68,6 @@ if(qmmm_struct%ideriv.eq.1) then !analytical derivatives
       dxyz1=dxyz1+dxyz1_test
       endif
 
-      ! Convert from kcal/A to eV/A.
       do i=1,qmmm_struct%nquant_nlink
          do j=1,3
             dxyz_gs((i-1)*3+j)=-dxyz1(j,i)*KCAL_TO_EV
@@ -76,7 +75,7 @@ if(qmmm_struct%ideriv.eq.1) then !analytical derivatives
       end do
 
 if (ihop>0) then
-write(6,*)'Calculating Excited State Derivatives'
+!write(6,*)'Calculating Excited State Derivatives'
 !CALCULATE EXCITED STATE DERIVATIVES
 !Omega^x=Tr(F^x rhoTZ)+Tr(V^x(xi) xi^+)
 !TERM 1: Tr(F^x rhoTZ)
@@ -207,7 +206,6 @@ write(6,*)'Calculating Excited State Derivatives'
                   call rcnfldgrad2(dxyz1_test,qm2ds%rhoT,qm2_struct%den_matrix,qm2ds%nb,.true.)
                 endif
                 dxyz1=dxyz1+dxyz1_test
-      ! Convert from kcal/A to eV/A.
       		do i=1,qmmm_struct%nquant_nlink
          		do j=1,3
             			dxyz_gs((i-1)*3+j)=dxyz_gs((i-1)*3+j)-dxyz1(j,i)*KCAL_TO_EV

@@ -23,14 +23,14 @@
    grms_tol=0.01, !Tolerance in eV/A (derivatives)
 
    !***** Solvent models
-   ceps=2.00, !Dielectric constant
+   ceps=100, !Dielectric constant
    cosmo_scf_ftol=1.0d-7, !State specific scf tolerance
    EF=0, !(1) Electric field in ground and excited state, (2) Electric field in excited state only
    Ex=0, !Electric Field Vector X 
    Ez=0, !Electric Field Vector Z
    Ey=0.01, !Electric Field Vector Y
    onsager_radius=2, ! Onsager radius
-   solvent_model=4, ! (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi 
+   solvent_model=2, ! (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi 
    potential_type=3, ! (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
 &endqmmm
 
@@ -38,15 +38,15 @@
    !***** General parameters
    rnd_seed=1, ! seed for the random number generator
    bo_dynamics_flag=1, ! 0-non-BO, 1-BO
-   exc_state_init=1, ! initial excited state (0 - ground state)
-   n_exc_states_propagate=1, ! number of excited states
+   exc_state_init=2, ! initial excited state (0 - ground state)
+   n_exc_states_propagate=2, ! number of excited states
 
    !***** Dynamics parameters
    time_init=0.d0, ! initial time, fs
    time_step=0.1, !time step, fs
    n_class_steps=0, !number of classical steps
    n_quant_steps=1, ! number of quantum steps for each classical step
-   moldyn_deriv_flag=0, ! 0-none, 1-analyt, 2-numeric
+   moldyn_deriv_flag=2, ! 0-none, 1-analyt, 2-numeric
    num_deriv_step=1.d-5, ! displacement for numerical derivatives, A
    rk_tolerance=1.d-7, ! tolerance for the Runge-Kutta propagator
 
