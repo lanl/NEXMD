@@ -512,7 +512,7 @@ $(OBJDIR)/$(PMEMDDIR)/%.o: $(SRCDIR)/$(PMEMDDIR)/%.c
 
 
 sqmceonaesmd.exe: $(OBJSQM) $(OBJLIB) $(OBJNAESMD) $(OBJSFF)
-	$(FC) $(LDFLAGS) -o naesmd.exe $(OBJNAESMD) $(OBJSQM) $(OBJLIB) $(OBJSFF) -L$(LIB) $(LINK) 
+	$(FC) $(LDFLAGS) -o sqmceonaesmd.exe $(OBJNAESMD) $(OBJSQM) $(OBJLIB) $(OBJSFF) -L$(LIB) $(LINK) 
 		
 clean :
 	rm -f ob*/*.o obj/*/*.o  mod/*.mod *.mod mod/*/*.mod rm lib/*.a
