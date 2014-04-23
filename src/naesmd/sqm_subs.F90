@@ -263,15 +263,11 @@
 
    qmmm_struct%qm_mm_first_call=.false.
    if ((qmmm_nml%printdipole>0).or.(qmmm_nml%printcharges)) then		
-   	if (qmmm_nml%printdipole>1) then
-		write (6,'("QMMM: Not MM part; please check your selection")')
-	else	
-	    if(qm2ds%Mx>0) then
+	    if(qmmm_nml%printdipole<3) then
 	          call qm2_calc_molecular_dipole_in_excited_state()
-	     else if (qmmm_nml%printdipole>0) then 
+	     else if (qmmm_nml%printdipole>2) then 
 		  call qm2_calc_dipole(coords)
 	     end if
-	end if	
    end if
 !	   select case(qmmm_nml%printdipole)
 !   case(1)
@@ -938,7 +934,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
    !-TJG 01/26/2010
    call int_legal_range('QMMM: (PRINT CHARGES) ', printcharges,0,1)
    call int_legal_range('QMMM: (PRINT BONDORDERS) ',printbondorders,0,1)
-   call int_legal_range('QMMM: (PRINT QM/Dipole) ', printdipole,0,2)
+   call int_legal_range('QMMM: (PRINT QM/Dipole) ', printdipole,0,3)
    call int_legal_range('QMMM: (Spin State) ', spin,1,1)
 !RCW: Currently limit spin state to singlets only since the code for spin>1 does not exist / work at present.
 !     WARNING - IF WE LATER ALLOW SPIN>1 qm2_densit will need updating.

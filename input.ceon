@@ -4,7 +4,7 @@
    scfconv=1.0d-8, !Ground state scf convergence criteria
    verbosity=5, !
    printcharges=0, ! Mulliken charges for ground state
-   printdipole=0, ! (0) None, (1) Transition, Relaxed, and Unrelaxed
+   printdipole=1, ! (0) None, (1) Transition, Relaxed, and Unrelaxed
    printbondorders=0, ! (0) No, (1) Yes
    density_predict=0, !(0) None, (1) Reversible MD, (2) XL-BOMD
    K=9, ! XL-BOMD Parameter (3-9)

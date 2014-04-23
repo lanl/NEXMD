@@ -77,10 +77,18 @@ subroutine Lxi_testing(u1,v1,solvent_model)
    if(EF.eq.2) then!Constant Electric Field in ES onl
         !write(6,*)'Using Constant EF in Excited State only'
         tmp=0.d0; tmp2=0.d0
-        call efield_fock(tmp2,qm2ds%Nb)
-        tmp=-tmp
-        call commutator(tmp2,qm2ds%xi,qm2ds%Nb,tmp,.false.)
-        call VxiM_end(qm2ds%eta,tmp) 
+        call efield_fock(tmp,qm2ds%Nb)
+	tmp=tmp*27.2114
+	call unpacking(qm2ds%Nb,tmp,tmp2,'s'); tmp=0.d0
+        call commutator(qm2ds%xi,tmp2,qm2ds%Nb,tmp,.false.)
+	!write(6,*)'Efield Operator:'
+	!do p=1,qm2ds%Nb
+	!	write(6,*)tmp2(:,p)
+	!	do h=1,qm2ds%Nb
+	!		tmp2(p,h)=(tmp2(p,p)-tmp2(h,h))*qm2ds%xi((p-1)*qm2ds%Nb+h)
+	!	enddo
+	!enddo
+        call VxiM_end(qm2ds%eta,tmp)
    endif
    call site2mo(qm2ds%xi,qm2ds%eta,v1); !Change basis of xi again to M.O.
 
@@ -163,7 +171,7 @@ subroutine VxiM(xi,Vximmat)
   		call  DGEMV ( 'N', lm61, nps, fcon, bmat, lm61, charges, 1, 0.d0, density, 1 ) !LAPACK subroutine for above
   		p=0.d0
   		do i=1,lm61;
-			im=ipiden(i); p(im)=density(i);
+			im=ipiden(i); p(im)=density(i); !in A.U.
 		 enddo
 	endif
   	call unpacking(qm2ds%nb,p,Vximmat,'s')
@@ -661,7 +669,7 @@ subroutine efield_fock(f,n)
         use cosmo_C, only: fepsi,Ex,Ey,Ez
         use constants, only : one, BOHRS_TO_A, AU_TO_EV
         implicit none;
-        integer n;
+        integer n,j,k;
         _REAL_ f(n*(n+1)/2);
         _REAL_ tmp(n*(n+1)/2);
         _REAL_ dip(3,n*(n+1)/2);
@@ -672,7 +680,11 @@ subroutine efield_fock(f,n)
         call get_dipole_matrix(qmmm_struct%qm_coords, dip)
         !!CALCULATE ELECTRIC FIELD POTENTIAL OPERATOR
         tmp=Ex*dip(1,:)+Ey*dip(2,:)+Ez*dip(3,:);
-        f=f-tmp/BOHRS_TO_A!POTENTIAL IN Ev
+	!write(6,*)'Efield Operator in Subroutine'
+	!do j=1,n
+	!	write(6,*)tmp(:,j)
+	!enddo
+        f=f+tmp/BOHRS_TO_A/27.2114!POTENTIAL IN ev
 return
 end
 

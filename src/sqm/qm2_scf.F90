@@ -1791,7 +1791,8 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
 	endif
    endif
    if (EF.eq.1) then !USE CONSTANT ELECTRIC FIELD
-        write(6,*) 'Adding Constant Electric Field to Fock Operator'
+        !write(6,*) 'Adding Constant Electric Field to Fock Operator'
+        call efield_fock(fock_matrix,qm2_struct%norbs);
         call efield_fock(fock_matrix,qm2_struct%norbs);
    end if  
    !!  END SOLVENT MODEL BLOCK

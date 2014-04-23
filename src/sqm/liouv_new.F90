@@ -97,24 +97,23 @@ subroutine outDavidson()
 	end do
 
 	write(6,*) 
-	write(6,*) 'Frequencies (eV) and Transitional Dipole Moments (AU)'
+	write(6,*) 'Frequencies (eV) and Transition Dipole Moments (AU)'
 	write(6,"(8x,'Omega',12x,'fx',14x,'fy',14x,'fz',10x,'ftotal')")
 	do i=1,qm2ds%Mx
 		ft = (mu(1,i)**2 + mu(2,i)**2 + mu(3,i)**2)
-		write(6,"(i4,5g30.20)") i,qm2ds%e0(i), &
+		write(6,"(i4,5g15.7)") i,qm2ds%e0(i), &
 			mu(1,i),mu(2,i),mu(3,i), ft
 	end do
 
 
+	write(6,*)
+	write(6,*)'Total energy of the ground state (eV,AU)'
+	write(6,*) 0,qm2ds%Eground, qm2ds%Eground/ONE_AU
 
-	write(6,*) ' Total energy of ground state (eV)',qm2ds%Eground
-
-	write(6,*) ' Total energies of excited states (eV,AU)'
+	write(6,*) 'Total energies of excited states (eV,AU)'
 	do i=1,qm2ds%Mx
 		write(6,*) i,qm2ds%Etot(i),qm2ds%Etot(i)/ONE_AU
 	end do
-
-	write(6,*) ' Required state (eV)',qm2ds%Ereq
 
 	return
 endsubroutine outDavidson
