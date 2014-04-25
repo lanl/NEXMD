@@ -1,9 +1,0 @@
-!
-        
-      COMMON /TWOELE/ GSS(107),GSP(107),GPP(107),GP2(107),HSP(107), &
-                      GSD(107),GPD(107),GDD(107)
-      COMMON /WMATRX/ WJ(Nc_M), WK(Nc_M)
-       EQUIVALENCE (W,WJ)
-       common /coulomb/ NFIRST,NMIDLE,NLAST,ID,ITYPE
-
-

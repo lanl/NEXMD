@@ -1,9 +1,0 @@
-! SCF parameters:
-      integer Nit,it,if,lwork
-      real*8 Enold,dold,f1,f2,dr,dr1,rdamp
-      real*8 dx,dy,dz,dd        ! ground state dipole
-      real*8 rtol0
-      parameter (Nit = 2000)    ! maximum number of iterations for HF solution
-      parameter (rtol0 = 1d-4)  ! switch regime threshold			
-      parameter (rdamp=20)	! density damping
-

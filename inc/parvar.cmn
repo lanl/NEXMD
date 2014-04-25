@@ -1,5 +1,0 @@
-!
-      common /var/ Nb,Np,Nh,Lt,Mb,M4,M2,Mj,Nc,Mx,Ni,Nat,irflag
-      common /var1/ Charg,inttyp,intf,Eelec,Enucl,Escf,Esol,Atheat
-      common /var3/ rtol,ftol,ftol0,ftol1,lprint,Nrestart,idav
-      

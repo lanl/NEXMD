@@ -1,7 +1,0 @@
-! Lanczos vectors:
-      real*8 rrwork(8*M4_M)
-  
-! index arrays:
-      integer ix(M4_M),jx(M4_M)
-      integer kx(Mx_M) 
-

@@ -1,2 +1,0 @@
-integer :: tag
-type(priv_t), pointer :: next

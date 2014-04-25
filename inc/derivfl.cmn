@@ -1,4 +1,0 @@
-!
-      integer iderivfl
-      common /derivfl/ iderivfl
-

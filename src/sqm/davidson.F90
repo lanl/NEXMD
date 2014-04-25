@@ -15,6 +15,7 @@
    subroutine davidson()
    use qmmm_module,only:qm2_struct, qmmm_struct !cml-test
    use qm2_davidson_module
+   use xlbomd_module, only : predictdens_xlbomd
 
    implicit none
 
@@ -104,6 +105,7 @@
       write(6,*) 'j1=',j1
       write(6,*)'istore=',istore
       write(6,*)'istore_M=',istore_M
+      write(6,*)'dav_guess=',qm2ds%dav_guess
    end if
 
 !	if (irflag.gt.1.and.Nb.gt.100.and.mdflag.gt.0) then
@@ -116,13 +118,15 @@
 !	   close(10)	  
 !	endif	 
 
-!XL-BOXMD
    if(istore.gt.0) then ! MD point only!!!!	 
 !     recover excited state vectors from AO representation in v2
 !     recovered state vectors are put to v0
       do j=1,istore
          call site2mo(qm2ds%rrwork,qm2ds%v2(1,j),qm2ds%v0(1,j))
       end do
+      if(istore.eq.2) then !XL-BOXMD store eigenvectors from previous steps and calculate new initial guess
+		call predictdens_xlbomd(qmmm_struct%num_qmmm_calls,qm2ds%v2(:,1))
+      endif
    endif
 
 ! kav: the lines below are commented out since they are not present in original davidson
@@ -138,7 +142,7 @@
 10 continue
    if (j0.lt.qm2ds%Mx) then 
 
-   iloops=iloops+1
+   iloops=iloops+1 !Number of iterations
 !	if (iloops.eq.2) j1=j1/2 ! After the first one convergence is slow
    j1=min(j1,(qm2ds%Mx-j0))
    nd1=min(j1+2,nd/2)
@@ -953,11 +957,15 @@
    end do
 !          
 45 continue
-        
+
    if((j1-n).eq.0) then
       if(lprint.gt.4) write(6,*) 'All vectors found after loop' &
          ,iloop, ', Expansion ', nd1
       goto 100
+   elseif((qm2ds%iloop_M<0).and.(iloop.eq.abs(qm2ds%iloop_M))) then !Set number of iterations for XL-BOXMD
+      if(lprint.gt.4) write(6,*) 'Set number of davidson iterations performed' &
+	,iloop, ', Expansion ', nd1
+	goto 100
    end if
 
    if(m.eq.0) then ! Restart Davidson

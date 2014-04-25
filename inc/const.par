@@ -1,7 +1,0 @@
-!
-      real*8 feV,feVK,fDeb, bohrs, feVcm
-      parameter (feV = 27.2116)
-	parameter (feVK = 11676.33)
-	parameter (feVcm = 8065.73)
-      parameter (fDeb = 4.803242)
-      parameter (bohrs = 5.29177249D-1)

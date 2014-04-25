@@ -39,6 +39,7 @@
    use constants,only:EV_TO_KCAL,KCAL_TO_EV,zero,one,alpb_alpha
    use qm2_davidson_module
    use cosmo_C,only:nps,cosurf,lm61,tri_2D,ceps,potential_type,solvent_model,onsagE;
+   use xlbomd_module,only:init_xlbomd
    implicit none
 
    ! Passed in 
@@ -144,7 +145,7 @@
 !!!CLEAN IT
 	
       if(qm2ds%Mx>0) call allocate_davidson() ! Davidson allocation
-
+      if(qm2ds%dav_guess.gt.1) call init_xlbomd(qm2ds%Nb**2*qm2ds%Mx)
       ! Initialization of COSMO\
       !! JAB: this contains variables for Onsager model as well so
       ! is called for all solvent models, but this should probably be changed
@@ -207,7 +208,7 @@
 
    if(qmmm_nml%printcharges.and.qmmm_mpi%commqmmm_master) then
       write (6,*)
-      write (6,'("QMMM: Mulliken Charges")')	
+      write (6,'("QMMM: Mulliken Charges")')
       call qm2_print_charges(0,1,qmmm_nml%dftb_chg,qmmm_struct%nquant_nlink, &
          scf_mchg,qmmm_struct%iqm_atomic_numbers)
       !write (6,'("QMMM: End of Mulliken Charges calculation")')	
@@ -523,8 +524,8 @@
 subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
    atnum,maxcyc,grms_tol,ntpr,ncharge_in, &
    excharge,chgatnum, &
-   excNin,struct_opt_state,exst_method,davidson_guess, & ! Excited state
-   ftol,ftol0,ftol1) 
+   excNin,struct_opt_state,exst_method,dav_guess, & ! Excited state
+   ftol,ftol0,ftol1,dav_maxcyc) 
 
    use findmask
    use constants, only : RETIRED_INPUT_OPTION
@@ -568,7 +569,8 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
   
    integer, intent(out) :: struct_opt_state ! CML exc st num to optimize structure
    integer, intent(out)::exst_method ! method used to calc excited states 1=CIS,2=RPA
-   integer,intent(out)::davidson_guess ! use (1) or not (0) guess for davidson
+   integer,intent(out)::dav_guess ! use (1) or not (0) guess for davidson and (2) for XL-BOXMD
+   integer,intent(out)::dav_maxcyc !Maximum cycles for davidson, negative for fixed number of cycles
    _REAL_,intent(out)::ftol !   Min tolerance (|emin-eold|)
    _REAL_,intent(out)::ftol0!  Acceptance tol.(|emin-eold|)
    _REAL_,intent(out)::ftol1 ! Accept.tol.for residual norm
@@ -710,14 +712,15 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
 #ifdef OPENMP
                    qmmm_omp_max_threads, &
 #endif
-                   maxcyc, ntpr, grms_tol, &
-                struct_opt_state,exst_method,davidson_guess, &
-                ftol,ftol0,ftol1, &
+!Geometry optimization
+                   maxcyc, ntpr, grms_tol, struct_opt_state, &
+!Excited state and davidson
+		   exst_method,dav_guess,dav_maxcyc,ftol,ftol0,ftol1, &
 !Solvent Model and E-Field parameters
-                ceps, chg_lambda, vsolv, solvent_model,potential_type,cosmo_scf_ftol,index_of_refraction, &
-		onsager_radius,EF,Ex,Ey,Ez, &
+                   ceps, chg_lambda, vsolv, solvent_model,potential_type,cosmo_scf_ftol,index_of_refraction, &
+		   onsager_radius,EF,Ex,Ey,Ez, &
 !XL-BOMD parameters
-		xlbomd_flag,K,dt2w2,xlalpha
+		   xlbomd_flag,K,dt2w2,xlalpha
 
    !the input value of excNin MUST NOT be changed.
    excN=excNin;   
@@ -731,12 +734,14 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
 
    ! Default parameters of excited state calculations
    excN = 0 ! Default is to not run the Davidson procedure at all
-   struct_opt_state = 0 ! Optimize the ground state by default
+   struct_opt_state = 0 ! Optimize the ground state by default !JAB I think this parameter is deprecated now
    exst_method=1 ! CI singles
-   davidson_guess=1 ! use previous davidson result as guess
+   dav_guess=0 ! use previous davidson result as guess
    ftol=0.d0   ! Min tolerance (|emin-eold|)
    ftol0=1.d-5 !  Acceptance tol.(|emin-eold|)
    ftol1=1.d-4 ! Accept.tol.for residual norm
+   dav_maxcyc=100 ! Maximum cycles for davidson diagonalization
+   
    ! Default for COSM and Solvent
    ceps=1.d0 ! no dielectric screening by default
    index_of_refraction=1.d0
@@ -981,8 +986,9 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
    call int_legal_range(  'QMMM: (QM-MM Number of Excited States) ',excN, 0,1)
    call int_legal_range(  'QMMM: (QM-MM State to Optimize) ',struct_opt_state,0,excN)
    call int_legal_range('QMMM: (QM-MM Excited State Method) ',exst_method,1,2)
-   call int_legal_range('QMMM: (QM-MM use (1) or not (0) Davidson guess) ', &
-      davidson_guess,0,1)
+   call int_legal_range('QMMM: (QM-MM use (1) or not (0) Davidson guess or (2) for XL-BOXMD) ', &
+      dav_guess,0,3)
+   call int_legal_range('QMMM: (QM-MM use -10-500 for max cycles of Davidson, negative for fixed number) ', dav_maxcyc,-10,500)
 
    ! Checking COSMO parameters
    call float_legal_range('QMMM: (COSMO eps)',ceps,1.0d0,1.0d6)

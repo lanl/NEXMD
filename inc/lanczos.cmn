@@ -1,3 +1,0 @@
-!
-      common /lanczosvar/ rrwork,kx,ix,jx 
-

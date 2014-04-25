@@ -369,7 +369,7 @@ module communism
       sim%Na,igb,atnam,sim%naesmd%atomtype,maxcyc, &
       grms_tol,ntpr, ncharge,excharge,chgatnum, &
       sim%excN,qm2ds%struct_opt_state,qm2ds%idav,qm2ds%dav_guess, &
-      qm2ds%ftol,qm2ds%ftol0,qm2ds%ftol1)
+      qm2ds%ftol,qm2ds%ftol0,qm2ds%ftol1,qm2ds%icount_M)
 
    call qm_assign_atom_types
 

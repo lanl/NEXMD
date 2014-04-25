@@ -12,10 +12,11 @@
 
    !***** Excited state parameters
    exst_method=1, ! CIS (1) or RPA (2)
-   davidson_guess=0, ! restart Davidson from previous (1) or from scratch (0)
+   dav_guess=0, ! restart Davidson from previous (1) or from scratch (0)
    ftol=0.d0, !   Min tolerance (|emin-eold|)
    ftol0=1.d-7, !  Acceptance tol.(|emin-eold|)
    ftol1=1.d-8, ! Accept.tol.for residual norm
+   !dav_maxcyc=100, !Max cycles for davidson diagonalization, negative for fixed number
 
    !***** Geometry optimization
    maxcyc=0, !Number of cycles for geometry optimization
@@ -30,7 +31,7 @@
    Ez=0, !Electric Field Vector Z
    Ey=0.01, !Electric Field Vector Y
    onsager_radius=2, ! Onsager radius
-   solvent_model=4, ! (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi 
+   solvent_model=0, ! (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi 
    potential_type=3, ! (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
 &endqmmm
 

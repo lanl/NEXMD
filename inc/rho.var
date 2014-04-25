@@ -1,5 +1,0 @@
-!  Density matrix variables
-      real*8 uu(Nb_M*Nb_M)	       ! HF eigenvectors
-
- 
-      
