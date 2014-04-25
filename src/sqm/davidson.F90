@@ -116,6 +116,7 @@
 !	   close(10)	  
 !	endif	 
 
+!XL-BOXMD
    if(istore.gt.0) then ! MD point only!!!!	 
 !     recover excited state vectors from AO representation in v2
 !     recovered state vectors are put to v0
@@ -287,6 +288,7 @@
       end if
    end if
 
+!XL-BOXMD Need to find out what's going on here
    if (qm2ds%mdflag.ge.0) then ! MD point only!!!!
 !     store excited state vectors in AO representation in v2
 !     istore=min(Mx,Mx_ss)
@@ -400,7 +402,7 @@
    m=0
    n=0
    iloop=0
-
+!XL-BOXMD
    if (istore.gt.0) then    ! Use vectors from the previous step
       j1=min(j1,istore)
       goto 70 
@@ -539,7 +541,7 @@
    end if
 
 70     continue
-
+!XLBOXMD
    if(nd1.gt.nd.or.istore.gt.0) then  ! Use vectors from the previous step
       istore=0
       if (lprint.gt.4) write(6,*) 'Restart Davidson with improved guesses'

@@ -34,7 +34,6 @@ subroutine calc_cosmo_2()
         integer k,p,h
         _REAL_ e0_0,e0_k,e0_k_1;
         logical calc_Z;
-write(6,*)'test'         
         !Initial Davidson Call (in vacuum) and T+Z calcualtion
         call davidson();
 	!call do_sqm_davidson_update()
@@ -288,7 +287,8 @@ subroutine calc_cosmo_3()
                  
                 !Save last transition density in AO Basis
                 call mo2site(qm2ds%v0(1,qmmm_struct%state_of_interest),qm2ds%xi,qm2ds%xi_scratch); 
-               
+                
+		!XL-BOXMD
                 ! Checking if transition density changes sign and correcting for this
                 f=ddot(qm2ds%Ncis,xi_k_1,1,qm2ds%xi,1)
                 if(f<0.d0) then
