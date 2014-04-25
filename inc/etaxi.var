@@ -1,0 +1,4 @@
+!  Spare spaces
+      real*8 eta(Mb_M),eta1(Mb_M),eta2(Mb_M)             	 
+      real*8 xi(Mb_M),xi1(Mb_M),xi2(Mb_M)               	 
+

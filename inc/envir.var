@@ -1,0 +1,9 @@
+!
+      real*8 Ex,Ey,Ez                       ! External uniform field
+      real*8 EEx(Nb_M),EEy(Nb_M),EEz(Nb_M)  ! External nonuniform field
+      integer iflagE,iflagS,Nfd(Nb_M)       ! Flags for external contrib
+      real*8 gam1,gam2,gam3,s,delts,aa,bb,cc,tot
+      real*8 aaa,bbb,ccc,Aa1,Ab,Ac,q,Aan,Abn,Acn	
+      real*8 eps,c0,b0,a0		    ! Dielectric const, Cavity size
+	
+

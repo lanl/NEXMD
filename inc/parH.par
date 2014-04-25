@@ -1,0 +1,40 @@
+!  Main parameters
+      integer Nb_M,Np_M,Nh_M,Lt_M,Mb_M,M4_M,M2_M,Nc_M
+      integer Mx_M,Ni_M,Nd_M,Nd_MM,Mx_s,Mx_ss
+!  User needs to set only following 3 parameters:
+      parameter (Nb_M = 600)        ! max. Basis set size
+      parameter (Mx_M = 100)           ! max. TDHF modes
+      parameter (Mx_ss = 2)          ! max. TDHF modes (smaller space)
+      parameter (Ni_M = 1999)        ! max. Lanczos iterations	   
+                
+      parameter (Np_M = Nb_M/2) ! max. Number of particles
+      parameter (Nh_M = Np_M)           ! max. Number of holes
+      parameter (Lt_M = Nb_M*(Nb_M+1)/2)
+
+      parameter (Mb_M = Nb_M*Nb_M)      ! Liouville space size 
+      parameter (M4_M = Np_M*Nh_M)      ! Particle-hole subspace size
+      parameter (M2_M = 2*M4_M)
+
+! dimension space for davidson
+      parameter (Nd_M=200)  
+! max. dimension space for davidson
+      parameter (Nd_MM=500)  
+
+! discrimination values for expansion vectors in Davidson
+	real*8 tresh,tresh1,fs 
+      parameter (tresh=0.9)
+	parameter (tresh1=0.999999)
+	
+      integer icount_M,iloop_M,iloops_M,idavfrac
+	parameter (icount_M = 100)     ! MAX Itterations within Davidson
+	parameter (iloop_M = 50)       ! MAX Restarts within Davidson
+	parameter (iloops_M = 50)      ! MAX Loops shifting vectors
+      parameter (fs = 2.0)           ! Frequency shift for many states
+      parameter (idavfrac = 10)      ! Fraction of the davidson space for 1 batch
+		
+! space for all modes cross-terms
+!      parameter (Mx_ss = Mx_s*Mx_s)        
+! max. Coulomb matrix elements
+!      parameter (Nc_M=2*(101*Nb_M*(Nb_M-5)/50+2*Nb_M*Nb_M/5))   
+      parameter (Nc_M=(4*(2*Nb_M*(Nb_M-5)+2*Nb_M*Nb_M/5))/2)   
+
