@@ -2,7 +2,7 @@
    !***** Ground state and output parameters
    qm_theory='AM1', !Integral type
    scfconv=1.0d-8, !Ground state scf convergence criteria
-   verbosity=3, !
+   verbosity=1, !
    printcharges=0, ! Mulliken charges for ground state
    printdipole=1, ! (0) None, (1) Transition, Relaxed, and Unrelaxed
    printbondorders=0, ! (0) No, (1) Yes
@@ -67,7 +67,7 @@
    heating_steps_per_degree=100, ! number of steps per degree during heating
 
    !***** Output & Log parameters
-   verbosity=2, ! output verbosity (0-minimal, 3-highest) 
+   verbosity=0, ! output verbosity (0-minimal, 3-highest) 
    out_count_init=0, ! the initial count for output files
    out_data_steps=1, ! number of steps to write data
    out_coords_steps=10, ! number of steps to write the restart file

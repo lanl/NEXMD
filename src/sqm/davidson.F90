@@ -305,7 +305,6 @@
       if (istore.le.qm2ds%Mx) istore=qm2ds%Mx
       if (istore_M.le.qm2ds%Mx) istore_M=qm2ds%Mx
       if (istore.le.istore_M) istore=istore_M
-	write(6,*)'STORING EIGENVECTORS'
       do j=1,qm2ds%Mx
          call mo2site(qm2ds%v0(1,j),qm2ds%v2(1,j),qm2ds%rrwork)
       end do
@@ -965,7 +964,6 @@
    end do
 !          
 45 continue
-write(6,*) 'test',qm2ds%icount_M,qmmm_struct%num_qmmm_calls,Kpassable,icount
 if(qm2ds%icount_M.lt.0) then !set number of iterations in if iloop_M less than 0
 	if(qmmm_struct%num_qmmm_calls.gt.(Kpassable-1)) then
    		if(icount.gt.abs(qm2ds%icount_M+1)) then !Set number of iterations for XL-BOXMD

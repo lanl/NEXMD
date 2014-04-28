@@ -157,6 +157,7 @@ subroutine qm2_calc_molecular_dipole_in_excited_state()
 if (qm2ds%Mx>0) then
 	allocate(TZ(qm2ds%Nb,qm2ds%Nb));
         allocate(T(qm2ds%Nb,qm2ds%Nb));
+        allocate(ESDM(qm2ds%Nb,qm2ds%Nb));
 
 	do state=1,qm2ds%Mx
 	        call calc_rhotz(state,qm2ds%rhoTZ,.true.); 
