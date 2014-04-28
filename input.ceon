@@ -2,7 +2,7 @@
    !***** Ground state and output parameters
    qm_theory='AM1', !Integral type
    scfconv=1.0d-8, !Ground state scf convergence criteria
-   verbosity=5, !
+   verbosity=3, !
    printcharges=0, ! Mulliken charges for ground state
    printdipole=1, ! (0) None, (1) Transition, Relaxed, and Unrelaxed
    printbondorders=0, ! (0) No, (1) Yes
@@ -12,11 +12,11 @@
 
    !***** Excited state parameters
    exst_method=1, ! CIS (1) or RPA (2)
-   dav_guess=2, ! restart Davidson from previous (1) or from scratch (0) or XL-BOXMD (2)
+   dav_guess=1, ! restart Davidson from previous (1) or from scratch (0) or XL-BOXMD (2)
    ftol=0.d0, !   Min tolerance (|emin-eold|)
-   ftol0=1.d-10, !  Acceptance tol.(|emin-eold|)
-   ftol1=1.d-11, ! Accept.tol.for residual norm
-   dav_maxcyc=-4, !Max cycles for davidson diagonalization, negative for fixed number
+   ftol0=1.d-5, !  Acceptance tol.(|emin-eold|)
+   ftol1=1.d-6, ! Accept.tol.for residual norm
+   dav_maxcyc=100, !Max cycles for davidson diagonalization, negative for fixed number
 
    !***** Geometry optimization
    maxcyc=0, !Number of cycles for geometry optimization
@@ -67,7 +67,7 @@
    heating_steps_per_degree=100, ! number of steps per degree during heating
 
    !***** Output & Log parameters
-   verbosity=3, ! output verbosity (0-minimal, 3-highest) 
+   verbosity=2, ! output verbosity (0-minimal, 3-highest) 
    out_count_init=0, ! the initial count for output files
    out_data_steps=1, ! number of steps to write data
    out_coords_steps=10, ! number of steps to write the restart file

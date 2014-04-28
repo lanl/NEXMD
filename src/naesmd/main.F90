@@ -153,6 +153,8 @@ program MD_Geometry
    qmmm_struct%numder_step=num_deriv_step
 
    open (inputfdes,file='input.ceon',status='old')
+
+   !This is essentially the zeroeth step
    call init_sqm(sim,inputfdes,STDOUT) ! involves call to Davidson
    close(inputfdes)
 
@@ -235,9 +237,9 @@ program MD_Geometry
          call verlet1(sim)
       else
          call verlet(sim)
-         if(state.eq.'exct'.and.ibo.eq.1) then
-           call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs,rx,ry,rz)
-         end if
+         !if(state.eq.'exct'.and.ibo.eq.1) then !It's calling this twice for no reason
+         !  call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs,rx,ry,rz)
+         !end if
       end if
       write(6,*)"End classical propagation step #",imdqt
 
