@@ -12,7 +12,7 @@ module xlbomd_module
 	implicit none
 	
 	!Variables initialized from qmmm namelist
-	integer			::	xlbomd_flag,K
+	integer			::	xlbomd_flag,K,Kpassable
 	_REAL_			::	dt2w2,xlalpha
 	
 	!Variables not from qmmm namelist
@@ -39,6 +39,7 @@ contains
 		allocate(phi(mat_size,K+1))
 		allocate(phi_point(K+2)) !K+2 is here for rotating the pointers
 		phi=0.d0 !Clear phi
+		Kpassable=K
 		select case (K)	
 			case(3)
 				dt2w2=1.69 
@@ -95,9 +96,9 @@ contains
                 endif   
 		if (num_calls>K+1) then !this is after the initial 'burn in' and on the first step
 			!Test
-			write(6,*)'Input density matrix D'
-			write(6,*)P
-			write(6,*)'----------------------------------------------------------------------'
+			!write(6,*)'Input density matrix D'
+			!write(6,*)P
+			!write(6,*)'----------------------------------------------------------------------'
 			!do n=1,K+1
 			!	write(6,*)'Initial Density Matrix',n
 			!	write(6,*)phi_point(n)%guess
@@ -118,9 +119,9 @@ contains
                         phi_point(1)%guess=>phi_point(K+2)%guess!points to last member of the previous stack for replacement
 			
 			!Test 0
-			write(6,*)'Predicted Density Matrix'
-			write(6,*)P
-			write(6,*)'--------------------------------------------------------------------'
+			!write(6,*)'Predicted Density Matrix'
+			!write(6,*)P
+			!write(6,*)'--------------------------------------------------------------------'
 			!Test 1
                         !do n=1,K+1
                         !        write(6,*)'Final Density Matrix 1',n

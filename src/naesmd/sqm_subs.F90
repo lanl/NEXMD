@@ -144,8 +144,10 @@
 !qm2ds%Mx=1;
 !!!CLEAN IT
 	
-      if(qm2ds%Mx>0) call allocate_davidson() ! Davidson allocation
-      if(qm2ds%dav_guess.gt.1) call init_xlbomd(qm2ds%Nb**2*qm2ds%Mx)
+      if(qm2ds%Mx>0) then
+		call allocate_davidson() ! Davidson allocation
+      		if(qm2ds%dav_guess.gt.1) call init_xlbomd(qm2ds%Nb**2*qm2ds%Mx)
+	endif
       ! Initialization of COSMO\
       !! JAB: this contains variables for Onsager model as well so
       ! is called for all solvent models, but this should probably be changed

@@ -15,7 +15,7 @@
    subroutine davidson()
    use qmmm_module,only:qm2_struct, qmmm_struct !cml-test
    use qm2_davidson_module
-   use xlbomd_module, only : predictdens_xlbomd
+   use xlbomd_module, only : predictdens_xlbomd,Kpassable
 
    implicit none
 
@@ -47,7 +47,7 @@
 
    iloops=0
 
-   if(qm2ds%dav_guess==0) then
+   if((qm2ds%dav_guess==0).or.(qm2ds%dav_guess==2)) then
       istore=0 ! overwriting istore to not use guess
    end if
 
@@ -118,16 +118,22 @@
 !	   close(10)	  
 !	endif	 
 
-   if(istore.gt.0) then ! MD point only!!!!	 
+    if(qm2ds%dav_guess.eq.2) then !XL-BOXMD store eigenvectors from previous steps and calculate new initial guess
+		write(6,*)'Predicting XL-BOXMD eigenvectors'
+		call predictdens_xlbomd(qmmm_struct%num_qmmm_calls,qm2ds%v2(:,1))
+		if(qmmm_struct%num_qmmm_calls.lt.(Kpassable-1)) then
+			istore=0
+			write(6,*) 'Not using previous eigenvectors'
+		endif
+    endif
+
+    if(istore.gt.0) then ! MD point only!!!!      
 !     recover excited state vectors from AO representation in v2
 !     recovered state vectors are put to v0
       do j=1,istore
          call site2mo(qm2ds%rrwork,qm2ds%v2(1,j),qm2ds%v0(1,j))
       end do
-      if(istore.eq.2) then !XL-BOXMD store eigenvectors from previous steps and calculate new initial guess
-		call predictdens_xlbomd(qmmm_struct%num_qmmm_calls,qm2ds%v2(:,1))
-      endif
-   endif
+    endif
 
 ! kav: the lines below are commented out since they are not present in original davidson
 ! 
@@ -299,7 +305,7 @@
       if (istore.le.qm2ds%Mx) istore=qm2ds%Mx
       if (istore_M.le.qm2ds%Mx) istore_M=qm2ds%Mx
       if (istore.le.istore_M) istore=istore_M
-
+	write(6,*)'STORING EIGENVECTORS'
       do j=1,qm2ds%Mx
          call mo2site(qm2ds%v0(1,j),qm2ds%v2(1,j),qm2ds%rrwork)
       end do
@@ -364,7 +370,9 @@
       nd,nd1,vexp1,vexp,ray,rayv,rayvL,rayvR,raye,raye1, &
       ray1,ray1a,ray2,idav,istore)
    use qm2_davidson_module   
-   use cosmo_C,only:solvent_model 
+   use cosmo_C,only:solvent_model
+   use qmmm_module,only:qmmm_struct 
+   use xlbomd_module,only:kpassable
    implicit none
 
    logical check_symmetry; !!JAB Testing
@@ -532,8 +540,8 @@
 10 continue
      
    icount=icount+1 !iteration counter
-   if(lprint.gt.4) write(6,*) 'COUNT=',icount,'Exp=',nd1
-   if(icount.gt.qm2ds%icount_M) stop
+   if(lprint.gt.4) write(6,*) 'Iterations=',icount,'Exp=',nd1
+   if((icount.gt.qm2ds%icount_M).and.(qm2ds%icount_M.gt.0)) stop
 
    if(lprint.gt.4) write(6,*) 'nd1,nd1_old,j0,j1',nd1,nd1_old,j0,j1
 
@@ -546,9 +554,9 @@
 
 70     continue
 !XLBOXMD
-   if(nd1.gt.nd.or.istore.gt.0) then  ! Use vectors from the previous step
+   if((nd1.gt.nd).or.(istore.gt.0)) then  ! Use vectors from the previous step
       istore=0
-      if (lprint.gt.4) write(6,*) 'Restart Davidson with improved guesses'
+      if (lprint.gt.4) write(6,*) 'Restart Davidson with improved guesses' !or starting davidson with saved vectors from previous step
 !	   do j=1,j1
 !	    write(6,*) 'Mode',j, e0(j)
 !	    write(6,*) 'MO_p-h'
@@ -957,21 +965,31 @@
    end do
 !          
 45 continue
+write(6,*) 'test',qm2ds%icount_M,qmmm_struct%num_qmmm_calls,Kpassable,icount
+if(qm2ds%icount_M.lt.0) then !set number of iterations in if iloop_M less than 0
+	if(qmmm_struct%num_qmmm_calls.gt.(Kpassable-1)) then
+   		if(icount.gt.abs(qm2ds%icount_M+1)) then !Set number of iterations for XL-BOXMD
+      			!if(lprint.gt.4) 
+			write(6,*) 'Set number of davidson iterations performed was' &
+        			,icount, ', Expansion ', nd1
+			j0=qm2ds%Mx
+        		goto 100
+		endif
+	else 
+		write(6,*) 'XL-BOXMD Burn in',qmmm_struct%num_qmmm_calls
+	endif
+else !Otherise normal convergence checks and things
+   	if((j1-n).eq.0) then
+      		if(lprint.gt.4) write(6,*) 'All vectors found after loop' &
+         		,iloop, ', Expansion ', nd1
+      		goto 100
+   	end if
 
-   if((j1-n).eq.0) then
-      if(lprint.gt.4) write(6,*) 'All vectors found after loop' &
-         ,iloop, ', Expansion ', nd1
-      goto 100
-   elseif((qm2ds%iloop_M<0).and.(iloop.eq.abs(qm2ds%iloop_M))) then !Set number of iterations for XL-BOXMD
-      if(lprint.gt.4) write(6,*) 'Set number of davidson iterations performed' &
-	,iloop, ', Expansion ', nd1
-	goto 100
-   end if
-
-   if(m.eq.0) then ! Restart Davidson
-      nd1=nd+1
-      goto 10
-   end if
+   	if(m.eq.0) then ! Restart Davidson
+      		nd1=nd+1
+      		goto 10
+   	end if
+endif
 
    if(lprint.gt.4) write(6,*) 'New perturbed m=',m
   
