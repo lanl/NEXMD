@@ -78,7 +78,6 @@ subroutine Lxi_testing(u1,v1,solvent_model)
         !write(6,*)'Using Constant EF in Excited State only'
         tmp=0.d0; tmp2=0.d0
         call efield_fock(tmp,qm2ds%Nb)
-	tmp=tmp*27.2114
 	call unpacking(qm2ds%Nb,tmp,tmp2,'s'); tmp=0.d0
         call commutator(qm2ds%xi,tmp2,qm2ds%Nb,tmp,.false.)
 	!write(6,*)'Efield Operator:'
@@ -597,7 +596,6 @@ subroutine rcnfldnuc(enuclr)
         scaled=(fepsi/onsager_radius**3)*nuc_dip*BOHRS_TO_A*AU_TO_EV
 
         !CALCULATE NUCLEAR-NUCLEAR + NUCLEAR-ELECTRONIC ENERGIES
-        !enuclr=0.d0 !test
         enuclr=enuclr-sum(scaled*nuc_dip)
        
         !WRITE RESULTS AND TEST
@@ -662,7 +660,6 @@ end subroutine
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !SUBROUTINE FOR CONSTANT ELECTRIC FIELD SCREENING 
 !OF ELECTRON-ELECTRON INTERACTION
-!NO NUCLEAR SCREENING
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 subroutine efield_fock(f,n)
         use qmmm_module,only:qm2_struct,qmmm_struct;
@@ -677,16 +674,42 @@ subroutine efield_fock(f,n)
         tmp=0.d0
         dip=0.d0
         !!GET ELEC DIP MATRIX
-        call get_dipole_matrix(qmmm_struct%qm_coords, dip)
+        call get_dipole_matrix(qmmm_struct%qm_coords, dip) !dipole in au * A
         !!CALCULATE ELECTRIC FIELD POTENTIAL OPERATOR
-        tmp=Ex*dip(1,:)+Ey*dip(2,:)+Ez*dip(3,:);
+        tmp=Ex*dip(1,:)+Ey*dip(2,:)+Ez*dip(3,:); !now in hartree
 	!write(6,*)'Efield Operator in Subroutine'
 	!do j=1,n
 	!	write(6,*)tmp(:,j)
 	!enddo
-        f=f+tmp/BOHRS_TO_A/27.2114!POTENTIAL IN ev
+        f=f+tmp/BOHRS_TO_A
 return
 end
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+!SUBROUTINE FOR CONSTANT ELECTRIC FIELD SCREENING 
+!OF NUCLEAR-NUCLEAR INTERACTION
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+subroutine efield_nuc(enuclr)
+        use qmmm_module,only:qm2_struct,qmmm_struct;
+        use cosmo_C, only: fepsi,Ex,Ey,Ez
+        use constants, only : BOHRS_TO_A, AU_TO_EV
+        implicit none;
+        _REAL_ dip(3,qm2_struct%norbs*(qm2_struct%norbs+1)/2)
+        _REAL_ nuc_dip(3)
+        _REAL_ enuclr,origin(3,qmmm_struct%nquant_nlink)
+	origin=0.d0; dip=0.d0
+        call centercoords(origin)
+
+        !!GET NUC DIP MAT and CALC NUC DIP
+        call get_nuc_dip(qmmm_struct%qm_coords-origin, dip);
+        nuc_dip(1)=Ex*sum(dip(1,:))!NUCLEAR DIPOLE IN a.u. * angstrom 
+        nuc_dip(2)=Ey*sum(dip(2,:)) !Now in hartree
+        nuc_dip(3)=Ez*sum(dip(3,:))
+        !CALCULATE NUCLEAR-NUCLEAR ENERGY
+        enuclr=enuclr+sum(nuc_dip)/BOHRS_TO_A 
+return
+end
+
 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !CALCULATE COORDINATE MOMENT

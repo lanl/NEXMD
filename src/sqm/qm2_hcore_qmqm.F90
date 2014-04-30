@@ -23,7 +23,7 @@ subroutine qm2_hcore_qmqm(COORD,H,W,ENUCLR)
 !***********************************************************************
 
       use qm2_davidson_module
-      use cosmo_C, only: solvent_model,ceps,potential_type
+      use cosmo_C, only: solvent_model,ceps,potential_type,EF
       use constants, only : zero, one, A2_TO_BOHRS2, A_TO_BOHRS
       use ElementOrbitalIndex, only: MaxValenceOrbitals, MaxValenceDimension
       use qmmm_module, only : qmmm_nml, qmmm_struct, qm2_struct, qm2_params, qm2_rij_eqns, &
@@ -247,6 +247,10 @@ subroutine qm2_hcore_qmqm(COORD,H,W,ENUCLR)
       call rcnfldhcr(H)
       endif
    endif
+
+   if (EF.eq.1) then !USE CONSTANT ELECTRIC FIELD
+        call efield_nuc(enuclr);
+   end if
 
 !DEBUG      call print ('One-electron matrix',H,.true.)
       

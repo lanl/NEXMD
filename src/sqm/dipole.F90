@@ -138,6 +138,8 @@ subroutine qm2_calc_molecular_dipole_in_excited_state()
 		end do
 		nuc_dipole(k)=summc
 	end do
+!write(6,*)'nuc_dipole:',nuc_dipole*convert_to_debye/convert_debye_to_AU
+
 !end nuclear part
 
 !ground state
@@ -147,6 +149,7 @@ subroutine qm2_calc_molecular_dipole_in_excited_state()
 		call unpacking(qm2ds%Nb,dip(k,:),qm2ds%eta_scratch,'s')
                 mu_gr(k) = ddot(qm2ds%Nb**2,GSDM,1,qm2ds%eta_scratch,1) + nuc_dipole(k)
         enddo
+	
 	mu_gr=mu_gr*convert_to_debye/convert_debye_to_AU
         write(6,*)
         write(6,*) 'Ground State Molecular Dipole Moment (A.U.)'

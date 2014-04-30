@@ -90,7 +90,7 @@ subroutine outDavidson()
 	call trans_dipole(mu, alpha) ! cml-test
 	do i=1,qm2ds%Mx
 		ft = (2.d0/3.d0)*(qm2ds%e0(i)/ONE_AU)*(mu(1,i)**2 + mu(2,i)**2 + mu(3,i)**2)
-		write(6,"(i4,5g15.7)") i,qm2ds%e0(i), &
+		write(6,"(i4,5g25.15)") i,qm2ds%e0(i), &
 			(2.d0/3.d0)*(qm2ds%e0(i)/ONE_AU)*mu(1,i)**2, &
 			(2.d0/3.d0)*(qm2ds%e0(i)/ONE_AU)*mu(2,i)**2, &
 			(2.d0/3.d0)*(qm2ds%e0(i)/ONE_AU)*mu(3,i)**2, ft
@@ -101,7 +101,7 @@ subroutine outDavidson()
 	write(6,"(8x,'Omega',12x,'fx',14x,'fy',14x,'fz',10x,'ftotal')")
 	do i=1,qm2ds%Mx
 		ft = (mu(1,i)**2 + mu(2,i)**2 + mu(3,i)**2)
-		write(6,"(i4,5g15.7)") i,qm2ds%e0(i), &
+		write(6,"(i4,5g25.15)") i,qm2ds%e0(i), &
 			mu(1,i),mu(2,i),mu(3,i), ft
 	end do
 

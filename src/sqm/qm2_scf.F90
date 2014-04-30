@@ -1741,15 +1741,15 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
   INTEGER,INTENT(IN) :: nchg
   _REAL_ ,INTENT(IN) :: scf_mchg(nchg)
   _REAL_ ,INTENT(INOUT) :: density_diff ! COMPLETE HACK
-  integer	p; 	
+  integer	p,n,m,l; 	
    _REAL_ ::hamiltonian(nfock)
   !qm2_Helect is a function
   _REAL_ qm2_HELECT
-
+  
     _REAL_ ,allocatable, dimension(:,:) :: density_matrix_unpacked;
     _REAL_ ,allocatable, dimension(:,:) :: fock_matrix_unpacked;
         integer i,j,k
-
+    _REAL_::temp(nfock) !JAB TEST
 #ifdef MPI
   _REAL_ tmp_recv(2)
 # ifndef USE_MPI_IN_PLACE
@@ -1791,9 +1791,9 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
 	endif
    endif
    if (EF.eq.1) then !USE CONSTANT ELECTRIC FIELD
-        !write(6,*) 'Adding Constant Electric Field to Fock Operator'
-        call efield_fock(fock_matrix,qm2_struct%norbs);
-        call efield_fock(fock_matrix,qm2_struct%norbs);
+	temp=0.d0
+        call efield_fock(temp,qm2_struct%norbs);
+	fock_matrix=fock_matrix+2.d0*temp
    end if  
    !!  END SOLVENT MODEL BLOCK
 
