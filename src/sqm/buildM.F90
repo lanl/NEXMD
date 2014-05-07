@@ -671,10 +671,13 @@ subroutine efield_fock(f,n)
         _REAL_ tmp(n*(n+1)/2);
         _REAL_ dip(3,n*(n+1)/2);
         _REAL_ efv(3)
+	_REAL_ origin(3,qmmm_struct%nquant_nlink)
         tmp=0.d0
         dip=0.d0
+	origin=0.d0;
+        call centercoords(origin)
         !!GET ELEC DIP MATRIX
-        call get_dipole_matrix(qmmm_struct%qm_coords, dip) !dipole in au * A
+        call get_dipole_matrix(qmmm_struct%qm_coords-origin, dip) !dipole in au * A
         !!CALCULATE ELECTRIC FIELD POTENTIAL OPERATOR
         tmp=Ex*dip(1,:)+Ey*dip(2,:)+Ez*dip(3,:); !now in hartree
 	!write(6,*)'Efield Operator in Subroutine'
