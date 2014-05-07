@@ -199,11 +199,10 @@ subroutine calc_cosmo_4(sim_target)
                 write(6,111)k, e0_k ,e0_k-e0_0,abs(e0_k-e0_k_1), e0_k_1-e0_k ,cosmo_scf_ftol
         end do
         !qmmm_struct%qm_mm_first_call = .true.
-        qm2ds%verbosity=verbosity_save
+        qm2ds%verbosity=verbosity_save2 !hack
         qmmm_nml%verbosity=verbosity_save2
         qmmm_nml%printdipole=verbosity_save3
         qmmm_nml%printcharges=verbosity_save4
-
 
 !Printing out found eigenvalues, error and tolerance with solvent
 
