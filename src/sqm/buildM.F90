@@ -699,7 +699,6 @@ subroutine efield_nuc(enuclr)
         _REAL_ enuclr,origin(3,qmmm_struct%nquant_nlink)
 	origin=0.d0; dip=0.d0
         call centercoords(origin)
-
         !!GET NUC DIP MAT and CALC NUC DIP
         call get_nuc_dip(qmmm_struct%qm_coords-origin, dip);
         nuc_dip(1)=Ex*sum(dip(1,:))!NUCLEAR DIPOLE IN a.u. * angstrom 

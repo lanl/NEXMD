@@ -38,7 +38,7 @@
       qm_gb, qmmm_mpi, qmmm_scratch, qm2_params
    use constants,only:EV_TO_KCAL,KCAL_TO_EV,zero,one,alpb_alpha
    use qm2_davidson_module
-   use cosmo_C,only:nps,cosurf,lm61,tri_2D,ceps,potential_type,solvent_model,onsagE;
+   use cosmo_C,only:EF,nps,cosurf,lm61,tri_2D,ceps,potential_type,solvent_model,onsagE;
    use xlbomd_module,only:init_xlbomd
    implicit none
 
@@ -154,8 +154,7 @@
       ! later
 
 !ceps-Dielectric Permittivity from COSMO module
-      if(solvent_model.gt.0) then ! non-default non-vacuum permittivity
-         if (qmmm_nml%verbosity > 4) print*,' COSMO Initialization' 
+      if((solvent_model.gt.0).or.(EF.gt.0)) then !
          call cosini
          !call cosini_testing
       end if
