@@ -35,6 +35,9 @@ subroutine calc_cosmo_2()
         _REAL_ e0_0,e0_k,e0_k_1;
         logical calc_Z;
         !Initial Davidson Call (in vacuum) and T+Z calcualtion
+        !First SCF step
+        verbosity_save=qm2ds%verbosity;
+        qm2ds%verbosity=0; !turn off davidson output
         call davidson();
 	!call do_sqm_davidson_update()
         calc_Z=.true.
@@ -54,8 +57,6 @@ subroutine calc_cosmo_2()
         endif
 
         !First SCF step
-        verbosity_save=qm2ds%verbosity;
-        qm2ds%verbosity=0; !turn off davidson output
         e0_0 = qm2ds%e0(qmmm_struct%state_of_interest); !save vacuum energy
         e0_k_1 = e0_0 !initial energy
 	write(6,*)'Calling Davidson'
@@ -146,6 +147,15 @@ subroutine calc_cosmo_4(sim_target)
 	sim=>sim_target
 
         !Initial Davidson Call (in vacuum) and T+Z calcualtion
+        verbosity_save=qm2ds%verbosity;
+        verbosity_save2=qmmm_nml%verbosity;
+        verbosity_save3=qmmm_nml%printdipole;
+        verbosity_save4=qmmm_nml%printcharges;
+        qmmm_nml%verbosity=0
+        qm2ds%verbosity=0; !turn off davidson output
+        qmmm_nml%printdipole=0;
+	qmmm_nml%printcharges=.false.;
+
 	call do_sqm_davidson_update(sim)
         calc_Z=.true.
         qmmm_struct%qm_mm_first_call = .false.
@@ -158,13 +168,6 @@ subroutine calc_cosmo_4(sim_target)
 
 
         !First SCF step
-        verbosity_save=qm2ds%verbosity;
-	verbosity_save2=qmmm_nml%verbosity;
-	verbosity_save3=qmmm_nml%printdipole;
-	verbosity_save4=qmmm_nml%printcharges;
-        qmmm_nml%verbosity=0
-        qm2ds%verbosity=0; !turn off davidson output
-	qmmm_nml%printdipole=0;
         e0_0 = (sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0)*AU_TO_EV; !save vacuum energy
         e0_k_1 = e0_0 !initial energy
         call do_sqm_davidson_update(sim)
