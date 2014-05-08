@@ -57,6 +57,7 @@ if (calc_Z) then
         tmp=0.d0
         if (potential_type.eq.3) then !COSMO Potential
         call VxiM(qm2ds%eta_tz,tmp); 
+	tmp=2*tmp
         else if (potential_type.eq.2) then !Onsager Potential
         call rcnfld(tmp,qm2ds%eta_tz,qm2ds%nb); 
         end if
@@ -85,7 +86,7 @@ if((solvent_model.eq.1)) then !Linear Response solvent
         tmp=0.d0;
         if (potential_type.eq.3) then !COSMO Potential
         call VxiM(qm2ds%tz_scratch(1),tmp); 
-	tmp=2*tmp
+	tmp=tmp
         elseif (potential_type.eq.2) then !Onsager Potential
         call rcnfld(tmp,qm2ds%tz_scratch(1),qm2ds%nb);
         end if

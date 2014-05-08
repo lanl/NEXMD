@@ -1793,7 +1793,7 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
    if (EF.eq.1) then !USE CONSTANT ELECTRIC FIELD
 	temp=0.d0
         call efield_fock(temp,qm2_struct%norbs);
-	fock_matrix=fock_matrix+2.d0*temp
+	fock_matrix=fock_matrix+temp!2.d0*temp
    end if  
    !!  END SOLVENT MODEL BLOCK
 
