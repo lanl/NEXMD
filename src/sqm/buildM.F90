@@ -720,7 +720,7 @@ subroutine efield_nuc(enuclr)
         nuc_dip(2)=Ey*sum(dip(2,:)) !Now in hartree
         nuc_dip(3)=Ez*sum(dip(3,:))
         !CALCULATE NUCLEAR-NUCLEAR ENERGY
-        enuclr=enuclr+sum(nuc_dip)/BOHRS_TO_A/2.d0 
+        enuclr=enuclr+sum(nuc_dip)/BOHRS_TO_A!/2.d0 
 return
 end
 
