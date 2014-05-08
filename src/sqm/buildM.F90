@@ -49,6 +49,7 @@ subroutine Lxi_testing(u1,v1,solvent_model)
         elseif (potential_type.eq.1) then !testing
         do i=1,qm2ds%nb; tmp(i,i)=qm2ds%eta(qm2ds%nb*(i-1)+i); enddo !double diag vac correlation
         endif         
+	tmp=2*tmp
         call VxiM_end(qm2ds%eta,tmp); !Add selected potential to vacuum correlation
    elseif (solvent_model.eq.99) then
         tmp=0.d0;
