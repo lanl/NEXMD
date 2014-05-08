@@ -46,7 +46,7 @@ subroutine calc_cosmo_2()
         call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
         call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
         v_solvent_difdens=0.d0;
-
+if(1==1) then
         !Calculate Solvent Potential
         if(potential_type.eq.3) then !COSMO
         call VxiM(qm2ds%eta,v_solvent_difdens);
@@ -72,7 +72,7 @@ subroutine calc_cosmo_2()
 
         !Write first SCF iteration results
         write(6,111)1, e0_k ,e0_k-e0_0,abs( e0_k - e0_k_1 ), e0_k_1-e0_k ,cosmo_scf_ftol
-
+if(1==1) then
         !Begin SCF loop
         do k=2,301
                 if  (abs( e0_k - e0_k_1 )< cosmo_scf_ftol) exit; !Check for convergence
@@ -93,7 +93,6 @@ subroutine calc_cosmo_2()
                 elseif(potential_type.eq.0) then!Straight Correlation
                 	call Vxi(qm2ds%eta,v_solvent_difdens)
                 endif
-                
                 e0_k_1 = e0_k !Save last transition energy
                 call davidson(); !Calculate new excited states
                 !call do_sqm_davidson_update() !to include in the groundstate
@@ -102,6 +101,9 @@ subroutine calc_cosmo_2()
                 write(6,111)k, e0_k ,e0_k-e0_0,abs(e0_k-e0_k_1), e0_k_1-e0_k ,cosmo_scf_ftol
 
         end do
+
+endif
+endif
         qmmm_struct%qm_mm_first_call = .true.
         qm2ds%verbosity=verbosity_save
 
