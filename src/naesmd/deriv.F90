@@ -129,10 +129,8 @@ if (ihop>0) then
             qscnet(:,1)=0.d0; qdenet(:,1)=0.d0; !Clear Nuclear Charges
             call cosmo_1_tri(qm2ds%tz_scratch(1)) !Fill Electronic Chrages
             call diegrd(dxyz1_test); !derivative
-		dxyz1_test=2.0*dxyz1_test !Don't know why this factor of two is here
          elseif(potential_type.eq.2) then
             call rcnfldgrad_full(dxyz1_test,qm2ds%rhoLZ,qm2ds%nb); 
-		dxyz1_test=2.0*dxyz1_test !Don't know what's up with this either
          end if
          end if
          dxyz1=dxyz1+dxyz1_test
