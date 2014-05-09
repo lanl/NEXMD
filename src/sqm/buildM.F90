@@ -300,6 +300,8 @@ subroutine rcnfld(f,p,n)
 
         !!CALCULATE REACTION FIELD POTENTIAL
         f=f-2.d0*(scaled(1)*dipx+scaled(2)*dipy+scaled(3)*dipz); !in eV
+        !f=f-(scaled(1)*dipx+scaled(2)*dipy+scaled(3)*dipz); !in eV test
+
 return
 end
 
@@ -560,7 +562,9 @@ subroutine rcnfld_fock(f,p,n)
         !f=qm2_struct%hmatrix !test
         do i=1,(n+1)*n/2
            f0(i)=2.d0*(scaled(1)*dip(1,i)+scaled(2)*dip(2,i)+scaled(3)*dip(3,i));
-           Etest=Etest+f0(i)*P(i)
+           !f0(i)=(scaled(1)*dip(1,i)+scaled(2)*dip(2,i)+scaled(3)*dip(3,i)); !test
+
+           !Etest=Etest+f0(i)*P(i)
         enddo
            f=f-f0
         !onsagE=sum((elec_dip+nuc_dip)**2)*fepsi/onsager_radius**3*BOHRS_TO_A*AU_TO_EV/2
@@ -609,6 +613,8 @@ subroutine rcnfldnuc(enuclr)
 
         !CALCULATE NUCLEAR-NUCLEAR + NUCLEAR-ELECTRONIC ENERGIES
         enuclr=enuclr-sum(scaled*nuc_dip)
+        !enuclr=enuclr-sum(scaled*nuc_dip)/2.d0 !test
+
        
         !WRITE RESULTS AND TEST
         !write(6,*)'N-N=',sum(scaled*nuc_dip)
@@ -662,7 +668,8 @@ subroutine rcnfldhcr(h)
         !h=0.d0 !test
         do i=1,(n+1)*n/2
            h0(i)=-2*(scaled(1)*dip(1,i)+scaled(2)*dip(2,i)+scaled(3)*dip(3,i));
-           Etest=Etest+h0(i)*qm2_struct%den_matrix(i)
+           !h0(i)=-(scaled(1)*dip(1,i)+scaled(2)*dip(2,i)+scaled(3)*dip(3,i)); !test
+
         enddo
          h=h+h0
         !TEST
