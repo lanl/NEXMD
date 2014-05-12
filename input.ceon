@@ -2,21 +2,21 @@
    !***** Ground state and output parameters
    qm_theory='AM1', !Integral type
    scfconv=1.0d-8, !Ground state scf convergence criteria
-   verbosity=1, !
+   verbosity=5, !
    printcharges=0, ! Mulliken charges for ground state
    printdipole=1, ! (0) None, (1) Transition, Relaxed, and Unrelaxed
    printbondorders=0, ! (0) No, (1) Yes
    density_predict=0, !(0) None, (1) Reversible MD, (2) XL-BOMD
-   K=3, ! XL-BOMD Parameter (3-9)
+   K=5, ! XL-BOMD Parameter (3-9)
    itrmax=300, ! Maximum number of scf iterations for ground state, negative to ignore convergence
 
    !***** Excited state parameters
    exst_method=1, ! CIS (1) or RPA (2)
-   dav_guess=1, ! restart Davidson from previous (1) or from scratch (0) or XL-BOXMD (2)
+   dav_guess=2, ! restart Davidson from previous (1) or from scratch (0) or XL-BOXMD (2)
    ftol=0.d0, !   Min tolerance (|emin-eold|)
-   ftol0=1.d-5, !  Acceptance tol.(|emin-eold|)
-   ftol1=1.d-6, ! Accept.tol.for residual norm
-   dav_maxcyc=100, !Max cycles for davidson diagonalization, negative for fixed number
+   ftol0=1.d-10, !  Acceptance tol.(|emin-eold|)
+   ftol1=1.d-11, ! Accept.tol.for residual norm
+   dav_maxcyc=-2, !Max cycles for davidson diagonalization, negative for fixed number
 
    !***** Geometry optimization
    maxcyc=0, !Number of cycles for geometry optimization
@@ -40,12 +40,12 @@
    rnd_seed=1, ! seed for the random number generator
    bo_dynamics_flag=1, ! 0-non-BO, 1-BO
    exc_state_init=1, ! initial excited state (0 - ground state)
-   n_exc_states_propagate=2, ! number of excited states
+   n_exc_states_propagate=1, ! number of excited states
 
    !***** Dynamics parameters
    time_init=0.d0, ! initial time, fs
    time_step=0.5, !time step, fs
-   n_class_steps=1000, !number of classical steps
+   n_class_steps=500, !number of classical steps
    n_quant_steps=0, ! number of quantum steps for each classical step
    moldyn_deriv_flag=1, ! 0-none, 1-analyt, 2-numeric
    num_deriv_step=1.d-5, ! displacement for numerical derivatives, A
@@ -78,7 +78,7 @@
     1        -5.805337   -0.910223   -0.005929
     1        -3.926529   -0.935395    0.007534
     6        -4.858095   -0.335061    0.000987
-    8        -4.841129    0.723609   -0.002592
+    8        -4.841129    0.823609   -0.002592
 &endcoord
 
 &veloc

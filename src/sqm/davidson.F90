@@ -903,6 +903,7 @@
       endif
 
       f2=f2+f3 !f(x) + f(y)
+
       if(f2.le.ftol0) then ! Converged vector
          n=n+1
          call dcopy(2*M4,v0(1,j0+n),one,v0(1,j),one) !Move converged vector to beginning
@@ -970,7 +971,10 @@ if(qm2ds%icount_M.lt.0) then !set number of iterations in if iloop_M less than 0
       			!if(lprint.gt.4) 
 			write(6,*) 'Set number of davidson iterations performed was' &
         			,icount, ', Expansion ', nd1
-			j0=qm2ds%Mx
+			n=qm2ds%Mx
+		        call dcopy(2*M4,v0(1,j0+n),one,v0(1,j),one) !Move converged vector to beginning
+         		e0(j0+n)= f1 !move converged energy to beginning
+         		ferr(j0+n)=abs(f2)+abs(f3) !
         		goto 100
 		endif
 	else 
@@ -984,6 +988,7 @@ else !Otherise normal convergence checks and things
    	end if
 
    	if(m.eq.0) then ! Restart Davidson
+		write(6,*)'Restarting Davidson'
       		nd1=nd+1
       		goto 10
    	end if
