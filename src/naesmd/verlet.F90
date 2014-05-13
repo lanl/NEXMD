@@ -9,7 +9,7 @@ module verlet_module
    use naesmd_constants
    use langevin_temperature
    use communism
-
+   use cosmo_C,only:solvent_model
    implicit none
 
    contains
@@ -128,9 +128,12 @@ module verlet_module
    !do i=1,npot
       !vmdqt(i)=sim%naesmd%Omega(i)+vgs
    !end do
+   if(solvent_model.eq.4) then
+        call calc_cosmo_4(sim)
+   else
+   	call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs)
+   endif
 
-   call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs)
-   
    call cpu_time(t_start)
    call deriv(sim,ihop)
    call cpu_time(t_finish)

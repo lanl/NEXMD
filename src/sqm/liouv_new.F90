@@ -11,7 +11,8 @@
 !
 !********************************************************************
 !
-subroutine dav_wrap()
+subroutine dav_wrap(sim_target)
+	use communism !for sim hack
 	use qmmm_module,only:qmmm_struct
 	use qm2_davidson_module
 	use cosmo_C, only: solvent_model,ceps
@@ -20,7 +21,10 @@ subroutine dav_wrap()
 
 	_REAL_ f,ddot
 	integer i
+        type(simulation_t),target::sim_target
+        type(simulation_t),pointer::sim
 
+	sim=>sim_target
 	! Finding excited states
 
 	!Vacuum, Linear Response Solvent have the single Davidson routine, Nonequilibrium State Specific
@@ -28,7 +32,7 @@ subroutine dav_wrap()
 	if ((solvent_model.lt.2).or.(solvent_model.gt.3)) then
 		call davidson();
 	elseif ((solvent_model.eq.2).or.(solvent_model.eq.3)) then
-		call solvent_scf_and_davidson_test();
+		call solvent_scf_and_davidson_test(sim);
 	end if 
 
 	! Total energy of the ground state

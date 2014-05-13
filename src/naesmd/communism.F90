@@ -184,7 +184,6 @@ module communism
 !
    subroutine do_sqm_and_davidson(sim,rx,ry,rz,r)
    use qm2_davidson_module,only:qm2ds
-
    implicit none
 
    type(simulation_t),pointer::sim
@@ -214,7 +213,7 @@ module communism
    ! CML Includes call to Davidson within sqm_energy() 7/16/12
    call sqm_energy(sim%Na,sim%coords,sim%escf,born_radii, &
       one_born_radii,intdiel,extdiel,Arad,sim%qm2%scf_mchg, &
-      sim%time_sqm_took,sim%time_davidson_took)
+      sim%time_sqm_took,sim%time_davidson_took) !The use of sim here is a hack right now and could be fixed
 
    ! ground state energy
    sim%dav%Eground=qm2ds%Eground

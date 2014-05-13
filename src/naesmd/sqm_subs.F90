@@ -140,10 +140,6 @@
          write(6,'(/80(1H-)/''  RESULTS'',/80(1H-)/)')
       end if
 
-!!!CLEAN IT
-!qm2ds%Mx=1;
-!!!CLEAN IT
-	
       if(qm2ds%Mx>0) then
 		call allocate_davidson() ! Davidson allocation
       		if(qm2ds%dav_guess.gt.1) call init_xlbomd(qm2ds%Nb**2*qm2ds%Mx)

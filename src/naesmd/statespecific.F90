@@ -4,8 +4,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 subroutine solvent_scf_and_davidson_test();
   use cosmo_C
-  !write(6,*) 'STATE SPECIFIC SOLVENT' !!JAB Testing
-        
+  implicit none
+
   if ((solvent_model.eq.3).or.(solvent_model.eq.5)) then
     call calc_cosmo_3();
   else if ((solvent_model.eq.2)) then
@@ -20,9 +20,9 @@ end subroutine
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 subroutine calc_cosmo_2()
         use qm2_davidson_module
-	!use communism
+	use communism
         use qmmm_module,only:qm2_struct,qmmm_struct;
-        use cosmo_C, only: v_solvent_difdens, cosmo_scf_ftol,potential_type;
+        use cosmo_C, only: v_solvent_difdens, cosmo_scf_ftol,potential_type,EF;
         use constants, only : ZERO
 
         implicit none
@@ -30,7 +30,7 @@ subroutine calc_cosmo_2()
         integer LWORK;
         _REAL_, DIMENSION(:), allocatable:: WORK;
         _REAL_ :: OPTIMALSIZE;
-        integer verbosity_save;
+        integer verbosity_save,EFsave;
         integer k,p,h
         _REAL_ e0_0,e0_k,e0_k_1;
         logical calc_Z;
@@ -38,15 +38,23 @@ subroutine calc_cosmo_2()
         !First SCF step
         verbosity_save=qm2ds%verbosity;
         qm2ds%verbosity=0; !turn off davidson output
+
+	!EFsave=0;
+	!if(EF>0) then !For testing with electric field
+	!	EFsave=EF;
+	!	EF=0;
+	!endif
+
         call davidson();
-	!call do_sqm_davidson_update()
-        calc_Z=.true.
+        calc_Z = .false.
         qmmm_struct%qm_mm_first_call = .false.
-        qm2ds%eta(:)=0.d0 !Clearing
+        qm2ds%eta(:) = 0.d0 !Clearing
         call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
         call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
         v_solvent_difdens=0.d0;
-if(1==1) then
+
+if(1==1) then !Testing
+
         !Calculate Solvent Potential
         if(potential_type.eq.3) then !COSMO
         call VxiM(qm2ds%eta,v_solvent_difdens);
@@ -59,9 +67,12 @@ if(1==1) then
         !First SCF step
         e0_0 = qm2ds%e0(qmmm_struct%state_of_interest); !save vacuum energy
         e0_k_1 = e0_0 !initial energy
-	write(6,*)'Calling Davidson'
+
+	!f(EFsave>0) then !For testing with electric field
+	!EF=EFsave;
+	!ndif
+
         call davidson(); !first davidson call with solvent potential
-        !call do_sqm_davidson_update()
         e0_k = qm2ds%e0(qmmm_struct%state_of_interest); !save first solventenergy
 
         !Write header for SCF iterations
@@ -72,8 +83,11 @@ if(1==1) then
 
         !Write first SCF iteration results
         write(6,111)1, e0_k ,e0_k-e0_0,abs( e0_k - e0_k_1 ), e0_k_1-e0_k ,cosmo_scf_ftol
-if(1==1) then
+
+if(1==1) then !Testing
+
         !Begin SCF loop
+
         do k=2,301
                 if  (abs( e0_k - e0_k_1 )< cosmo_scf_ftol) exit; !Check for convergence
                 
@@ -107,6 +121,9 @@ endif
         qmmm_struct%qm_mm_first_call = .true.
         qm2ds%verbosity=verbosity_save
 
+        !if(EFsave>0) then !For testing with electric field
+        !       EF=EFsave;
+        !endif
 
 !Printing out found eigenvalues, error and tolerance with solvent
 
@@ -134,13 +151,13 @@ subroutine calc_cosmo_4(sim_target)
         use qm2_davidson_module
         use communism
         use qmmm_module,only:qm2_struct,qmmm_struct,qmmm_nml;
-        use cosmo_C, only: v_solvent_difdens, rhotzpacked_k,cosmo_scf_ftol,potential_type;
+        use cosmo_C, only: EF,v_solvent_difdens, rhotzpacked_k,cosmo_scf_ftol,potential_type;
         use constants, only : ZERO,AU_TO_EV
 
         implicit none
         type(simulation_t),target::sim_target
         type(simulation_t),pointer::sim
-        integer verbosity_save,verbosity_save2,verbosity_save3
+        integer verbosity_save,verbosity_save2,verbosity_save3,EFsave
 	logical verbosity_save4
         integer k,p,h
         _REAL_ e0_0,e0_k,e0_k_1;
@@ -157,6 +174,12 @@ subroutine calc_cosmo_4(sim_target)
         qm2ds%verbosity=0; !turn off davidson output
         qmmm_nml%printdipole=0;
 	qmmm_nml%printcharges=.false.;
+
+        EFsave=0;
+        if(EF>0) then !For testing with electric field
+               EFsave=EF;
+               EF=0;
+        endif
 
 	call do_sqm_davidson_update(sim)
         calc_Z=.true.
@@ -207,6 +230,9 @@ subroutine calc_cosmo_4(sim_target)
         qmmm_nml%printcharges=verbosity_save4
 
 !Printing out found eigenvalues, error and tolerance with solvent
+        if(EFsave>0) then !For testing with electric field
+               EF=EFsave;
+        endif
 
         if(qm2ds%verbosity>0) then
                 write(6,*)

@@ -51,7 +51,7 @@ subroutine Lxi_testing(u1,v1,solvent_model)
         endif         
 	tmp=2*tmp
         call VxiM_end(qm2ds%eta,tmp); !Add selected potential to vacuum correlation
-   elseif (solvent_model.eq.99) then
+   elseif (solvent_model.eq.99) then !For Z-vector equation if different
         tmp=0.d0;
         if (potential_type.eq.3) then !COSMO Potential
         call VxiM(qm2ds%xi,tmp);

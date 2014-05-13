@@ -12,11 +12,11 @@
 
    !***** Excited state parameters
    exst_method=1, ! CIS (1) or RPA (2)
-   dav_guess=2, ! restart Davidson from previous (1) or from scratch (0) or XL-BOXMD (2)
+   dav_guess=0, ! restart Davidson from previous (1) or from scratch (0) or XL-BOXMD (2)
    ftol=0.d0, !   Min tolerance (|emin-eold|)
    ftol0=1.d-10, !  Acceptance tol.(|emin-eold|)
    ftol1=1.d-11, ! Accept.tol.for residual norm
-   dav_maxcyc=-2, !Max cycles for davidson diagonalization, negative for fixed number
+   dav_maxcyc=200, !Max cycles for davidson diagonalization, negative for fixed number
 
    !***** Geometry optimization
    maxcyc=0, !Number of cycles for geometry optimization
@@ -25,13 +25,13 @@
 
    !***** Solvent models
    ceps=100, !Dielectric constant
-   cosmo_scf_ftol=1.0d-7, !State specific scf tolerance
+   cosmo_scf_ftol=1.0d-5, !State specific scf tolerance
    EF=0, !(1) Electric field in ground and excited state, (2) Electric field in excited state only
    Ex=0, !Electric Field Vector X 
    Ez=0, !Electric Field Vector Z
    Ey=0.01, !Electric Field Vector Y
    onsager_radius=2, ! Onsager radius
-   solvent_model=0, ! (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi 
+   solvent_model=2, ! (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi 
    potential_type=3, ! (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
 &endqmmm
 
@@ -70,7 +70,7 @@
    verbosity=0, ! output verbosity (0-minimal, 3-highest) 
    out_count_init=0, ! the initial count for output files
    out_data_steps=1, ! number of steps to write data
-   out_coords_steps=10, ! number of steps to write the restart file
+   out_coords_steps=500, ! number of steps to write the restart file
    out_data_cube=0, ! write(1) or not(0) view files to generate cubes   
 &endmoldyn
 
