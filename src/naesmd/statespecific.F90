@@ -46,7 +46,7 @@ subroutine calc_cosmo_2()
 	!endif
 
         call davidson();
-        calc_Z = .false.
+        calc_Z = .true.
         qmmm_struct%qm_mm_first_call = .false.
         qm2ds%eta(:) = 0.d0 !Clearing
         call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);

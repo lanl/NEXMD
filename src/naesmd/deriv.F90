@@ -162,7 +162,7 @@ if (ihop>0) then
                 elseif(potential_type.eq.2) then
                   call rcnfldgrad2(dxyz1_test,qm2ds%rhoTZ,qm2ds%rhoT,qm2ds%nb,.true.)
                 endif
-	        dxyz1=dxyz1-dxyz1_test
+	        dxyz1=dxyz1+dxyz1_test
 
                 do i=1,qmmm_struct%nquant_nlink
                         do j=1,3
