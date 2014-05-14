@@ -30,20 +30,21 @@ subroutine calc_cosmo_2()
         integer LWORK;
         _REAL_, DIMENSION(:), allocatable:: WORK;
         _REAL_ :: OPTIMALSIZE;
-        integer verbosity_save,EFsave;
+	_REAL_ :: v_solvent_difdens_1(size(v_solvent_difdens,1),size(v_solvent_difdens,2))
+        integer verbosity_save,EFsave
         integer k,p,h
-        _REAL_ e0_0,e0_k,e0_k_1;
+        _REAL_ e0_0,e0_k,e0_k_1,vsum
         logical calc_Z;
         !Initial Davidson Call (in vacuum) and T+Z calcualtion
         !First SCF step
         verbosity_save=qm2ds%verbosity;
         qm2ds%verbosity=0; !turn off davidson output
 
-	!EFsave=0;
-	!if(EF>0) then !For testing with electric field
-	!	EFsave=EF;
-	!	EF=0;
-	!endif
+	EFsave=0;
+	if(EF>0) then !For testing with electric field
+		EFsave=EF;
+		EF=0;
+	endif
 
         call davidson();
         calc_Z = .true.
@@ -67,10 +68,12 @@ if(1==1) then !Testing
         !First SCF step
         e0_0 = qm2ds%e0(qmmm_struct%state_of_interest); !save vacuum energy
         e0_k_1 = e0_0 !initial energy
-
-	!f(EFsave>0) then !For testing with electric field
+	v_solvent_difdens_1=v_solvent_difdens
+	vsum=sum(v_solvent_difdens)
+	
+	!if(EFsave>0) then !For testing with electric field
 	!EF=EFsave;
-	!ndif
+	!endif
 
         call davidson(); !first davidson call with solvent potential
         e0_k = qm2ds%e0(qmmm_struct%state_of_interest); !save first solventenergy
@@ -78,24 +81,24 @@ if(1==1) then !Testing
         !Write header for SCF iterations
         write(6,*)'Start nonequilibrium state-specific COSMO SCF'
         write(6,*)
-        write(6,*)'SCF Step,  Excitation Energy,    DeltaE_sol,      abs(error),error,  COSMO SCF Tolerance '
+        write(6,*)'SCF Step,  Excitation Energy,    DeltaE_sol,      abs(error),error, vsum, COSMO SCF Tolerance '
         write(6,*)'--------------------------------------------------'
 
         !Write first SCF iteration results
-        write(6,111)1, e0_k ,e0_k-e0_0,abs( e0_k - e0_k_1 ), e0_k_1-e0_k ,cosmo_scf_ftol
+        write(6,111)1, e0_k ,e0_k-e0_0,abs( e0_k - e0_k_1 ), e0_k_1-e0_k ,vsum,cosmo_scf_ftol
 
 if(1==1) then !Testing
 
         !Begin SCF loop
 
         do k=2,301
-                if  (abs( e0_k - e0_k_1 )< cosmo_scf_ftol) exit; !Check for convergence
-                
+                !if  (abs( e0_k - e0_k_1 )< cosmo_scf_ftol) exit; !Check for convergence
+                if  (abs( vsum )< cosmo_scf_ftol) exit; !Check for convergence
+
                 !Initialize Variables for Solvent Potential
                 v_solvent_difdens(1:qm2_struct%norbs,1:qm2_struct%norbs)=0.d0;!Clearing
 
                 !Save last transition density in AO Basis could easily switch
-                !this to RhoT
                 call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
                 call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
 
@@ -111,8 +114,9 @@ if(1==1) then !Testing
                 call davidson(); !Calculate new excited states
                 !call do_sqm_davidson_update() !to include in the groundstate
                 e0_k = qm2ds%e0(qmmm_struct%state_of_interest);
-                
-                write(6,111)k, e0_k ,e0_k-e0_0,abs(e0_k-e0_k_1), e0_k_1-e0_k ,cosmo_scf_ftol
+                vsum=sum(v_solvent_difdens-v_solvent_difdens_1)
+		v_solvent_difdens_1=v_solvent_difdens
+                write(6,111)k, e0_k ,e0_k-e0_0,abs(e0_k-e0_k_1), e0_k_1-e0_k ,vsum,cosmo_scf_ftol
 
         end do
 
@@ -121,10 +125,10 @@ endif
         qmmm_struct%qm_mm_first_call = .true.
         qm2ds%verbosity=verbosity_save
 
-        !if(EFsave>0) then !For testing with electric field
-        !       EF=EFsave;
-        !endif
-
+        if(EFsave>0) then !For testing with electric field
+               EF=EFsave;
+        endif
+	call davidson()
 !Printing out found eigenvalues, error and tolerance with solvent
 
         if(qm2ds%verbosity>0) then
@@ -139,8 +143,7 @@ endif
                 !write(6,*)'-------------------------------------------------'
                 !write(6,*)
         end if
-
-111     format (i3,' ',g24.16,4('        ',e10.3))
+111     format (i3,' ',g24.16,5('        ',e10.3))
 112     format (i3,a,g24.16,2(' ',e8.2))
 
 end subroutine
@@ -175,7 +178,7 @@ subroutine calc_cosmo_4(sim_target)
         qmmm_nml%printdipole=0;
 	qmmm_nml%printcharges=.false.;
 
-        EFsave=0;
+        !EFsave=0;
         if(EF>0) then !For testing with electric field
                EFsave=EF;
                EF=0;

@@ -40,7 +40,7 @@ subroutine Lxi_testing(u1,v1,solvent_model)
    qm2ds%eta=0.0;
    call Vxi(qm2ds%xi,qm2ds%eta); !Calculate Vacuum Electron Correlation
    !!SELECT SOLVENT MODEL AND POTENTIAL TYPE
-   if ((solvent_model.eq.1)) then !1:Linear Response,99:Z-vector eq.
+   if ((solvent_model.eq.1)) then !1:Linear Response
         tmp=0.d0;
         if (potential_type.eq.3) then !COSMO Potential
         call VxiM(qm2ds%xi,tmp);
@@ -60,7 +60,7 @@ subroutine Lxi_testing(u1,v1,solvent_model)
         elseif (potential_type.eq.1) then !testing
         do i=1,qm2ds%nb; tmp(i,i)=qm2ds%eta(qm2ds%nb*(i-1)+i); enddo !double diag vac correlation
         endif
-        tmp=2*tmp
+        tmp=2*tmp !linear response
         call VxiM_end(qm2ds%eta,tmp); !Add selected potential to vacuum correlation
    elseif(solvent_model.eq.2) then ! 2: State Specific [V_s(T+Z),xi]
         !Commutator is performed here for State Specific Solvent Routines

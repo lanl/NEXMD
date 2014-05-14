@@ -54,14 +54,14 @@ if (calc_Z) then
         call Vxi (qm2ds%eta_tz,qm2ds%tz_scratch(1))
 !**************SOLVENT BLOCK !!JAB
         if(solvent_model.gt.0) then
-        tmp=0.d0
+        	tmp=0.d0
         if (potential_type.eq.3) then !COSMO Potential
-        call VxiM(qm2ds%eta_tz,tmp); 
+        	call VxiM(qm2ds%eta_tz,tmp); 
         else if (potential_type.eq.2) then !Onsager Potential
-        call rcnfld(tmp,qm2ds%eta_tz,qm2ds%nb); 
+        	call rcnfld(tmp,qm2ds%eta_tz,qm2ds%nb); 
         end if
-	tmp=2.d0*tmp
-        call VxiM_end(qm2ds%tz_scratch(1),tmp); !Add selected potential to vacuum correlation
+		tmp=2.d0*tmp !linear response
+        	call VxiM_end(qm2ds%tz_scratch(1),tmp); !Add selected potential to vacuum correlation
         end if
 !!************END SOLVENT BLOCK
 
@@ -85,11 +85,11 @@ if (calc_Z) then
 if((solvent_model.eq.1)) then !Linear Response solvent
         tmp=0.d0;
         if (potential_type.eq.3) then !COSMO Potential
-        call VxiM(qm2ds%tz_scratch(1),tmp); 
+        	call VxiM(qm2ds%tz_scratch(1),tmp); 
         elseif (potential_type.eq.2) then !Onsager Potential
-        call rcnfld(tmp,qm2ds%tz_scratch(1),qm2ds%nb);
+        	call rcnfld(tmp,qm2ds%tz_scratch(1),qm2ds%nb);
         end if
-	tmp=2.d0*tmp
+		tmp=2.d0*tmp
         call VxiM_end(qm2ds%eta_tz,tmp); !Add selected potential to vacuum correlation
 end if
 !!************END SOLVENT BLOCK
