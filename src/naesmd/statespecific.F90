@@ -40,11 +40,11 @@ subroutine calc_cosmo_2()
         verbosity_save=qm2ds%verbosity;
         qm2ds%verbosity=0; !turn off davidson output
 
-	EFsave=0;
-	if(EF>0) then !For testing with electric field
-		EFsave=EF;
-		EF=0;
-	endif
+	!EFsave=0;
+	!if(EF>0) then !For testing with electric field
+	!	EFsave=EF;
+	!	EF=0;
+	!endif
 
         call davidson();
         calc_Z = .true.
@@ -125,10 +125,10 @@ endif
         qmmm_struct%qm_mm_first_call = .true.
         qm2ds%verbosity=verbosity_save
 
-        if(EFsave>0) then !For testing with electric field
-               EF=EFsave;
-        endif
-	call davidson()
+        !if(EFsave>0) then !For testing with electric field
+        !       EF=EFsave;
+        !endif
+	!call davidson()
 !Printing out found eigenvalues, error and tolerance with solvent
 
         if(qm2ds%verbosity>0) then
@@ -226,16 +226,25 @@ subroutine calc_cosmo_4(sim_target)
 
                 write(6,111)k, e0_k ,e0_k-e0_0,abs(e0_k-e0_k_1), e0_k_1-e0_k ,cosmo_scf_ftol
         end do
+
+!Printing out found eigenvalues, error and tolerance with solvent
+        if(EFsave>0) then !For testing with electric field
+               EF=EFsave;
+        endif
+
+        !call do_sqm_davidson_update(sim) !to include in the groundstate
+
         !qmmm_struct%qm_mm_first_call = .true.
         qm2ds%verbosity=verbosity_save2 !hack
         qmmm_nml%verbosity=verbosity_save2
         qmmm_nml%printdipole=verbosity_save3
         qmmm_nml%printcharges=verbosity_save4
 
-!Printing out found eigenvalues, error and tolerance with solvent
-        if(EFsave>0) then !For testing with electric field
-               EF=EFsave;
-        endif
+        !Save last transition density in AO Basis could easily switch
+        !this to RhoT
+        !call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
+        !call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
+        !call packing(qm2ds%nb,qm2ds%eta,rhotzpacked_k, 's')
 
         if(qm2ds%verbosity>0) then
                 write(6,*)
