@@ -83,17 +83,17 @@ if (ihop>0) then
      ! Need to call dealloc_rhotz() when finished or in polishing
       ! add allocation to the big allocation/dealloc regime
       
-      ! Get excited state density
-!	write(6,*)'test1'
+      	! Get excited state density
       call calc_rhotz(ihop, qm2ds%rhoTZ,.true.)
       call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%tz_scratch(1), &
          qm2ds%tz_scratch(qm2ds%Nb**2+1))
       call packing(qm2ds%Nb,qm2ds%tz_scratch(1),qm2ds%rhoTZ,'s')
+
+	!Get transition density
       call getmodef(qm2ds%Np*qm2ds%Nh*2,qm2ds%Mx,qm2ds%Np,qm2ds%Nh, &
          ihop,qm2ds%v0,qm2ds%tz_scratch(1))
       call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%tz_scratch(1),qm2ds%rhoLZ, &
          qm2ds%tz_scratch(qm2ds%Nb**2+1))
-!write(6,*)'test2'
          dxyz1=0.d0; dxyz1_test=0.d0;
 
          !calculate vacuum derivative for term 1

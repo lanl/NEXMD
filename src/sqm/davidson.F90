@@ -119,11 +119,11 @@
 !	endif	 
 
     if(qm2ds%dav_guess.eq.2) then !XL-BOXMD store eigenvectors from previous steps and calculate new initial guess
-		write(6,*)'Predicting XL-BOXMD eigenvectors'
+		write(6,*)'Predictdens XL-BOXMD called'
 		call predictdens_xlbomd(qmmm_struct%num_qmmm_calls,qm2ds%v2(:,1))
-		if(qmmm_struct%num_qmmm_calls.lt.(Kpassable-1)) then
+		if(qmmm_struct%num_qmmm_calls.lt.(Kpassable+2)) then
 			istore=0
-			write(6,*) 'Not using previous eigenvectors'
+			write(6,*) 'Not using previous eigenvectors for XL-BOXMD'
 		endif
     endif
 
@@ -206,6 +206,11 @@
 111   format (i3,a,g24.16,2(' ',e8.2))
    call flush(6)
 
+!Testing JAB
+      !do j=1,j0
+      !   write (6,*) 'TD:',(qm2ds%v0(i,j),i=1,qm2ds%Nrpa)
+      !end do
+!End Testing JAB
    
 ! Write vectors only for BIG sizes in the case of crash/restart       	  
    if(qm2ds%mdflag.lt.0.and.qm2ds%Nb.gt.100) then
@@ -966,7 +971,7 @@
 !          
 45 continue
 if(qm2ds%icount_M.lt.0) then !set number of iterations in if iloop_M less than 0
-	if(qmmm_struct%num_qmmm_calls.gt.(Kpassable-1)) then
+	if(qmmm_struct%num_qmmm_calls.gt.(Kpassable+1)) then
    		if(icount.gt.abs(qm2ds%icount_M+1)) then !Set number of iterations for XL-BOXMD
       			!if(lprint.gt.4) 
 			write(6,*) 'Set number of davidson iterations performed was' &

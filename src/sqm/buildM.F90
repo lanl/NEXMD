@@ -64,6 +64,15 @@ subroutine Lxi_testing(u1,v1,solvent_model)
         call VxiM_end(qm2ds%eta,tmp); !Add selected potential to vacuum correlation
    elseif(solvent_model.eq.2) then ! 2: State Specific [V_s(T+Z),xi]
         !Commutator is performed here for State Specific Solvent Routines
+
+	!TESTING BLOCK
+        !v_solvent_difdens=0.d0
+        !i=0
+        !do i=1,qm2ds%nb/2
+        !    v_solvent_difdens(i,i)=2
+        !    v_solvent_difdens(i*2,i*2)=-2
+        !enddo; i=0
+
         call commutator(v_solvent_difdens,qm2ds%xi,qm2ds%Nb,tmp,.false.)
         call VxiM_end(qm2ds%eta,tmp)
    elseif(solvent_model.eq.3) then !3: State Specific [V_s(xi),xi]

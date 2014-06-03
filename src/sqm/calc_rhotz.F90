@@ -45,7 +45,6 @@ subroutine calc_rhotz(state, rhoTZ,calc_Z)
         call Iminus2rho(qm2ds%Nb,qm2ds%Np,qm2ds%eta_tz,rhoTZ) 
 
 if (calc_Z) then 
-
 ! Start putting together left hand side of LZ-equation
 ! Form [V(rhoT), rho]=(I-2rho)V(rhoT) 
         call mo2sitef (qm2ds%Nb,qm2ds%vhf,rhoTZ, &
@@ -74,7 +73,7 @@ if (calc_Z) then
 
 ! Form [[xi^+, rho], V(xi)], rho] +cc= (I-2rho)[(I-2rho)xi^+, V(xi)]+cc
         call getmodef(2*qm2ds%Np*qm2ds%Nh,qm2ds%Mx,qm2ds%Np,qm2ds%Nh, &
-                        state,qm2ds%v0,qm2ds%xi_tz)
+                        state,qm2ds%v0,qm2ds%xi_tz) !This may be redundant with the call above FIXME
         call mo2sitef (qm2ds%Nb,qm2ds%vhf,qm2ds%xi_tz,qm2ds%tz_scratch(1), &
                         qm2ds%tz_scratch(qm2ds%Nb**2+1))
                 qm2ds%eta_tz(:)=0.d0;
@@ -121,8 +120,9 @@ end if
                 one,qm2ds%tz_scratch(1),one)
 
                 f=1.0
-! Start loop here     
-                do im=1,qm2ds%icount_M    ! this used to be Ni_M (max Lanczos iter). Is right?
+! Start loop here
+		!'RhoTZ min iter set to at least 100 for testing... FIXME'    
+                do im=1,max(qm2ds%icount_M,100)    ! JAB switched to at least 100
                         i = 0
                         do ip = 1,qm2ds%Np
                                 do ih = qm2ds%Np+1,qm2ds%Nb

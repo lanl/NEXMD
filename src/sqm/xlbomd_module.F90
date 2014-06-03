@@ -86,7 +86,7 @@ contains
 
 		if (num_calls<K+2) then !Initial burnin
                         !Add the solved density matrix as the initial guess for 'burn in'
-                        !write(6,*)'XL-BOMD Burn in:',num_calls
+                        write(6,*)'Full convergence for XL-BOMD Burn in:',num_calls
                         if (num_calls>0) then
                         	phi_point(K+2-num_calls)%guess=P
 			endif
@@ -105,7 +105,7 @@ contains
 			!	write(6,*)'------------------------------------------------------------------'
 			!enddo
 			!Calculate new initial guess
-			!write(6,*)'XL-BOMD Predicted Initial Guess'
+			write(6,*)'XL-BOMD Predicted Initial Guess'
 			P=2.0*phi_point(1)%guess-phi_point(2)%guess+dt2w2*(P-phi_point(1)%guess)
 			do n=1,K+1
 				P=P+xlalpha*coef(n)*phi_point(n)%guess
