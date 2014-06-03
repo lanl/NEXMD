@@ -127,7 +127,6 @@ OBJSQM = \
 	$(OBJDIR)/$(SQMDIR)/qm2_dftb_externalshift.o \
 	$(OBJDIR)/$(SQMDIR)/qm2_dftb_dispersion_params.o \
 	$(OBJDIR)/$(SQMDIR)/qm2_smallest_number.o \
-	$(OBJDIR)/$(SQMDIR)/liouv_new.o \
 	$(OBJDIR)/$(SQMDIR)/dipole.o \
 	$(OBJDIR)/$(SQMDIR)/nacr.o \
 	$(OBJDIR)/$(SQMDIR)/dcart2.o \
@@ -138,7 +137,6 @@ OBJSQM = \
 	$(OBJDIR)/$(SQMDIR)/util.o \
 	$(OBJDIR)/$(SQMDIR)/davidson.o \
 	$(OBJDIR)/$(SQMDIR)/liouville.o \
-	$(OBJDIR)/$(SQMDIR)/buildM.o \
 	$(OBJDIR)/$(SQMDIR)/timing.o \
 	$(OBJDIR)/$(SQMDIR)/qm2_print_bondorders.o 
 OBJNAESMD = \
@@ -163,7 +161,9 @@ OBJNAESMD = \
 	$(OBJDIR)/$(NAESMDDIR)/cadiab.o \
 	$(OBJDIR)/$(NAESMDDIR)/main.o \
         $(OBJDIR)/$(NAESMDDIR)/sqm_subs.o \
-	$(OBJDIR)/$(NAESMDDIR)/deriv.o 
+	$(OBJDIR)/$(NAESMDDIR)/deriv.o \
+	$(OBJDIR)/$(NAESMDDIR)/buildM.o \
+	$(OBJDIR)/$(NAESMDDIR)/liouv_new.o
 OBJPBSA = \
 	$(OBJDIR)/$(PBSADIR)/timer.o \
 	$(OBJDIR)/$(PBSADIR)/sa_driver.o \
