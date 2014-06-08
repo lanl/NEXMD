@@ -37,18 +37,20 @@ subroutine calc_cosmo_2()
         logical calc_Z;
         !Initial Davidson Call (in vacuum) and T+Z calcualtion
         !First SCF step
+
+	if (qm2ds%verbosity.lt.5) then
         verbosity_save=qm2ds%verbosity;
         qm2ds%verbosity=0; !turn off davidson output
-
-	EFsave=0;
-	if(EF>0) then !For testing with electric field
-		EFsave=EF;
-		EF=0;
 	endif
+	!EFsave=0;
+	!if(EF>0) then !For testing with electric field
+!		EFsave=EF;
+!		EF=0;
+!	endif
 
         call davidson(); !initial call in gas phase
 
-        calc_Z = .false.
+        calc_Z = .true.
 
         qmmm_struct%qm_mm_first_call = .false.
 
@@ -58,8 +60,6 @@ subroutine calc_cosmo_2()
         call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
 
         v_solvent_difdens=0.d0;
-
-if(1==1) then !Testing
 
         !Calculate Solvent Potential
         if(potential_type.eq.3) then !COSMO
@@ -78,8 +78,8 @@ if(1==1) then !Testing
         call davidson(); !first davidson call with solvent potential
         e0_k = qm2ds%e0(qmmm_struct%state_of_interest); !save first solventenergy
 
-        call mo2site(qm2ds%v0(1,qmmm_struct%state_of_interest),qm2ds%xi,qm2ds%xi_scratch); !State of Interest to AO Basis
-	xi_abs_dif_sum=sum(abs(qm2ds%xi-xi_1))
+        !call mo2site(qm2ds%v0(1,qmmm_struct%state_of_interest),qm2ds%xi,qm2ds%xi_scratch); !State of Interest to AO Basis
+	!xi_abs_dif_sum=sum(abs(qm2ds%xi)-abs(xi_1))
 
         !Write header for SCF iterations
         write(6,*)'Start nonequilibrium state-specific COSMO SCF'
@@ -88,14 +88,13 @@ if(1==1) then !Testing
         write(6,*)'--------------------------------------------------'
 
         !Write first SCF iteration results
-        write(6,111)1, e0_k ,e0_k-e0_0,abs( e0_k - e0_k_1 ), e0_k_1-e0_k ,xi_abs_dif_sum,cosmo_scf_ftol
-if(1==1) then !Testing
+        write(6,111)1, e0_k ,e0_k-e0_0,abs( e0_k - e0_k_1 ), e0_k_1-e0_k ,cosmo_scf_ftol
 
         !Begin SCF loop
 
         do k=2,301
-                !if  (abs( e0_k - e0_k_1 )< cosmo_scf_ftol) exit; !Check for convergence
-                if  (abs( xi_abs_dif_sum )< cosmo_scf_ftol) exit; !Check for convergence
+                if  (abs( e0_k - e0_k_1 )< cosmo_scf_ftol) exit; !Check for convergence
+                !if  (abs( xi_abs_dif_sum )< cosmo_scf_ftol) exit; !Check for convergence
 
                 !Initialize Variables for Solvent Potential
                 v_solvent_difdens(1:qm2_struct%norbs,1:qm2_struct%norbs)=0.d0;!Clearing
@@ -115,27 +114,25 @@ if(1==1) then !Testing
 
                 e0_k_1 = e0_k !Save last transition energy
 
-		xi_1=qm2ds%xi !Save last transition density
+	!	xi_1=qm2ds%xi !Save last transition density
 
                 call davidson(); !Calculate new excited states
 
                 e0_k = qm2ds%e0(qmmm_struct%state_of_interest)
 
-	        call mo2site(qm2ds%v0(1,qmmm_struct%state_of_interest),qm2ds%xi,qm2ds%xi_scratch); !State of Interest to AO Basis
-                xi_abs_dif_sum=sum(abs(qm2ds%xi-xi_1))
+	 !       call mo2site(qm2ds%v0(1,qmmm_struct%state_of_interest),qm2ds%xi,qm2ds%xi_scratch); !State of Interest to AO Basis
+          !      xi_abs_dif_sum=sum(abs(qm2ds%xi)-abs(xi_1))
 
-                write(6,111)k, e0_k ,e0_k-e0_0,abs(e0_k-e0_k_1), e0_k_1-e0_k ,xi_abs_dif_sum,cosmo_scf_ftol
+                write(6,111)k, e0_k ,e0_k-e0_0,abs(e0_k-e0_k_1), e0_k_1-e0_k ,cosmo_scf_ftol
         end do
 
-endif
-endif
         qmmm_struct%qm_mm_first_call = .true.
-        qm2ds%verbosity=verbosity_save
+        if(qm2ds%verbosity.lt.5) qm2ds%verbosity=verbosity_save
 
-        if(EFsave>0) then !For testing with electric field
-               EF=EFsave;
-        endif
-	call davidson()
+        !if(EFsave>0) then !For testing with electric field
+        !       EF=EFsave;
+        !endif
+	!call davidson()
 	!Printing out found eigenvalues, error and tolerance with solvent
 
         if(qm2ds%verbosity>0) then
@@ -176,6 +173,7 @@ subroutine calc_cosmo_4(sim_target)
 	sim=>sim_target
 
         !Initial Davidson Call (in vacuum) and T+Z calcualtion
+	if(qm2ds%verbosity.lt.5) then
         verbosity_save=qm2ds%verbosity;
         verbosity_save2=qmmm_nml%verbosity;
         verbosity_save3=qmmm_nml%printdipole;
@@ -184,15 +182,16 @@ subroutine calc_cosmo_4(sim_target)
         qm2ds%verbosity=0; !turn off davidson output
         qmmm_nml%printdipole=0;
 	qmmm_nml%printcharges=.false.;
+	endif
 
-        EFsave=0;
-        if(EF>0) then !For testing with electric field
-               EFsave=EF;
-               EF=0;
-        endif
+        !EFsave=0;
+        !if(EF>0) then !For testing with electric field
+        !       EFsave=EF;
+        !       EF=0;
+        !endif
 
 	call do_sqm_davidson_update(sim)
-        calc_Z=.false.
+        calc_Z=.true.
         qmmm_struct%qm_mm_first_call = .false.
         qm2ds%eta(:)=0.d0 !Clearing
 	rhotzpacked_k=0.d0
@@ -242,17 +241,19 @@ if(1==1) then !testing
 endif !testing
 
 !Printing out found eigenvalues, error and tolerance with solvent
-        if(EFsave>0) then !For testing with electric field
-               EF=EFsave;
-        endif
+        !if(EFsave>0) then !For testing with electric field
+        !       EF=EFsave;
+        !endif
 
         !call do_sqm_davidson_update(sim) !to include in the groundstate
 
         !qmmm_struct%qm_mm_first_call = .true.
+	if(qm2ds%verbosity.lt.5) then
         qm2ds%verbosity=verbosity_save2 !hack
         qmmm_nml%verbosity=verbosity_save2
         qmmm_nml%printdipole=verbosity_save3
         qmmm_nml%printcharges=verbosity_save4
+	endif
 
         !Save last transition density in AO Basis could easily switch
         !this to RhoT

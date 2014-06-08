@@ -15,7 +15,6 @@
    subroutine davidson()
    use qmmm_module,only:qm2_struct, qmmm_struct !cml-test
    use qm2_davidson_module
-   use xlbomd_module, only : predictdens_xlbomd,Kpassable
 
    implicit none
 
@@ -47,7 +46,7 @@
 
    iloops=0
 
-   if((qm2ds%dav_guess==0).or.(qm2ds%dav_guess==2)) then
+   if(qm2ds%dav_guess==0) then
       istore=0 ! overwriting istore to not use guess
    end if
 
@@ -105,7 +104,6 @@
       write(6,*) 'j1=',j1
       write(6,*)'istore=',istore
       write(6,*)'istore_M=',istore_M
-      write(6,*)'dav_guess=',qm2ds%dav_guess
    end if
 
 !	if (irflag.gt.1.and.Nb.gt.100.and.mdflag.gt.0) then
@@ -118,22 +116,13 @@
 !	   close(10)	  
 !	endif	 
 
-    if(qm2ds%dav_guess.eq.2) then !XL-BOXMD store eigenvectors from previous steps and calculate new initial guess
-		write(6,*)'Predictdens XL-BOXMD called'
-		call predictdens_xlbomd(qmmm_struct%num_qmmm_calls,qm2ds%v2(:,1))
-		if(qmmm_struct%num_qmmm_calls.lt.(Kpassable+2)) then
-			istore=0
-			write(6,*) 'Not using previous eigenvectors for XL-BOXMD'
-		endif
-    endif
-
-    if(istore.gt.0) then ! MD point only!!!!      
+   if(istore.gt.0) then ! MD point only!!!!	 
 !     recover excited state vectors from AO representation in v2
 !     recovered state vectors are put to v0
       do j=1,istore
          call site2mo(qm2ds%rrwork,qm2ds%v2(1,j),qm2ds%v0(1,j))
       end do
-    endif
+   endif
 
 ! kav: the lines below are commented out since they are not present in original davidson
 ! 
@@ -148,7 +137,7 @@
 10 continue
    if (j0.lt.qm2ds%Mx) then 
 
-   iloops=iloops+1 !Number of iterations
+   iloops=iloops+1
 !	if (iloops.eq.2) j1=j1/2 ! After the first one convergence is slow
    j1=min(j1,(qm2ds%Mx-j0))
    nd1=min(j1+2,nd/2)
@@ -206,11 +195,6 @@
 111   format (i3,a,g24.16,2(' ',e8.2))
    call flush(6)
 
-!Testing JAB
-      !do j=1,j0
-      !   write (6,*) 'TD:',(qm2ds%v0(i,j),i=1,qm2ds%Nrpa)
-      !end do
-!End Testing JAB
    
 ! Write vectors only for BIG sizes in the case of crash/restart       	  
    if(qm2ds%mdflag.lt.0.and.qm2ds%Nb.gt.100) then
@@ -303,13 +287,13 @@
       end if
    end if
 
-!XL-BOXMD Need to find out what's going on here
    if (qm2ds%mdflag.ge.0) then ! MD point only!!!!
 !     store excited state vectors in AO representation in v2
 !     istore=min(Mx,Mx_ss)
       if (istore.le.qm2ds%Mx) istore=qm2ds%Mx
       if (istore_M.le.qm2ds%Mx) istore_M=qm2ds%Mx
       if (istore.le.istore_M) istore=istore_M
+
       do j=1,qm2ds%Mx
          call mo2site(qm2ds%v0(1,j),qm2ds%v2(1,j),qm2ds%rrwork)
       end do
@@ -374,9 +358,7 @@
       nd,nd1,vexp1,vexp,ray,rayv,rayvL,rayvR,raye,raye1, &
       ray1,ray1a,ray2,idav,istore)
    use qm2_davidson_module   
-   use cosmo_C,only:solvent_model
-   use qmmm_module,only:qmmm_struct 
-   use xlbomd_module,only:kpassable
+  use cosmo_C,only:solvent_model 
    implicit none
 
    logical check_symmetry; !!JAB Testing
@@ -418,7 +400,7 @@
    m=0
    n=0
    iloop=0
-!XL-BOXMD
+
    if (istore.gt.0) then    ! Use vectors from the previous step
       j1=min(j1,istore)
       goto 70 
@@ -544,8 +526,8 @@
 10 continue
      
    icount=icount+1 !iteration counter
-   if(lprint.gt.4) write(6,*) 'Iterations=',icount,'Exp=',nd1
-   if((icount.gt.qm2ds%icount_M).and.(qm2ds%icount_M.gt.0)) stop
+   if(lprint.gt.4) write(6,*) 'COUNT=',icount,'Exp=',nd1
+   if(icount.gt.qm2ds%icount_M) stop
 
    if(lprint.gt.4) write(6,*) 'nd1,nd1_old,j0,j1',nd1,nd1_old,j0,j1
 
@@ -557,10 +539,10 @@
    end if
 
 70     continue
-!XLBOXMD
-   if((nd1.gt.nd).or.(istore.gt.0)) then  ! Use vectors from the previous step
+
+   if(nd1.gt.nd.or.istore.gt.0) then  ! Use vectors from the previous step
       istore=0
-      if (lprint.gt.4) write(6,*) 'Restart Davidson with improved guesses' !or starting davidson with saved vectors from previous step
+      if (lprint.gt.4) write(6,*) 'Restart Davidson with improved guesses'
 !	   do j=1,j1
 !	    write(6,*) 'Mode',j, e0(j)
 !	    write(6,*) 'MO_p-h'
@@ -908,7 +890,6 @@
       endif
 
       f2=f2+f3 !f(x) + f(y)
-
       if(f2.le.ftol0) then ! Converged vector
          n=n+1
          call dcopy(2*M4,v0(1,j0+n),one,v0(1,j),one) !Move converged vector to beginning
@@ -970,34 +951,17 @@
    end do
 !          
 45 continue
-if(qm2ds%icount_M.lt.0) then !set number of iterations in if iloop_M less than 0
-	if(qmmm_struct%num_qmmm_calls.gt.(Kpassable+1)) then
-   		if(icount.gt.abs(qm2ds%icount_M+1)) then !Set number of iterations for XL-BOXMD
-      			!if(lprint.gt.4) 
-			write(6,*) 'Set number of davidson iterations performed was' &
-        			,icount, ', Expansion ', nd1
-			n=qm2ds%Mx
-		        call dcopy(2*M4,v0(1,j0+n),one,v0(1,j),one) !Move converged vector to beginning
-         		e0(j0+n)= f1 !move converged energy to beginning
-         		ferr(j0+n)=abs(f2)+abs(f3) !
-        		goto 100
-		endif
-	else 
-		write(6,*) 'XL-BOXMD Burn in',qmmm_struct%num_qmmm_calls
-	endif
-else !Otherise normal convergence checks and things
-   	if((j1-n).eq.0) then
-      		if(lprint.gt.4) write(6,*) 'All vectors found after loop' &
-         		,iloop, ', Expansion ', nd1
-      		goto 100
-   	end if
+        
+   if((j1-n).eq.0) then
+      if(lprint.gt.4) write(6,*) 'All vectors found after loop' &
+         ,iloop, ', Expansion ', nd1
+      goto 100
+   end if
 
-   	if(m.eq.0) then ! Restart Davidson
-		write(6,*)'Restarting Davidson'
-      		nd1=nd+1
-      		goto 10
-   	end if
-endif
+   if(m.eq.0) then ! Restart Davidson
+      nd1=nd+1
+      goto 10
+   end if
 
    if(lprint.gt.4) write(6,*) 'New perturbed m=',m
   

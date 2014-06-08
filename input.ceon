@@ -2,21 +2,21 @@
    !***** Ground state and output parameters
    qm_theory='AM1', !Integral type
    scfconv=1.0d-8, !Ground state scf convergence criteria
-   verbosity=5, !
+   verbosity=4, !
    printcharges=0, ! Mulliken charges for ground state
-   printdipole=1, ! (0) None, (1) Transition, Relaxed, and Unrelaxed
+   printdipole=0, ! (0) None, (1) Transition (2) Relaxed, and Unrelaxed
    printbondorders=0, ! (0) No, (1) Yes
    density_predict=0, !(0) None, (1) Reversible MD, (2) XL-BOMD
-   K=5, ! XL-BOMD Parameter (3-9)
+   K=3, ! XL-BOMD Parameter (3-9)
    itrmax=300, ! Maximum number of scf iterations for ground state, negative to ignore convergence
 
    !***** Excited state parameters
    exst_method=1, ! CIS (1) or RPA (2)
    dav_guess=0, ! restart Davidson from previous (1) or from scratch (0) or XL-BOXMD (2)
    ftol=0.d0, !   Min tolerance (|emin-eold|)
-   ftol0=1.d-10, !  Acceptance tol.(|emin-eold|)
-   ftol1=1.d-11, ! Accept.tol.for residual norm
-   dav_maxcyc=200, !Max cycles for davidson diagonalization, negative for fixed number
+   ftol0=1.d-4, !  Acceptance tol.(|emin-eold|)
+   ftol1=1.d-5, ! Accept.tol.for residual norm
+   dav_maxcyc=100, !Max cycles for davidson diagonalization, negative for fixed number
 
    !***** Geometry optimization
    maxcyc=0, !Number of cycles for geometry optimization
@@ -24,14 +24,14 @@
    grms_tol=0.01, !Tolerance in eV/A (derivatives)
 
    !***** Solvent models
-   ceps=100, !Dielectric constant
-   cosmo_scf_ftol=1.0d-5, !State specific scf tolerance
+   ceps=1; !Dielectric constant
+   cosmo_scf_ftol=1.0d-3, !State specific scf tolerance
    EF=0, !(1) Electric field in ground and excited state, (2) Electric field in excited state only
    Ex=0, !Electric Field Vector X 
    Ez=0, !Electric Field Vector Z
-   Ey=0.01, !Electric Field Vector Y
-   onsager_radius=2, ! Onsager radius
-   solvent_model=1, ! (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi 
+   Ey=.0002, !Electric Field Vector Y
+   onsager_radius=4, ! Onsager radius
+   solvent_model=4, ! (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi 
    potential_type=3, ! (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
 &endqmmm
 
@@ -39,13 +39,13 @@
    !***** General parameters
    rnd_seed=1, ! seed for the random number generator
    bo_dynamics_flag=1, ! 0-non-BO, 1-BO
-   exc_state_init=1, ! initial excited state (0 - ground state)
-   n_exc_states_propagate=1, ! number of excited states
+   exc_state_init=2, ! initial excited state (0 - ground state)
+   n_exc_states_propagate=4, ! number of excited states
 
    !***** Dynamics parameters
    time_init=0.d0, ! initial time, fs
-   time_step=0.05, !time step, fs
-   n_class_steps=500, !number of classical steps
+   time_step=0.5, !time step, fs
+   n_class_steps=0, !number of classical steps
    n_quant_steps=0, ! number of quantum steps for each classical step
    moldyn_deriv_flag=1, ! 0-none, 1-analyt, 2-numeric
    num_deriv_step=1.d-5, ! displacement for numerical derivatives, A
@@ -70,15 +70,69 @@
    verbosity=0, ! output verbosity (0-minimal, 3-highest) 
    out_count_init=0, ! the initial count for output files
    out_data_steps=1, ! number of steps to write data
-   out_coords_steps=500, ! number of steps to write the restart file
+   out_coords_steps=10, ! number of steps to write the restart file
    out_data_cube=0, ! write(1) or not(0) view files to generate cubes   
 &endmoldyn
 
 &coord
-    1        -5.805337   -0.910223   -0.005929
-    1        -3.926529   -0.935395    0.007534
-    6        -4.858095   -0.335061    0.000987
-    8        -4.841129    0.823609   -0.002592
+6          5.53790        0.20097       -0.02766
+6          5.57967       -1.17066       -0.12531
+6          4.19444       -1.60754       -0.13864
+6          4.12072        0.58641        0.01886
+7          3.37008       -0.46055       -0.04409
+7          3.64147        1.93905        0.08809
+6          2.40352        2.33160        0.11366
+7          1.31519        1.52462        0.10779
+6          0.22128        2.32401        0.10955
+6          1.99635        3.65216        0.13528
+6          0.61917        3.64738        0.13268
+7         -1.01382        1.92287        0.07931
+6         -1.48338        0.56693        0.00829
+7         -0.72526       -0.47479       -0.05182
+6         -2.92953       -1.20023       -0.14137
+6         -2.89767        0.17165       -0.04357
+6          0.24070       -3.28663       -0.17610
+7          1.32991       -2.48937       -0.29742
+6          2.42417       -3.27904       -0.17197
+6          2.02414       -4.59002       -0.00788
+6          0.64921       -4.59480       -0.01049
+7          3.78699       -2.83828       -0.18712
+7         -1.12508       -2.85535       -0.19640
+6         -1.54126       -1.62748       -0.14947
+1          1.31874        0.50611        0.10687
+1          1.32672       -1.47965       -0.46398
+6         -4.06766        0.92584       -0.00791
+6         -5.29757        0.24355       -0.07181
+6         -5.32822       -1.16739       -0.16956
+6         -4.12914       -1.90370       -0.20512
+1         -4.03313        2.00474        0.06900
+1         -4.13991       -2.98329       -0.27901
+1         -6.22438        0.80160       -0.04470
+1         -6.27825       -1.68345       -0.21678
+6         -0.11608        4.83146        0.14120
+6          2.72332        4.84133        0.14656
+6          6.70248        0.96327        0.01239
+6          6.78437       -1.86576       -0.18453
+6          2.75975       -5.76242        0.15066
+6         -0.07883       -5.77229        0.14529
+6          0.63689       -6.97461        0.30187
+1         -1.16123       -5.76568        0.14422
+6          2.05183       -6.96970        0.30455
+1          3.84208       -5.74829        0.15368
+6          7.97816       -1.12114       -0.14448
+1          6.80293       -2.94526       -0.25837
+6          7.93733        0.28955       -0.04687
+1          6.66017        2.04191        0.08914
+6          2.00678        6.05311        0.15718
+1          3.80575        4.83590        0.14521
+6          0.59197        6.04819        0.15451
+1         -1.19843        4.81851        0.13577
+1          0.05067        6.98525        0.16061
+1          2.54153        6.99391        0.16531
+1          8.86014        0.85403       -0.01628
+1          8.93193       -1.63058       -0.18812
+1          2.59308       -7.89879        0.42684
+1          0.10164       -7.90745        0.42213
 &endcoord
 
 &veloc

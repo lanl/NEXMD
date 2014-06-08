@@ -1778,12 +1778,15 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
    if ((solvent_model.gt.0).and.(solvent_model.ne.10)) then !IF USING SOLVENT MODEL
         if ((solvent_model.eq.4).and.(.not.qmmm_struct%qm_mm_first_call)) then !Use the excited state density matrix
                 if (potential_type.eq.3) then !USE COSMO
-			rhotzpacked_k=0.d0
-			i=0
-			do i=1,qm2_struct%norbs/4
-				rhotzpacked_k(i*(2*i+1))=0.3
-				rhotzpacked_k(2*i*(4*i+1))=-0.3
-			enddo; i=0
+
+			!Testing
+			!rhotzpacked_k=0.d0
+			!i=0
+			!do i=1,qm2_struct%norbs/4
+			!	rhotzpacked_k(i*(2*i+1))=0.3
+			!	rhotzpacked_k(2*i*(4*i+1))=-0.3
+			!enddo; i=0
+
                         call addfck(fock_matrix,den_matrix+rhotzpacked_k);
 			!call addfck(fock_matrix,den_matrix);
                 else if (potential_type.eq.2) then !USE ONSAGER
@@ -1791,7 +1794,7 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
                 endif
 	else !Use the ground state density matrix
    		if (potential_type.eq.3) then !USE COSMOO
-        		!call addfck(fock_matrix,den_matrix);
+        		call addfck(fock_matrix,den_matrix);
    		else if (potential_type.eq.2) then !USE ONSAGER
         		call rcnfld_fock(fock_matrix,den_matrix,qm2_struct%norbs);
    		endif
