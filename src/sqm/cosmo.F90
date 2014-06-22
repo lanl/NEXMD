@@ -895,15 +895,6 @@ fepsi=(ceps-1.d0)/(ceps+0.5d0)
 	! kav addition
 	mozyme=.false. ! we are not doing linear scaling here
 
-	! in mopac nspa can be redifined from input
-	! here we would just set it to default value of 42
-	! for simplicity, kav
-	!nspa=21
-	!nspa=42
-   nspa=40
-   !nspa=336
-   !nspa=1 !testing JAB
-
     lenabc = max(100, nspa*numat) 
 
     if (allocated(ipiden)) deallocate (ipiden)

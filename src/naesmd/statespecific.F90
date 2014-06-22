@@ -22,7 +22,7 @@ subroutine calc_cosmo_2()
         use qm2_davidson_module
 	use communism
         use qmmm_module,only:qm2_struct,qmmm_struct;
-        use cosmo_C, only: v_solvent_difdens, cosmo_scf_ftol,potential_type,EF;
+        use cosmo_C, only: v_solvent_difdens, cosmo_scf_ftol,cosmo_scf_maxcyc,doZ,potential_type,EF;
         use constants, only : ZERO
 
         implicit none
@@ -50,7 +50,7 @@ subroutine calc_cosmo_2()
 
         call davidson(); !initial call in gas phase
 
-        calc_Z = .true.
+        calc_Z = doZ
 
         qmmm_struct%qm_mm_first_call = .false.
 
@@ -92,7 +92,7 @@ subroutine calc_cosmo_2()
 
         !Begin SCF loop
 
-        do k=2,301
+        do k=2,cosmo_scf_maxcyc
                 if  (abs( e0_k - e0_k_1 )< cosmo_scf_ftol) exit; !Check for convergence
                 !if  (abs( xi_abs_dif_sum )< cosmo_scf_ftol) exit; !Check for convergence
 
@@ -158,7 +158,7 @@ subroutine calc_cosmo_4(sim_target)
         use qm2_davidson_module
         use communism
         use qmmm_module,only:qm2_struct,qmmm_struct,qmmm_nml;
-        use cosmo_C, only: EF,v_solvent_difdens, rhotzpacked_k,cosmo_scf_ftol,potential_type;
+        use cosmo_C, only: EF,v_solvent_difdens, rhotzpacked_k,cosmo_scf_ftol,cosmo_scf_maxcyc,doZ,potential_type;
         use constants, only : ZERO,AU_TO_EV
 
         implicit none
@@ -191,7 +191,7 @@ subroutine calc_cosmo_4(sim_target)
         !endif
 
 	call do_sqm_davidson_update(sim)
-        calc_Z=.true.
+        calc_Z=doZ
         qmmm_struct%qm_mm_first_call = .false.
         qm2ds%eta(:)=0.d0 !Clearing
 	rhotzpacked_k=0.d0
@@ -222,7 +222,7 @@ if(1==1) then !testing
         write(6,111)1, e0_k ,e0_k-e0_0,abs( e0_k - e0_k_1 ), e0_k_1-e0_k ,cosmo_scf_ftol
 
         !Begin SCF loop
-        do k=2,301
+        do k=2,cosmo_scf_maxcyc
                 if  (abs( e0_k - e0_k_1 )< cosmo_scf_ftol) exit; !Check for convergence
 
                 !Save last transition density in AO Basis could easily switch
@@ -287,7 +287,7 @@ end subroutine
 subroutine calc_cosmo_3()
         use qm2_davidson_module
         use qmmm_module,only:qm2_struct,qmmm_struct;
-        use cosmo_C, only: v_solvent_xi, cosmo_scf_ftol,potential_type;
+        use cosmo_C, only: v_solvent_xi, cosmo_scf_ftol,cosmo_scf_maxcyc,potential_type;
 
         implicit none
         integer INFO;
@@ -336,7 +336,7 @@ subroutine calc_cosmo_3()
         write(6,111)1, e0_k ,e0_k-e0_0,abs( e0_k - e0_k_1 ), e0_k_1-e0_k , cosmo_scf_ftol
 
         !Begin SCF loop
-        do k=2,301
+        do k=2,cosmo_scf_maxcyc
                 if  (abs( e0_k - e0_k_1 )< cosmo_scf_ftol) exit; !Check for convergence
  
                 !Initialize Variables for Solvent Potential

@@ -24,8 +24,12 @@
    grms_tol=0.01, !Tolerance in eV/A (derivatives)
 
    !***** Solvent models
-   ceps=1; !Dielectric constant
+   ceps=100; !Dielectric constant
+   index_of_refraction=100; !Dielectric constant for excitation currently useless
+   nspa=42; !approximate number of cavity points per atom
    cosmo_scf_ftol=1.0d-3, !State specific scf tolerance
+   cosmo_scf_maxcyc=5, !State specific scf iterations
+   doZ=.true. !Do relaxed or unrelaxed density in state specific cosmo
    EF=0, !(1) Electric field in ground and excited state, (2) Electric field in excited state only
    Ex=0, !Electric Field Vector X 
    Ez=0, !Electric Field Vector Z

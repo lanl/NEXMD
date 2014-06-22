@@ -5,8 +5,9 @@ module cosmo_C
   integer :: solvent_model, potential_type, EF
   logical :: iseps, noeps, useps, lpka
   logical::coserr=.false.
+  logical::doZ !cosmo state specific
   integer :: nspa, nps, nps2, nden, lenabc, nppa = 1082, &
-  amat_dim, isude_dim, nipc, ioldcv
+  amat_dim, isude_dim, nipc, ioldcv, cosmo_scf_maxcyc
   integer, dimension (2) :: n0
    integer lm61,numat,mpack
    real(8),parameter::a0=0.5291772083d0 ! Bohr in angstroms
@@ -18,7 +19,7 @@ module cosmo_C
   & nsetf,i, & !  Watch out for the "i"
   & ipiden,  & !
   & idenat,  & !
-  & nset       !
+  & nset!
   integer, dimension(:,:), allocatable :: &
   & isude,   & !
   & nn
