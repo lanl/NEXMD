@@ -144,6 +144,7 @@ if (ihop>0) then
          dxyz1=0.d0; dxyz1_test=0.d0; charges2=0.d0; acharges2=0.d0; density2=0.d0
 	!Nonequilibrium Excited State Gradient
 	if(solvent_model.eq.2) then
+		write(6,*)'WARNING:DERIVATIVES FOR STATE SPECIFIC SOLVENT ARE NONVARIATIONAL'
 		!Get unrelaxed density matrix for the state to calculate derivatives for
 		call calc_rhotz(ihop, qm2ds%rhoT,.false.)
       		call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoT,qm2ds%tz_scratch(1), &
@@ -173,6 +174,7 @@ if (ihop>0) then
 
 	!Equilibrium Ground and Excited State Gradients
 	if(solvent_model.eq.4) then
+                write(6,*)'WARNING:DERIVATIVES FOR STATE SPECIFIC SOLVENT ARE NONVARIATIONAL'
 		!Get relaxed density matrix for the state specific state
 	        call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoT,.true.); !rhoT will be rhoTZ_k
                 call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoT,qm2ds%tz_scratch(1), &
