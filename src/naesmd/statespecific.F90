@@ -32,7 +32,7 @@ subroutine calc_cosmo_2()
         _REAL_ :: OPTIMALSIZE;
 	_REAL_ :: xi_1(qm2ds%Nb**2)
         integer verbosity_save,EFsave
-        integer i,k,p,h
+        integer i,k,p,h,soi_temp
         _REAL_ e0_0,e0_k,e0_k_1,xi_abs_dif_sum,f0,f1,ddot
         logical calc_Z;
         !Initial Davidson Call (in vacuum) and T+Z calcualtion
@@ -79,17 +79,20 @@ subroutine calc_cosmo_2()
         call davidson(); !first davidson call with solvent potential
 
         ! Tracking the transition density
-        f0=abs(ddot(qm2ds%Ncis,qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,qmmm_struct%state_of_interest),1))
+        f0=abs(ddot(qm2ds%Ncis, &
+        qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,qmmm_struct%state_of_interest),1))
+        soi_temp=qmmm_struct%state_of_interest
         do i=1,qm2ds%Mx
-             f1=abs(ddot(qm2ds%Ncis,qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,i),1))
-             write(6,*)'States ',qmmm_struct%state_of_interest,i,' overlaps=',f0,f1
-             if(f0<f1) then
-                       write(6,*)'State crossing ',qmmm_struct%state_of_interest,' to ',i
-                       qmmm_struct%state_of_interest=i
-             end if
+                f1=abs(ddot(qm2ds%Ncis,qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,i),1))
+                write(6,*)'Overlaps=',f0,f1
+                if(f0<f1) then
+                        write(6,*)'State crossing',qmmm_struct%state_of_interest,' to ',i
+                        write(6,*)'New state of interest is',i
+                        soi_temp=i
+                        f0=f1
+                end if
         end do
-        qm2ds%v0_old(:,:)=qm2ds%v0(:,:) !Store new transition densities
-
+        qmmm_struct%state_of_interest=soi_temp
 
         e0_k = qm2ds%e0(qmmm_struct%state_of_interest); !save first solventenergy
 
@@ -135,16 +138,19 @@ subroutine calc_cosmo_2()
 
                 ! Tracking the transition density
                 f0=abs(ddot(qm2ds%Ncis, &
-                 qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,qmmm_struct%state_of_interest),1))
+                qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,qmmm_struct%state_of_interest),1))
+                soi_temp=qmmm_struct%state_of_interest
                 do i=1,qm2ds%Mx
-                     f1=abs(ddot(qm2ds%Ncis,qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,i),1))
-                     write(6,*)'Overlaps=',f0,f1
-                     if(f0<f1) then
-                               write(6,*)'State crossing',qmmm_struct%state_of_interest,' to ',i
-                               qmmm_struct%state_of_interest=i
-                     end if
+                        f1=abs(ddot(qm2ds%Ncis,qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,i),1))
+                        write(6,*)'Overlaps=',f0,f1
+                        if(f0<f1) then
+                                write(6,*)'State crossing',qmmm_struct%state_of_interest,' to ',i
+                                write(6,*)'New state of interest is',i
+                                soi_temp=i
+                                f0=f1
+                        end if
                 end do
-                qm2ds%v0_old(:,:)=qm2ds%v0(:,:) !Store new transition densities
+                qmmm_struct%state_of_interest=soi_temp
 
                 e0_k = qm2ds%e0(qmmm_struct%state_of_interest)
 
@@ -194,7 +200,7 @@ subroutine calc_cosmo_4(sim_target)
         type(simulation_t),pointer::sim
         integer verbosity_save,verbosity_save2,verbosity_save3,EFsave
 	logical verbosity_save4
-        integer i,k,p,h
+        integer i,k,p,h,soi_temp
         _REAL_ e0_0,e0_k,e0_k_1,f0,f1,ddot;
         logical calc_Z;
         _REAL_ lastxi(2*qm2ds%Np*qm2ds%Nh)
@@ -247,14 +253,19 @@ if(1==1) then
         ! Tracking the transition density
         f0=abs(ddot(qm2ds%Ncis, &
         qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,qmmm_struct%state_of_interest),1))
+        soi_temp=qmmm_struct%state_of_interest
         do i=1,qm2ds%Mx
                 f1=abs(ddot(qm2ds%Ncis,qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,i),1))
                 write(6,*)'Overlaps=',f0,f1
                 if(f0<f1) then
                         write(6,*)'State crossing',qmmm_struct%state_of_interest,' to ',i
-                        qmmm_struct%state_of_interest=i
+                        write(6,*)'New state of interest is',i
+                        soi_temp=i
+                        f0=f1
                 end if
         end do
+        qmmm_struct%state_of_interest=soi_temp
+        
         qm2ds%v0_old(:,:)=qm2ds%v0(:,:) !Store new transition densities
 
         e0_k = (sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0)*AU_TO_EV; !save first solventenergy
@@ -283,18 +294,22 @@ if(1==1) then !testing
 
                 e0_k_1 = e0_k !Save last transition energy
                 call do_sqm_davidson_update(sim) !to include in the groundstate
+
                 ! Tracking the transition density
                 f0=abs(ddot(qm2ds%Ncis, &
-                   qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,qmmm_struct%state_of_interest),1))
+                        qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,qmmm_struct%state_of_interest),1))
+                soi_temp=qmmm_struct%state_of_interest
                 do i=1,qm2ds%Mx
-                     f1=abs(ddot(qm2ds%Ncis,qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,i),1))
-                     write(6,*)'Overlaps=',f0,f1
-                     if(f0<f1) then
-                               write(6,*)'State crossing',qmmm_struct%state_of_interest,' to ',i
-                               qmmm_struct%state_of_interest=i
-                     end if
+                        f1=abs(ddot(qm2ds%Ncis,qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,i),1))
+                        write(6,*)'Overlaps=',f0,f1
+                        if(f0<f1) then
+                                write(6,*)'State crossing',qmmm_struct%state_of_interest,' to ',i
+                                write(6,*)'New state of interest is',i
+                                soi_temp=i
+                                f0=f1
+                        end if
                 end do
-                qm2ds%v0_old(:,:)=qm2ds%v0(:,:) !Store new transition densities
+                qmmm_struct%state_of_interest=soi_temp
 
                 e0_k = (sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0)*AU_TO_EV;
 
