@@ -14,47 +14,37 @@
    subroutine printNM_AO(filenumber)
    use qm2_davidson_module
    implicit none
-   integer i,j,filenumber,n
-   n=size(qm2ds%v2,1)
-
-   !open(6,*)
- 
+   integer i,j,k,filenumber,n
+   n=qm2ds%Nb
+   write(filenumber,*)'Atomic orbital basis'
    do i=1,qm2ds%Mx
-   write(filenumber,*) 'Printing normal mode',i,'with',n,'values'
-
-   do j=1,n
-
-   write(filenumber,"(F7.4)") qm2ds%v2(j,i)
+   	write(filenumber,*) 'Printing normal mode',i,'with',n,'by',n,'values'
+   	do j=0,n-1
+   		write(filenumber,"(1000F7.4)") (qm2ds%v2(j*n+k,i),k=1,n)
+   	end do
    end do
-   end do
-   !close(6,)
-
+   flush(filenumber)
    end
 
-   subroutine printNM_MO()
+   subroutine printNM_MO(filenumber)
    use qm2_davidson_module
    implicit none
    integer i,n,m,filenumber
-   real temp1(qm2ds%Nh)
+   !real temp1(qm2ds%Nh)
    !character(len=20) FMT
-
-   !write(FMT,'("(",I0,"F10.7)")') qm2ds%Np
+   write(filenumber,*)'Molecular orbital basis'
    write(filenumber,*) 'Nocc:',qm2ds%Np,'Nvirt:',qm2ds%Nh
    do i=1,qm2ds%Mx
-   write(filenumber,*) 'Printing normal mode',i
-
-   do n=0,qm2ds%Np-1
-   
-   do m=1,qm2ds%Nh
-   temp1(m)=qm2ds%v0(n*qm2ds%Nh+m,i)
-   
-   end do 
-   
-   write(filenumber,*) temp1 
-
-   end do    
-   
+   	write(filenumber,*) 'Printing p-h for normal mode',i
+   	do n=0,qm2ds%Np-1
+   		write(filenumber,"(1000F7.4)") (qm2ds%v0(n*qm2ds%Nh+m,i),m=1,qm2ds%Nh)
+   	end do   
+        write(filenumber,*) 'Printing h-p for normal mode',i
+        do n=0,qm2ds%Np-1
+                write(filenumber,"(1000F7.4)") (qm2ds%v0(n*qm2ds%Nh+m+qm2ds%Ncis,i),m=1,qm2ds%Nh)
+        end do     
    end do
+   flush(filenumber)
    end subroutine
     
 
@@ -234,5 +224,6 @@ BohrtoA=0.529177249! A/Bohr
         !write(6,*) 'Total transition dipole is (a.u.)',&
         !                            sqrt(2.0)*(dipd+sum(dipod,2)),2*sum((dipd+sum(dipod,2))**2)
     enddo !over nms
+flush(filenumber)
 return
 end subroutine

@@ -11,7 +11,7 @@
    itrmax=300, ! Maximum number of scf iterations for ground state, negative to ignore convergence
 
    !***** Excited state parameters
-   exst_method=1, ! CIS (1) or RPA (2)
+   exst_method=2, ! CIS (1) or RPA (2)
    dav_guess=0, ! restart Davidson from previous (1) or from scratch (0) or XL-BOXMD (2)
    ftol=0.d0, !   Min tolerance (|emin-eold|)
    ftol0=1.d-4, !  Acceptance tol.(|emin-eold|)
