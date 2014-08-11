@@ -138,7 +138,8 @@ OBJSQM = \
 	$(OBJDIR)/$(SQMDIR)/davidson.o \
 	$(OBJDIR)/$(SQMDIR)/liouville.o \
 	$(OBJDIR)/$(SQMDIR)/timing.o \
-	$(OBJDIR)/$(SQMDIR)/qm2_print_bondorders.o 
+	$(OBJDIR)/$(SQMDIR)/qm2_print_bondorders.o \
+	$(OBJDIR)/$(SQMDIR)/printNM.o
 OBJNAESMD = \
 	$(OBJDIR)/$(NAESMDDIR)/apc.o \
         $(OBJDIR)/$(NAESMDDIR)/naesmd_constants.o\
