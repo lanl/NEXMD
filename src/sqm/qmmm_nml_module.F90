@@ -240,6 +240,9 @@ module qmmm_nml_module
      ! Flag to control the printing of dipole. (default: 0 = not print, 1 = QM, 2 = QM + MM) 
      integer :: printdipole
 
+     ! Flag to control the printing of the transition density. (default: 0 = none, 2 = MO basis, 3 = AO basis, 4 = charge fitting)
+     integer :: printtd
+
      ! Electronic temperature, in Kelvins. Default: 0.0K
      _REAL_  :: dftb_telec
 

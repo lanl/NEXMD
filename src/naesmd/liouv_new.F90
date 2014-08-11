@@ -80,6 +80,7 @@ endsubroutine dav_wrap
 !
 subroutine outDavidson()
 	use qm2_davidson_module
+	use qmmm_module, only : qmmm_nml
 	use constants, only : ONE_AU
 	implicit none
 
@@ -121,17 +122,17 @@ subroutine outDavidson()
 
 	!Printing of transition densities to files
    	!Print normal modes, etc. to file ! JAB
-   	if(qm2ds%printtd.gt.0) then
+   	if(qmmm_nml%printtd.gt.0) then
 		open(76,file='normalmodes-ao.out')
    		write(6,*) 'Printing Normal Modes in ao rep to file'
    		call printNM_ao(76)
    		close(76)
-		if(qm2ds%printtd.gt.1) then
+		if(qmmm_nml%printtd.gt.1) then
    			open(76,file='normalmodes-mo.out')
    			write(6,*) 'Printing Normal Modes in mo rep to file'
    			call printNM_mo(76)
    			close(76)
-			if (qm2ds%printtd.gt.2) then
+			if (qmmm_nml%printtd.gt.2) then
    			!open(76,file='2eri.out') 
    			!write(6,*) 'Printing 2e Repulsion integrals to file'
    			!call print2eri()

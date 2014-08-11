@@ -563,7 +563,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
   
    integer, intent(in)::excNin;
    integer :: excN ! number of excited states to calculate
-  
+   integer :: printtd ! Flag to print transition densities  
    integer, intent(out) :: struct_opt_state ! CML exc st num to optimize structure
    integer, intent(out)::exst_method ! method used to calc excited states 1=CIS,2=RPA
    integer,intent(out)::dav_guess ! use (1) or not (0) guess for davidson and (2) for XL-BOXMD
@@ -571,7 +571,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
    _REAL_,intent(out)::ftol !   Min tolerance (|emin-eold|)
    _REAL_,intent(out)::ftol0!  Acceptance tol.(|emin-eold|)
    _REAL_,intent(out)::ftol1 ! Accept.tol.for residual norm
-
+  
 
 
    !local  
@@ -712,7 +712,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
 !Geometry optimization
                    maxcyc, ntpr, grms_tol, struct_opt_state, &
 !Excited state and davidson
-		   exst_method,dav_guess,dav_maxcyc,ftol,ftol0,ftol1, &
+		   exst_method,dav_guess,dav_maxcyc,ftol,ftol0,ftol1,printtd, &
 !Solvent Model and E-Field parameters
                    ceps, chg_lambda, vsolv, nspa, solvent_model,potential_type,cosmo_scf_ftol,cosmo_scf_maxcyc,&
 			doZ,index_of_refraction,onsager_radius,EF,Ex,Ey,Ez, &
@@ -732,6 +732,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
    ! Default parameters of excited state calculations
    excN = 0 ! Default is to not run the Davidson procedure at all
    struct_opt_state = 0 ! Optimize the ground state by default !JAB I think this parameter is deprecated now
+   printtd=0 ! Do not print tds by default
    exst_method=1 ! CI singles
    dav_guess=0 ! use previous davidson result as guess
    ftol=0.d0   ! Min tolerance (|emin-eold|)
@@ -939,7 +940,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
    !-TJG 01/26/2010
    call int_legal_range('QMMM: (PRINT CHARGES) ', printcharges,0,1)
    call int_legal_range('QMMM: (PRINT BONDORDERS) ',printbondorders,0,1)
-   call int_legal_range('QMMM: (PRINT QM/Dipole) ', printdipole,0,3)
+   call int_legal_range('QMMM: (PRINT QM/Dipole) ', printdipole,0,2)
    call int_legal_range('QMMM: (Spin State) ', spin,1,1)
 !RCW: Currently limit spin state to singlets only since the code for spin>1 does not exist / work at present.
 !     WARNING - IF WE LATER ALLOW SPIN>1 qm2_densit will need updating.
@@ -1146,6 +1147,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
    end if
 
    qmmm_nml%printdipole=printdipole
+   qmmm_nml%printtd=printtd
 
    if ( printbondorders /= 1) then
       qmmm_nml%printbondorders=.false.
