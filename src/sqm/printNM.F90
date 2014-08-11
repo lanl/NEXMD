@@ -11,7 +11,7 @@
 !
 !--------------------------------------------------------------------
 
-   subroutine printNM_AO()
+   subroutine printNM_AO(filenumber)
    use qm2_davidson_module
    implicit none
    integer i,j,filenumber,n
@@ -20,11 +20,11 @@
    !open(6,*)
  
    do i=1,qm2ds%Mx
-   write(76,*) 'Printing normal mode',i,'with',n,'values'
+   write(filenumber,*) 'Printing normal mode',i,'with',n,'values'
 
    do j=1,n
 
-   write(76,"(F7.4)") qm2ds%v2(j,i)
+   write(filenumber,"(F7.4)") qm2ds%v2(j,i)
    end do
    end do
    !close(6,)
@@ -39,9 +39,9 @@
    !character(len=20) FMT
 
    !write(FMT,'("(",I0,"F10.7)")') qm2ds%Np
-   write(76,*) 'Nocc:',qm2ds%Np,'Nvirt:',qm2ds%Nh
+   write(filenumber,*) 'Nocc:',qm2ds%Np,'Nvirt:',qm2ds%Nh
    do i=1,qm2ds%Mx
-   write(76,*) 'Printing normal mode',i
+   write(filenumber,*) 'Printing normal mode',i
 
    do n=0,qm2ds%Np-1
    
@@ -50,7 +50,7 @@
    
    end do 
    
-   write(76,*) temp1 
+   write(filenumber,*) temp1 
 
    end do    
    
@@ -78,14 +78,14 @@
 !----------------------------------------------------------------------
 
 
-subroutine printCfitNM()
+subroutine printCfitNM(filenumber)
  use qmmm_module
 ! use constants
  use qm2_davidson_module
       implicit none
       real :: dipd(3),dipod(3,2),coords(3),coords0(3),charge,D1,D2,tcharge,trace,&
        BohrtoA
-      integer :: orb_beg,orb_end,norb1,norb2,nquant,i,nmode,norbs_atom
+      integer :: filenumber,orb_beg,orb_end,norb1,norb2,nquant,i,nmode,norbs_atom
       character*2 :: orbt(4)
 
       ! Check if there are any atoms with d orbitals
@@ -102,22 +102,21 @@ BohrtoA=0.529177249! A/Bohr
  orbt(3)='py'
  orbt(4)='pz'
 
-   open(87,file='coordinates.out')!!Test
  !loop over the number of normal modes to represent as charges
    do nmode=1,qm2ds%Mx
    
    call mo2site(qm2ds%v0(:,nmode), qm2ds%xi_scratch, qm2ds%eta_scratch)
 
-   write(87,*) 'Mode',qm2ds%Mx!!Test
+   write(filenumber,*) 'Mode',qm2ds%Mx!!Test
    tcharge=0.0
    trace=0.0
    dipd=0.d0
    dipod=0.d0
       !Print header
-      write(76,*)
-      write(76,*)
-      write(76,*) 'NDDO Style Multipole Charges for Normal Mode ',nmode
-      write(76,*) '    X           Y          Z            Charge    Pole Orb1 Orb2 Atom' 
+      write(filenumber,*)
+      write(filenumber,*)
+      write(filenumber,*) 'NDDO Style Multipole Charges for Normal Mode ',nmode
+      write(filenumber,*) '    X           Y          Z            Charge    Pole Orb1 Orb2 Atom' 
 
      ! loop over number of atoms (qmmm_struct%nquant_nlink
       do nquant=1,qmmm_struct%nquant_nlink
@@ -171,7 +170,7 @@ BohrtoA=0.529177249! A/Bohr
                coords=coords0 !xyz of M chg
                dipd=dipd-charge*coords/BohrtoA
                !write(6,"(2(f15.10))") coords(1),charge
-               write(76,1000) coords,charge,'M',orbt(norb1),orbt(norb2),nquant
+               write(filenumber,1000) coords,charge,'M',orbt(norb1),orbt(norb2),nquant
                trace=trace+charge
                            
                ! Case 2:sp-D
@@ -182,16 +181,16 @@ BohrtoA=0.529177249! A/Bohr
                dipod(norb1-1,1)=dipod(norb1-1,1)-charge*D1/BohrtoA
                !write(6,"(2(f15.10))") D1,charge
                coords(norb1-1)=coords0(norb1-1)+D1 !xyz of first charge of dipole +
-               write(76,1000)coords,charge*0.5,'D',orbt(norb1),orbt(norb2),nquant
+               write(filenumber,1000)coords,charge*0.5,'D',orbt(norb1),orbt(norb2),nquant
                coords(norb1-1)=coords0(norb1-1)-D1 !xyz of second dip charge -
-               write(76,1000)coords,charge*(-0.5),'D',orbt(norb1),orbt(norb2),nquant
+               write(filenumber,1000)coords,charge*(-0.5),'D',orbt(norb1),orbt(norb2),nquant
                elseif (norb1==1) then
                dipod(norb2-1,2)=dipod(norb2-1,2)-charge*D1/BohrtoA
                !write(6,"(2(f15.10))") D1,charge
                coords(norb2-1)=coords0(norb2-1)+D1 !xyz of first charge of dipole +
-               write(76,1000) coords,charge*0.5,'D',orbt(norb1),orbt(norb2),nquant
+               write(filenumber,1000) coords,charge*0.5,'D',orbt(norb1),orbt(norb2),nquant
                coords(norb2-1)=coords0(norb2-1)-D1 !xyz of second dip charge -
-               write(76,1000) coords,charge*(-0.5),'D',orbt(norb1),orbt(norb2),nquant
+               write(filenumber,1000) coords,charge*(-0.5),'D',orbt(norb1),orbt(norb2),nquant
                endif
 
                ! Case 2:pp-M,LQ
@@ -199,12 +198,12 @@ BohrtoA=0.529177249! A/Bohr
                coords=coords0 !xyz of M and first LQ chg
                dipd=dipd-charge*coords/BohrtoA
                !write(6,"(2(f15.10))") coords(1),charge
-               write(76,1000) coords,charge , 'M',orbt(norb1),orbt(norb2),nquant
-               write(76,1000) coords,charge*(-0.5),'LQ',orbt(norb1),orbt(norb2),nquant
+               write(filenumber,1000) coords,charge , 'M',orbt(norb1),orbt(norb2),nquant
+               write(filenumber,1000) coords,charge*(-0.5),'LQ',orbt(norb1),orbt(norb2),nquant
                coords(norb1-1)=coords0(norb1-1)+2*D2 !xyz of second LQ chg +
-               write(76,1000) coords,charge*0.25,'LQ',orbt(norb1),orbt(norb2),nquant
+               write(filenumber,1000) coords,charge*0.25,'LQ',orbt(norb1),orbt(norb2),nquant
                coords(norb1-1)=coords0(norb1-1)-2*D2 !xyz of third LQ chg -
-               write(76,1000) coords,charge*0.25,'LQ',orbt(norb1),orbt(norb2),nquant
+               write(filenumber,1000) coords,charge*0.25,'LQ',orbt(norb1),orbt(norb2),nquant
                trace=trace+charge              
 
                ! Case 4 :pp-SQ
@@ -212,16 +211,16 @@ BohrtoA=0.529177249! A/Bohr
                coords=coords0 !central coordinates
                coords(norb1-1)=coords0(norb1-1)+D2
                coords(norb2-1)=coords0(norb2-1)+D2 !xyz of first SQ chg ++
-               write(76,1000) coords,charge*0.25,'SQ',orbt(norb1),orbt(norb2),nquant
+               write(filenumber,1000) coords,charge*0.25,'SQ',orbt(norb1),orbt(norb2),nquant
                coords(norb1-1)=coords0(norb1-1)-D2 !xyz of second SQ chg +-
-               write(76,1000) coords,charge*(-0.25) ,'SQ',orbt(norb1),orbt(norb2),nquant
+               write(filenumber,1000) coords,charge*(-0.25) ,'SQ',orbt(norb1),orbt(norb2),nquant
                coords(norb2-1)=coords0(norb2-1)-D2 !xyz of third SQ chg --
-               write(76,1000) coords,charge*0.25 ,'SQ',orbt(norb1),orbt(norb2),nquant
+               write(filenumber,1000) coords,charge*0.25 ,'SQ',orbt(norb1),orbt(norb2),nquant
                coords(norb1-1)=coords0(norb1-1)+D2 !xyz of fourth SQ chg -+
-               write(76,1000) coords,charge*(-0.25) ,'SQ',orbt(norb1),orbt(norb2),nquant
+               write(filenumber,1000) coords,charge*(-0.25) ,'SQ',orbt(norb1),orbt(norb2),nquant
                
                else
-               write(76,*) 'ERROR'
+               write(filenumber,*) 'ERROR'
               
                end if
 
@@ -236,5 +235,4 @@ BohrtoA=0.529177249! A/Bohr
         !                            sqrt(2.0)*(dipd+sum(dipod,2)),2*sum((dipd+sum(dipod,2))**2)
     enddo !over nms
 return
-close(87)
 end subroutine

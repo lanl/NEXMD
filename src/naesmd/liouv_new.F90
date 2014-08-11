@@ -119,6 +119,30 @@ subroutine outDavidson()
 		write(6,*) i,qm2ds%Etot(i),qm2ds%Etot(i)/ONE_AU
 	end do
 
+	!Printing of transition densities to files
+   	!Print normal modes, etc. to file ! JAB
+   	if(qm2ds%printtd.gt.0) then
+		open(76,file='normalmodes-ao.out')
+   		write(6,*) 'Printing Normal Modes in ao rep to file'
+   		call printNM_ao(76)
+   		close(76)
+		if(qm2ds%printtd.gt.1) then
+   			open(76,file='normalmodes-mo.out')
+   			write(6,*) 'Printing Normal Modes in mo rep to file'
+   			call printNM_mo(76)
+   			close(76)
+			if (qm2ds%printtd.gt.2) then
+   			!open(76,file='2eri.out') 
+   			!write(6,*) 'Printing 2e Repulsion integrals to file'
+   			!call print2eri()
+   			!close(76) 
+   			open(76,file='normalmodes-cfit.out')
+   			write(6,*) 'Printing Charges for Normal Modes to file'
+   			call printCfitNM(76)
+   			close(76)
+			endif
+		endif
+	endif
 	return
 endsubroutine outDavidson
 !
