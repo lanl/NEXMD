@@ -75,7 +75,7 @@ subroutine Lxi_testing(u1,v1,solvent_model)
         !enddo; !i=0
 	tmp=0.d0
         call commutator(v_solvent_difdens,qm2ds%xi,qm2ds%Nb,tmp,.false.)
-	tmp=-tmp/2 !test
+	!tmp=-tmp/2 !test
         call VxiM_end(qm2ds%eta,tmp)
    elseif(solvent_model.eq.3) then !3: State Specific [V_s(xi),xi]
         call commutator(v_solvent_xi,qm2ds%xi,qm2ds%Nb,tmp,.false.)

@@ -39,8 +39,8 @@ subroutine calc_cosmo_2()
         !First SCF step
 
 	if (qm2ds%verbosity.lt.5) then
-        verbosity_save=qm2ds%verbosity;
-        qm2ds%verbosity=0; !turn off davidson output
+                verbosity_save=qm2ds%verbosity;
+                qm2ds%verbosity=0; !turn off davidson output
 	endif
 	!EFsave=0;
 	!if(EF>0) then !For testing with electric field
@@ -100,7 +100,7 @@ subroutine calc_cosmo_2()
 	!xi_abs_dif_sum=sum(abs(qm2ds%xi)-abs(xi_1))
 
         !Write header for SCF iterations
-        write(6,*)'Start nonequilibrium state-specific COSMO SCF'
+        write(6,*)'Start Equilibrium state-specific COSMO SCF'
         write(6,*)
         write(6,*)'SCF Step,  Excitation Energy,    DeltaE_sol,      abs(error),error, sum(DeltaXi), COSMO SCF Tolerance '
         write(6,*)'--------------------------------------------------'
@@ -171,7 +171,7 @@ subroutine calc_cosmo_2()
 
         if(qm2ds%verbosity>0) then
                 write(6,*)
-                write(6,*)'Final Results of Nonequilibrium State Specific Solvent procedure  '
+                write(6,*)'Final Results of Equilibrium State Specific Solvent procedure  '
                 !write(6,*)
                 !write(6,*)' i,   e0(i),    ferr(i),      ftol0'
                 write(6,*)'-------------------------------------------------'
