@@ -30,7 +30,7 @@ subroutine calc_cosmo_2()
         integer LWORK;
         _REAL_, DIMENSION(:), allocatable:: WORK;
         _REAL_ :: OPTIMALSIZE;
-	_REAL_ :: xi_1(qm2ds%Nb**2)
+	_REAL_ :: xi_1(qm2ds%Nb**2),vsol_temp(qm2ds%Nb,qm2ds%Nb)
         integer verbosity_save,EFsave
         integer i,k,p,h,soi_temp
         _REAL_ e0_0,e0_k,e0_k_1,xi_abs_dif_sum,f0,f1,ddot
@@ -115,6 +115,7 @@ subroutine calc_cosmo_2()
                 !if  (abs( xi_abs_dif_sum )< cosmo_scf_ftol) exit; !Check for convergence
 
                 !Initialize Variables for Solvent Potential
+                vsol_temp=v_solvent_difdens
                 v_solvent_difdens(1:qm2_struct%norbs,1:qm2_struct%norbs)=0.d0;!Clearing
 
                 !Save last transition density in AO Basis could easily switch
@@ -129,6 +130,7 @@ subroutine calc_cosmo_2()
                 elseif(potential_type.eq.0) then!Straight Correlation
                 	call Vxi(qm2ds%eta,v_solvent_difdens)
                 endif
+                v_solvent_difdens=0.5*(v_solvent_difdens+vsol_temp) !mixing this and previous solution
 
                 e0_k_1 = e0_k !Save last transition energy
 

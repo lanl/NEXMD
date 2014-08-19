@@ -509,7 +509,7 @@
       call dscal(M4,f2,vexp1(1,j),one)
    end do 
 
-!  CHECK ORTHOGONALITY
+!  CHECK ORTHOGONALITY OF EXPANSIONS
    if(lprint.gt.3) write(6,*) 'Check expansion to expansion'
    do j=1,nd1
       do i=1,nd1
@@ -524,15 +524,17 @@
 ! **** End assign Davidson trial vectors
 
 10 continue
-     
+! **** Write some things, check the number of iterations, etc.
    icount=icount+1 !iteration counter
    if(lprint.gt.4) write(6,*) 'COUNT=',icount,'Exp=',nd1
-   if(icount.gt.qm2ds%icount_M) stop
-
+   if(icount.gt.qm2ds%icount_M) then
+         write(6,*) "Number of davidson iterations exceeded, exiting"
+         stop
+   endif
    if(lprint.gt.4) write(6,*) 'nd1,nd1_old,j0,j1',nd1,nd1_old,j0,j1
 
 ! **** Davidson Restart
-   if(nd1.gt.nd) then
+   if(nd1.gt.nd) then !if the number of Krylov subspace expansions is  
       iloop=iloop+1
       if(lprint.gt.4) write(6,*)
       write(6,*) 'Davidson not converged, expansion=',nd
@@ -542,7 +544,7 @@
 
    if(nd1.gt.nd.or.istore.gt.0) then  ! Use vectors from the previous step
       istore=0
-      if (lprint.gt.4) write(6,*) 'Restart Davidson with improved guesses'
+      if (lprint.gt.4) write(6,*) 'Restart Davidson with guesses from the previous step'
 !	   do j=1,j1
 !	    write(6,*) 'Mode',j, e0(j)
 !	    write(6,*) 'MO_p-h'
@@ -558,7 +560,7 @@
 
       if(idav.eq.2) nd1=min((nd-2),2*j1)  ! RPA
       if(idav.eq.1) nd1=min((nd-2),j1)  ! CIS
-      if(lprint.gt.1) write(6,*) 'Looking after ',j1,' states'
+      if(lprint.gt.1) write(6,*) 'Currently have ',j1,' states'
       if(lprint.gt.1) write(6,*) 'With ',nd1,' initial guesses'
 
       !NEW EXPANSION VECTORS
@@ -695,7 +697,7 @@
 
    !!JAB Testing
    !Check matrix symmetry as required by dsyev eigenproblem routine
-        !if(.not.check_symmetry(rayvR,nd)) then
+        if(.not.check_symmetry(rayvR,nd)) then
                         
         !write(6,*) 'M4',M4,'qm2ds%nb',qm2ds%nb,'size(vexp(:,1))',size(vexp(:,1))
         !write(6,*) 'TEST nd1    nd1     orb     orb        rayvR(i.j)      rayvR(j.i)      vexp    vexp1'
@@ -713,11 +715,10 @@
         !end do
         !end do
         !end do
-        !write(6,*)"Error: rayvR non-symmetric. Something is wrong&
-        !                 with the Liouville equation.(x_n|L(x_m)).ne.(x_m|L(x_n))"
-
-        !stop
-        !end if
+        write(6,*)"Error: rayvR non-symmetric. Something is wrong&
+                         with the Liouville equation.(x_n|L(x_m)).ne.(x_m|L(x_n))"
+        stop
+        end if
    !!End JAB Testing
   
  call dsyev ('v','u',nd1,rayvR,nd,raye,xi,qm2ds%Nrpa,info) 
@@ -756,7 +757,7 @@
    !!JAB Testing
    !Check matrix symmetry as required by dsyev eigenproblem routine
         !if(.not.check_symmetry(rayv,nd)) then
-                 !write(6,*) "rayv symmetric"
+        !         write(6,*) "rayv symmetric"
         !else
         !         write(6,*) "Error: rayv non-symmetric"
         !         stop
@@ -978,7 +979,7 @@
 !	   call dscal(M4,f2,vexp1(1,j),one)
 !	 enddo
 
-!  Orthogonalize and normilize residual vectors to expansion vectors
+!  Orthogonalize and normalize residual vectors to expansion vectors
 15 continue
 
    do j=1+nd1,nd1+m
