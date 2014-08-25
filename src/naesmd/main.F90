@@ -876,7 +876,7 @@ program MD_Geometry
    end if
 
    npot=n_exc_states_propagate
-   if(imdtype==0) npot=0
+   !if(imdtype==0) npot=0 !to calculate excited states while propagating on the ground state PES
    neq=2*npot
    
    icontini=out_count_init
