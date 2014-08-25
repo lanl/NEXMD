@@ -31,13 +31,9 @@ INC= -Iinc/ -Iinc/$(SANDERDIR) -Iinc/$(PBSADIR)/ -Imod/$(PBSADIR)/ -Iinc/$(LIBDI
 FFLAG = -O0 -mcmodel=medium
 LDFLAGS = $(FFLAG)
 
-DIRECTORIES= $(MODDIR)/$(SQMDIR) $(MODDIR)/$(NAESMDDIR) $(MODDIR)/$(AMEOBADIR) $(MODDIR)/$(PBSADIR) inc/$(SANDERDIR) inc/$(PBSADIR) inc/$(LIBDIR) inc/$(PMEMDDIR) inc/$(NAESMDDIR) inc/$(NAESMDDIR)/old $(OBJDIR)/$(SQMDIR) $(OBJDIR)/$(NAESMDDIR) $(OBJDIR)/$(SANDERDIR) $(OBJDIR)/$(PMEMDIR) $(OBJDIR)/$(PBSADIR) $(OBJDIR)/$(AMOEBADIR) $(OBJDIR)/$(DIRSFF) $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME) $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC) $(OBJDIR)/$(LIBDIR)
+DIRECTORIES= $(MODDIR)/$(SQMDIR) $(MODDIR)/$(NAESMDDIR) $(MODDIR)/$(AMEOBADIR) $(MODDIR)/$(PBSADIR) inc/$(SQMDIR) inc/$(SANDERDIR) inc/$(PBSADIR) inc/$(LIBDIR) inc/$(PMEMDDIR) inc/$(NAESMDDIR) inc/$(NAESMDDIR)/old $(OBJDIR)/$(SQMDIR) $(OBJDIR)/$(NAESMDDIR) $(OBJDIR)/$(SANDERDIR) $(OBJDIR)/$(PMEMDIR) $(OBJDIR)/$(PBSADIR) $(OBJDIR)/$(AMOEBADIR) $(OBJDIR)/$(DIRSFF) $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME) $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC) $(OBJDIR)/$(LIBDIR)
 
 $(shell   mkdir -p $(DIRECTORIES)) 
-
-OBJSFF = \
-	$(OBJDIR)/$(DIRSFF)/xminC.o
-#        $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC)/utility.o 
 
 OBJSQM = \
 	$(OBJDIR)/$(SQMDIR)/assert.o \
@@ -47,6 +43,7 @@ OBJSQM = \
 	$(OBJDIR)/$(SQMDIR)/utilitiesModule.o \
 	$(OBJDIR)/$(SQMDIR)/qmmm_qmtheorymodule.o \
 	$(OBJDIR)/$(SQMDIR)/qmmm_nml_module.o \
+	$(OBJDIR)/$(SQMDIR)/xlbomd_module.o \
 	$(OBJDIR)/$(SQMDIR)/elementOrbitalIndex.o \
 	$(OBJDIR)/$(SQMDIR)/parameterReader.o \
 	$(OBJDIR)/$(SQMDIR)/rotation.o \
@@ -133,7 +130,6 @@ OBJSQM = \
 	$(OBJDIR)/$(SQMDIR)/qm2_dftb_externalshift.o \
 	$(OBJDIR)/$(SQMDIR)/qm2_dftb_dispersion_params.o \
 	$(OBJDIR)/$(SQMDIR)/qm2_smallest_number.o \
-	$(OBJDIR)/$(SQMDIR)/liouv_new.o \
 	$(OBJDIR)/$(SQMDIR)/dipole.o \
 	$(OBJDIR)/$(SQMDIR)/nacr.o \
 	$(OBJDIR)/$(SQMDIR)/dcart2.o \
@@ -144,9 +140,9 @@ OBJSQM = \
 	$(OBJDIR)/$(SQMDIR)/util.o \
 	$(OBJDIR)/$(SQMDIR)/davidson.o \
 	$(OBJDIR)/$(SQMDIR)/liouville.o \
-	$(OBJDIR)/$(SQMDIR)/buildM.o \
 	$(OBJDIR)/$(SQMDIR)/timing.o \
-	$(OBJDIR)/$(SQMDIR)/qm2_print_bondorders.o 
+	$(OBJDIR)/$(SQMDIR)/qm2_print_bondorders.o \
+	$(OBJDIR)/$(SQMDIR)/printNM.o
 OBJNAESMD = \
 	$(OBJDIR)/$(NAESMDDIR)/apc.o \
         $(OBJDIR)/$(NAESMDDIR)/naesmd_constants.o\
@@ -159,6 +155,7 @@ OBJNAESMD = \
 	$(OBJDIR)/$(NAESMDDIR)/random.o \
 	$(OBJDIR)/$(NAESMDDIR)/langevin-temperature.o \
 	$(OBJDIR)/$(NAESMDDIR)/communism.o \
+        $(OBJDIR)/$(NAESMDDIR)/statespecific.o \
 	$(OBJDIR)/$(NAESMDDIR)/nacT_analytic.o \
 	$(OBJDIR)/$(NAESMDDIR)/fewest-switches.o \
 	$(OBJDIR)/$(NAESMDDIR)/coherence.o \
@@ -168,7 +165,9 @@ OBJNAESMD = \
 	$(OBJDIR)/$(NAESMDDIR)/cadiab.o \
 	$(OBJDIR)/$(NAESMDDIR)/main.o \
         $(OBJDIR)/$(NAESMDDIR)/sqm_subs.o \
-	$(OBJDIR)/$(NAESMDDIR)/deriv.o 
+	$(OBJDIR)/$(NAESMDDIR)/deriv.o \
+	$(OBJDIR)/$(NAESMDDIR)/buildM.o \
+	$(OBJDIR)/$(NAESMDDIR)/liouv_new.o
 OBJPBSA = \
 	$(OBJDIR)/$(PBSADIR)/timer.o \
 	$(OBJDIR)/$(PBSADIR)/sa_driver.o \
@@ -416,6 +415,12 @@ OBJPMEMD = \
 	$(OBJDIR)/$(PMEMDDIR)/runfiles.o \
 	$(OBJDIR)/$(PMEMDDIR)/pmemd_clib.o \
 	$(OBJDIR)/$(PMEMDDIR)/erfcfun.o 
+
+OBJSFF = \
+	$(OBJDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC)/utility.o \
+	$(OBJDIR)/$(DIRSFF)/xminC.o
+OBJSFF = \
+	$(OBJDIR)/$(DIRSFF)/xminC.o 
 
 OBJAMOEBA = \
 	$(OBJDIR)/$(AMOEBADIR)/nextprmtop_section.o \
