@@ -210,7 +210,6 @@ module communism
    call qmmm2coords_r(sim)
 
    sim%dav%Mx=sim%excN ! as many excited state as required, no more
-   write(6,*)'EXCN=',sim%dav%Mx
    ! CML Includes call to Davidson within sqm_energy() 7/16/12
    call sqm_energy(sim%Na,sim%coords,sim%escf,born_radii, &
       one_born_radii,intdiel,extdiel,Arad,sim%qm2%scf_mchg, &
