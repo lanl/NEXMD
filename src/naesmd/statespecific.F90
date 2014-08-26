@@ -100,8 +100,7 @@ subroutine calc_cosmo_2()
 
         e0_k = qm2ds%e0(qmmm_struct%state_of_interest); !save first solventenergy
 
-        !call mo2site(qm2ds%v0(1,qmmm_struct%state_of_interest),qm2ds%xi,qm2ds%xi_scratch); !State of Interest to AO Basis
-	!xi_abs_dif_sum=sum(abs(qm2ds%xi)-abs(xi_1))
+	!xi_abs_dif_sum=sum(lastxi-abs(xi_1))
 
         !Write header for SCF iterations
         write(6,*)'Start Equilibrium state-specific COSMO SCF'
@@ -160,8 +159,7 @@ subroutine calc_cosmo_2()
 
                 e0_k = qm2ds%e0(qmmm_struct%state_of_interest)
 
-	!       call mo2site(qm2ds%v0(1,qmmm_struct%state_of_interest),qm2ds%xi,qm2ds%xi_scratch); !State of Interest to AO Basis
-         !      xi_abs_dif_sum=sum(abs(qm2ds%xi)-abs(xi_1))
+               !xi_abs_dif_sum=sum(abs(qm2ds%xi)-abs(xi_1))
 
                 write(6,111)k, e0_k ,e0_k-e0_0,abs(e0_k-e0_k_1), e0_k_1-e0_k ,cosmo_scf_ftol
         end do
