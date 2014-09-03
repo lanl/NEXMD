@@ -697,7 +697,7 @@
 
    !!JAB Testing
    !Check matrix symmetry as required by dsyev eigenproblem routine
-        !if(.not.check_symmetry(rayvR,nd)) then
+        if(.not.check_symmetry(rayvR,nd)) then
                         
         !write(6,*) 'M4',M4,'qm2ds%nb',qm2ds%nb,'size(vexp(:,1))',size(vexp(:,1))
         !write(6,*) 'TEST nd1    nd1     orb     orb        rayvR(i.j)      rayvR(j.i)      vexp    vexp1'
@@ -715,10 +715,10 @@
         !end do
         !end do
         !end do
-        !write(6,*)"Error: rayvR non-symmetric. Something is wrong&
-        !                 with the Liouville equation.(x_n|L(x_m)).ne.(x_m|L(x_n))"
-        !stop
-        !end if
+        write(6,*)"Error: rayvR non-symmetric. Something is wrong&
+                         with the Liouville equation.(x_n|L(x_m)).ne.(x_m|L(x_n))"
+        stop
+        end if
    !!End JAB Testing
   
  call dsyev ('v','u',nd1,rayvR,nd,raye,xi,qm2ds%Nrpa,info) 
