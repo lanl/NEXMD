@@ -11,7 +11,7 @@
    itrmax=300, ! Maximum number of scf iterations for ground state, negative to ignore convergence
 
    !***** Excited state parameters
-   exst_method=2, ! CIS (1) or RPA (2)
+   exst_method=1, ! CIS (1) or RPA (2)
    dav_guess=0, ! restart Davidson from previous (1) or from scratch (0) or XL-BOXMD (2)
    ftol=0.d0, !   Min tolerance (|emin-eold|)
    ftol0=1.d-5, !  Acceptance tol.(|emin-eold|)
@@ -25,7 +25,7 @@
    grms_tol=0.01, !Tolerance in eV/A (derivatives)
 
    !***** Solvent models
-   ceps=2; !Dielectric constant
+   ceps=10; !Dielectric constant
    index_of_refraction=100; !Dielectric constant for excitation currently useless
    nspa=42; !approximate number of cavity points per atom
    cosmo_scf_ftol=1.0d-3, !State specific scf tolerance
@@ -36,7 +36,7 @@
    Ez=0, !Electric Field Vector Z
    Ey=.0002, !Electric Field Vector Y
    onsager_radius=4, ! Onsager radius
-   solvent_model=0, ! (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi 
+   solvent_model=2, ! (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi 
    potential_type=3, ! (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
 &endqmmm
 
@@ -44,13 +44,13 @@
    !***** General parameters
    rnd_seed=1, ! seed for the random number generator
    bo_dynamics_flag=1, ! 0-non-BO, 1-BO
-   exc_state_init=0, ! initial excited state (0 - ground state)
-   n_exc_states_propagate=0, ! number of excited states
+   exc_state_init=1, ! initial excited state (0 - ground state)
+   n_exc_states_propagate=3, ! number of excited states
 
    !***** Dynamics parameters
    time_init=0.d0, ! initial time, fs
    time_step=0.5, !time step, fs
-   n_class_steps=10, !number of classical steps
+   n_class_steps=0, !number of classical steps
    n_quant_steps=0, ! number of quantum steps for each classical step
    moldyn_deriv_flag=1, ! 0-none, 1-analyt, 2-numeric
    num_deriv_step=1.d-5, ! displacement for numerical derivatives, A

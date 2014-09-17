@@ -23,14 +23,14 @@ subroutine calc_excsolven(energy)
         use qm2_davidson_module
         use cosmo_C, only : v_solvent_difdens
         implicit none
-        _REAL_ :: energy
+        _REAL_ :: energy,ddot
         _REAL_ :: tmp(qm2ds%Nb,qm2ds%Nb)
         
         !Calculate commutator [V_S(T(\xi)),\xi]
         call commutator(qm2ds%xi,v_solvent_difdens,qm2ds%Nb,tmp,.false.)
 
         !Calculate dot product, scale to eV
-        energy=ddot(qm2ds%Nb**2,qm2ds%xi,one,tmp,27.2114)
+        energy=ddot(qm2ds%Nb**2,qm2ds%xi,1.0,tmp,27.2114)
 end subroutine
 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -52,7 +52,7 @@ subroutine calc_cosmo_2()
 	_REAL_ :: xi_1(qm2ds%Nb**2),vsol_temp(qm2ds%Nb,qm2ds%Nb)
         integer verbosity_save,EFsave
         integer i,k,p,h,soi_temp
-        _REAL_ e0_0,e0_k,e0_k_1,xi_abs_dif_sum,f0,f1,ddot
+        _REAL_ e0_0,e0_k,e0_k_1,xi_abs_dif_sum,f0,f1,ddot,energy
         logical calc_Z;
         !Initial Davidson Call (in vacuum) and T+Z calcualtion
         !First SCF step
@@ -187,11 +187,11 @@ subroutine calc_cosmo_2()
         !endif
 	!call davidson()
 	!Printing out found eigenvalues, error and tolerance with solvent
-
+        call calc_excsolven(energy)
         if(qm2ds%verbosity>0) then
                 write(6,*)
                 write(6,*)'Final Results of Equilibrium State Specific Solvent procedure  '
-                !write(6,*)
+                write(6,*) 'Solvent effect =',energy,'eV'
                 !write(6,*)' i,   e0(i),    ferr(i),      ftol0'
                 write(6,*)'-------------------------------------------------'
                 !do k=1,qm2ds%Mx
@@ -275,7 +275,7 @@ if(1==1) then
         soi_temp=qmmm_struct%state_of_interest
         do i=1,qm2ds%Mx
                 f1=abs(ddot(qm2ds%Ncis,qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,i),1))
-                write(6,*)'Overlaps=',f0,f1
+                !write(6,*)'Overlaps=',f0,f1
                 if(f0<f1) then
                         write(6,*)'State crossing',qmmm_struct%state_of_interest,' to ',i
                         write(6,*)'New state of interest is',i
@@ -320,7 +320,7 @@ if(1==1) then !testing
                 soi_temp=qmmm_struct%state_of_interest
                 do i=1,qm2ds%Mx
                         f1=abs(ddot(qm2ds%Ncis,qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,i),1))
-                        write(6,*)'Overlaps=',f0,f1
+                        !write(6,*)'Overlaps=',f0,f1
                         if(f0<f1) then
                                 write(6,*)'State crossing',qmmm_struct%state_of_interest,' to ',i
                                 write(6,*)'New state of interest is',i
@@ -361,7 +361,6 @@ endif !testing
         if(qm2ds%verbosity>0) then
                 write(6,*)
                 write(6,*)'Final Results of Equilibrium State Specific Solvent Calculation'
-                write(6,*) 'Excited state solvent energy =',
                 !write(6,*)' i,   e0(i),    ferr(i),      ftol0'
                 write(6,*)'-------------------------------------------------'
                 !do k=1,qm2ds%Mx
