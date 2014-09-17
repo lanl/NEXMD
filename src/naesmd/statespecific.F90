@@ -16,11 +16,21 @@ end subroutine
 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !This subroutine calculates the solvent energy <\xi|[V_S(T(\xi)),\xi]>
+!It has to be called after all variables have been determined in other
+!subroutines
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine calc_excsolven()
-        use cosmo_C
+subroutine calc_excsolven(energy)
+        use qm2_davidson_module
+        use cosmo_C, only : v_solvent_difdens
         implicit none
+        _REAL_ :: energy
+        _REAL_ :: tmp(qm2ds%Nb,qm2ds%Nb)
+        
+        !Calculate commutator [V_S(T(\xi)),\xi]
+        call commutator(qm2ds%xi,v_solvent_difdens,qm2ds%Nb,tmp,.false.)
 
+        !Calculate dot product, scale to eV
+        energy=ddot(qm2ds%Nb**2,qm2ds%xi,one,tmp,27.2114)
 end subroutine
 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
