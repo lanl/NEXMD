@@ -21,16 +21,19 @@ end subroutine
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 subroutine calc_excsolven(energy)
         use qm2_davidson_module
+        use qmmm_module,only:qm2_struct,qmmm_struct
         use cosmo_C, only : v_solvent_difdens
         implicit none
         _REAL_ :: energy,ddot
         _REAL_ :: tmp(qm2ds%Nb,qm2ds%Nb)
         
+        tmp=0.d0; energy=0.d0        
         !Calculate commutator [V_S(T(\xi)),\xi]
-        call commutator(qm2ds%xi,v_solvent_difdens,qm2ds%Nb,tmp,.false.)
+        call commutator(qm2ds%v2(1,qmmm_struct%state_of_interest),v_solvent_difdens,qm2ds%Nb,tmp,.false.)
 
         !Calculate dot product, scale to eV
-        energy=ddot(qm2ds%Nb**2,qm2ds%xi,1.0,tmp,27.2114)
+        energy=ddot(qm2ds%Nb**2,qm2ds%v2(1,qmmm_struct%state_of_interest),1,tmp,1)
+        !write(6,*)energy,qm2ds%xi(1),qm2ds%v2(1,qmmm_struct%state_of_interest)
 end subroutine
 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -103,7 +106,7 @@ subroutine calc_cosmo_2()
         soi_temp=qmmm_struct%state_of_interest
         do i=1,qm2ds%Mx
                 f1=abs(ddot(qm2ds%Ncis,qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,i),1))
-                write(6,*)'Overlaps=',f0,f1
+                !write(6,*)'Overlaps=',f0,f1
                 if(f0<f1) then
                         write(6,*)'State crossing',qmmm_struct%state_of_interest,' to ',i
                         write(6,*)'New state of interest is',i
@@ -118,9 +121,9 @@ subroutine calc_cosmo_2()
 	!xi_abs_dif_sum=sum(lastxi-abs(xi_1))
 
         !Write header for SCF iterations
-        write(6,*)'Start Equilibrium state-specific COSMO SCF'
+        write(6,*)'Start Equilibrium Vertical Excitation Solvent Calculation'
         write(6,*)
-        write(6,*)'SCF Step,  Excitation Energy,    DeltaE_sol,      abs(error),error, sum(DeltaXi), COSMO SCF Tolerance '
+        write(6,*)'SCF Step,  Excitation Energy,    DeltaE_sol,      abs(error),error,  COSMO SCF Tolerance '
         write(6,*)'--------------------------------------------------'
 
         !Write first SCF iteration results
@@ -162,7 +165,7 @@ subroutine calc_cosmo_2()
                 soi_temp=qmmm_struct%state_of_interest
                 do i=1,qm2ds%Mx
                         f1=abs(ddot(qm2ds%Ncis,qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,i),1))
-                        write(6,*)'Overlaps=',f0,f1
+                        !write(6,*)'Overlaps=',f0,f1
                         if(f0<f1) then
                                 write(6,*)'State crossing',qmmm_struct%state_of_interest,' to ',i
                                 write(6,*)'New state of interest is',i
@@ -178,10 +181,9 @@ subroutine calc_cosmo_2()
 
                 write(6,111)k, e0_k ,e0_k-e0_0,abs(e0_k-e0_k_1), e0_k_1-e0_k ,cosmo_scf_ftol
         end do
-
+        
         qmmm_struct%qm_mm_first_call = .true.
         if(qm2ds%verbosity.lt.5) qm2ds%verbosity=verbosity_save
-
         !if(EFsave>0) then !For testing with electric field
         !       EF=EFsave;
         !endif
@@ -190,8 +192,8 @@ subroutine calc_cosmo_2()
         call calc_excsolven(energy)
         if(qm2ds%verbosity>0) then
                 write(6,*)
-                write(6,*)'Final Results of Equilibrium State Specific Solvent procedure  '
-                write(6,*) 'Solvent effect =',energy,'eV'
+                write(6,*)'Final Results of Equilibrium Vertical Excitation Solvent Calculation '
+                write(6,"('    Nonlinear term energy=',e20.10,' eV')") energy
                 !write(6,*)' i,   e0(i),    ferr(i),      ftol0'
                 write(6,*)'-------------------------------------------------'
                 !do k=1,qm2ds%Mx
@@ -220,7 +222,7 @@ subroutine calc_cosmo_4(sim_target)
         integer verbosity_save,verbosity_save2,verbosity_save3,EFsave
 	logical verbosity_save4
         integer i,k,p,h,soi_temp
-        _REAL_ e0_0,e0_k,e0_k_1,f0,f1,ddot;
+        _REAL_ e0_0,e0_k,e0_k_1,f0,f1,ddot,energy;
         logical calc_Z;
         _REAL_ lastxi(2*qm2ds%Np*qm2ds%Nh)
 
@@ -293,7 +295,7 @@ endif !testing
 
 if(1==1) then !testing
         !Write header for SCF iterations
-        write(6,*)'Start equilibrium state-specific COSMO SCF'
+        write(6,*)'Start Equilibrium State Specific Solvent Calculation'
         write(6,*)
         write(6,*)'SCF Step,  Excited State Energy,    DeltaE_sol,      abs(error),error,  COSMO SCF Tolerance '
         write(6,*)'--------------------------------------------------'
@@ -358,10 +360,25 @@ endif !testing
         !call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
         !call packing(qm2ds%nb,qm2ds%eta,rhotzpacked_k, 's')
 
+        !Calculate nonlinear term solvent energy
+        v_solvent_difdens(1:qm2_struct%norbs,1:qm2_struct%norbs)=0.d0;!Clearing
+        !Save last transition density in AO
+        call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
+        call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
+                !Calculate Solvent Potential
+                if(potential_type.eq.3) then !COSMO
+                        call VxiM(qm2ds%eta,v_solvent_difdens);
+                elseif(potential_type.eq.2) then!ONSAGER
+                        call rcnfld(v_solvent_difdens,qm2ds%eta,qm2ds%Nb)
+                elseif(potential_type.eq.0) then!Straight Correlation
+                        call Vxi(qm2ds%eta,v_solvent_difdens)
+                endif
+
+        call calc_excsolven(energy)
         if(qm2ds%verbosity>0) then
                 write(6,*)
                 write(6,*)'Final Results of Equilibrium State Specific Solvent Calculation'
-                !write(6,*)' i,   e0(i),    ferr(i),      ftol0'
+                write(6,"('    Nonlinear term energy=',e20.10,' eV')") energy
                 write(6,*)'-------------------------------------------------'
                 !do k=1,qm2ds%Mx
                 !        write(6,112) k,' +++',sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0,qm2ds%ferr(k),qm2ds%ftol0

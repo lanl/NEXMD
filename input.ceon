@@ -2,9 +2,9 @@
    !***** Ground state and output parameters
    qm_theory='AM1', !Integral type
    scfconv=1.0d-8, !Ground state scf convergence criteria
-   verbosity=0, !
+   verbosity=1, !
    printcharges=0, ! Mulliken charges for ground state
-   printdipole=0, ! (0) None, (1) Transition (2) Relaxed, and Unrelaxed
+   printdipole=2, ! (0) None, (1) Transition (2) Relaxed, and Unrelaxed
    printbondorders=0, ! (0) No, (1) Yes
    density_predict=0, !(0) None, (1) Reversible MD, (2) XL-BOMD
    K=3, ! XL-BOMD Parameter (3-9)
@@ -31,12 +31,12 @@
    cosmo_scf_ftol=1.0d-3, !State specific scf tolerance
    cosmo_scf_maxcyc=100, !State specific scf iterations
    doZ=.true. !Do relaxed (.true.) or unrelaxed (.false) density in state specific cosmo
-   EF=0, !(1) Electric field in ground and excited state, (2) Electric field in excited state only
+   EF=2, !(1) Electric field in ground and excited state, (2) Electric field in excited state only
    Ex=0, !Electric Field Vector X 
    Ez=0, !Electric Field Vector Z
-   Ey=.0002, !Electric Field Vector Y
+   Ey=0.000001, !Electric Field Vector Y
    onsager_radius=4, ! Onsager radius
-   solvent_model=2, ! (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi 
+   solvent_model=4, ! (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi 
    potential_type=3, ! (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
 &endqmmm
 
