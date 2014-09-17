@@ -14,6 +14,15 @@ subroutine solvent_scf_and_davidson_test();
   return
 end subroutine
 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+!This subroutine calculates the solvent energy <\xi|[V_S(T(\xi)),\xi]>
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+subroutine calc_excsolven()
+        use cosmo_C
+        implicit none
+
+end subroutine
+
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !STATE SPECIFIC ROUTINE FOR [V_s(T+Z),xi] WHICH IS ADDED TO [F(xi),rho_0] in
 !DAVIDSON
@@ -353,7 +362,7 @@ endif !testing
         if(qm2ds%verbosity>0) then
                 write(6,*)
                 write(6,*)'Final Results of Equilibrium State Specific Solvent Calculation'
-                !write(6,*)
+                write(6,*) 'Excited state solvent energy =',
                 !write(6,*)' i,   e0(i),    ferr(i),      ftol0'
                 write(6,*)'-------------------------------------------------'
                 !do k=1,qm2ds%Mx
