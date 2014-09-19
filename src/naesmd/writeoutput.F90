@@ -30,7 +30,7 @@ contains
    if(solvent_model.eq.2) then
         call calc_excsolven(energy) !JAB Test
         vmdqt(ihop)=vmdqt(ihop)-0.5*energy/feVmdqt !JAB Test
-        write(98,*)'VE Energy:',energy
+        !write(98,*)'VE Energy:',energy
    endif
 
    kin=0.0d0
@@ -286,7 +286,7 @@ contains
    if(solvent_model.eq.2) then
         call calc_excsolven(energy) !JAB Test
         vmdqt(ihop)=vmdqt(ihop)-0.5*energy/feVmdqt !JAB Test
-        write(98,*)'VE Energy:',energy
+        !write(98,*)'VE Energy:',energy
    endif
 
    if(state.eq.'fund') then
