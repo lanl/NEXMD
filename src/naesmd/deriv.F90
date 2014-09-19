@@ -3,7 +3,7 @@
 
 ! Subroutine for analytic and numerical derivatives of ground or excited states
    subroutine deriv(sim,state) ! , xyz_in)
-   use cosmo_C, only: lm61,nps,numat,qscnet,qscat,qdenet,phinet,gden,ipiden,ceps,solvent_model,potential_type,ediel,onsagE;
+   use cosmo_C, only: doZ,lm61,nps,numat,qscnet,qscat,qdenet,phinet,gden,ipiden,ceps,solvent_model,potential_type,ediel,onsagE;
    use communism !for numerical derivatives
    use qm2_davidson_module
    use qmmm_module
@@ -144,14 +144,14 @@ if (ihop>0) then
          dxyz1=0.d0; dxyz1_test=0.d0; charges2=0.d0; acharges2=0.d0; density2=0.d0
 	!Nonequilibrium Excited State Gradient
 	if(solvent_model.eq.2) then
-		write(6,*)'WARNING:DERIVATIVES FOR STATE SPECIFIC SOLVENT ARE NONVARIATIONAL'
+		write(6,*)'WARNING:DERIVATIVES FOR VERTICAL EXCITATION MODEL ARE INCORRECT'
 		!Get unrelaxed density matrix for the state to calculate derivatives for
 		call calc_rhotz(ihop, qm2ds%rhoT,.false.)
       		call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoT,qm2ds%tz_scratch(1), &
          		qm2ds%tz_scratch(qm2ds%Nb**2+1))
       		call packing(qm2ds%Nb,qm2ds%tz_scratch(1),qm2ds%rhoT,'s')
                 !Get relaxed density matrix for the state specific state
-                call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,.true.);
+                call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,doZ);
                 call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%tz_scratch(1), &
                         qm2ds%tz_scratch(qm2ds%Nb**2+1))
                 call packing(qm2ds%Nb,qm2ds%tz_scratch(1),qm2ds%rhoTZ,'s')
@@ -163,7 +163,7 @@ if (ihop>0) then
                 elseif(potential_type.eq.2) then
                   call rcnfldgrad2(dxyz1_test,qm2ds%rhoTZ,qm2ds%rhoT,qm2ds%nb,.true.)
                 endif
-	        dxyz1=dxyz1+dxyz1_test
+	        dxyz1=dxyz1+0.5*dxyz1_test !0.5 for the additional term in the Lagrangian
 
                 do i=1,qmmm_struct%nquant_nlink
                         do j=1,3
@@ -176,7 +176,7 @@ if (ihop>0) then
 	if(solvent_model.eq.4) then
                 write(6,*)'WARNING:DERIVATIVES FOR STATE SPECIFIC SOLVENT ARE NONVARIATIONAL'
 		!Get relaxed density matrix for the state specific state
-	        call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoT,.true.); !rhoT will be rhoTZ_k
+	        call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoT,doZ); !rhoT will be rhoTZ_k
                 call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoT,qm2ds%tz_scratch(1), &
                         qm2ds%tz_scratch(qm2ds%Nb**2+1))
                 call packing(qm2ds%Nb,qm2ds%tz_scratch(1),qm2ds%rhoT,'s')

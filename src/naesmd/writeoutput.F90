@@ -10,7 +10,7 @@ contains
 
    subroutine writeoutputini(sim,ibo,yg,lprint)
    use communism
-
+   use Cosmo_C, only : solvent_model
    implicit none      
 
    type(simulation_t) sim
@@ -24,6 +24,14 @@ contains
    character*1000 cardmopac
 
    double precision yg(2*nmaxpot) 
+   double precision energy !!JAB Testing VE model
+
+   !Testing VE gradient !!JAB
+   if(solvent_model.eq.2) then
+        call calc_excsolven(energy) !JAB Test
+        vmdqt(ihop)=vmdqt(ihop)-0.5*energy/feVmdqt !JAB Test
+        write(98,*)'VE Energy:',energy
+   endif
 
    kin=0.0d0
    do i =1, natom
@@ -39,7 +47,6 @@ contains
    if(state.eq.'fund') then
       vini=vgs
       etotini=kin+vgs
-
       write(98,889) tfemto,kin*feVmdqt,kin*feVmdqt-kinini*feVmdqt, &
          vgs*feVmdqt, &
          vgs*feVmdqt-vini*feVmdqt, &
@@ -49,7 +56,6 @@ contains
    if(state.eq.'exct') then
       vini=vmdqt(ihop)
       etotini=kin+vmdqt(ihop)
-
       write(98,889) tfemto,kin*feVmdqt,kin*feVmdqt-kinini*feVmdqt, &
          vmdqt(ihop)*feVmdqt, &
          vmdqt(ihop)*feVmdqt-vini*feVmdqt, &
@@ -67,6 +73,7 @@ contains
       end if
 
       if(lprint.ge.3.and.ibo.ne.1) then
+      write(94,*)'Test4'
          write(94,889) tfemto,(dsin(yg(j+npot)),j=1,npot)
          call flush(94)
       end if
@@ -245,7 +252,7 @@ contains
 
    subroutine writeoutput(sim,i,ibo,yg,lprint,cross)
    use communism
-
+   use Cosmo_C,only: solvent_model
    implicit none      
  
    type(simulation_t),pointer::sim
@@ -266,22 +273,27 @@ contains
 
    double precision yg(2*nmaxpot) 
    double precision poblacring1,poblacring4
+
+   double precision energy !JAB Test
+
    integer nring,indx(npot),npota
 
 	logical first
    data first /.true./
    save first
+
+   !Testing VE gradient !!JAB
+   if(solvent_model.eq.2) then
+        call calc_excsolven(energy) !JAB Test
+        vmdqt(ihop)=vmdqt(ihop)-0.5*energy/feVmdqt !JAB Test
+        write(98,*)'VE Energy:',energy
+   endif
+
    if(state.eq.'fund') then
       write(98,889) tfemto,kin*feVmdqt,kin*feVmdqt-kinini*feVmdqt, &
          vgs*feVmdqt, &
          vgs*feVmdqt-vini*feVmdqt, &
          kin*feVmdqt+vgs*feVmdqt,kin*feVmdqt+vgs*feVmdqt-etotini*feVmdqt
-
-   !TESTING !!JAB
-   !vini=vgs
-   !kinini=kin
-   !END TESTING !!JAB
-
    end if
 
    if(state.eq.'exct') then

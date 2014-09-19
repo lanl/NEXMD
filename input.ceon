@@ -2,7 +2,7 @@
    !***** Ground state and output parameters
    qm_theory='AM1', !Integral type
    scfconv=1.0d-8, !Ground state scf convergence criteria
-   verbosity=1, !
+   verbosity=0, !
    printcharges=0, ! Mulliken charges for ground state
    printdipole=2, ! (0) None, (1) Transition (2) Relaxed, and Unrelaxed
    printbondorders=0, ! (0) No, (1) Yes
@@ -36,7 +36,7 @@
    Ez=0, !Electric Field Vector Z
    Ey=0.000001, !Electric Field Vector Y
    onsager_radius=4, ! Onsager radius
-   solvent_model=4, ! (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi 
+   solvent_model=0, ! (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi 
    potential_type=3, ! (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
 &endqmmm
 
@@ -50,7 +50,7 @@
    !***** Dynamics parameters
    time_init=0.d0, ! initial time, fs
    time_step=0.5, !time step, fs
-   n_class_steps=0, !number of classical steps
+   n_class_steps=10, !number of classical steps
    n_quant_steps=0, ! number of quantum steps for each classical step
    moldyn_deriv_flag=1, ! 0-none, 1-analyt, 2-numeric
    num_deriv_step=1.d-5, ! displacement for numerical derivatives, A
@@ -72,7 +72,7 @@
    heating_steps_per_degree=100, ! number of steps per degree during heating
 
    !***** Output & Log parameters
-   verbosity=0, ! output verbosity (0-minimal, 3-highest) 
+   verbosity=3, ! output verbosity (0-minimal, 3-highest) 
    out_count_init=0, ! the initial count for output files
    out_data_steps=1, ! number of steps to write data
    out_coords_steps=10, ! number of steps to write the restart file
