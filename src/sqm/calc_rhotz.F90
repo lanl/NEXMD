@@ -12,9 +12,8 @@ subroutine calc_rhotz(state, rhoTZ,calc_Z)
         _REAL_ f,t,d,d1,ff,ff0,ff1,ff11
         integer i,ii,j,k,im,one,istate,mdflag,ip,ih,solvent_model_1
 
-	!Solvent for lhs of Z-vector equation
 	if(solvent_model.gt.0) then
-		solvent_model_1=99 !Use linear response solvent model for nonequillibrium
+		solvent_model_1=99 !Use linear response solvent model on lhs of Z-vector equation
 	else
 		solvent_model_1=0
 	endif

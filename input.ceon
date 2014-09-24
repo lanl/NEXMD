@@ -30,7 +30,7 @@
    nspa=42; !approximate number of cavity points per atom
    cosmo_scf_ftol=1.0d-5, !State specific scf tolerance
    cosmo_scf_maxcyc=100, !State specific scf iterations
-   doZ=.true. !Do relaxed (.true.) or unrelaxed (.false) density in state specific cosmo
+   doZ=.false. !Do relaxed (.true.) or unrelaxed (.false) density in state specific cosmo
    EF=0, !(1) Electric field in ground and excited state, (2) Electric field in excited state only
    Ex=0, !Electric Field Vector X 
    Ez=0, !Electric Field Vector Z
@@ -50,7 +50,7 @@
    !***** Dynamics parameters
    time_init=0.d0, ! initial time, fs
    time_step=0.5, !time step, fs
-   n_class_steps=50, !number of classical steps
+   n_class_steps=100, !number of classical steps
    n_quant_steps=0, ! number of quantum steps for each classical step
    moldyn_deriv_flag=1, ! 0-none, 1-analyt, 2-numeric
    num_deriv_step=1.d-5, ! displacement for numerical derivatives, A
@@ -80,40 +80,13 @@
 &endmoldyn
 
 &coord
-   6        -0.482016    0.682343   -4.792519
-    6        -1.748729    1.295569   -4.801632
-    6        -2.813105    0.778096   -4.044053
-    6         0.576093    1.189006   -5.565483
-    7        -3.689554    0.359165   -3.396094
-    7         1.460163    1.624794   -6.191971
-    6        -0.241103   -0.482325   -4.044009
-    7        -0.035363   -1.438659   -3.406390
-    6        -2.002734    2.423606   -5.600040
-    7        -2.203194    3.371523   -6.251557
-    6        -2.829203    5.148416   -2.860411
-    6        -3.350280    4.169574   -2.002099
-    6        -2.527007    3.180447   -1.477410
-    6        -1.156052    3.139497   -1.818901
-    6        -0.621862    4.143424   -2.689830
-    6        -1.481070    5.147604   -3.193767
-    1        -1.077624    5.907834   -3.882606
-    1        -3.501336    5.907601   -3.292931
-    1        -4.426145    4.171959   -1.761446
-    1        -2.944582    2.400378   -0.819389
-    6         0.728524    4.069738   -3.087122
-    6         1.557684    3.007913   -2.662994
-    6         1.023892    2.002371   -1.796019
-    6        -0.323414    2.089458   -1.377752
-    1        -0.737351    1.306254   -0.718714
-    1         1.137120    4.837361   -3.767675
-    6         2.881969    2.876658   -3.139577
-    6         3.647068    1.773599   -2.784937
-    6         3.124698    0.789566   -1.933228
-    6         1.833366    0.902598   -1.433577
-    1         3.736658   -0.090824   -1.677145
-    1         1.418144    0.117107   -0.780798
-    1         3.288284    3.638515   -3.824891
-    1         4.663981    1.656111   -3.193623
+6         -6.11369        1.41871       -0.02019
+6         -6.11420       -0.07281        0.04865
+8         -5.06629       -0.69091       -0.04810
+1         -7.15058        1.80063        0.08614
+1         -5.70399        1.74913       -0.99764
+1         -5.48918        1.83200        0.79932
+1         -7.04640       -0.61116        0.18492
 &endcoord
 
 &veloc

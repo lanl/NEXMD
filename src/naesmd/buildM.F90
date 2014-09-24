@@ -64,18 +64,7 @@ subroutine Lxi_testing(u1,v1,solvent_model)
         call VxiM_end(qm2ds%eta,tmp); !Add selected potential to vacuum correlation
    elseif(solvent_model.eq.2) then ! 2: State Specific [V_s(T+Z),xi]
         !Commutator is performed here for State Specific Solvent Routines
-	!TESTING BLOCK
-        !v_solvent_difdens=0.d0
-        !i=0
-        !do i=1,qm2ds%nb
-		!write(6,*)v_solvent_difdens(i,i)
-            	!v_solvent_difdens(i,i)=1
-        !enddo; i=0
-	!tmp=0.d0
         call commutator(qm2ds%xi,v_solvent_difdens,qm2ds%Nb,tmp,.false.)
-        !write(6,*)sum(tmp),size(qm2ds%xi),size(v_solvent_difdens),size(tmp)
-        !stop
-	!tmp=-tmp/2 !test
         call VxiM_end(qm2ds%eta,tmp)
    elseif(solvent_model.eq.3) then !3: State Specific [V_s(xi),xi]
         call commutator(v_solvent_xi,qm2ds%xi,qm2ds%Nb,tmp,.false.)
@@ -86,32 +75,22 @@ subroutine Lxi_testing(u1,v1,solvent_model)
    elseif(solvent_model.eq.10) then!10: NO GS Solvent test
         !call addnuc(tmp(1,1)); 
         tmp=0.d0; tmp2=0.d0;
-        !call rcnfldhcr(tmp)
-        !write(6,*)'hcr',tmp
         call rcnfld_fock(tmp,qm2_struct%den_matrix,qm2ds%Nb)
-        !write(6,*)'solvfock=',tmp
-        !stop
         call unpacking(qm2ds%Nb,tmp,tmp2,'s'); tmp=0.d0;
         call commutator(tmp2,qm2ds%xi,qm2ds%Nb,tmp,.false.)
         call VxiM_end(qm2ds%eta,tmp)
    endif
    
-   !add constant electric field potential [V_EF,xi]
+   !add constant electric field potential [V_E,xi]
    if(EF.eq.2) then!Constant Electric Field in ES onl
-        !write(6,*)'Using Constant EF in Excited State only'
+        write(6,*)'Using Constant EF in Excited State only'
         tmp=0.d0; tmp2=0.d0
         call efield_fock(tmp,qm2ds%Nb)
 	call unpacking(qm2ds%Nb,tmp,tmp2,'s'); tmp=0.d0
         call commutator(qm2ds%xi,tmp2,qm2ds%Nb,tmp,.false.)
-	!write(6,*)'Efield Operator:'
-	!do p=1,qm2ds%Nb
-	!	write(6,*)tmp2(:,p)
-	!	do h=1,qm2ds%Nb
-	!		tmp2(p,h)=(tmp2(p,p)-tmp2(h,h))*qm2ds%xi((p-1)*qm2ds%Nb+h)
-	!	enddo
-	!enddo
         call VxiM_end(qm2ds%eta,tmp)
    endif
+
    call site2mo(qm2ds%xi,qm2ds%eta,v1); !Change basis of xi again to M.O.
 
    i=0
