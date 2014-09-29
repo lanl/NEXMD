@@ -83,7 +83,6 @@ subroutine Lxi_testing(u1,v1,solvent_model)
    
    !add constant electric field potential [V_E,xi]
    if(EF.eq.2) then!Constant Electric Field in ES onl
-        write(6,*)'Using Constant EF in Excited State only'
         tmp=0.d0; tmp2=0.d0
         call efield_fock(tmp,qm2ds%Nb)
 	call unpacking(qm2ds%Nb,tmp,tmp2,'s'); tmp=0.d0

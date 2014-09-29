@@ -89,7 +89,18 @@ if((solvent_model.eq.1)) then !Linear Response solvent
         end if
 		tmp=2.d0*tmp
         call VxiM_end(qm2ds%eta_tz,tmp); !Add selected potential to vacuum correlation
-end if
+elseif((solvent_model.eq.2).or.(solvent_model.eq.4)) then !VE and SS solvent
+! Add [[xi^+, rho], V(T_k)], rho] +cc
+        !tmp=0.d0
+        !if (potential_type.eq.3) then !COSMO Potential
+        !        call VxiM(rhoTZ,tmp);
+        !elseif (potential_type.eq.2) then !Onsager Potential
+        !        call rcnfld(tmp,rhoTZ,qm2ds%nb);
+        !end if
+                !tmp=-2.0*tmp
+                tmp=-2.0*v_solvent_difdens
+       call VxiM_end(qm2ds%eta_tz,tmp) !Add selected potential to vacuum correlation
+endif
 !!************END SOLVENT BLOCK
 
 !!************GAS PHASE BLOCK
