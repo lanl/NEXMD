@@ -77,9 +77,10 @@ if (calc_Z) then
                         qm2ds%tz_scratch(qm2ds%Nb**2+1))
                 qm2ds%eta_tz(:)=0.d0;
         call Vxi(qm2ds%tz_scratch(1),qm2ds%eta_tz)
+
 !**************END GAS PHASE BLOCK
 
-!**************SOLVENT BLOCK for V_s(xi)
+!**************SOLVENT BLOCK to add V_s(xi)
 if((solvent_model.eq.1)) then !Linear Response solvent
         tmp=0.d0;
         if (potential_type.eq.3) then !COSMO Potential
@@ -89,17 +90,6 @@ if((solvent_model.eq.1)) then !Linear Response solvent
         end if
 		tmp=2.d0*tmp
         call VxiM_end(qm2ds%eta_tz,tmp); !Add selected potential to vacuum correlation
-elseif((solvent_model.eq.2).or.(solvent_model.eq.4)) then !VE and SS solvent
-! Add [[xi^+, rho], V(T_k)], rho] +cc
-        !tmp=0.d0
-        !if (potential_type.eq.3) then !COSMO Potential
-        !        call VxiM(rhoTZ,tmp);
-        !elseif (potential_type.eq.2) then !Onsager Potential
-        !        call rcnfld(tmp,rhoTZ,qm2ds%nb);
-        !end if
-                !tmp=-2.0*tmp
-                tmp=-2.0*v_solvent_difdens
-       call VxiM_end(qm2ds%eta_tz,tmp) !Add selected potential to vacuum correlation
 endif
 !!************END SOLVENT BLOCK
 
@@ -113,9 +103,30 @@ endif
         call dgemm('N','N',qm2ds%Nb,qm2ds%Nb,qm2ds%Nb,ff11,qm2ds%tz_scratch(1), &
                         qm2ds%Nb,qm2ds%eta_tz,qm2ds%Nb,ff1,qm2ds%xi_tz,qm2ds%Nb)   
         call symmetr(qm2ds%Nb,qm2ds%xi_tz) 
+        !call Iminus2rho(qm2ds%Nb,qm2ds%Np,qm2ds%xi_tz,qm2ds%eta_tz) !Now these are done below after a solvent block
+        !call project(qm2ds%Nb,qm2ds%Np,qm2ds%Nh,qm2ds%eta_tz)
+!************END GAS PHASE BLOCK
+
+!!***********BEGIN SOLVENT BLOCK
+if((solvent_model.eq.2).or.(solvent_model.eq.4)) then !VE and SS solvent
+! Add [[[xi^+, V_S(T_k)], xi],rho] + cc by calculating commutators but is there a
+! better way?
+        call getmodef(2*qm2ds%Np*qm2ds%Nh,qm2ds%Mx,qm2ds%Np,qm2ds%Nh, &
+                        state,qm2ds%v0,qm2ds%eta_tz)
+        call mo2sitef (qm2ds%Nb,qm2ds%vhf,qm2ds%eta_tz,qm2ds%tz_scratch(1), &
+                        qm2ds%tz_scratch(qm2ds%Nb**2+1))
+        call commutator(qm2ds%tz_scratch(1),v_solvent_difdens,qm2ds%Nb,tmp,.true.)!inner commutator
+        call commutator(tmp,qm2ds%tz_scratch(1),qm2ds%Nb,qm2ds%eta_tz,.false.) !second commutator with transpose
+        call site2mof (qm2ds%Nb,qm2ds%vhf,qm2ds%eta_tz,qm2ds%tz_scratch(1), &
+                        qm2ds%tz_scratch(qm2ds%Nb**2+1))
+        qm2ds%xi_tz=qm2ds%xi_tz-qm2ds%tz_scratch(1:qm2ds%Nb**2)
+endif
+!!***********END SOLVENT BLOCK 
+
+!************BEGIN VACUUM BLOCK
         call Iminus2rho(qm2ds%Nb,qm2ds%Np,qm2ds%xi_tz,qm2ds%eta_tz)
         call project(qm2ds%Nb,qm2ds%Np,qm2ds%Nh,qm2ds%eta_tz)
- 
+
 ! Finally put together left hand side of LZ-equation
 ! 2 is coming from the complex comjugate for eta
         do i=1,qm2ds%Nb**2
