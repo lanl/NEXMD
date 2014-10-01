@@ -44,7 +44,8 @@ subroutine calc_cosmo_2()
         use qm2_davidson_module
 	use communism
         use qmmm_module,only:qm2_struct,qmmm_struct;
-        use cosmo_C, only: v_solvent_difdens, cosmo_scf_ftol,cosmo_scf_maxcyc,doZ,potential_type,EF;
+        use cosmo_C, only: v_solvent_difdens, cosmo_scf_ftol,cosmo_scf_maxcyc,doZ,potential_type,EF, &
+                                linmixparam
         use constants, only : ZERO
 
         implicit none
@@ -92,6 +93,7 @@ subroutine calc_cosmo_2()
         elseif(potential_type.eq.1) then!Straight Correlation
         call Vxi(qm2ds%eta,v_solvent_difdens)
         endif
+        v_solvent_difdens=linmixparam*v_solvent_difdens
 
         !First SCF step
         e0_0 = qm2ds%e0(qmmm_struct%state_of_interest); !save vacuum energy
@@ -151,7 +153,7 @@ subroutine calc_cosmo_2()
                 elseif(potential_type.eq.0) then!Straight Correlation
                 	call Vxi(qm2ds%eta,v_solvent_difdens)
                 endif
-                v_solvent_difdens=0.5*(v_solvent_difdens+vsol_temp) !mixing this and previous solution
+                v_solvent_difdens=linmixparam*v_solvent_difdens+(1.0-linmixparam)*vsol_temp !mixing this and previous solution
 
                 e0_k_1 = e0_k !Save last transition energy
 
@@ -180,6 +182,9 @@ subroutine calc_cosmo_2()
                !xi_abs_dif_sum=sum(abs(qm2ds%xi)-abs(xi_1))
 
                 write(6,111)k, e0_k ,e0_k-e0_0,abs(e0_k-e0_k_1), e0_k_1-e0_k ,cosmo_scf_ftol
+                if  (k==cosmo_scf_maxcyc) then
+                        write(6,*) 'WARNING! ***SOLVENT SCF REACHED MAXIMUM ITERATIONS WITHOUT CONVERGENCE***'
+                endif
         end do
         
         qmmm_struct%qm_mm_first_call = .true.
@@ -213,7 +218,8 @@ subroutine calc_cosmo_4(sim_target)
         use qm2_davidson_module
         use communism
         use qmmm_module,only:qm2_struct,qmmm_struct,qmmm_nml;
-        use cosmo_C, only: EF,v_solvent_difdens, rhotzpacked_k,cosmo_scf_ftol,cosmo_scf_maxcyc,doZ,potential_type;
+        use cosmo_C, only: EF,v_solvent_difdens, rhotzpacked_k,cosmo_scf_ftol,cosmo_scf_maxcyc,doZ,potential_type, &
+                                linmixparam
         use constants, only : ZERO,AU_TO_EV
 
         implicit none
@@ -225,6 +231,7 @@ subroutine calc_cosmo_4(sim_target)
         _REAL_ e0_0,e0_k,e0_k_1,f0,f1,ddot,energy;
         logical calc_Z;
         _REAL_ lastxi(2*qm2ds%Np*qm2ds%Nh)
+        _REAL_,allocatable:: rhotzpacked_k_temp(:)
 
 	sim=>sim_target
 
@@ -248,29 +255,25 @@ subroutine calc_cosmo_4(sim_target)
 
 	call do_sqm_davidson_update(sim)
         calc_Z=doZ
-        
+
+        allocate(rhotzpacked_k_temp(qm2ds%nb*(qm2ds%nb+1)/2))        
         qm2ds%v0_old(:,:)=qm2ds%v0(:,:) !Store new transition densities
 
         qmmm_struct%qm_mm_first_call = .false.
         qm2ds%eta(:)=0.d0 !Clearing
 	rhotzpacked_k=0.d0
-if(1==1) then !testing
-        !Get transition density
-        !call getmodef(2*qm2ds%Np*qm2ds%Nh,qm2ds%Mx,qm2ds%Np,qm2ds%Nh, &
-        !       qmmm%state_of_interest,qm2ds%v0,qm2ds%tz_scratch)
         !Get relaxed or unrelaxed difference density
         call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
         call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
 	call packing(qm2ds%nb,qm2ds%eta,rhotzpacked_k, 's')
-endif
-
-if(1==1) then
+        
+        !Linear mixing
+        rhotzpacked_k=linmixparam*rhotzpacked_k 
 
         !First SCF step
         e0_0 = (sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0)*AU_TO_EV; !save vacuum energy
         e0_k_1 = e0_0 !initial energy
         call do_sqm_davidson_update(sim)
-
         ! Tracking the transition density
         f0=abs(ddot(qm2ds%Ncis, &
         qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,qmmm_struct%state_of_interest),1))
@@ -291,9 +294,7 @@ if(1==1) then
 
         e0_k = (sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0)*AU_TO_EV; !save first solventenergy
 
-endif !testing
 
-if(1==1) then !testing
         !Write header for SCF iterations
         write(6,*)'Start Equilibrium State Specific Solvent Calculation'
         write(6,*)
@@ -306,16 +307,15 @@ if(1==1) then !testing
         !Begin SCF loop
         do k=2,cosmo_scf_maxcyc
                 if  (abs( e0_k - e0_k_1 )< cosmo_scf_ftol) exit; !Check for convergence
-
+                rhotzpacked_k_temp=rhotzpacked_k
                 !Save last transition density in AO Basis could easily switch
                 !this to RhoT
                 call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
                 call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
                 call packing(qm2ds%nb,qm2ds%eta,rhotzpacked_k, 's')
-
+                rhotzpacked_k=linmixparam*rhotzpacked_k+(1.0-linmixparam)*rhotzpacked_k_temp
                 e0_k_1 = e0_k !Save last transition energy
                 call do_sqm_davidson_update(sim) !to include in the groundstate
-
                 ! Tracking the transition density
                 f0=abs(ddot(qm2ds%Ncis, &
                         qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,qmmm_struct%state_of_interest),1))
@@ -335,9 +335,11 @@ if(1==1) then !testing
                 e0_k = (sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0)*AU_TO_EV;
 
                 write(6,111)k, e0_k ,e0_k-e0_0,abs(e0_k-e0_k_1), e0_k_1-e0_k ,cosmo_scf_ftol
+                if  (k==cosmo_scf_maxcyc) then
+                        write(6,*) 'WARNING! ***SOLVENT SCF REACHED MAXIMUM ITERATIONS WITHOUT CONVERGENCE***'
+                endif
         end do
 
-endif !testing
 
 !Printing out found eigenvalues, error and tolerance with solvent
         !if(EFsave>0) then !For testing with electric field

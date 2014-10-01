@@ -535,7 +535,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
    use ElementOrbitalIndex, only : numberElements
    use ParameterReader, only : ReadParameterFile
    use cosmo_C, only: solvent_model,potential_type,ceps,cosmo_scf_ftol,cosmo_scf_maxcyc,doZ,&
-        index_of_refraction,nspa,onsager_radius,Ex,Ey,Ez,EF !COSMO parameters
+        index_of_refraction,nspa,onsager_radius,Ex,Ey,Ez,EF,linmixparam !COSMO parameters
    use xlbomd_module, only: xlbomd_flag,K,dt2w2,xlalpha,coef
  !XL-BOMD parameters
    implicit none
@@ -715,7 +715,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
 		   exst_method,dav_guess,dav_maxcyc,ftol,ftol0,ftol1,printtd, &
 !Solvent Model and E-Field parameters
                    ceps, chg_lambda, vsolv, nspa, solvent_model,potential_type,cosmo_scf_ftol,cosmo_scf_maxcyc,&
-			doZ,index_of_refraction,onsager_radius,EF,Ex,Ey,Ez, &
+			doZ,index_of_refraction,onsager_radius,EF,Ex,Ey,Ez,linmixparam, &
 !XL-BOMD parameters
 		   xlbomd_flag,K,dt2w2,xlalpha
 
@@ -754,6 +754,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
    Ex=0.0; !Electric field vectors a.u.
    Ey=0.0;
    Ez=0.0;
+   linmixparam=1.0;
 
    !Other parameters
    lnk_dis=1.09d0  !Methyl C-H distance

@@ -46,7 +46,8 @@ module cosmo_C
    Ex, &
    Ey, &
    Ez, &
-   onsager_radius	
+   onsager_radius, &
+   linmixparam
 
   double precision, dimension(3,3,1082) :: tm
   double precision, dimension(4,1082) :: dirsm, dirvec
