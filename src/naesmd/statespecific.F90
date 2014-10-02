@@ -237,10 +237,16 @@ subroutine calc_cosmo_4(sim_target)
                         f1=abs(ddot(qm2ds%Ncis,lastxi,1,qm2ds%v0(1,i),1))
                         if(qm2ds%verbosity.gt.4) write(6,*)'Overlaps=',f0,f1
                         if(f0<f1) then
-                                write(6,*)'State crossing',qmmm_struct%state_of_interest,' to ',i
-                                write(6,*)'New state of interest is',i
-                                soi_temp=i
-                                f0=f1
+                                if(abs(f0-f1)>0.95) then
+                                        write(6,*)'TEST:',abs(f0-f1)
+                                        write(6,*)'State crossing',qmmm_struct%state_of_interest,' to ',i
+                                        write(6,*)'New state of interest is',i
+                                        soi_temp=i
+                                        f0=f1
+                                else
+                                        write(6,*)'WARNING: STATES CANNOT BE FOLLOWED, &
+                                                TRY CHANGING THE LINEAR MIXING PARAMETER'
+                                endif
                         end if
                 end do
                 qmmm_struct%state_of_interest=soi_temp
