@@ -153,7 +153,6 @@ program MD_Geometry
    qmmm_struct%numder_step=num_deriv_step
 
    open (inputfdes,file='input.ceon',status='old')
-
    !This is essentially the zeroeth step
    call init_sqm(sim,inputfdes,STDOUT) ! involves call to Davidson
    close(inputfdes)

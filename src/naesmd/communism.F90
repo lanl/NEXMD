@@ -362,7 +362,7 @@ module communism
    qmmm_struct%zero_link_charges_first_call = .true.
    qmmm_struct%adj_mm_link_pair_crd_first_call = .true.
    ncharge=0;
-        
+write(6,*)'test:',qm2ds%verbosity        
    igb = 0
    call sqm_read_and_alloc(fdes_in, fdes_out, &
       sim%Na,igb,atnam,sim%naesmd%atomtype,maxcyc, &

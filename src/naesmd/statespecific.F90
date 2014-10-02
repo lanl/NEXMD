@@ -51,28 +51,24 @@ subroutine calc_cosmo_2()
         implicit none
         integer INFO;
         integer LWORK;
-        _REAL_, DIMENSION(:), allocatable:: WORK;
+        _REAL_, DIMENSION(:), allocatable:: WORK,lastxi
         _REAL_ :: OPTIMALSIZE;
 	_REAL_ :: xi_1(qm2ds%Nb**2),vsol_temp(qm2ds%Nb,qm2ds%Nb)
         integer verbosity_save,EFsave
         integer i,k,p,h,soi_temp
         _REAL_ e0_0,e0_k,e0_k_1,xi_abs_dif_sum,f0,f1,ddot,energy
         logical calc_Z;
-        !Initial Davidson Call (in vacuum) and T+Z calcualtion
-        !First SCF step
 
-	if (qm2ds%verbosity.lt.5) then
+        !Initial Davidson Call (in vacuum) and T+Z calcualtion
+	if (qm2ds%verbosity.lt.4) then
                 verbosity_save=qm2ds%verbosity;
                 qm2ds%verbosity=0; !turn off davidson output
 	endif
-	!EFsave=0;
-	!if(EF>0) then !For testing with electric field
-!		EFsave=EF;
-!		EF=0;
-!	endif
 
         call davidson(); !initial call in gas phase
-        qm2ds%v0_old(:,:)=qm2ds%v0(:,:) !Store new transition densities
+        allocate(lastxi(qm2ds%Nrpa))
+        lastxi=qm2ds%v0(:,qmmm_struct%state_of_interest) !Store old transition densities
+        soi_temp=qmmm_struct%state_of_interest !Initialize tracking variable
 
         Calc_Z = doZ
 
@@ -95,53 +91,34 @@ subroutine calc_cosmo_2()
         endif
         v_solvent_difdens=linmixparam*v_solvent_difdens
 
-        !First SCF step
-        e0_0 = qm2ds%e0(qmmm_struct%state_of_interest); !save vacuum energy
-        e0_k_1 = e0_0 !initial energy
-        call mo2site(qm2ds%v0(1,qmmm_struct%state_of_interest),xi_1,qm2ds%xi_scratch); !State of Interest to AO Basis
-
-        call davidson(); !first davidson call with solvent potential
-
-        ! Tracking the transition density
-        f0=abs(ddot(qm2ds%Ncis, &
-        qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,qmmm_struct%state_of_interest),1))
-        soi_temp=qmmm_struct%state_of_interest
-        do i=1,qm2ds%Mx
-                f1=abs(ddot(qm2ds%Ncis,qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,i),1))
-                !write(6,*)'Overlaps=',f0,f1
-                if(f0<f1) then
-                        write(6,*)'State crossing',qmmm_struct%state_of_interest,' to ',i
-                        write(6,*)'New state of interest is',i
-                        soi_temp=i
-                        f0=f1
-                end if
-        end do
-        qmmm_struct%state_of_interest=soi_temp
-
-        e0_k = qm2ds%e0(qmmm_struct%state_of_interest); !save first solventenergy
-
-	!xi_abs_dif_sum=sum(lastxi-abs(xi_1))
-
         !Write header for SCF iterations
         write(6,*)'Start Equilibrium Vertical Excitation Solvent Calculation'
         write(6,*)
         write(6,*)'SCF Step,  Excitation Energy,    DeltaE_sol,      abs(error),error,  COSMO SCF Tolerance '
         write(6,*)'--------------------------------------------------'
 
-        !Write first SCF iteration results
-        write(6,111)1, e0_k ,e0_k-e0_0,abs( e0_k - e0_k_1 ), e0_k_1-e0_k ,cosmo_scf_ftol
-
         !Begin SCF loop
 
-        do k=2,cosmo_scf_maxcyc
-                if  (abs( e0_k - e0_k_1 )< cosmo_scf_ftol) exit; !Check for convergence
-                !if  (abs( xi_abs_dif_sum )< cosmo_scf_ftol) exit; !Check for convergence
+        do k=1,cosmo_scf_maxcyc
+                call davidson(); !Calculate new excited states
+
+                ! Tracking the transition density (checking for crossing)
+                f0=abs(ddot(qm2ds%Ncis,lastxi,1,qm2ds%v0(1,soi_temp),1))
+                do i=1,qm2ds%Mx
+                        f1=abs(ddot(qm2ds%Ncis,lastxi,1,qm2ds%v0(1,i),1))
+                        if(qm2ds%verbosity.gt.4) write(6,*)'Overlaps=',f0,f1
+                        if(f0<f1) then
+                                write(6,*)'State crossing',qmmm_struct%state_of_interest,' to ',i
+                                write(6,*)'New state of interest is',i
+                                soi_temp=i
+                                f0=f1
+                        end if
+                end do
+                qmmm_struct%state_of_interest=soi_temp
+                lastxi=qm2ds%v0(:,qmmm_struct%state_of_interest) !Store old transition densities
 
                 !Initialize Variables for Solvent Potential
                 vsol_temp=v_solvent_difdens
-                v_solvent_difdens(1:qm2_struct%norbs,1:qm2_struct%norbs)=0.d0;!Clearing
-
-                !Save last transition density in AO Basis could easily switch
                 call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
                 call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
 
@@ -156,44 +133,19 @@ subroutine calc_cosmo_2()
                 v_solvent_difdens=linmixparam*v_solvent_difdens+(1.0-linmixparam)*vsol_temp !mixing this and previous solution
 
                 e0_k_1 = e0_k !Save last transition energy
-
-	!	xi_1=qm2ds%xi !Save last transition density
-
-                call davidson(); !Calculate new excited states
-
-                ! Tracking the transition density
-                f0=abs(ddot(qm2ds%Ncis, &
-                qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,qmmm_struct%state_of_interest),1))
-                soi_temp=qmmm_struct%state_of_interest
-                do i=1,qm2ds%Mx
-                        f1=abs(ddot(qm2ds%Ncis,qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,i),1))
-                        !write(6,*)'Overlaps=',f0,f1
-                        if(f0<f1) then
-                                write(6,*)'State crossing',qmmm_struct%state_of_interest,' to ',i
-                                write(6,*)'New state of interest is',i
-                                soi_temp=i
-                                f0=f1
-                        end if
-                end do
-                qmmm_struct%state_of_interest=soi_temp
-
                 e0_k = qm2ds%e0(qmmm_struct%state_of_interest)
-
                !xi_abs_dif_sum=sum(abs(qm2ds%xi)-abs(xi_1))
 
                 write(6,111)k, e0_k ,e0_k-e0_0,abs(e0_k-e0_k_1), e0_k_1-e0_k ,cosmo_scf_ftol
+                if  (abs( e0_k - e0_k_1 )< cosmo_scf_ftol) exit; !Check for convergence
+               !if  (abs( xi_abs_dif_sum )< cosmo_scf_ftol) exit; !Check for convergence
                 if  (k==cosmo_scf_maxcyc) then
                         write(6,*) 'WARNING! ***SOLVENT SCF REACHED MAXIMUM ITERATIONS WITHOUT CONVERGENCE***'
                 endif
         end do
         
         qmmm_struct%qm_mm_first_call = .true.
-        if(qm2ds%verbosity.lt.5) qm2ds%verbosity=verbosity_save
-        !if(EFsave>0) then !For testing with electric field
-        !       EF=EFsave;
-        !endif
-	!call davidson()
-	!Printing out found eigenvalues, error and tolerance with solvent
+        if(qm2ds%verbosity.lt.4) qm2ds%verbosity=verbosity_save
         call calc_excsolven(energy)
         if(qm2ds%verbosity>0) then
                 write(6,*)
@@ -230,13 +182,15 @@ subroutine calc_cosmo_4(sim_target)
         integer i,k,p,h,soi_temp
         _REAL_ e0_0,e0_k,e0_k_1,f0,f1,ddot,energy;
         logical calc_Z;
-        _REAL_ lastxi(2*qm2ds%Np*qm2ds%Nh)
-        _REAL_,allocatable:: rhotzpacked_k_temp(:)
+        _REAL_,allocatable:: rhotzpacked_k_temp(:),lastxi(:)
 
 	sim=>sim_target
 
+	call do_sqm_davidson_update(sim)
+        calc_Z=doZ
         !Initial Davidson Call (in vacuum) and T+Z calcualtion
-	if(qm2ds%verbosity.lt.5) then
+
+        if(qm2ds%verbosity.lt.4) then
         verbosity_save=qm2ds%verbosity;
         verbosity_save2=qmmm_nml%verbosity;
         verbosity_save3=qmmm_nml%printdipole;
@@ -244,24 +198,18 @@ subroutine calc_cosmo_4(sim_target)
         qmmm_nml%verbosity=0
         qm2ds%verbosity=0; !turn off davidson output
         qmmm_nml%printdipole=0;
-	qmmm_nml%printcharges=.false.;
-	endif
+        qmmm_nml%printcharges=.false.;
+        endif
 
-        !EFsave=0;
-        !if(EF>0) then !For testing with electric field
-        !       EFsave=EF;
-        !       EF=0;
-        !endif
-
-	call do_sqm_davidson_update(sim)
-        calc_Z=doZ
-
-        allocate(rhotzpacked_k_temp(qm2ds%nb*(qm2ds%nb+1)/2))        
-        qm2ds%v0_old(:,:)=qm2ds%v0(:,:) !Store new transition densities
+        allocate(rhotzpacked_k_temp(qm2ds%nb*(qm2ds%nb+1)/2),lastxi(qm2ds%Nrpa))        
 
         qmmm_struct%qm_mm_first_call = .false.
         qm2ds%eta(:)=0.d0 !Clearing
 	rhotzpacked_k=0.d0
+
+        lastxi=qm2ds%v0(:,qmmm_struct%state_of_interest) !Store old transition densities
+        soi_temp=qmmm_struct%state_of_interest
+
         !Get relaxed or unrelaxed difference density
         call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
         call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
@@ -270,59 +218,20 @@ subroutine calc_cosmo_4(sim_target)
         !Linear mixing
         rhotzpacked_k=linmixparam*rhotzpacked_k 
 
-        !First SCF step
-        e0_0 = (sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0)*AU_TO_EV; !save vacuum energy
-        e0_k_1 = e0_0 !initial energy
-        call do_sqm_davidson_update(sim)
-        ! Tracking the transition density
-        f0=abs(ddot(qm2ds%Ncis, &
-        qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,qmmm_struct%state_of_interest),1))
-        soi_temp=qmmm_struct%state_of_interest
-        do i=1,qm2ds%Mx
-                f1=abs(ddot(qm2ds%Ncis,qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,i),1))
-                !write(6,*)'Overlaps=',f0,f1
-                if(f0<f1) then
-                        write(6,*)'State crossing',qmmm_struct%state_of_interest,' to ',i
-                        write(6,*)'New state of interest is',i
-                        soi_temp=i
-                        f0=f1
-                end if
-        end do
-        qmmm_struct%state_of_interest=soi_temp
-        
-        qm2ds%v0_old(:,:)=qm2ds%v0(:,:) !Store new transition densities
-
-        e0_k = (sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0)*AU_TO_EV; !save first solventenergy
-
-
         !Write header for SCF iterations
         write(6,*)'Start Equilibrium State Specific Solvent Calculation'
         write(6,*)
         write(6,*)'SCF Step,  Excited State Energy,    DeltaE_sol,      abs(error),error,  COSMO SCF Tolerance '
         write(6,*)'--------------------------------------------------'
 
-        !Write first SCF iteration results
-        write(6,111)1, e0_k ,e0_k-e0_0,abs( e0_k - e0_k_1 ), e0_k_1-e0_k ,cosmo_scf_ftol
-
         !Begin SCF loop
-        do k=2,cosmo_scf_maxcyc
-                if  (abs( e0_k - e0_k_1 )< cosmo_scf_ftol) exit; !Check for convergence
-                rhotzpacked_k_temp=rhotzpacked_k
-                !Save last transition density in AO Basis could easily switch
-                !this to RhoT
-                call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
-                call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
-                call packing(qm2ds%nb,qm2ds%eta,rhotzpacked_k, 's')
-                rhotzpacked_k=linmixparam*rhotzpacked_k+(1.0-linmixparam)*rhotzpacked_k_temp
-                e0_k_1 = e0_k !Save last transition energy
+        do k=1,cosmo_scf_maxcyc
                 call do_sqm_davidson_update(sim) !to include in the groundstate
-                ! Tracking the transition density
-                f0=abs(ddot(qm2ds%Ncis, &
-                        qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,qmmm_struct%state_of_interest),1))
-                soi_temp=qmmm_struct%state_of_interest
+                ! Tracking the transition density (checking for crossing)
+                f0=abs(ddot(qm2ds%Ncis,lastxi,1,qm2ds%v0(1,soi_temp),1))
                 do i=1,qm2ds%Mx
-                        f1=abs(ddot(qm2ds%Ncis,qm2ds%v0_old(1,qmmm_struct%state_of_interest),1,qm2ds%v0(1,i),1))
-                        !write(6,*)'Overlaps=',f0,f1
+                        f1=abs(ddot(qm2ds%Ncis,lastxi,1,qm2ds%v0(1,i),1))
+                        if(qm2ds%verbosity.gt.4) write(6,*)'Overlaps=',f0,f1
                         if(f0<f1) then
                                 write(6,*)'State crossing',qmmm_struct%state_of_interest,' to ',i
                                 write(6,*)'New state of interest is',i
@@ -331,10 +240,21 @@ subroutine calc_cosmo_4(sim_target)
                         end if
                 end do
                 qmmm_struct%state_of_interest=soi_temp
+                lastxi=qm2ds%v0(:,qmmm_struct%state_of_interest) !Store old transition densities
 
+                !Calculate new density for solvent potential
+                rhotzpacked_k_temp=rhotzpacked_k
+                call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
+                call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
+                call packing(qm2ds%nb,qm2ds%eta,rhotzpacked_k, 's')
+                rhotzpacked_k=linmixparam*rhotzpacked_k+(1.0-linmixparam)*rhotzpacked_k_temp
+
+                e0_k_1 = e0_k !Save last transition energy
                 e0_k = (sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0)*AU_TO_EV;
 
                 write(6,111)k, e0_k ,e0_k-e0_0,abs(e0_k-e0_k_1), e0_k_1-e0_k ,cosmo_scf_ftol
+
+                if  (abs( e0_k - e0_k_1 )< cosmo_scf_ftol) exit; !Check for convergence
                 if  (k==cosmo_scf_maxcyc) then
                         write(6,*) 'WARNING! ***SOLVENT SCF REACHED MAXIMUM ITERATIONS WITHOUT CONVERGENCE***'
                 endif
@@ -342,25 +262,13 @@ subroutine calc_cosmo_4(sim_target)
 
 
 !Printing out found eigenvalues, error and tolerance with solvent
-        !if(EFsave>0) then !For testing with electric field
-        !       EF=EFsave;
-        !endif
-
-        !call do_sqm_davidson_update(sim) !to include in the groundstate
-
         !qmmm_struct%qm_mm_first_call = .true.
-	if(qm2ds%verbosity.lt.5) then
+	if(qm2ds%verbosity.lt.4) then
         qm2ds%verbosity=verbosity_save2 !hack
         qmmm_nml%verbosity=verbosity_save2
         qmmm_nml%printdipole=verbosity_save3
         qmmm_nml%printcharges=verbosity_save4
 	endif
-
-        !Save last transition density in AO Basis could easily switch
-        !this to RhoT
-        !call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
-        !call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
-        !call packing(qm2ds%nb,qm2ds%eta,rhotzpacked_k, 's')
 
         !Calculate nonlinear term solvent energy
         v_solvent_difdens(1:qm2_struct%norbs,1:qm2_struct%norbs)=0.d0;!Clearing
@@ -382,11 +290,6 @@ subroutine calc_cosmo_4(sim_target)
                 write(6,*)'Final Results of Equilibrium State Specific Solvent Calculation'
                 write(6,"('    Nonlinear term energy=',e20.10,' eV')") energy
                 write(6,*)'-------------------------------------------------'
-                !do k=1,qm2ds%Mx
-                !        write(6,112) k,' +++',sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0,qm2ds%ferr(k),qm2ds%ftol0
-                !end do
-                !write(6,*)'-------------------------------------------------'
-                !write(6,*)
 	        call do_sqm_davidson_update(sim) !to include in the groundstate
         end if
 
