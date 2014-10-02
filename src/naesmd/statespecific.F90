@@ -60,12 +60,14 @@ subroutine calc_cosmo_2()
         logical calc_Z;
 
         !Initial Davidson Call (in vacuum) and T+Z calcualtion
-	if (qm2ds%verbosity.lt.4) then
+	if (qm2ds%verbosity.lt.5) then
                 verbosity_save=qm2ds%verbosity;
                 qm2ds%verbosity=0; !turn off davidson output
 	endif
 
         call davidson(); !initial call in gas phase
+        e0_0 = qm2ds%e0(qmmm_struct%state_of_interest)
+        e0_k = e0_0
         allocate(lastxi(qm2ds%Nrpa))
         lastxi=qm2ds%v0(:,qmmm_struct%state_of_interest) !Store old transition densities
         soi_temp=qmmm_struct%state_of_interest !Initialize tracking variable
@@ -145,7 +147,7 @@ subroutine calc_cosmo_2()
         end do
         
         qmmm_struct%qm_mm_first_call = .true.
-        if(qm2ds%verbosity.lt.4) qm2ds%verbosity=verbosity_save
+        if(qm2ds%verbosity.eq.0) qm2ds%verbosity=verbosity_save
         call calc_excsolven(energy)
         if(qm2ds%verbosity>0) then
                 write(6,*)
@@ -187,10 +189,12 @@ subroutine calc_cosmo_4(sim_target)
 	sim=>sim_target
 
 	call do_sqm_davidson_update(sim)
+        e0_0 = (sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0)*AU_TO_EV;
+        e0_k = e0_0
         calc_Z=doZ
         !Initial Davidson Call (in vacuum) and T+Z calcualtion
 
-        if(qm2ds%verbosity.lt.4) then
+        if(qm2ds%verbosity.lt.5) then
         verbosity_save=qm2ds%verbosity;
         verbosity_save2=qmmm_nml%verbosity;
         verbosity_save3=qmmm_nml%printdipole;
@@ -263,7 +267,7 @@ subroutine calc_cosmo_4(sim_target)
 
 !Printing out found eigenvalues, error and tolerance with solvent
         !qmmm_struct%qm_mm_first_call = .true.
-	if(qm2ds%verbosity.lt.4) then
+	if(qm2ds%verbosity.eq.0) then
         qm2ds%verbosity=verbosity_save2 !hack
         qmmm_nml%verbosity=verbosity_save2
         qmmm_nml%printdipole=verbosity_save3
