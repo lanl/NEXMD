@@ -166,10 +166,12 @@ if (ihop>0) then
             !call diegrd(dxyz1_test); !derivative
 !End test
                 elseif(potential_type.eq.2) then
-                  call rcnfldgrad2(dxyz1_test,qm2ds%rhoTZ,qm2ds%rhoT,qm2ds%nb,.true.)
+                  !call rcnfldgrad2(dxyz1_test,qm2ds%rhoTZ,qm2ds%rhoT,qm2ds%nb,.true.)
+                    qscnet(:,1)=0.d0; qdenet(:,1)=0.d0; !Clear Nuclear Charges
+                    call cosmo_1_tri(qm2ds%rhoT) !Fill Electronic Chrages
+                    call diegrd(dxyz1_test); !derivative
                 endif
-	        dxyz1=dxyz1-dxyz1_test !0.5 for the additional term in the Lagrangian
-
+	        dxyz1=dxyz1-0.5*dxyz1_test !0.5 for the additional term in the Lagrangian
                 do i=1,qmmm_struct%nquant_nlink
                         do j=1,3
                                 dxyz((i-1)*3+j)=dxyz((i-1)*3+j)-dxyz1(j,i)*KCAL_TO_EV

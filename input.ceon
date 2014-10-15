@@ -11,7 +11,7 @@
    itrmax=300, ! Maximum number of scf iterations for ground state, negative to ignore convergence
 
    !***** Excited state parameters
-   exst_method=1, ! CIS (1) or RPA (2)
+   exst_method=2, ! CIS (1) or RPA (2)
    dav_guess=0, ! restart Davidson from previous (1) or from scratch (0) or XL-BOXMD (2)
    ftol=0.d0, !   Min tolerance (|emin-eold|)
    ftol0=1.d-8, !  Acceptance tol.(|emin-eold|)
@@ -25,10 +25,10 @@
    grms_tol=0.01, !Tolerance in eV/A (derivatives)
 
    !***** Solvent models
-   ceps=10; !Dielectric constant
+   ceps=100; !Dielectric constant
    index_of_refraction=100; !Dielectric constant for excitation currently useless
-   nspa=42; !approximate number of cavity points per atom
-   cosmo_scf_ftol=1.0d-8, !State specific scf tolerance
+   nspa=800; !approximate number of cavity points per atom
+   cosmo_scf_ftol=1.0d-6, !State specific scf tolerance
    cosmo_scf_maxcyc=500, !State specific scf iterations
    linmixparam=1.0, !Linear mixing parameter for SS and VE 
    doZ=.false. !Do relaxed (.true.) or unrelaxed (.false) density in state specific cosmo
@@ -37,7 +37,7 @@
    Ez=0, !Electric Field Vector Z
    Ey=0, !Electric Field Vector Y
    onsager_radius=4, ! Onsager radius
-   solvent_model=4, ! (0) None, (1) LR, (2) Vertical Excitation (4) State Specific
+   solvent_model=2, ! (0) None, (1) LR, (2) Vertical Excitation (4) State Specific
    potential_type=3, ! (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
 &endqmmm
 
@@ -46,7 +46,7 @@
    rnd_seed=1, ! seed for the random number generator
    bo_dynamics_flag=1, ! 0-non-BO, 1-BO
    exc_state_init=1, ! initial excited state (0 - ground state)
-   n_exc_states_propagate=3, ! number of excited states
+   n_exc_states_propagate=2, ! number of excited states
 
    !***** Dynamics parameters
    time_init=0.d0, ! initial time, fs
@@ -81,13 +81,13 @@
 &endmoldyn
 
 &coord
-6         -6.11370        1.42871       -0.02019
-6         -6.01420       -0.07280        0.04865
-8         -5.06629       -0.69081       -0.04810
-1         -7.15058        1.80063        0.08614
-1         -5.70399        1.74913       -0.99764
-1         -5.48918        1.83200        0.79932
-1         -7.04640       -0.61116        0.18492
+    6        -6.112445    1.427145   -0.023331
+    6        -6.069854   -0.053809    0.051292
+    8        -5.018500   -0.748804   -0.069995
+    1        -7.164143    1.782617    0.083462
+    1        -5.701663    1.757774   -1.010002
+    1        -5.486502    1.852105    0.800266
+    1        -7.031233   -0.591328    0.221408
 &endcoord
 
 &veloc
