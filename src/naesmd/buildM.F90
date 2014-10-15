@@ -286,11 +286,10 @@ subroutine rcnfld(f,p,n)
 
         !!CALCULATE SCALING FACTOR AND INDUCED DIPOLE
         scaled=(fepsi/onsager_radius**3)*elec_dip*BOHRS_TO_A*AU_TO_EV; ! for units of eV
-
+        
         !!CALCULATE REACTION FIELD POTENTIAL
         f=f-2.d0*(scaled(1)*dipx+scaled(2)*dipy+scaled(3)*dipz); !in eV
         !f=f-(scaled(1)*dipx+scaled(2)*dipy+scaled(3)*dipz); !in eV test
-
 return
 end
 

@@ -155,19 +155,21 @@ if (ihop>0) then
                 call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%tz_scratch(1), &
                         qm2ds%tz_scratch(qm2ds%Nb**2+1))
                 call packing(qm2ds%Nb,qm2ds%tz_scratch(1),qm2ds%rhoTZ,'s')
-		!Calculate derivatives
+		!calculate derivatives
                 if((potential_type.eq.3).and.(ceps.gt.1.0)) then !ceps.gt.1.0 because of singularity in cosmo subroutines
-                  !qscnet(:,1)=0.d0; qdenet(:,1)=0.d0; !Clear Nuclear Charges
-                  call cosmo_1_tri(qm2ds%rhoTZ) !fill solvent charges
-                  call cosmo_1_tri_2(qm2ds%rhoT,density2,charges2,acharges2) !fill solute charges 
-                  call diegrd2(dxyz1_test,density2,charges2,acharges2) !derivative
+                  qscnet(:,1)=0.d0; qdenet(:,1)=0.d0; !Clear Nuclear Charges
+                  !qm2ds%rhoT=1.d0; qm2ds%rhoTZ=1.d0
+                  !call cosmo_1_tri(qm2ds%rhoTZ) !fill solvent charges
+                  !call cosmo_1_tri_2(qm2ds%rhoT,density2,charges2,acharges2) !fill solute charges 
+                  !call diegrd2(dxyz1_test,density2,charges2,acharges2) !derivative
 !Test
-            !call cosmo_1_tri(qm2ds%rhoT) !Fill Electronic Charges
-            !call diegrd(dxyz1_test); !derivative
+            call cosmo_1_tri(qm2ds%rhoT) !Fill Electronic Charges
+            call diegrd(dxyz1_test); !derivative
 !End test
                 elseif(potential_type.eq.2) then
                   !call rcnfldgrad2(dxyz1_test,qm2ds%rhoTZ,qm2ds%rhoT,qm2ds%nb,.true.)
                     qscnet(:,1)=0.d0; qdenet(:,1)=0.d0; !Clear Nuclear Charges
+                    
                     call cosmo_1_tri(qm2ds%rhoT) !Fill Electronic Chrages
                     call diegrd(dxyz1_test); !derivative
                 endif
@@ -176,7 +178,7 @@ if (ihop>0) then
                         do j=1,3
                                 dxyz((i-1)*3+j)=dxyz((i-1)*3+j)-dxyz1(j,i)*KCAL_TO_EV
                         end do
-                        write(6,*)i,-dxyz1(:,i)*KCAL_TO_EV
+                        write(6,*)'VE',i,-dxyz1(:,i)*KCAL_TO_EV
                 end do
 	endif
 

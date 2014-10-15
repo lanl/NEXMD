@@ -125,6 +125,7 @@ subroutine calc_cosmo_2()
                 call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
 
                 !Calculate Solvent Potential
+                v_solvent_difdens=0.d0
                 if(potential_type.eq.3) then !COSMO
                 	call VxiM(qm2ds%eta,v_solvent_difdens);
                 elseif(potential_type.eq.2) then!ONSAGER
