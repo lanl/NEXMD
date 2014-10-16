@@ -119,7 +119,7 @@ if((solvent_model.eq.2).or.(solvent_model.eq.4)) then !VE and SS solvent
         call commutator(tmp,qm2ds%tz_scratch(1),qm2ds%Nb,qm2ds%eta_tz,.false.) !second commutator with transpose
         call site2mof (qm2ds%Nb,qm2ds%vhf,qm2ds%eta_tz,qm2ds%tz_scratch(1), &
                         qm2ds%tz_scratch(qm2ds%Nb**2+1))
-        qm2ds%xi_tz=qm2ds%xi_tz-qm2ds%tz_scratch(1:qm2ds%Nb**2)
+        qm2ds%xi_tz=qm2ds%xi_tz-1.0*qm2ds%tz_scratch(1:qm2ds%Nb**2)
 endif
 !!***********END SOLVENT BLOCK 
 
