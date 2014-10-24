@@ -144,7 +144,6 @@ if (ihop>0) then
          dxyz1=0.d0; dxyz1_test=0.d0; charges2=0.d0; acharges2=0.d0; density2=0.d0
         !Vertical Excitation Model
 	if(solvent_model.eq.2) then
-		write(6,*)'WARNING:DERIVATIVES FOR VERTICAL EXCITATION MODEL ARE INCORRECT'
 		!Get unrelaxed difference density matrix for the state to calculate derivatives for
 		call calc_rhotz(ihop, qm2ds%rhoT,.false.)
       		call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoT,qm2ds%tz_scratch(1), &
@@ -160,13 +159,9 @@ if (ihop>0) then
                 if((potential_type.eq.3).and.(ceps.gt.1.0)) then !ceps.gt.1.0 because of singularity in cosmo subroutines
                   qscnet(:,1)=0.d0; qdenet(:,1)=0.d0; !Clear Nuclear Charges
                   !qm2ds%rhoT=1.d0; qm2ds%rhoTZ=1.d0
-                  !call cosmo_1_tri(qm2ds%rhoTZ) !fill solvent charges
-                  !call cosmo_1_tri_2(qm2ds%rhoT,density2,charges2,acharges2) !fill solute charges 
-                  !call diegrd2(dxyz1_test,density2,charges2,acharges2) !derivative
-!Test
-            call cosmo_1_tri(qm2ds%rhoT) !Fill Electronic Charges
-            call diegrd(dxyz1_test); !derivative
-!End test
+                  call cosmo_1_tri(qm2ds%rhoTZ) !fill solvent charges
+                  call cosmo_1_tri_2(qm2ds%rhoT,density2,charges2,acharges2) !fill solute charges 
+                  call diegrd2(dxyz1_test,density2,charges2,acharges2) !derivative
                 elseif(potential_type.eq.2) then
                   call rcnfldgrad2(dxyz1_test,qm2ds%rhoTZ,qm2ds%rhoT,qm2ds%nb,.false.)
                 endif
