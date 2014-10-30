@@ -2,7 +2,7 @@
    !***** Ground state and output parameters
    qm_theory='AM1', !Integral type
    scfconv=1.0d-8, !Ground state scf convergence criteria
-   verbosity=4, !
+   verbosity=3, !
    printcharges=0, ! Mulliken charges for ground state
    printdipole=2, ! (0) None, (1) Transition (2) Relaxed, and Unrelaxed
    printbondorders=0, ! (0) No, (1) Yes
@@ -31,13 +31,13 @@
    cosmo_scf_ftol=1.0d-5, !State specific scf tolerance
    cosmo_scf_maxcyc=500, !State specific scf iterations
    linmixparam=1.0, !linear mixing parameter
-   doZ=.false. !Do relaxed (.true.) or unrelaxed (.false) density in state specific cosmo
+   doZ=.true. !Do relaxed (.true.) or unrelaxed (.false) density in state specific cosmo
    EF=0, !(1) Electric field in ground and excited state, (2) Electric field in excited state only
    Ex=0, !Electric Field Vector X 
    Ez=0, !Electric Field Vector Z
    Ey=0, !Electric Field Vector Y
    onsager_radius=2.5, ! Onsager radius
-   solvent_model=0, ! (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi 
+   solvent_model=2, ! (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi 
    potential_type=2, ! (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
 &endqmmm
 
@@ -51,7 +51,7 @@
    !***** Dynamics parameters
    time_init=0.d0, ! initial time, fs
    time_step=0.5, !time step, fs
-   n_class_steps=100, !number of classical steps
+   n_class_steps=0, !number of classical steps
    n_quant_steps=0, ! number of quantum steps for each classical step
    moldyn_deriv_flag=1, ! 0-none, 1-analyt, 2-numeric
    num_deriv_step=1.d-5, ! displacement for numerical derivatives, A

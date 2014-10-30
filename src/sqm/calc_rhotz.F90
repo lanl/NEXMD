@@ -17,7 +17,10 @@ subroutine calc_rhotz(state, rhoTZ,calc_Z)
 	else
 		solvent_model_1=0
 	endif
-
+        if(solvent_model.eq.4) then
+                write(6,*)'State Specific Z-Vector Equation'
+                solvent_model_1=98 !use vertical excitation LZ if state specific
+        endif
         tmp=0.d0
         one=1
     !KGB mdflag -> 
@@ -108,7 +111,7 @@ endif
 !************END GAS PHASE BLOCK
 
 !!***********BEGIN SOLVENT BLOCK
-if((solvent_model.eq.2).or.(solvent_model.eq.4)) then !VE and SS solvent
+if((solvent_model.eq.2)) then !VE and SS solvent
 ! Add [[[xi^+, V_S(T_k)], xi],rho] + cc by calculating commutators but is there a
 ! better way?
         call getmodef(2*qm2ds%Np*qm2ds%Nh,qm2ds%Mx,qm2ds%Np,qm2ds%Nh, &

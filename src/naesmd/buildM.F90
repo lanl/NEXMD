@@ -62,6 +62,22 @@ subroutine Lxi_testing(u1,v1,solvent_model)
         endif
         tmp=2*tmp !linear response
         call VxiM_end(qm2ds%eta,tmp); !Add selected potential to vacuum correlation
+   elseif (solvent_model.eq.98) then !For Z-vector equation with SS model
+        tmp=0.d0;
+        if (potential_type.eq.3) then !COSMO Potential
+        call VxiM(qm2ds%xi,tmp);
+        elseif (potential_type.eq.2) then !Onsager Potential
+        call rcnfld(tmp,qm2ds%xi,qm2ds%nb)
+        elseif (potential_type.eq.1) then !testing
+        do i=1,qm2ds%nb; tmp(i,i)=qm2ds%eta(qm2ds%nb*(i-1)+i); enddo !double diag vac correlation
+        endif
+        tmp=2*tmp !linear response
+        call VxiM_end(qm2ds%eta,tmp); !Add selected potential to vacuumcorrelation
+        !Commutator is performed here for State Specific Solvent Routines
+        tmp=0.d0;
+        call commutator(qm2ds%xi,v_solvent_difdens,qm2ds%Nb,tmp,.false.)
+        tmp=tmp
+        call VxiM_end(qm2ds%eta,tmp)
    elseif(solvent_model.eq.2) then ! 2: State Specific [V_s(T+Z),xi]
         !Commutator is performed here for State Specific Solvent Routines
         call commutator(qm2ds%xi,v_solvent_difdens,qm2ds%Nb,tmp,.false.)
