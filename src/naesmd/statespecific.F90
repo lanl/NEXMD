@@ -36,6 +36,27 @@ subroutine calc_excsolven(energy)
         !write(6,*)energy,qm2ds%xi(1),qm2ds%v2(1,qmmm_struct%state_of_interest)
 end subroutine
 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+!Calculate the potential operator [[xi^T,V(X)],xi] for Z-vector and/or
+! GS calculations
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+subroutine calc_xicommutator(V_potential)
+        use qm2_davidson_module
+        use qmmm_module,only:qm2_struct,qmmm_struct
+        implicit none
+        _REAL_ ::V_potential(qm2ds%Nb,qm2ds%Nb),tmp(qm2ds%Nb,qm2ds%Nb)
+        _REAL_ :: tmp2(qm2ds%Nb,qm2ds%Nb),tmp3(qm2ds%Nb,qm2ds%Nb)
+        integer :: n
+        tmp=0.d0; tmp2=0.d0
+        call getmodef(2*qm2ds%Np*qm2ds%Nh,qm2ds%Mx,qm2ds%Np,qm2ds%Nh, &
+                        qmmm_struct%state_of_interest,qm2ds%v0,qm2ds%eta_tz)
+        call mo2sitef (qm2ds%Nb,qm2ds%vhf,qm2ds%eta_tz,tmp2, &
+                        qm2ds%tz_scratch(qm2ds%Nb**2+1))
+        call commutator(tmp2,V_potential,qm2ds%Nb,tmp,.true.)!inner commutator
+        call commutator(tmp,tmp2,qm2ds%Nb,V_potential,.false.) !second commutator with transpose
+        !call site2mof (qm2ds%Nb,qm2ds%vhf,V_potential,qm2ds%tz_scratch(1), &
+        !                qm2ds%tz_scratch(qm2ds%Nb**2+1))
+end subroutine
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !STATE SPECIFIC ROUTINE FOR [V_s(T+Z),xi] WHICH IS ADDED TO [F(xi),rho_0] in
 !DAVIDSON
@@ -64,6 +85,8 @@ subroutine calc_cosmo_2()
                 verbosity_save=qm2ds%verbosity;
                 qm2ds%verbosity=0; !turn off davidson output
 	endif
+        
+        !write(6,*)'V_solvent_difdens=',v_solvent_difdens
 
         call davidson(); !initial call in gas phase
         e0_0 = qm2ds%e0(qmmm_struct%state_of_interest)
@@ -116,6 +139,7 @@ subroutine calc_cosmo_2()
                                 f0=f1
                         end if
                 end do
+                !i=qmmm_struct%state_of_interest !for switching back at the end
                 qmmm_struct%state_of_interest=soi_temp
                 lastxi=qm2ds%v0(:,qmmm_struct%state_of_interest) !Store old transition densities
 

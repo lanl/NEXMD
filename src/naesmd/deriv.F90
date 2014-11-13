@@ -170,7 +170,7 @@ if (ihop>0) then
                         do j=1,3
                                 dxyz((i-1)*3+j)=dxyz((i-1)*3+j)-dxyz1(j,i)*KCAL_TO_EV
                         end do
-                        write(6,*)'VE',i,dxyz1(:,i)*KCAL_TO_EV
+                        !write(6,*)'VE',i,dxyz1(:,i)*KCAL_TO_EV
                 end do
 	endif
 
