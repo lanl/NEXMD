@@ -89,6 +89,8 @@ subroutine calc_cosmo_2()
         !write(6,*)'V_solvent_difdens=',v_solvent_difdens
 
         call davidson(); !initial call in gas phase
+        if(qm2ds%verbosity.eq.5) call outDavidson()
+
         e0_0 = qm2ds%e0(qmmm_struct%state_of_interest)
         e0_k = e0_0
         allocate(lastxi(qm2ds%Nrpa))
@@ -126,6 +128,7 @@ subroutine calc_cosmo_2()
 
         do k=1,cosmo_scf_maxcyc
                 call davidson(); !Calculate new excited states
+                if(qm2ds%verbosity.eq.5) call outDavidson()
 
                 ! Tracking the transition density (checking for crossing)
                 f0=abs(ddot(qm2ds%Ncis,lastxi,1,qm2ds%v0(1,soi_temp),1))

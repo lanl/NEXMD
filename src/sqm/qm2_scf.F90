@@ -1787,12 +1787,11 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
                         call unpacking(qm2ds%nb,temp,qm2ds%tz_scratch(1),'s')
                         call calc_xicommutator(qm2ds%tz_scratch(1))
                         call packing(qm2ds%nb,qm2ds%tz_scratch(1),qm2ds%eta,'s')
-                        write(6,*)'sym',qm2ds%tz_scratch(1:qm2ds%Nb*3)
-                        fock_matrix=fock_matrix+qm2ds%eta(1:qm2ds%Nb*(qm2ds%Nb+1)/2)
+                        !write(6,*)'sym',qm2ds%tz_scratch(1:qm2ds%Nb*3)
+                        fock_matrix=fock_matrix+0.5*qm2ds%eta(1:qm2ds%Nb*(qm2ds%Nb+1)/2)
                         call packing(qm2ds%Nb,qm2ds%tz_scratch(1),qm2ds%eta,'u')
-                        write(6,*)'anti',qm2ds%tz_scratch(1:qm2ds%Nb*3)
-                        !stop
-                        fock_matrix=fock_matrix+qm2ds%eta(1:qm2ds%Nb*(qm2ds%Nb+1)/2)
+                        !write(6,*)'anti',qm2ds%tz_scratch(1:qm2ds%Nb*3)
+                        fock_matrix=fock_matrix+0.5*qm2ds%eta(1:qm2ds%Nb*(qm2ds%Nb+1)/2)
                 else if (potential_type.eq.2) then !USE ONSAGER
                         qm2ds%tz_scratch=0.d0; temp=0.d0; qm2ds%eta=0.d0
                         call rcnfld_fock(fock_matrix,den_matrix+rhotzpacked_k,qm2_struct%norbs);

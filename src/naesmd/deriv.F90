@@ -38,7 +38,7 @@
    else
       ihop=qmmm_struct%state_of_interest !otherwise use the current state of interest
    endif  
- 
+
 if(qmmm_struct%ideriv.eq.1) then !analytical derivatives
 
 !CALCULATE GROUND STATE DERIVATIVES !At some point these should be saved and

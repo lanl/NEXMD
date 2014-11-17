@@ -229,13 +229,14 @@ program MD_Geometry
 
       write(6,*)"Begin classical propagation step #",imdqt
       tfemto=tfemto+dtmdqt*convtf
-         qmmm_struct%state_of_interest=ihop;
-         qmmm_struct%num_qmmm_calls=imdqt !for BO dynamics
+      qmmm_struct%num_qmmm_calls=imdqt !for BO dynamics
 
       if(state.eq.'exct'.and.ibo.ne.1) then
+         qmmm_struct%state_of_interest=ihop;
          call verlet1(sim)
       else
          call verlet(sim)
+        ihop=qmmm_struct%state_of_interest
          !if(state.eq.'exct'.and.ibo.eq.1) then !It's calling this twice for no reason
          !  call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs,rx,ry,rz)
          !end if

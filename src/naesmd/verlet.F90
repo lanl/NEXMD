@@ -10,6 +10,7 @@ module verlet_module
    use langevin_temperature
    use communism
    use cosmo_C,only:solvent_model
+   use qmmm_module, only:qmmm_struct
    implicit none
 
    contains
@@ -133,6 +134,7 @@ module verlet_module
    else
    	call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs)
    endif
+   ihop=qmmm_struct%state_of_interest
 
    call cpu_time(t_start)
    call deriv(sim,ihop)

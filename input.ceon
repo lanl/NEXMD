@@ -2,9 +2,9 @@
    !***** Ground state and output parameters
    qm_theory='AM1', !Integral type
    scfconv=1.0d-8, !Ground state scf convergence criteria
-   verbosity=1, !
+   verbosity=5, !
    printcharges=0, ! Mulliken charges for ground state
-   printdipole=2, ! (0) None, (1) Transition (2) Relaxed, and Unrelaxed
+   printdipole=0, ! (0) None, (1) Transition (2) Relaxed, and Unrelaxed
    printbondorders=0, ! (0) No, (1) Yes
    density_predict=0, !(0) None, (1) Reversible MD, (2) XL-BOMD
    K=3, ! XL-BOMD Parameter (3-9)
@@ -37,7 +37,7 @@
    Ez=0, !Electric Field Vector Z
    Ey=0, !Electric Field Vector Y
    onsager_radius=2, ! Onsager radius
-   solvent_model=2, ! (0) None, (1) LR, (2) VE, (3) VE with Xi, (4) SS, (5) SS with Xi 
+   solvent_model=4, ! (0) None, (1) LR, (2) VE, (3) VE with Xi, (4) SS, (5) SS with Xi 
    potential_type=3, ! (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
 &endqmmm
 
@@ -73,7 +73,7 @@
    heating_steps_per_degree=100, ! number of steps per degree during heating
 
    !***** Output & Log parameters
-   verbosity=3, ! output verbosity (0-minimal, 3-highest) 
+   verbosity=0, ! output verbosity (0-minimal, 3-highest) 
    out_count_init=0, ! the initial count for output files
    out_data_steps=1, ! number of steps to write data
    out_coords_steps=10, ! number of steps to write the restart file
