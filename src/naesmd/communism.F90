@@ -402,7 +402,7 @@ module communism
 	   call naesmd2qmmm_r(sim)
 	   !sim%dav%Mx = sim%excN
 	   !sim%dav%mdflag=2
-	if (solvent_model.eq.4) then !solvent model that loops over ground state
+	if ((solvent_model.eq.4).or.(solvent_model.eq.5)) then !solvent model that loops over ground state
 		call calc_cosmo_4(sim)
 	else
 		call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs)
@@ -596,7 +596,7 @@ subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
 		is_error = status_flag < 0
 		if ( .not. is_error ) then
 			call qmmm2naesmd_r(sim_pass)
-			if(solvent_model.eq.4) then
+			if((solvent_model.eq.4).or.(solvent_model.eq.5)) then
 				call calc_cosmo_4(sim_pass)
 			else
 				call do_sqm_davidson_update(sim_pass)   
@@ -624,7 +624,7 @@ subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
 				write(6,'(a,i5,f16.6,a,f16.6,a)') 'xmin ', xmin_iter, energy,' eV', grms, ' eV/A'
 			end if
 			call qmmm2naesmd_r(sim_pass);
-                        if(solvent_model.eq.4) then
+                        if((solvent_model.eq.4).or.(solvent_model.eq.5)) then
                                 call calc_cosmo_4(sim_pass)
                         else
                                 call do_sqm_davidson_update(sim_pass)
@@ -644,7 +644,7 @@ subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
 		if ( .not. is_error ) then
 			call qmmm2naesmd_r(sim_pass);
 			call do_sqm_davidson_update(sim_pass);
-                        if(solvent_model.eq.4) then
+                        if((solvent_model.eq.4).or.(solvent_model.eq.5)) then
                                 call calc_cosmo_4(sim_pass)
                         else
                                 call do_sqm_davidson_update(sim_pass)

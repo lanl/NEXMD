@@ -1776,22 +1776,25 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
   ! Add Solvent Model or Electric Field
   ! SOLVENT MODEL BLOCK !!JAB
    if ((solvent_model.gt.0).and.(solvent_model.ne.10)) then !IF USING SOLVENT MODEL
-        if ((solvent_model.eq.4).and.(.not.qmmm_struct%qm_mm_first_call)) then !Use the excited state density matrix
+        if (((solvent_model.eq.4).or.(solvent_model.eq.5)).and.(.not.qmmm_struct%qm_mm_first_call)) then !Use the excited state density matrix
                 if (potential_type.eq.3) then !USE COSMO
                         call addfck(fock_matrix,den_matrix+rhotzpacked_k);
-                        !write(6,*)'fock_matrix',fock_matrix
-                        !Variational term
+                        if(solvent_model.eq.5) then !Variational term
                         qm2ds%tz_scratch=0.d0; temp=0.d0; qm2ds%eta=0.d0
 			call addfck(temp,den_matrix);
                         !write(6,*)'normal:',temp
+                        !write(6,*)'Op1:',temp
                         call unpacking(qm2ds%nb,temp,qm2ds%tz_scratch(1),'s')
                         call calc_xicommutator(qm2ds%tz_scratch(1))
                         call packing(qm2ds%nb,qm2ds%tz_scratch(1),qm2ds%eta,'s')
                         !write(6,*)'sym',qm2ds%tz_scratch(1:qm2ds%Nb*3)
-                        fock_matrix=fock_matrix+0.5*qm2ds%eta(1:qm2ds%Nb*(qm2ds%Nb+1)/2)
+                        !write(6,*)'Den:',den_matrix
+                        !write(6,*)'Op2:',qm2ds%eta
+                        fock_matrix=fock_matrix+qm2ds%eta(1:nfock)
                         call packing(qm2ds%Nb,qm2ds%tz_scratch(1),qm2ds%eta,'u')
                         !write(6,*)'anti',qm2ds%tz_scratch(1:qm2ds%Nb*3)
-                        fock_matrix=fock_matrix+0.5*qm2ds%eta(1:qm2ds%Nb*(qm2ds%Nb+1)/2)
+                        fock_matrix=fock_matrix+qm2ds%eta(1:nfock)
+                        endif
                 else if (potential_type.eq.2) then !USE ONSAGER
                         qm2ds%tz_scratch=0.d0; temp=0.d0; qm2ds%eta=0.d0
                         call rcnfld_fock(fock_matrix,den_matrix+rhotzpacked_k,qm2_struct%norbs);

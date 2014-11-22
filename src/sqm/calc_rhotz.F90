@@ -114,11 +114,11 @@ if((solvent_model.eq.2).or.(solvent_model.eq.4)) then !VE and SS solvent
 ! currently does T_k and xi_n so it will only work for the state of interest
         call getmodef(2*qm2ds%Np*qm2ds%Nh,qm2ds%Mx,qm2ds%Np,qm2ds%Nh, &
                         state,qm2ds%v0,qm2ds%eta_tz)
-        call mo2sitef (qm2ds%Nb,qm2ds%vhf,qm2ds%eta_tz,qm2ds%tz_scratch(1), &
+        call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%eta_tz,qm2ds%tz_scratch(1), &
                         qm2ds%tz_scratch(qm2ds%Nb**2+1))
         call commutator(qm2ds%tz_scratch(1),v_solvent_difdens,qm2ds%Nb,tmp,.true.)!inner commutator
         call commutator(tmp,qm2ds%tz_scratch(1),qm2ds%Nb,qm2ds%eta_tz,.false.) !second commutator with transpose
-        call site2mof (qm2ds%Nb,qm2ds%vhf,qm2ds%eta_tz,qm2ds%tz_scratch(1), &
+        call site2mof(qm2ds%Nb,qm2ds%vhf,qm2ds%eta_tz,qm2ds%tz_scratch(1), &
                         qm2ds%tz_scratch(qm2ds%Nb**2+1))
         qm2ds%xi_tz=qm2ds%xi_tz-1.0*qm2ds%tz_scratch(1:qm2ds%Nb**2)
 endif

@@ -129,7 +129,7 @@ module verlet_module
    !do i=1,npot
       !vmdqt(i)=sim%naesmd%Omega(i)+vgs
    !end do
-   if(solvent_model.eq.4) then
+   if((solvent_model.eq.4).or.(solvent_model.eq.5)) then
         call calc_cosmo_4(sim)
    else
    	call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs)

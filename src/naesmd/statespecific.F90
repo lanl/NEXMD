@@ -6,9 +6,9 @@ subroutine solvent_scf_and_davidson_test();
   use cosmo_C
   implicit none
 
-  if ((solvent_model.eq.3).or.(solvent_model.eq.5)) then
+  if (solvent_model.eq.3) then
     call calc_cosmo_3();
-  else if ((solvent_model.eq.2)) then
+  else if (solvent_model.eq.2) then
     call calc_cosmo_2();
   end if
   return
@@ -43,19 +43,13 @@ end subroutine
 subroutine calc_xicommutator(V_potential)
         use qm2_davidson_module
         use qmmm_module,only:qm2_struct,qmmm_struct
+        use Cosmo_C,only:xi_k
         implicit none
         _REAL_ ::V_potential(qm2ds%Nb,qm2ds%Nb),tmp(qm2ds%Nb,qm2ds%Nb)
-        _REAL_ :: tmp2(qm2ds%Nb,qm2ds%Nb),tmp3(qm2ds%Nb,qm2ds%Nb)
-        integer :: n
-        tmp=0.d0; tmp2=0.d0
-        call getmodef(2*qm2ds%Np*qm2ds%Nh,qm2ds%Mx,qm2ds%Np,qm2ds%Nh, &
-                        qmmm_struct%state_of_interest,qm2ds%v0,qm2ds%eta_tz)
-        call mo2sitef (qm2ds%Nb,qm2ds%vhf,qm2ds%eta_tz,tmp2, &
-                        qm2ds%tz_scratch(qm2ds%Nb**2+1))
-        call commutator(tmp2,V_potential,qm2ds%Nb,tmp,.true.)!inner commutator
-        call commutator(tmp,tmp2,qm2ds%Nb,V_potential,.false.) !second commutator with transpose
-        !call site2mof (qm2ds%Nb,qm2ds%vhf,V_potential,qm2ds%tz_scratch(1), &
-        !                qm2ds%tz_scratch(qm2ds%Nb**2+1))
+        tmp=0.d0;
+        !write(6,*)xi_k(1:10)
+        call commutator(xi_k,V_potential,qm2ds%Nb,tmp,.true.)!inner commutator
+        call commutator(tmp,xi_k,qm2ds%Nb,V_potential,.false.) !second commutator with transpose
 end subroutine
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !STATE SPECIFIC ROUTINE FOR [V_s(T+Z),xi] WHICH IS ADDED TO [F(xi),rho_0] in
@@ -200,7 +194,7 @@ subroutine calc_cosmo_4(sim_target)
         use communism
         use qmmm_module,only:qm2_struct,qmmm_struct,qmmm_nml;
         use cosmo_C, only: EF,v_solvent_difdens, rhotzpacked_k,cosmo_scf_ftol,cosmo_scf_maxcyc,doZ,potential_type, &
-                                linmixparam
+                                linmixparam,xi_k
         use constants, only : ZERO,AU_TO_EV
 
         implicit none
@@ -245,7 +239,13 @@ subroutine calc_cosmo_4(sim_target)
         call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
         call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
 	call packing(qm2ds%nb,qm2ds%eta,rhotzpacked_k, 's')
-        
+       
+        !Get transition density k in AO
+        call getmodef(2*qm2ds%Np*qm2ds%Nh,qm2ds%Mx,qm2ds%Np,qm2ds%Nh, &
+                        qmmm_struct%state_of_interest,qm2ds%v0,qm2ds%eta_tz)
+        call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%eta_tz,xi_k, &
+                        qm2ds%tz_scratch(qm2ds%Nb**2+1))
+ 
         !Linear mixing
         rhotzpacked_k=linmixparam*rhotzpacked_k 
 
@@ -285,6 +285,12 @@ subroutine calc_cosmo_4(sim_target)
                 call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
                 call packing(qm2ds%nb,qm2ds%eta,rhotzpacked_k, 's')
                 rhotzpacked_k=linmixparam*rhotzpacked_k+(1.0-linmixparam)*rhotzpacked_k_temp
+
+                !get transition density k in AO
+                call getmodef(2*qm2ds%Np*qm2ds%Nh,qm2ds%Mx,qm2ds%Np,qm2ds%Nh, &
+                        qmmm_struct%state_of_interest,qm2ds%v0,qm2ds%eta_tz)
+                call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%eta_tz,xi_k, &
+                        qm2ds%tz_scratch(qm2ds%Nb**2+1))
 
                 e0_k_1 = e0_k !Save last transition energy
                 e0_k = (sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0)*AU_TO_EV;
