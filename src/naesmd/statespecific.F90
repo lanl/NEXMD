@@ -36,6 +36,28 @@ subroutine calc_excsolven(energy)
         !write(6,*)energy,qm2ds%xi(1),qm2ds%v2(1,qmmm_struct%state_of_interest)
 end subroutine
 
+!This subroutine calculates the solvent energy Tr(PV_S(T_k))
+!It has to be called after all variables have been determined in other
+!subroutines
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+subroutine calc_gssolven(energy)
+        use qm2_davidson_module
+        use qmmm_module,only:qm2_struct
+        use cosmo_C, only : rhotzpacked_k
+        implicit none
+	integer n
+        _REAL_ :: energy,ddot
+
+        energy=0.d0
+	qm2ds%tz_scratch=0.d0
+        call addfck(qm2ds%tz_scratch(1),qm2_struct%den_matrix);
+        call unpacking(qm2ds%Nb,qm2ds%tz_scratch(1),qm2ds%tz_scratch(qm2ds%Nb**2+1),'s')
+        call unpacking(qm2ds%Nb,rhotzpacked_k,qm2ds%tz_scratch(1),'s')
+
+        !Calculate dot product, scale to eV
+        energy=ddot(qm2ds%Nb**2,qm2ds%tz_scratch(qm2ds%Nb**2+1),1,qm2ds%tz_scratch(1),1)
+end subroutine
+
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !Calculate the potential operator [[xi^T,V(X)],xi] for Z-vector and/or
 ! GS calculations
@@ -209,7 +231,7 @@ subroutine calc_cosmo_4(sim_target)
         integer verbosity_save,verbosity_save2,verbosity_save3,EFsave
 	logical verbosity_save4
         integer i,k,p,h,soi_temp
-        _REAL_ e0_0,e0_k,e0_k_1,f0,f1,ddot,energy;
+        _REAL_ e0_0,e0_k,e0_k_1,f0,f1,ddot,energy,gsenergy;
         logical calc_Z;
         _REAL_,allocatable:: rhotzpacked_k_temp(:),lastxi(:),xi_k_temp(:)
 
@@ -300,7 +322,6 @@ subroutine calc_cosmo_4(sim_target)
                         qmmm_struct%state_of_interest,qm2ds%v0,qm2ds%eta_tz)
                 call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%eta_tz,xi_k, &
                         qm2ds%tz_scratch(qm2ds%Nb**2+1))
-                write(6,*)xi_k
                 xi_k=linmixparam*xi_k+(1.0-linmixparam)*xi_k_temp
                  
                 e0_k_1 = e0_k !Save last transition energy
@@ -339,10 +360,12 @@ subroutine calc_cosmo_4(sim_target)
                 endif
 
         call calc_excsolven(energy)
+	call calc_gssolven(gsenergy)
         if(qm2ds%verbosity>0) then
                 write(6,*)
                 write(6,*)'Final Results of Equilibrium State Specific Solvent Calculation'
-                write(6,"('    Nonlinear term energy=',e20.10,' eV')") energy
+                write(6,"('    GS nonlinear term energy=',e20.10,' eV')") gsenergy
+                write(6,"('    ES nonlinear term energy=',e20.10,' eV')") energy
                 write(6,*)'-------------------------------------------------'
 	        call do_sqm_davidson_update(sim) !to include in the groundstate
         end if

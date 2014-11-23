@@ -2,7 +2,7 @@
    !***** Ground state and output parameters
    qm_theory='AM1', !Integral type
    scfconv=1.0d-8, !Ground state scf convergence criteria
-   verbosity=5, !
+   verbosity=1, !
    printcharges=0, ! Mulliken charges for ground state
    printdipole=2, ! (0) None, (1) Transition (2) Relaxed, and Unrelaxed
    printbondorders=0, ! (0) No, (1) Yes
@@ -25,12 +25,12 @@
    grms_tol=0.01, !Tolerance in eV/A (derivatives)
 
    !***** Solvent models
-   ceps=2; !Dielectric constant
+   ceps=100; !Dielectric constant
    index_of_refraction=100; !Dielectric constant for excitation currently useless
    nspa=42; !approximate number of cavity points per atom
    cosmo_scf_ftol=1.0d-5, !State specific scf tolerance
    cosmo_scf_maxcyc=500, !State specific scf iterations
-   linmixparam=0.5, !linear mixing parameter
+   linmixparam=1, !linear mixing parameter
    doZ=.false. !Do relaxed (.true.) or unrelaxed (.false) density in state specific cosmo
    EF=0, !(1) Electric field in ground and excited state, (2) Electric field in excited state only
    Ex=0, !Electric Field Vector X 
@@ -45,8 +45,8 @@
    !***** General parameters
    rnd_seed=1, ! seed for the random number generator
    bo_dynamics_flag=1, ! 0-non-BO, 1-BO
-   exc_state_init=1, ! initial excited state (0 - ground state)
-   n_exc_states_propagate=2, ! number of excited states
+   exc_state_init=2, ! initial excited state (0 - ground state)
+   n_exc_states_propagate=3, ! number of excited states
 
    !***** Dynamics parameters
    time_init=0.d0, ! initial time, fs
@@ -81,8 +81,13 @@
 &endmoldyn
 
 &coord
-  6 1.1 0.0 0.0
-  8 0.0 0.0 0.0
+6         -6.11369        1.41871       -0.02019
+6         -6.11420       -0.07281        0.04865
+8         -5.06629       -0.69091       -0.04810
+1         -7.15058        1.80063        0.08614
+1         -5.70399        1.74913       -0.99764
+1         -5.48918        1.83200        0.79932
+1         -7.04640       -0.61116        0.18492
 &endcoord
 
 &veloc
