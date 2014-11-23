@@ -211,7 +211,7 @@ subroutine calc_cosmo_4(sim_target)
         integer i,k,p,h,soi_temp
         _REAL_ e0_0,e0_k,e0_k_1,f0,f1,ddot,energy;
         logical calc_Z;
-        _REAL_,allocatable:: rhotzpacked_k_temp(:),lastxi(:)
+        _REAL_,allocatable:: rhotzpacked_k_temp(:),lastxi(:),xi_k_temp(:)
 
 	sim=>sim_target
 
@@ -232,7 +232,8 @@ subroutine calc_cosmo_4(sim_target)
         qmmm_nml%printcharges=.false.;
         endif
 
-        allocate(rhotzpacked_k_temp(qm2ds%nb*(qm2ds%nb+1)/2),lastxi(qm2ds%Nrpa))        
+        allocate(rhotzpacked_k_temp(qm2ds%nb*(qm2ds%nb+1)/2),lastxi(qm2ds%Nrpa),&
+                xi_k_temp(qm2ds%nb**2))        
 
         qmmm_struct%qm_mm_first_call = .false.
         qm2ds%eta(:)=0.d0 !Clearing
@@ -251,9 +252,10 @@ subroutine calc_cosmo_4(sim_target)
                         qmmm_struct%state_of_interest,qm2ds%v0,qm2ds%eta_tz)
         call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%eta_tz,xi_k, &
                         qm2ds%tz_scratch(qm2ds%Nb**2+1))
- 
+         
         !Linear mixing
         rhotzpacked_k=linmixparam*rhotzpacked_k 
+        xi_k=linmixparam*xi_k
 
         !Write header for SCF iterations
         write(6,*)'Start Equilibrium State Specific Solvent Calculation'
@@ -293,12 +295,14 @@ subroutine calc_cosmo_4(sim_target)
                 rhotzpacked_k=linmixparam*rhotzpacked_k+(1.0-linmixparam)*rhotzpacked_k_temp
 
                 !get transition density k in AO
+                xi_k_temp=xi_k
                 call getmodef(2*qm2ds%Np*qm2ds%Nh,qm2ds%Mx,qm2ds%Np,qm2ds%Nh, &
                         qmmm_struct%state_of_interest,qm2ds%v0,qm2ds%eta_tz)
                 call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%eta_tz,xi_k, &
                         qm2ds%tz_scratch(qm2ds%Nb**2+1))
-                !write(6,*)'Xi_k',xi_k
-                
+                write(6,*)xi_k
+                xi_k=linmixparam*xi_k+(1.0-linmixparam)*xi_k_temp
+                 
                 e0_k_1 = e0_k !Save last transition energy
                 e0_k = (sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0)*AU_TO_EV;
 
