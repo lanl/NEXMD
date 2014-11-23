@@ -1790,10 +1790,10 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
                         !write(6,*)'sym',qm2ds%tz_scratch(1:qm2ds%Nb*3)
                         !write(6,*)'Den:',den_matrix
                         !write(6,*)'Op2:',qm2ds%eta
-                        fock_matrix=fock_matrix+qm2ds%eta(1:nfock)
+                        fock_matrix=fock_matrix+0.25*qm2ds%eta(1:nfock)
                         call packing(qm2ds%Nb,qm2ds%tz_scratch(1),qm2ds%eta,'u')
                         !write(6,*)'anti',qm2ds%tz_scratch(1:qm2ds%Nb*3)
-                        fock_matrix=fock_matrix+qm2ds%eta(1:nfock)
+                        fock_matrix=fock_matrix+0.25*qm2ds%eta(1:nfock)
                         endif
                 else if (potential_type.eq.2) then !USE ONSAGER
                         qm2ds%tz_scratch=0.d0; temp=0.d0; qm2ds%eta=0.d0

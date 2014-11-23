@@ -45,11 +45,17 @@ subroutine calc_xicommutator(V_potential)
         use qmmm_module,only:qm2_struct,qmmm_struct
         use Cosmo_C,only:xi_k
         implicit none
+        integer :: n
         _REAL_ ::V_potential(qm2ds%Nb,qm2ds%Nb),tmp(qm2ds%Nb,qm2ds%Nb)
         tmp=0.d0;
-        !write(6,*)xi_k(1:10)
+        !do n=1,qm2ds%Nb
+        !        write(6,*)'V1',n,V_potential(n,:)
+        !enddo
         call commutator(xi_k,V_potential,qm2ds%Nb,tmp,.true.)!inner commutator
         call commutator(tmp,xi_k,qm2ds%Nb,V_potential,.false.) !second commutator with transpose
+        !do n=1,qm2ds%Nb
+        !        write(6,*)'V2',n,V_potential(n,:)
+        !enddo
 end subroutine
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !STATE SPECIFIC ROUTINE FOR [V_s(T+Z),xi] WHICH IS ADDED TO [F(xi),rho_0] in
@@ -291,7 +297,8 @@ subroutine calc_cosmo_4(sim_target)
                         qmmm_struct%state_of_interest,qm2ds%v0,qm2ds%eta_tz)
                 call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%eta_tz,xi_k, &
                         qm2ds%tz_scratch(qm2ds%Nb**2+1))
-
+                !write(6,*)'Xi_k',xi_k
+                
                 e0_k_1 = e0_k !Save last transition energy
                 e0_k = (sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0)*AU_TO_EV;
 
