@@ -249,7 +249,8 @@ subroutine qm2_hcore_qmqm(COORD,H,W,ENUCLR)
    endif
 
    if (EF.eq.1) then !USE CONSTANT ELECTRIC FIELD
-        call efield_nuc(enuclr);
+        write(6,*)'No nuclear electric field TEST'
+        !call efield_nuc(enuclr);
    end if
 
 !DEBUG      call print ('One-electron matrix',H,.true.)

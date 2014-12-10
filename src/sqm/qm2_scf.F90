@@ -1870,7 +1870,11 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
   ! that one can compute the energy as is done here for
   ! HF and semiempirical methods.  ...not very general.
   call timer_start(TIME_QMMMENERGYSCFELEC)
-  qmmm_struct%elec_eng = qm2_HELECT(qm2_struct%NORBS-1,den_matrix,hmatrix,fock_matrix);
+  !qmmm_struct%elec_eng = qm2_HELECT(qm2_struct%NORBS-1,den_matrix,hmatrix,fock_matrix);
+!TESTING JAB
+  temp=0.d0
+  qmmm_struct%elec_eng = qm2_HELECT(qm2_struct%NORBS-1,den_matrix,temp,fock_matrix);
+
 #ifndef SQM
   if (qmmm_nml%qm_ewald>0) call  qm_ewald_correct_ee(qmmm_struct%elec_eng, &
        & qmewald%mmpot, den_matrix)
