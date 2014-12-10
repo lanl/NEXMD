@@ -688,6 +688,7 @@ subroutine efield_fock(f,n)
         use qmmm_module,only:qm2_struct,qmmm_struct;
         use cosmo_C, only: fepsi,Ex,Ey,Ez
         use constants, only : one, BOHRS_TO_A, AU_TO_EV
+        use qm2_davidson_module
         implicit none;
         integer n,j,k;
         _REAL_ f(n*(n+1)/2);
@@ -695,12 +696,20 @@ subroutine efield_fock(f,n)
         _REAL_ dip(3,n*(n+1)/2);
         _REAL_ efv(3)
 	_REAL_ origin(3,qmmm_struct%nquant_nlink)
+        _REAL_ ddot
+        _REAL_ GSDM(n,n),mu_gr(3)
         tmp=0.d0
         dip=0.d0
 	origin=0.d0;
         call centercoords(origin)
         !!GET ELEC DIP MATRIX
         call get_dipole_matrix(qmmm_struct%qm_coords-origin, dip) !dipole in au * A
+        call unpacking(qm2ds%Nb,qm2_struct%den_matrix,GSDM,'s')
+        do k=1,3  ! loop over x,y,z
+                call unpacking(qm2ds%Nb,dip(k,:),qm2ds%eta_scratch,'s')
+                mu_gr(k)=ddot(qm2ds%Nb**2,GSDM,1,qm2ds%eta_scratch,1)/BOHRS_TO_A
+        enddo
+        write(6,*) 'Electronic Dipole:',mu_gr
         !!CALCULATE ELECTRIC FIELD POTENTIAL OPERATOR
         tmp=Ex*dip(1,:)+Ey*dip(2,:)+Ez*dip(3,:); !now in hartree
 	!write(6,*)'Efield Operator in Subroutine'
@@ -727,6 +736,9 @@ subroutine efield_nuc(enuclr)
         call centercoords(origin)
         !!GET NUC DIP MAT and CALC NUC DIP
         call get_nuc_dip(qmmm_struct%qm_coords-origin, dip);
+        write(6,*)'Nuclear Dipole:',sum(dip(1,:))/BOHRS_TO_A, &
+                sum(dip(2,:))/BOHRS_TO_A, &
+                sum(dip(3,:))/BOHRS_TO_A
         nuc_dip(1)=Ex*sum(dip(1,:))!NUCLEAR DIPOLE IN a.u. * angstrom 
         nuc_dip(2)=Ey*sum(dip(2,:)) !Now in hartree
         nuc_dip(3)=Ez*sum(dip(3,:))

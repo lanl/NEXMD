@@ -303,6 +303,7 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
 
       !Add the nuclear-nuclear energy into the scf energy
       escf = escf + (qmmm_struct%enuclr_qmqm+qmmm_struct%enuclr_qmmm)*EV_TO_KCAL
+        write(6,*)'Testing',escf,qmmm_struct%enuclr_qmqm,qmmm_struct%enuclr_qmmm
       if (qmmm_opnq%useOPNQ) then
          escf=escf+(qmmm_opnq%vdWCorrection+qmmm_opnq%OPNQCorrection)*EV_TO_KCAL
       end if

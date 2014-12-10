@@ -45,7 +45,7 @@
    !***** General parameters
    rnd_seed=1, ! seed for the random number generator
    bo_dynamics_flag=1, ! 0-non-BO, 1-BO
-   exc_state_init=2, ! initial excited state (0 - ground state)
+   exc_state_init=1, ! initial excited state (0 - ground state)
    n_exc_states_propagate=3, ! number of excited states
 
    !***** Dynamics parameters

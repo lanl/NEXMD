@@ -1790,10 +1790,10 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
                         !write(6,*)'sym',qm2ds%tz_scratch(1:qm2ds%Nb*3)
                         !write(6,*)'Den:',den_matrix
                         !write(6,*)'Op2:',qm2ds%eta
-                        fock_matrix=fock_matrix+0.5*qm2ds%eta(1:nfock)
+                        fock_matrix=fock_matrix-qm2ds%eta(1:nfock)
                         call packing(qm2ds%Nb,qm2ds%tz_scratch(1),qm2ds%eta,'u')
                         !write(6,*)'anti',qm2ds%tz_scratch(1:qm2ds%Nb*3)
-                        fock_matrix=fock_matrix+0.5*qm2ds%eta(1:nfock)
+                        fock_matrix=fock_matrix-qm2ds%eta(1:nfock)
                         endif
                 else if (potential_type.eq.2) then !USE ONSAGER
                         qm2ds%tz_scratch=0.d0; temp=0.d0; qm2ds%eta=0.d0
@@ -1820,6 +1820,7 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
    endif
    if (EF.eq.1) then !USE CONSTANT ELECTRIC FIELD
 	temp=0.d0
+        !write(6,*)'Testing no efield in Fock matrix'
         call efield_fock(temp,qm2_struct%norbs);
 	fock_matrix=fock_matrix+2.d0*temp
    end if  
@@ -1870,10 +1871,7 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
   ! that one can compute the energy as is done here for
   ! HF and semiempirical methods.  ...not very general.
   call timer_start(TIME_QMMMENERGYSCFELEC)
-  !qmmm_struct%elec_eng = qm2_HELECT(qm2_struct%NORBS-1,den_matrix,hmatrix,fock_matrix);
-!TESTING JAB
-  temp=0.d0
-  qmmm_struct%elec_eng = qm2_HELECT(qm2_struct%NORBS-1,den_matrix,temp,fock_matrix);
+  qmmm_struct%elec_eng = qm2_HELECT(qm2_struct%NORBS-1,den_matrix,hmatrix,fock_matrix);
 
 #ifndef SQM
   if (qmmm_nml%qm_ewald>0) call  qm_ewald_correct_ee(qmmm_struct%elec_eng, &

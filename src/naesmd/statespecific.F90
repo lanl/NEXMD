@@ -201,7 +201,7 @@ subroutine calc_cosmo_2()
         if(qm2ds%verbosity>0) then
                 write(6,*)
                 write(6,*)'Final Results of Equilibrium Vertical Excitation Solvent Calculation '
-                write(6,"('    Nonlinear term energy=',e20.10,' eV')") energy
+                write(6,"('  ES nonlinear term energy=',e20.10,' eV')") energy
                 !write(6,*)' i,   e0(i),    ferr(i),      ftol0'
                 write(6,*)'-------------------------------------------------'
                 !do k=1,qm2ds%Mx
