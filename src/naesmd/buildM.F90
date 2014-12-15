@@ -85,6 +85,10 @@ subroutine Lxi_testing(u1,v1,solvent_model)
    elseif(solvent_model.eq.3) then !3: State Specific [V_s(xi),xi]
         call commutator(v_solvent_xi,qm2ds%xi,qm2ds%Nb,tmp,.false.)
         call VxiM_end(qm2ds%eta,tmp)
+   elseif(solvent_model.eq.5) then !5: Variational State Specific term
+        call commutator(qm2ds%xi,v_solvent_difdens,qm2ds%Nb,tmp,.false.)
+        call VxiM_end(qm2ds%eta,tmp)
+        write(6,*)'Adding variational term in Liouville operator'
    elseif(solvent_model.eq.6) then!6: Solve nonlinear Liouville equation testing
         call commutator(qm2ds%eta,qm2ds%xi,qm2ds%Nb,tmp,.false.)
         call VxiM_end(qm2ds%eta,tmp)

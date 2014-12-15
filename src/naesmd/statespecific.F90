@@ -141,6 +141,7 @@ subroutine calc_cosmo_2()
         v_solvent_difdens=linmixparam*v_solvent_difdens
 
         !Write header for SCF iterations
+        write(6,*)
         write(6,*)'Start Equilibrium Vertical Excitation Solvent Calculation'
         write(6,*)
         write(6,*)'SCF Step,  Excitation Energy,    DeltaE_sol,      abs(error),error,  COSMO SCF Tolerance '
@@ -222,7 +223,7 @@ subroutine calc_cosmo_4(sim_target)
         use communism
         use qmmm_module,only:qm2_struct,qmmm_struct,qmmm_nml;
         use cosmo_C, only: EF,v_solvent_difdens, rhotzpacked_k,cosmo_scf_ftol,cosmo_scf_maxcyc,doZ,potential_type, &
-                                linmixparam,xi_k
+                                linmixparam,xi_k,v_solvent_difdens,solvent_model
         use constants, only : ZERO,AU_TO_EV
 
         implicit none
@@ -233,7 +234,8 @@ subroutine calc_cosmo_4(sim_target)
         integer i,k,p,h,soi_temp
         _REAL_ e0_0,e0_k,e0_k_1,f0,f1,ddot,energy,gsenergy;
         logical calc_Z;
-        _REAL_,allocatable:: rhotzpacked_k_temp(:),lastxi(:),xi_k_temp(:)
+        _REAL_,allocatable:: rhotzpacked_k_temp(:),lastxi(:), &
+                                xi_k_temp(:),vsol_temp(:,:)
 
 	sim=>sim_target
 
@@ -257,6 +259,8 @@ subroutine calc_cosmo_4(sim_target)
         allocate(rhotzpacked_k_temp(qm2ds%nb*(qm2ds%nb+1)/2),lastxi(qm2ds%Nrpa),&
                 xi_k_temp(qm2ds%nb**2))        
 
+        if(solvent_model.eq.5) allocate(vsol_temp(qm2ds%nb,qm2ds%nb))
+
         qmmm_struct%qm_mm_first_call = .false.
         qm2ds%eta(:)=0.d0 !Clearing
 	rhotzpacked_k=0.d0
@@ -268,7 +272,23 @@ subroutine calc_cosmo_4(sim_target)
         call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
         call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
 	call packing(qm2ds%nb,qm2ds%eta,rhotzpacked_k, 's')
-       
+
+        qm2ds%eta(:) = 0.d0 !Clearing
+        
+        !Term for variational formulation
+        if(solvent_model.eq.5) then !need solvent potential for excitation
+                v_solvent_difdens=0.d0;
+                !Calculate Solvent Potential
+                if(potential_type.eq.3) then !COSMO
+                        call VxiM(qm2ds%eta,v_solvent_difdens);
+                elseif(potential_type.eq.2) then!ONSAGER
+                        call rcnfld(v_solvent_difdens,qm2ds%eta,qm2ds%Nb)
+                elseif(potential_type.eq.1) then!Straight Correlation
+                        call Vxi(qm2ds%eta,v_solvent_difdens)
+                endif
+                v_solvent_difdens=linmixparam*v_solvent_difdens
+        endif
+
         !Get transition density k in AO
         call getmodef(2*qm2ds%Np*qm2ds%Nh,qm2ds%Mx,qm2ds%Np,qm2ds%Nh, &
                         qmmm_struct%state_of_interest,qm2ds%v0,qm2ds%eta_tz)
@@ -280,7 +300,9 @@ subroutine calc_cosmo_4(sim_target)
         xi_k=linmixparam*xi_k
 
         !Write header for SCF iterations
+        write(6,*)
         write(6,*)'Start Equilibrium State Specific Solvent Calculation'
+        if(solvent_model.eq.5) write(6,*)'******Using Varational Formulation******'
         write(6,*)
         write(6,*)'SCF Step,  Excited State Energy,    DeltaE_sol,      abs(error),error,  COSMO SCF Tolerance '
         write(6,*)'--------------------------------------------------'
@@ -315,6 +337,22 @@ subroutine calc_cosmo_4(sim_target)
                 call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
                 call packing(qm2ds%nb,qm2ds%eta,rhotzpacked_k, 's')
                 rhotzpacked_k=linmixparam*rhotzpacked_k+(1.0-linmixparam)*rhotzpacked_k_temp
+                
+                !Potential excitation calculation in  variational formulation
+                if(solvent_model.eq.5) then
+                        vsol_temp=v_solvent_difdens
+                        !Calculate Solvent Potential
+                        v_solvent_difdens=0.d0
+                        if(potential_type.eq.3) then !COSMO
+                                call VxiM(qm2ds%eta,v_solvent_difdens);
+                        elseif(potential_type.eq.2) then!ONSAGER
+                                call rcnfld(v_solvent_difdens,qm2ds%eta,qm2ds%Nb)
+                        elseif(potential_type.eq.0) then!Straight Correlation
+                                call Vxi(qm2ds%eta,v_solvent_difdens)
+                        endif
+                        v_solvent_difdens=linmixparam*v_solvent_difdens &
+                                        +(1.0-linmixparam)*vsol_temp
+                endif
 
                 !get transition density k in AO
                 xi_k_temp=xi_k
