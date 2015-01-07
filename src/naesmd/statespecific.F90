@@ -206,7 +206,8 @@ subroutine calc_cosmo_2()
                 if  (abs( e0_k - e0_k_1 )< cosmo_scf_ftol) exit; !Check for convergence
                !if  (abs( xi_abs_dif_sum )< cosmo_scf_ftol) exit; !Check for convergence
                 if  (k==cosmo_scf_maxcyc) then
-                        write(6,*) 'WARNING! ***SOLVENT SCF REACHED MAXIMUM ITERATIONS WITHOUT CONVERGENCE***'
+                        write(6,*) '***SOLVENT SCF REACHED MAXIMUM ITERATIONS WITHOUT CONVERGENCE***'
+                        stop
                 endif
         end do
         

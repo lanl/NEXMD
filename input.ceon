@@ -28,7 +28,7 @@
    ceps=10; !Dielectric constant
    index_of_refraction=100; !Dielectric constant for excitation currently useless
    nspa=100; !approximate number of cavity points per atom
-   cosmo_scf_ftol=1.0d-5, !State specific scf tolerance
+   cosmo_scf_ftol=1.0d-3, !State specific scf tolerance
    cosmo_scf_maxcyc=500, !State specific scf iterations
    linmixparam=0.3, !linear mixing parameter
    doZ=.false. !Do relaxed (.true.) or unrelaxed (.false) density in state specific cosmo

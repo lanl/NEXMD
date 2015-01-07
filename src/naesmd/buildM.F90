@@ -713,7 +713,6 @@ subroutine efield_fock(f,n)
                 call unpacking(qm2ds%Nb,dip(k,:),qm2ds%eta_scratch,'s')
                 mu_gr(k)=ddot(qm2ds%Nb**2,GSDM,1,qm2ds%eta_scratch,1)/BOHRS_TO_A
         enddo
-        write(6,*) 'Electronic Dipole:',mu_gr
         !!CALCULATE ELECTRIC FIELD POTENTIAL OPERATOR
         tmp=Ex*dip(1,:)+Ey*dip(2,:)+Ez*dip(3,:); !now in hartree
 	!write(6,*)'Efield Operator in Subroutine'
