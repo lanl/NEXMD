@@ -122,10 +122,6 @@ subroutine calc_cosmo_2()
         ! Tracking the transition density (checking for crossing) from last time
         ! step during dynamics
         if(.not.qmmm_struct%qm_mm_first_call) then
-                write(6,*)'lastxi:',lastxi
-                write(6,*)'sumlastxi:',sum(lastxi**2)
-                write(6,*)'newxi:',qm2ds%v0(:,soi_temp)
-                write(6,*)'sumnewxi:',sum(qm2ds%v0(:,soi_temp)**2)
                 f0=abs(ddot(qm2ds%Ncis,lastxi,1,qm2ds%v0(1,soi_temp),1))
                 do i=1,qm2ds%Mx
                         f1=abs(ddot(qm2ds%Ncis,lastxi,1,qm2ds%v0(1,i),1))
