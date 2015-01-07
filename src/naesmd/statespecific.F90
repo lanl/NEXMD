@@ -92,12 +92,9 @@ subroutine calc_cosmo_2()
         use constants, only : ZERO
 
         implicit none
-        integer INFO;
-        integer LWORK;
-        _REAL_, DIMENSION(:), allocatable:: WORK,lastxi
-        _REAL_ :: OPTIMALSIZE;
+        _REAL_ :: lastxi(qm2ds%Nrpa)
 	_REAL_ :: xi_1(qm2ds%Nb**2),vsol_temp(qm2ds%Nb,qm2ds%Nb)
-        integer verbosity_save,EFsave
+        integer verbosity_save
         integer i,k,p,h,soi_temp
         _REAL_ e0_0,e0_k,e0_k_1,xi_abs_dif_sum,f0,f1,ddot,energy
         logical calc_Z;
@@ -107,22 +104,50 @@ subroutine calc_cosmo_2()
                 verbosity_save=qm2ds%verbosity;
                 qm2ds%verbosity=0; !turn off davidson output
 	endif
+
+        !Write header for SCF iterations
+        write(6,*)
+        write(6,*)'Start Equilibrium Vertical Excitation Solvent Calculation'
+        write(6,*)
+        write(6,*)'SCF Step,  Excitation Energy,    DeltaE_sol, abs(error), error,  COSMO SCF Tolerance '
+        write(6,*)'--------------------------------------------------'
         
-        !write(6,*)'V_solvent_difdens=',v_solvent_difdens
+        if(.not.qmmm_struct%qm_mm_first_call) then !From previous time step in dynamics
+                lastxi=qm2ds%v0(:,qmmm_struct%state_of_interest) !Get old transition density
+        endif
+        soi_temp=qmmm_struct%state_of_interest
 
         call davidson(); !initial call in gas phase
+
+        ! Tracking the transition density (checking for crossing) from last time
+        ! step during dynamics
+        if(.not.qmmm_struct%qm_mm_first_call) then
+                write(6,*)'lastxi:',lastxi
+                write(6,*)'sumlastxi:',sum(lastxi**2)
+                write(6,*)'newxi:',qm2ds%v0(:,soi_temp)
+                write(6,*)'sumnewxi:',sum(qm2ds%v0(:,soi_temp)**2)
+                f0=abs(ddot(qm2ds%Ncis,lastxi,1,qm2ds%v0(1,soi_temp),1))
+                do i=1,qm2ds%Mx
+                        f1=abs(ddot(qm2ds%Ncis,lastxi,1,qm2ds%v0(1,i),1))
+                        if(qm2ds%verbosity.gt.4) write(6,*)'Overlaps=',f0,f1
+                        if(f0<f1) then
+                                write(6,*)'State crossing',qmmm_struct%state_of_interest,' to ',i
+                                write(6,*)'New state of interest is',i
+                                soi_temp=i
+                                f0=f1
+                        endif
+                enddo
+                qmmm_struct%state_of_interest=soi_temp
+        endif
+        lastxi=qm2ds%v0(:,qmmm_struct%state_of_interest) !Store old transition density
+
         if(qm2ds%verbosity.eq.5) call outDavidson()
 
+        !Initialize some variables
         e0_0 = qm2ds%e0(qmmm_struct%state_of_interest)
         e0_k = e0_0
-        allocate(lastxi(qm2ds%Nrpa))
-        lastxi=qm2ds%v0(:,qmmm_struct%state_of_interest) !Store old transition densities
-        soi_temp=qmmm_struct%state_of_interest !Initialize tracking variable
-
-        Calc_Z = doZ
-
-        qmmm_struct%qm_mm_first_call = .false.
-
+        Calc_Z = doZ !Input to calculate Z or not
+        qmmm_struct%qm_mm_first_call = .false. !After first iteration it's false
         qm2ds%eta(:) = 0.d0 !Clearing
 
         call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
@@ -139,13 +164,6 @@ subroutine calc_cosmo_2()
         call Vxi(qm2ds%eta,v_solvent_difdens)
         endif
         v_solvent_difdens=linmixparam*v_solvent_difdens
-
-        !Write header for SCF iterations
-        write(6,*)
-        write(6,*)'Start Equilibrium Vertical Excitation Solvent Calculation'
-        write(6,*)
-        write(6,*)'SCF Step,  Excitation Energy,    DeltaE_sol,      abs(error),error,  COSMO SCF Tolerance '
-        write(6,*)'--------------------------------------------------'
 
         !Begin SCF loop
 
@@ -196,7 +214,7 @@ subroutine calc_cosmo_2()
                 endif
         end do
         
-        qmmm_struct%qm_mm_first_call = .true.
+        !qmmm_struct%qm_mm_first_call = .true.
         if(qm2ds%verbosity.eq.0) qm2ds%verbosity=verbosity_save
         call calc_excsolven(energy)
         if(qm2ds%verbosity>0) then
