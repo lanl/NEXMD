@@ -216,8 +216,9 @@ program MD_Geometry
 ! Open output files
 !****************************************
    call open_output(ibo,tfemto,imdtype,lprint)
-       
+   ihop=qmmm_struct%state_of_interest !FIXME change ihop to module variable 
    if(tfemto.eq.0.d0) call writeoutputini(sim,ibo,yg,lprint)
+
 !
 !--------------------------------------------------------------------
 !

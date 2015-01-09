@@ -2,7 +2,7 @@
    !***** Ground state and output parameters
    qm_theory='AM1', !Integral type
    scfconv=1.0d-8, !Ground state scf convergence criteria
-   verbosity=3, !
+   verbosity=1, !
    printcharges=0, ! Mulliken charges for ground state
    printdipole=2, ! (0) None, (1) Transition (2) Relaxed, and Unrelaxed
    printbondorders=0, ! (0) No, (1) Yes
@@ -30,10 +30,10 @@
    nspa=100; !approximate number of cavity points per atom
    cosmo_scf_ftol=1.0d-3, !State specific scf tolerance
    cosmo_scf_maxcyc=500, !State specific scf iterations
-   linmixparam=0.3, !linear mixing parameter
+   linmixparam=1, !linear mixing parameter
    doZ=.false. !Do relaxed (.true.) or unrelaxed (.false) density in state specific cosmo
    EF=0, !(1) Electric field in ground and excited state, (2) Electric field in excited state only
-   Ex=0, !Electric Field Vector X 
+   Ex=0, !Electric Field Vector X
    Ez=0, !Electric Field Vector Z
    Ey=0, !Electric Field Vector Y
    onsager_radius=2, ! Onsager radius
@@ -45,13 +45,13 @@
    !***** General parameters
    rnd_seed=1, ! seed for the random number generator
    bo_dynamics_flag=1, ! 0-non-BO, 1-BO
-   exc_state_init=1, ! initial excited state (0 - ground state)
-   n_exc_states_propagate=3, ! number of excited states
+   exc_state_init=3, ! initial excited state (0 - ground state)
+   n_exc_states_propagate=6, ! number of excited states
 
    !***** Dynamics parameters
    time_init=0.d0, ! initial time, fs
    time_step=0.05, !time step, fs
-   n_class_steps=500, !number of classical steps
+   n_class_steps=100, !number of classical steps
    n_quant_steps=0, ! number of quantum steps for each classical step
    moldyn_deriv_flag=1, ! 0-none, 1-analyt, 2-numeric
    num_deriv_step=1.d-5, ! displacement for numerical derivatives, A
@@ -81,17 +81,27 @@
 &endmoldyn
 
 &coord
-6         -6.11369        1.41871       -0.02019
-6         -6.11420       -0.07281        0.04865
-8         -5.06629       -0.69091       -0.04810
-1         -7.15058        1.80063        0.08614
-1         -5.70399        1.74913       -0.99764
-1         -5.48918        1.83200        0.79932
-1         -7.04640       -0.61116        0.18492
+    6        -5.439458    2.171012   -0.000926
+    6        -5.481902    0.769064   -0.002932
+    6        -4.222476    2.835421   -0.000177
+    6        -3.019732    2.109151   -0.001426
+    6        -3.078515    0.701237   -0.003240
+    6        -4.312615    0.023297   -0.004073
+    1        -4.325953   -1.076235   -0.005833
+    1        -6.455789    0.255474   -0.003693
+    1        -6.379090    2.742810    0.000022
+    1        -4.184995    3.935323    0.001401
+    6        -1.723913    2.742761   -0.000747
+    6        -0.609545    1.984035   -0.002217
+    6        -0.698471    0.530184   -0.004493
+    8        -1.949636   -0.089571   -0.004551
+    1        -1.682851    3.843273    0.000845
+    1         0.407848    2.401347   -0.001729
+    8         0.204783   -0.304882   -0.006151
 &endcoord
 
 &veloc
-   1.0   1.0   1.0
+   0.0   0.0   0.0
    0.0   0.0   0.0
 &endveloc
 

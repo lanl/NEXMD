@@ -24,13 +24,11 @@ contains
    character*1000 cardmopac
 
    double precision yg(2*nmaxpot) 
-   double precision energy !!JAB Testing VE model
+   double precision energy !!JAB VE model
 
-   !Testing VE gradient !!JAB
    if(solvent_model.eq.2) then
         call calc_excsolven(energy) !JAB Test
         vmdqt(ihop)=vmdqt(ihop)-0.5*energy/feVmdqt !JAB Test
-        !write(98,*)'VE Energy:',energy
    endif
 
    kin=0.0d0
@@ -282,11 +280,9 @@ contains
    data first /.true./
    save first
 
-   !Testing VE gradient !!JAB
    if(solvent_model.eq.2) then
         call calc_excsolven(energy) !JAB Test
         vmdqt(ihop)=vmdqt(ihop)-0.5*energy/feVmdqt !JAB Test
-        !write(98,*)'VE Energy:',energy
    endif
 
    if(state.eq.'fund') then
