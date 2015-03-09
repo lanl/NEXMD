@@ -89,7 +89,6 @@ if((solvent_model.eq.1)) then !Linear Response solvent
         elseif (potential_type.eq.2) then !Onsager Potential
         	call rcnfld(tmp,qm2ds%tz_scratch(1),qm2ds%nb);
         end if
-		tmp=2.d0*tmp
         call VxiM_end(qm2ds%eta_tz,tmp); !Add selected potential to vacuum correlation
 endif
 !!************END SOLVENT BLOCK
