@@ -59,8 +59,7 @@ subroutine Lxi_testing(u1,v1,solvent_model)
         elseif (potential_type.eq.1) then !testing
         do i=1,qm2ds%nb; tmp(i,i)=qm2ds%eta(qm2ds%nb*(i-1)+i); enddo !double diag vac correlation
         endif
-        c
-ll VxiM_end(qm2ds%eta,tmp); !Add selected potential to vacuum correlation
+        call VxiM_end(qm2ds%eta,tmp); !Add selected potential to vacuum correlation
    elseif (solvent_model.eq.98) then !For Z-vector equation with SS model
         tmp=0.d0;
         if (potential_type.eq.3) then !COSMO Potential
