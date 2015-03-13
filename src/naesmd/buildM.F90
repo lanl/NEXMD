@@ -59,7 +59,8 @@ subroutine Lxi_testing(u1,v1,solvent_model)
         elseif (potential_type.eq.1) then !testing
         do i=1,qm2ds%nb; tmp(i,i)=qm2ds%eta(qm2ds%nb*(i-1)+i); enddo !double diag vac correlation
         endif
-        call VxiM_end(qm2ds%eta,tmp); !Add selected potential to vacuum correlation
+        c
+ll VxiM_end(qm2ds%eta,tmp); !Add selected potential to vacuum correlation
    elseif (solvent_model.eq.98) then !For Z-vector equation with SS model
         tmp=0.d0;
         if (potential_type.eq.3) then !COSMO Potential
@@ -95,8 +96,10 @@ subroutine Lxi_testing(u1,v1,solvent_model)
         call unpacking(qm2ds%Nb,tmp,tmp2,'s'); tmp=0.d0;
         call commutator(tmp2,qm2ds%xi,qm2ds%Nb,tmp,.false.)
         call VxiM_end(qm2ds%eta,tmp)
+   elseif(solvent_model.eq.7) then!7: combined LR and VE
    endif
-   
+  
+ 
    !add constant electric field potential [V_E,xi]
    if(EF.eq.2) then!Constant Electric Field in ES onl
         tmp=0.d0; tmp2=0.d0
