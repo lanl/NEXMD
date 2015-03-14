@@ -1,5 +1,6 @@
 Bugs
 1.) Possible error: profiler logs calc_rhotz instead of packing/unpacking subroutines possibly because of compilation error from 'Entry'.
+2.) Excited state energies do not print during iterative solvent calculations instead is junk
 
 Optimization
 1.) Use 2-electron integrals from ground state for excited state

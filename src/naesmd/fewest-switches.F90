@@ -8,34 +8,18 @@ use random
 use langevin_temperature
 use communism
 use naesmd_space_module
-
 implicit none
-
 contains
-! modified by Seba
-!        SUBROUTINE evalhop(sim, lprint,ido,neq,tini,tend,toldivprk, &
-!      param,Na,Nm,atm2,mdflag, &
-!      d,E0,Omega,fosc,yg,cross)
    subroutine evalhop(sim, lprint,ido,neq,tini,tend,toldivprk, &
       param,Na,Nm,atm2,mdflag, &
       d,E0,Omega,fosc,yg,cross,idocontrol,ibo)
-! end modified by Seba
-
-
    implicit none
-
    type(simulation_t), pointer :: sim
-! modified by Seba
-!        integer Na,Nm,lprint,cross
    integer Na,Nm,lprint,ibo
-! end modified by Seba
    integer mdflag
    integer k,i,j,icheck,itest,ini,ihopavant
    integer atm2(Na)
-! modified by Seba
-!        integer ido,neq
    integer ido,neq,idocontrol
-! end modified by Seba
    include 'sizes'
    _REAL_ tini,tend,toldivprk,param(50)
    _REAL_ g(nmaxpot),gacum(nmaxpot)
@@ -48,50 +32,30 @@ contains
    include 'common'
    _REAL_ yg(nmaxpot),ytemp,ytemp2
    _REAL_ t_start,t_finish 
-
-! modified by Seba
    integer cross(nmaxpot),crosstemp,ininonhop
-! end modified by Seba
-
    external fcn
-
-! modified by Seba
-! idocontrol is used to no empty the propagator twice
    idocontrol=0
-! end modified by Seba
-
 ! conthop is used to not allow crossing inmediately after a hop
 ! conthop2 is used to not allow hoppings inmediately after a crossing
-
    if(conthop.eq.3) conthop=0
    if(conthop2.eq.3) conthop2=0
    if(conthop.gt.0) conthop=conthop+1
    if(conthop2.gt.0) conthop2=conthop2+1
    if(conthop.gt.0) then
-! modified by Seba
-!          if(cross.eq.2) then
       if(cross(ihop).eq.2) then
-!         if(iordenhop.ne.ihopprev) conthop=0
             if(iordenhop(ihop).ne.ihopprev) conthop=0
-! end modified by Seba
       end if
    end if
-
-!        call random(iseedmdqt,iseedhop)
    iseedhop=rranf1(iseedmdqt)
-
    ihopavant=ihop
-
    eavant=vmdqtnew(ihop)
    do j=1,natom
       eavant=eavant+0.5d0*massmdqt(j)*(vx(j)**2+vy(j)**2+vz(j)**2)
    end do
-
    do j=1,npot
       g(j)=0.d0
       gacum(j)=0.d0
    end do
-
 ! g(j) is the probability to hop from the 
 ! current state to the state j
    do j=1,npot
@@ -100,7 +64,6 @@ contains
          if(g(j).lt.0.0d0) g(j)=0.0d0
       end if
    end do
-
    icheck=0
    do j=1,npot
       gacum(j)=0.0d0
@@ -110,52 +73,25 @@ contains
          end do
       end if
    end do
-!        write(103,888) tfemto,iseedhop,(gacum(j),j=1,npot)
-!        call flush(103)
-
    itest=0
    do j=1,npot
       if(j.ne.ihop) then
          if(iseedhop.le.gacum(j).and.itest.eq.0) then
-!              if (rranf1(iseedmdqt).le.gacum(j).and.itest.eq.0) THEN
             icheck=j
             itest=1
          end if
       end if
    end do
-!
-!**************************************************
-! modified by Seba
-
    crosstemp=cross(ihop)
-
-!*****************************************************************
-!*****************************************************************
-! added to consider adiabatic dynamics as dynamics without hops but crossings
-!        if(ibo.ne.1) then
-!*****************************************************************
-!*****************************************************************
-
-
-   !if(icheck.ne.0.and.cross.ne.2) then
    if(icheck.ne.0.and.cross(ihop).ne.2) then
-! end modified by Seba
-!        if(icheck.ne.0) then
-! ini is used in the veladjustment subroutine to evaluate if the
-! transition is classically forbiden
-!           print *, 'Check HOP from ',ihop,' to ', icheck
       ini=0
-!********************************************************
-! adjustment of velocities
-
+      ! adjustment of velocities
       if(conthop2.gt.0) then
          if(ihopprev.ne.icheck) conthop2=0
       end if
-
       if(conthop2.eq.0) then
          call veladjustment(sim, lprint,Na,Nm,atm2,mdflag, &
             icheck,ini,d,E0,Omega,fosc)
-
       if(lprint.ge.2) then
          write(33,*) tfemto,icheck,ini
          call flush(33)
@@ -163,104 +99,55 @@ contains
    else
       ini=1
    end if
-
    if(ini.eq.0) then
-!              write(31,*) 'salto ',tfemto,ihop, icheck
-!              call flush(31)
       ihop=icheck
-! after the hop, we reinicialize the variables
-
-
-               ! KGB
-               ! call deriv(Na,Nm,d,tfemto,E0, Omega)
       call naesmd2qmmm_r(sim)
-
       call cpu_time(t_start)
       call deriv(sim%deriv_forces,ihop)
       call cpu_time(t_finish)
       sim%time_deriv_took=sim%time_deriv_took+t_finish-t_start
-
-
-!                do j=1,natom
-!                   xx(j)=rx(j)
-!                   yy(j)=ry(j)
-!                   zz(j)=rz(j)
-!                enddo
-               !KGB
-               ! call ceo(Na,xx,yy,zz,atm2,npot,E0,Omega,fosc,mdflag)
       call do_sqm_davidson_update(sim,vmdqt=vmdqtnew,vgs=vgs)  
-
       if(decorhop.eq.1) then
          do j=1,npot
             yg(j)=0.0d0
-!                     call random(iseedmdqt,iseedhop)
-!                     yg(j+npot)=iseedhop
             yg(j+npot)=rranf1(iseedmdqt)
          end do
-
          yg(ihop)=1.d0
          ido=3
          call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
          ido=1
-! modified by Seba
          idocontrol=1
-! end modified by Seba
       end if
-
       conthop=1
-! ihopprev keep the value of the previous state from where we hop
-! in order to allow new hops for the next 2 steps only in case that
-! we do not want to hop again to the same state
-!            ihopprev=ihopavant
    end if
         endif
-
-! modified by Seba
-!        if(cross.eq.2.and.conthop.eq.0) then
    if(crosstemp.eq.2.and.conthop.eq.0) then
-! end modified by Seba
       conthop2=1
 ! ihopprev keep the value of the previous state from where we hop
 ! in order to allow new hops for the next 2 steps only in case that
 ! we do not want to hop again to the same state
       ihopprev=ihop
       ini=0
-! modified by Seba
-!            ihop=iordenhop
       ihop=iordenhop(ihop)
-! end modified by Seba
       icheck=ihop
 ! after the hop, we reinicialize the variables
-
-            ! KGB
-            ! call deriv(Na,Nm,d,tfemto,E0, Omega)
       call naesmd2qmmm_r(sim)
-
       call cpu_time(t_start)
       call deriv(sim%deriv_forces,ihop)
       call cpu_time(t_finish)
       sim%time_deriv_took=sim%time_deriv_took+t_finish-t_start
-
       do j=1,natom
          xx(j)=rx(j)
          yy(j)=ry(j)
          zz(j)=rz(j)
       end do
-
-            !KGB
       call do_sqm_davidson_update(sim,vmdqt=vmdqtnew,vgs=vgs)        
-
       ytemp=yg(ihopavant)
       ytemp2=yg(ihopavant+npot)
       yg(ihopavant)=yg(ihop)
       yg(ihopavant+npot)=yg(ihop+npot)
       yg(ihop)=ytemp
       yg(ihop+npot)=ytemp2
-! modified by Seba
-!            ido=3
-!            call divprk(ido,neq,fcn,tini,tend, &
-!      toldivprk,param,yg)
-!            ido=1
       if(idocontrol.eq.0) then
          ido=3
          call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
@@ -268,11 +155,8 @@ contains
          idocontrol=1
       end if
    end if
-
-! modified by Seba
 ! Evaluation of other crossings that do not involve the ihop state
 !*************************************************************
-
    ininonhop=1
    do i=1,npot
    if(i.lt.iorden(i).and.i.ne.ihopavant.and.i.ne.iorden(ihopavant)) then
@@ -294,45 +178,17 @@ contains
          end if
       end if
    end if
-
    enddo
-
-! end modified by Seba
-           
 ! Check the conservation of the total energy in the hop
 ! and recalculate the kin to be printed in writeoutput.f
-
    if(icheck.ne.0) then
-! modified by Seba
-!            if (ini.eq.0) then
       if(ini.eq.0.or.ininonhop.eq.0) then
-! end modified by Seba
          eapres=vmdqtnew(ihop)
          kin=0.0d0
          do j=1,natom
             kin=kin+massmdqt(j)*(vx(j)**2+vy(j)**2+vz(j)**2)/2
          end do
-
          eapres=eapres+kin
-! modified by Seba
-!               write(30,887) tfemto,cross,ihopavant,ihop,eavant,eapres
-!               call flush(30)
-!               if(cross.eq.0) then
-!                   write(103,887) tfemto,cross,ihopavant,ihop, &
-!      dabs(vmdqtnew(ihop)-vmdqtnew(ihopavant)) &
-!      ,dabs(scprreal(ihopavant,ihop)) &
-!      ,dabs(cadiabnew(ihopavant,ihop)) &
-!      ,dabs(cadiabnew(ihopavant,ihop))*dtmdqt/dfloat(nquantumreal)
-!                  call flush(103)
-!               endif
-!               if(cross.eq.2) then
-!                   write(103,887) tfemto,cross,ihopavant,ihop, &
-!      dabs(vmdqtnew(ihop)-vmdqtnew(ihopavant)) &
-!      ,dabs(scprreal(ihopavant,ihop)) &
-!      ,dabs(cadiabhop) &
-!      ,dabs(cadiabhop)*dtmdqt/dfloat(nquantumreal)
-!                  call flush(103)
-!               endif
          do j=1,npot
             if(j.ne.ihop) then
                if(j.lt.iorden(j)) then
@@ -348,30 +204,22 @@ contains
                end if
             end if
          end do
-! end modified by Seba
       end if
    end if
-
 !***********************************
 ! end analyze the hopping 
 !**********************************
-
 889   FORMAT(I3,10000(1X,F18.10))
 888   FORMAT(10000(1X,F18.10))
 887   FORMAT(F18.10,1X,I2,1X,I3,1X,I3,10000(1X,F18.10))
-
    return
    end subroutine
-
 ! At the point of hop, in general, the value of the potential energy in the new
 ! surface is different to the one in the older.
 ! In order to conserve the energy, we adjust the velocities
-
    subroutine veladjustment(sim, lprint,Na,Nm,atm2,mdflag,icheck,ini,d, &
       E0,Omega,fosc) 
-
    implicit none
-
    type(simulation_t),pointer::sim
    integer Na,Nm,lprint
    integer mdflag
@@ -388,31 +236,18 @@ contains
    include 'parH.par'
    real*8 Omega(Mx_M),fosc(Mx_M)
    include 'common'
-
 !********************************************************
 ! adjustment of velocities
 !********************************************************
-
 ! Added by ST: calculate here NAC <psi| d psi/dR> in one step:
 !   Current energy calculation
-         !KGB
-         ! call ceo(Na,xx,yy,zz,atm2,npot,E0,Omega,fosc,mdflag)
    call do_sqm_davidson_update(sim,vmdqt=vtemp,vgs=vgstemp)        
-
- 
 !    Feed here energies and wavefunctions and geometry, get back dij  
 ! if necessary here the signs of the CI coefficient matrix can be checked right here
-
 ! analytical calculation of nacR
-
    call nacR_analytic_wrap(sim, ihop, icheck, dij)
-       !call nacR_analytic(Na,Nm,d,xx,yy,zz,npot,Omega, &
-       !         mdflag,ihop,icheck,cmdqt,dij)
-         
 ! end of the calculation of the non-adiabatic coupling vector dij
-
 !*********************************
- 
    if(lprint.ge.1) then
       j=1
       do i=1,natom
@@ -421,41 +256,30 @@ contains
       end do
       call flush(29)
    end if
-
 ! calculation of the current energy
 ! and the velocities adjustment
-
    ihoptemp=icheck
-
    vicheck=vtemp(ihoptemp)
-
    alpha=vmdqtnew(ihop)-vicheck
-
    racine = 0.0d0
    !FIXME units dij vs units vxyz
-
    j=1
    do i=1,natom
       racine=racine+vx(i)*dij(j)+vy(i)*dij(j+1) &
          +vz(i)*dij(j+2)
-
       j=j+3
    end do
-
    racine=racine**2
-
    j=1
    do i=1,natom
       racine=racine+2.0d0*alpha/massmdqt(i) &
          *(dij(j)**2+dij(j+1)**2+dij(j+2)**2)
       j=j+3
    end do
-
    if(racine.le.0.0d0) then
       ini=1
       goto 4321
    end if
-
    ctehop1=0.0d0
    j=1
    do i=1,natom
@@ -463,9 +287,7 @@ contains
          +vx(i)*dij(j)+vy(i)*dij(j+1)+vz(i)*dij(j+2)
       j=j+3
    end do
-
    ctehop1=ctehop1+dsqrt(racine)
-
    dctehop1=0.d0
    j=1
    do i=1,natom
@@ -473,9 +295,7 @@ contains
         *(dij(j)**2+dij(j+1)**2+dij(j+2)**2)
       j=j+3
    end do
-
    ctehop1=ctehop1/dctehop1
-
    j=1
    do i=1,natom
       vx(i)=vx(i)-ctehop1*dij(j)/massmdqt(i)
@@ -483,16 +303,11 @@ contains
       vz(i)=vz(i)-ctehop1*dij(j+2)/massmdqt(i)
       j=j+3
    end do
-
 4321     continue
-
 !********************************************************
 ! end of adjustment of velocities
 !********************************************************
 889   format(10000(1x,f18.10))
-
    return
    end subroutine
-!
 end module
-!

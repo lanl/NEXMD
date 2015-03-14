@@ -42,13 +42,7 @@ program MD_Geometry
    include 'parH.par'
    include 'parvar.var'
 
-! modified by Seba############
-!   integer ido,neq
    integer ido,neq,idocontrol
-! end modified by Seba############
-! modified by Seba############
-!   integer cross
-! end modified by Seba############
    integer icheck
    integer Na,Nm,N1,N2,N3,ic0
    integer MM,i,j,k,n,m,im,im1,ia
@@ -58,8 +52,6 @@ program MD_Geometry
    real(8) fosc(Mx_M)
    real(8),target::Omega(Mx_M),E0 
    real(8),pointer::pOmega(:),pE0
-   !real*8 rranf,rrang,rranset,rranget
-   !real*8 rranf1
    real(8) xi,nu,c0,c1,c2,kT
    integer ither,win
    real(8) xx(Na_M),yy(Na_M),zz(Na_M)
@@ -104,16 +96,12 @@ program MD_Geometry
       therm_friction,rnd_seed,out_data_cube,verbosity,moldyn_deriv_flag, &
       quant_step_reduction_factor,decoher_e0,decoher_c,decoher_type 
 
-! added by Seba############
    integer cohertype
-! end added by Seba############
 
    include 'sizes'
 
    real(8) yg(2*nmaxpot) 
-! added by Seba############
    integer cross(nmaxpot),crosstot
-! end added by Seba############
 
    real(8)ctest,ctemp
    real(8) tempa,tempb
@@ -148,12 +136,18 @@ program MD_Geometry
    call init0_simulation(sim)
    call init_main()
 
-   !put derivative variables into module
+   !Put derivative variables into module
    qmmm_struct%ideriv=moldyn_deriv_flag
    qmmm_struct%numder_step=num_deriv_step
 
+
+!***********************************************************
+!Initialization and single point calculation or zeroeth
+!step of adiabatic or nonadiabatic dynamics
+!
+!Open input file, initialize variables, run first calculation
+!***********************************************************
    open (inputfdes,file='input.ceon',status='old')
-   !This is essentially the zeroeth step
    call init_sqm(sim,inputfdes,STDOUT) ! involves call to Davidson
    close(inputfdes)
 
@@ -185,79 +179,51 @@ program MD_Geometry
 
    itime2=get_time() 
    time12=real(itime2-itime1)/100
-!  open (13,file='diff') ! FIXME is not used now
-!  the file diff is going to be used to detect errors in the deriv calculations
 
-!  compute initial forces (accelerations)
-!! change the current cartesian coordinates from au to A
-
-! calculation for excited state forces
-!===============================================================================
- call cpu_time(t_start)
- if (qmmm_struct%ideriv.gt.0) then
-	call deriv(sim,ihop)
- elseif (nstep.gt.0) then
+   !Calculate derivatives
+   call cpu_time(t_start)
+   if (qmmm_struct%ideriv.gt.0) then
+        call deriv(sim,ihop)
+   elseif (nstep.gt.0) then
         write(6,*)'Must choose derivative type greater than zero for dynamics'
         stop
- endif
- call cpu_time(t_finish)
- sim%time_deriv_took=sim%time_deriv_took+t_finish-t_start
- call deriv2naesmd_accel(sim)
- time11=0.0
+   endif
+   call cpu_time(t_finish)
+   sim%time_deriv_took=sim%time_deriv_took+t_finish-t_start
+
+   !Derivatives to forces
+   call deriv2naesmd_accel(sim)
+   time11=0.0
 
 !##########################################################
 !! Molecular dynamics with Quantum transition main loop
 !##########################################################
-!
    i=1
    icontw=1
-!
-!****************************************
-! Open output files
-!****************************************
+   !Open output files
    call open_output(ibo,tfemto,imdtype,lprint)
    ihop=qmmm_struct%state_of_interest !FIXME change ihop to module variable 
    if(tfemto.eq.0.d0) call writeoutputini(sim,ibo,yg,lprint)
-
-!
-!--------------------------------------------------------------------
-!
-! The main MD loop - classical propagation step
-!
-!--------------------------------------------------------------------
-!
-   do imdqt=1,nstep
-
+   do imdqt=1,nstep !Main loop
+      !Classical propagation step - BOMD or NAESMD
       write(6,*)"Begin classical propagation step #",imdqt
       tfemto=tfemto+dtmdqt*convtf
-      qmmm_struct%num_qmmm_calls=imdqt !for BO dynamics
-
+      qmmm_struct%num_qmmm_calls=imdqt !necessary for BO dynamics
+      !NAESMD-propagate
       if(state.eq.'exct'.and.ibo.ne.1) then
          qmmm_struct%state_of_interest=ihop;
+         write(6,*)'Testing ihop/soi',qmmm_struct%state_of_interest,ihop
          call verlet1(sim)
       else
+      !BOMD-propagate
          call verlet(sim)
-        ihop=qmmm_struct%state_of_interest
-         !if(state.eq.'exct'.and.ibo.eq.1) then !It's calling this twice for no reason
-         !  call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs,rx,ry,rz)
-         !end if
+         ihop=qmmm_struct%state_of_interest
       end if
       write(6,*)"End classical propagation step #",imdqt
 
-
-!     write(78,889) (rx(j),ry(j),rz(j),j=1,natom)
-!     call flush(78)
-!--------------------------------------------------------------------
-!
-! modified by Seba####################
-!      call temperature(imdqt)
-! end modified by Seba####################
-!
-!--------------------------------------------------------------------
-!
       if(state.eq.'exct'.and.ibo.ne.1) then
          call initialize(yg)
-         print *,'Classical step ',tfemto
+         write(6,*)'Classical step ',tfemto
 
 !*******************************************************
 ! The analytic NAC for t.
@@ -267,131 +233,45 @@ program MD_Geometry
 ! Vectors and frequencies from the above ceo, at xx,yy,zz geometry
 ! The routine will output cadiab_analt - an array of NA couplings for T  
 ! from state ihop to all other states npot
-  
 ! xxp,yyp, and zzp are xyz at t + dtnact
 ! xxm,yym, and zzm are xyz at t - dtnact
 !****************************************************************
 ! calculation of the energies(=vmdqtold) and nacT(=cadiabold) values at the beginning
 ! of the classical step  
 !*******************************************************
-!
          call cadiaboldcalc(sim,imdqt,Na,Nm)
-	 
-
 !**************************************************************
 ! calculation of the energies(=vmdqtnew) and nacT(=cadiabnew) values at the end
 ! of the classical step  
 !*******************************************************
-
          call cadiabnewcalc(sim,Na,Nm)
-
 !**************************************************************
 ! check crossing, if crossing takes place, nquantumstep=nstepcross*nquantumreal
 !***************************************************************
-
          call checkcrossing(sim,Na,Nm,cross,lprint)
-
-! modified by Seba
-!
-!         if(cross.eq.0) nquantumstep=nquantumreal
-!         if(cross.eq.2) then
-!            cadiabhop=cadiabnew(ihop,iorden(ihop))
-!            nquantumstep=nquantumreal
-!
-!            if(conthop.gt.0) then
-!               if(iordenhop.ne.ihopprev) conthop=0
-!            end if
-!
-!            if(conthop2.gt.0) then
-!               if(iordenhop.ne.ihopprev) conthop2=0
-!            end if
-!
-!            if(conthop.eq.0) then
-!               cadiabold(ihop,iorden(ihop))=0.0d0
-!               cadiabold(iorden(ihop),ihop)=0.0d0
-!               cadiabnew(ihop,iorden(ihop))=0.0d0
-!               cadiabnew(iorden(ihop),ihop)=0.0d0
-!            end if
-!         end if
-!                 
-!         dtquantum=dtmdqt/dfloat(nquantumstep)
-!!
-!!--------------------------------------------------------------------
-!!
-!! Loop to detect the crossing point
-!!
-!!--------------------------------------------------------------------
-!!
-!         if(cross.eq.1) then
-!            cadiabhop=cadiabnew(ihop,iorden(ihop))
-!            nquantumstep=nquantumreal*nstepcross
-!            dtquantum=dtmdqt/dfloat(nquantumstep)
-!            lowvalue=1000.0d0
-!
-!            do iimdqt=1,nquantumstep
-!               tfemtoquantum=tfemto-dtmdqt*convtf &
-!                  +iimdqt*dtquantum*convtf
-!
-!               call vmdqtmiddlecalc(sim, iimdqt,Na,Nm,cross)
-!               call checkcrossingmiddle(Na,Nm,cross)
-!
-!               if(lprint.ge.2) then
-!                  write(101,889) tfemtoquantum,vmdqtmiddle(ihop) &
-!                     -vmdqtmiddle(iordenhop),scpr(ihop,iordenhop)
-!                  call flush(101)
-!               end if
-!            end do
-!
-!            do win=1,3
-!               call vmdqtlowvalue(sim, win,lowvaluestep,Na,Nm,cross)
-!               call checkcrossinglow(Na,Nm,cross)
-!               call checkcrossingmiddle(Na,Nm,cross)
-!
-!               if(lprint.ge.2) then
-!                  write(101,889) tfemto-dtmdqt*convtf  & 
-!                     +lowvaluestep*dtquantum*convtf,lowvalue, &
-!                     scpr(ihop,iordenhop)
-!                  call flush(101)
-!               end if
-!            end do
-!
-!            nquantumstep=nquantumreal
-!            dtquantum=dtmdqt/dfloat(nquantumstep)
-!         end if
-!
-
          nquantumstep=nquantumreal
-
          dtquantum=dtmdqt/dfloat(nquantumstep)
-!
 !*******************************************
 ! loop to detect the crossing point
 !******************************************
-!
          crosstot=0
          do i=1,npot
             if(cross(i).eq.1) crosstot=1
          end do
-
          if(crosstot.eq.1) then
             print*,'there is crossing'
             print*,'cross(:)=',cross(1:npot)
-
             cadiabhop=cadiabnew(qmmm_struct%state_of_interest,iorden(qmmm_struct%state_of_interest))
             nquantumstep=nquantumreal*nstepcross
             dtquantum=dtmdqt/dfloat(nquantumstep)
-
             do j=1,npot
               lowvalue(j)=1000.0d0
             end do
-
             do iimdqt=1,nquantumstep
                tfemtoquantum=tfemto-dtmdqt*convtf &
                   +iimdqt*dtquantum*convtf
-
                call vmdqtmiddlecalc(sim,iimdqt,Na,Nm)
                call checkcrossingmiddle(sim,Na,Nm,cross)
-
                if(lprint.ge.2) then
                   do j=1,npot
                      if(cross(j).eq.1) then
@@ -399,13 +279,11 @@ program MD_Geometry
                            cross(j),j,iordenhop(j),scpr(j,iordenhop(j)), &
                            scprreal(j,iordenhop(j)), &
                            vmdqtmiddle(j)-vmdqtmiddle(iordenhop(j))
-
                         call flush(101)
                      end if
                   end do
                end if
             end do
-
             do win=1,3
                do j=1,npot
                   if(cross(j).eq.1) then
@@ -413,13 +291,11 @@ program MD_Geometry
                         if(j.ne.iordenhop(j)) then
                            call vmdqtlowvalue(sim,win,lowvaluestep(j),Na,Nm)
                            call checkcrossingmiddle(sim,Na,Nm,cross)
-
                            if(lprint.ge.2) then
                               write(101,888) tfemto,tfemto-dtmdqt*convtf &
                                  +lowvaluestep(j)*dtquantum*convtf, &
                                  cross(j),j,iordenhop(j),scpr(j,iordenhop(j)), &
                                  scprreal(j,iordenhop(j)),lowvalue(j)
-
                               call flush(101)
                            end if
                         end if
@@ -427,7 +303,6 @@ program MD_Geometry
                   end if
                end do
             end do
-
             nquantumstep=nquantumreal
             dtquantum=dtmdqt/dfloat(nquantumstep)
          end if
@@ -435,7 +310,6 @@ program MD_Geometry
 !  remove the couplings if cross=2
 !
          do i=1,npot
-	   !if(i.eq.ihop) then
             if(i.eq.qmmm_struct%state_of_interest) then
 
                if(cross(i).eq.2) then
@@ -457,8 +331,7 @@ program MD_Geometry
                   end if
                end if
             else
-               !if(i.ne.iorden(ihop)) then
-		if(i.ne.iorden(qmmm_struct%state_of_interest)) then
+                if(i.ne.iorden(qmmm_struct%state_of_interest)) then
                   if(i.lt.iorden(i)) then
                      if(cross(i).eq.2) then
                         nquantumstep=nquantumreal
@@ -471,22 +344,14 @@ program MD_Geometry
                end if
             end if
          end do
-!
-! end modified by Seba
 !--------------------------------------------------------------------
-!
 ! Loop for quantum propagation steps
 ! that implies CEO energy calculations
-!
 !--------------------------------------------------------------------
-!
          do iimdqt=1,nquantumstep
-
             tfemtoquantum=tfemto-dtmdqt*convtf &
                +iimdqt*dtquantum*convtf
-
 ! Definition of initial and final time for the quantum propagator
-
             if(imdqt.eq.1.and.iimdqt.eq.1) then
                tini=0.0d0
             else
@@ -495,17 +360,13 @@ program MD_Geometry
 
             tend=tfemtoquantum/convtf 
             tini0=tini
-!
 !--------------------------------------------------------------------
-!
 ! Calculation of the coordinates at the middle of the step.
 ! This intermediate structure is obtained using Newton equation
 ! with constant velocities and accelerations.
 ! and calculation of the energies(=vmdqtmiddle) and nacT(=cadiabmiddle) values 
 ! at intermediate times of the classical step
-!
 !--------------------------------------------------------------------
-!
             call cadiabmiddlecalc(sim,iimdqt,Na,Nm,cross)
 
             if(lprint.ge.3) then
@@ -519,30 +380,21 @@ program MD_Geometry
                   call flush(93)
                end if
             end if
-!
 !--------------------------------------------------------------------
 !
 !  Calculation of parameters to fit the values of cadiab and 
 !  vmdqt during propagation
 !
 !--------------------------------------------------------------------
-!
             call fitcoeff
-!
 !--------------------------------------------------------------------
 ! Runge-Kutta-Verner propagator 
 !--------------------------------------------------------------------
-!
             call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
-!
-! Check the norm
-!
+            ! Check the norm
             call checknorm(ido,neq,tini,tend,toldivprk,param,yg)
-
 !******************************************************
-
 ! values for hop probability
-
             do k=1,npot
                do j=1,npot
                   vnqcorrhop(k,j)=-1.0d0*yg(j) &
@@ -558,31 +410,18 @@ program MD_Geometry
                end do
             end do
          end do
-!
 !--------------------------------------------------------------------
-!
-         print*,'Quantum step ',tfemto
-
-! modified by Seba
+         write(6,*)'Quantum step ',tfemto
 ! last part of velocity verlet algorithm
 ! for ehrenfest should go after evalhop
-
          call verlet2(sim)
-
-! end modified by Seba
-!
 !--------------------------------------------------------------------
 ! analyze the hopping
 !--------------------------------------------------------------------
-!
-!modified by Seba
          call evalhop(sim,lprint,ido,neq,tini,tend,toldivprk, &
             param,Na,Nm,atoms,mdflag,d,E0,Omega,fosc,yg,cross, &
             idocontrol,ibo)
-!end modified by Seba
-!
 !--------------------------------------------------------------------
-!
          if(icontw.eq.nstepw) then
             if(state.eq.'exct') then
                if(lprint.ge.1) then
@@ -601,23 +440,16 @@ program MD_Geometry
 
          if(constcoherE0.ne.0.d0.and.constcoherC.ne.0.d0) then
             if(conthop.ne.1.and.conthop2.ne.1) then
-!modified by Seba
-!               call coherence(ido,neq,tini,tend,toldivprk, &
-!                  param,yg,constcoherE0,constcoherC)
                call coherence(sim,Na,Nm,mdflag,d,E0,Omega,fosc, &
                   ido,neq,tini,tend,toldivprk, &
                   param,yg,constcoherE0,constcoherC,cohertype,idocontrol)
             end if
          end if
-!
 !--------------------------------------------------------------------
-!
       end if
 
       ! evaluation of current kinetic energy
       call temperature(imdqt)
-	
-! 	
       if(imdqt.eq.1) then
          icont=1
          icontpdb=icontini
@@ -630,25 +462,20 @@ program MD_Geometry
          call writeoutput(sim,imdqt,ibo,yg,lprint,cross)
       end if
    end do
-
 !  final call to divprk to release workspace
 !  which was automatically allocated by the initial call with IDO=1.
-
-! added by Seba
       if(state.eq.'exct'.and.ibo.ne.1) then
          if(1==0) then ! kav: to skip it whatsoever
             ido=3
             call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
          end if
       end if
-! end added by Seba
 
 !  KGB: BUG? this was already realeased at the last call to coherence()
 !       if(.false..and.state.eq.'exct'.and.ibo.ne.1) then
 !          ido=3
 !          call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
 !       endif
-	
 
 !***********************************
 !      ttime=dtime(tarray)
@@ -711,7 +538,7 @@ program MD_Geometry
 
    stop 
 
- 29   print *, txt
+ 29   write(6,*) txt
  98   stop 'bad input'
 
 
@@ -1060,19 +887,19 @@ program MD_Geometry
 
    end if
 
-   print *, '!!!!!!-----MD INPUT-----!!!!!!'
-   print *
+   write(6,*) '!!!!!!-----MD INPUT-----!!!!!!'
+   write(6,*)
 
    if (imdtype.eq.0) then
           qmmm_struct%state_of_interest=imdtype
 !   write(6,*)"state3=",qmmm_struct%state_of_interest,ihop,imdtype
 
-      print *,'Ground state MD,      imdtype=',imdtype
+      write(6,*)'Ground state MD,      imdtype=',imdtype
     	
    else
        qmmm_struct%state_of_interest=imdtype
    write(6,*)"state3=",qmmm_struct%state_of_interest,ihop,imdtype
-      print *,'Excited state MD,      state=',imdtype
+   write(6,*)'Excited state MD,      state=',imdtype
       print *,'Number of states to propagate',npot
    end if
 

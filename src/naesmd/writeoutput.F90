@@ -18,7 +18,6 @@ contains
    double precision ntot
    double precision xcm,ycm,zcm 
    include 'sizes'
-!      double precision dist(nmax,nmax) 
    include 'common'
    character*1000 card
    character*1000 cardmopac
@@ -87,16 +86,10 @@ contains
 !***********************************************************
 
       if(lprint.ge.3) then
-         !write(85,889) tfemto,(fxmdqt(j)/convl*feVmdqt,j=1,natom)
-         !write(84,889) tfemto,(fymdqt(j)/convl*feVmdqt,j=1,natom)
-         !write(83,889) tfemto,(fzmdqt(j)/convl*feVmdqt,j=1,natom)
          write(85,889) tfemto,(sim%deriv_forces(1+3*(j-1)),j=1,natom)
          write(84,889) tfemto,(sim%deriv_forces(2+3*(j-1)),j=1,natom)
          write(83,889) tfemto,(sim%deriv_forces(3+3*(j-1)),j=1,natom)
-
-         !write(125,889) tfemto,(sim%naesmd%a%x(j),j=1,natom)
-         !write(126,889) tfemto,(ax(j),j=1,natom)
-! Check the position of the center of mass
+        ! Check the position of the center of mass
          xcm=0.0d0
          ycm=0.0d0
          zcm=0.0d0
@@ -118,21 +111,14 @@ contains
       if(state.eq.'exct'.and.lprint.ge.1) then
          write(89,889) tfemto,(cicoeffao2(j,ihop),j=1,nao)
          call flush(89)
-! added by Seba
 ! in order to print the initial transition density of all states
          do k=1,npot
             write(77,889) tfemto,(cicoeffao2(j,k),j=1,nao)
             call flush(77)
          end do
-! end added by Seba
       end if
-! added by Seba
-! 1/convt transform from picoseconds to atomic units
-      !convt=2.41888d-5
-! end added by Seba
 
-! write the atomic positions in amstrongs
-
+! write the atomic positions in angstoms
       card='coordinates' // ktbig(icontini) // '.dat'
       OPEN(10,FILE=card)
       do i=1,txtinicoord
@@ -162,10 +148,6 @@ contains
       write(10,556) '$ENDCOEFF'
       write(10,*) 
       write(10,558) '$MOLDYN'
-!      write(10,'i3,31x,a') ihop,'! MD type: 0-ground,1-first exc. state'
-!      write(10,'i3,31x,a')npot,'! number of excited states to propagate' 
-!      write(10,'i4,30x,a') icontini, '! initial count for output files' 
-!      write(10,'g13.5,21x,a') tfemto, '! initial time(fs)'
       write(10,999) ibo
       write(10,999) ihop
       write(10,999) npot
@@ -177,6 +159,7 @@ contains
       close(10)
 
       if(iview.eq.1) then
+
 ! to be used in case we want to print the transition densities of all the states at t=0
       do kki=1,npot
          card='view' // ktbig(icontini) // '-' //  ktbig(kki) // '.DATA'
@@ -203,19 +186,14 @@ contains
          do k=1,nao
 ! to be used in case we want to print the transition densities of all the states at t=0
             write(90,*) cicoeffao2(k,kki)
-!***************************************************
-!          write(90,*) cicoeffao2(k,ihop)
-!***************************************************
          end do
          close(90)
 ! to be used in case we want to print the transition densities of all the states at t=0
       end do
-!**********************************************************
    end if
 
    call flush(98)
 
-!111   FORMAT(A2,14x,3(1x,F11.7,1x,I1))
 111   FORMAT(A2,14x,3(1x,F16.12,1x,I1))
 222   FORMAT(A2,3(1x,F12.6))
 223   FORMAT(3(1x,F16.10))
@@ -254,18 +232,12 @@ contains
    implicit none      
  
    type(simulation_t),pointer::sim
-! modified by Seba
-!      INTEGER l,i,j,jj,k,kk,slen,readstring,Nb,ibo,lprint,cross,kki
    INTEGER l,i,j,jj,k,kk,slen,readstring,Nb,ibo,lprint,kki
-! end modified by Seba
    double precision ntot
    double precision xcm,ycm,zcm 
    include 'sizes'
-!   double precision dist(nmax,nmax) 
    include 'common'
-! modified by Seba
    integer cross(nmaxpot)
-! end modified by Seba
    character*1000 card
    character*1000 cardmopac
 
@@ -276,7 +248,7 @@ contains
 
    integer nring,indx(npot),npota
 
-	logical first
+   logical first
    data first /.true./
    save first
 
@@ -310,8 +282,8 @@ contains
 
       end if
    end if
-! ntot is the variable to check the norm conservation
 
+   !ntot is the variable to check the norm conservation
    if(state.eq.'exct') then
       ntot=0
       do j=1,npot
@@ -361,7 +333,7 @@ contains
 
       write(125,889) tfemto,(sim%naesmd%a%x(j),j=1,natom)
       write(126,889) tfemto,(ax(j),j=1,natom)
-! Check the position of the center of mass
+      ! Check the position of the center of mass
       xcm=0.0d0
       ycm=0.0d0
       zcm=0.0d0
@@ -381,60 +353,23 @@ contains
       call flush(80)
    end if
 
-!      jj=1
-!      do j=1,natom
-!         if(atomtype(j).eq.1) then
-!            cicoeff(j)=cicoeffao2(jj,ihop) 
-!            jj=jj+1
-!         endif
-!         if(atomtype(j).eq.6) then
-!            cicoeff(j)=0.0d0
-!            do k=1,4
-!               cicoeff(j)=cicoeff(j) + cicoeffao2(jj,ihop) 
-!               jj=jj+1
-!            enddo
-!         endif
-!      enddo
-
    if(state.eq.'exct'.and.lprint.ge.2) then
       write(100,688) tfemto,(iorden(j),j=1,npot),cross
-! added by Seba
       write(120,688) tfemto,(cross(j),j=1,npot)
       call flush(120)
-! end added by Seba
       call flush(100)
    end if
 
    if(state.eq.'exct'.and.lprint.ge.1) then
       write(89,889) tfemto,(cicoeffao2(j,ihop),j=1,nao)
       call flush(89)
-
-!      write(77,889) tfemto,((cicoeffao2(j,k),j=1,nao),k=1,4)
-!      call flush(77)
    end if
-!
-! added by Seba
-!  1/convt transform from picoseconds to atomic units
-   !convt=2.41888d-5
-! end added by Seba
 
    if(icont.ne.nstepcoord) then
       icont=icont+1
    else
       icont=1
       icontpdb=icontpdb+1
-
-! optional to print pdb format
-!
-!         card='coordinates' // ktbig(icontpdb) // '.pdb'
-!         OPEN(88,FILE=card)
-!         do k=1,natom
-!            write(88,777) 'ATOM   ',k,atomtype2(k),'DEN  ',
-!     $k,rx(k)*convl,ry(k)*convl,rz(k)*convl
-!         enddo
-!         close(88)
-!
-! end of optional to print pdb format
 
       card='coordinates' // ktbig(icontpdb) // '.dat'
       open(10,FILE=card)
@@ -491,7 +426,6 @@ contains
       write (9,*) natom
       write (9,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
          '  time = ',tfemto
-!      write (9,449) ' time = ',tfemto 
       do k=1,natom
          write(9,302) ELEMNT(atomtype(k)),rx(k)*convl, &
             ry(k)*convl,rz(k)*convl
@@ -499,12 +433,8 @@ contains
       close (9)
 
       if(iview.eq.1) then
-! to be used in case we want to print the transition densities of all the states at t=0
          do kki=1,npot
          card='view' // ktbig(icontpdb) // '-' //  ktbig(kki) // '.DATA'
-!************************************************************************************
-!       card='view' // ktbig(icontpdb) // '-' //  ktbig(ihop) // '.DATA'
-!************************************************************************************
          OPEN(90,FILE=card)
          write(90,440) ' Number of atoms:'
          write(90,99) natom
@@ -523,24 +453,14 @@ contains
 
          write(90,443) ' Eigenvector:   1  with Eigenvalue:   0.0'
          do k=1,nao
-! to be used in case we want to print the transition densities of all the states at t=0
             write(90,*) cicoeffao2(k,kki)
-!***************************************************
-!          write(90,*) cicoeffao2(k,ihop)
-!***************************************************
          end do
          close(90)
-! to be used in case we want to print the transition densities of all the states at t=0
       end do
-!**********************************************************
    end if
-
    endif
-
-
    call flush(98)
 
-!111   FORMAT(A2,14x,3(1x,F11.7,1x,I1))
 111   FORMAT(A2,14x,3(1x,F16.12,1x,I1))
 222   FORMAT(A2,3(1x,F12.6))
 223   FORMAT(3(1x,F16.10))
@@ -571,6 +491,5 @@ contains
 
    return
    end subroutine
-!
 end module
-!
+

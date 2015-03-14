@@ -160,9 +160,7 @@ subroutine calc_cosmo_2()
         call Vxi(qm2ds%eta,v_solvent_difdens)
         endif
         v_solvent_difdens=linmixparam*v_solvent_difdens
-
         !Begin SCF loop
-
         do k=1,cosmo_scf_maxcyc
                 call davidson(); !Calculate new excited states
                 if(qm2ds%verbosity.eq.5) call outDavidson()

@@ -36,6 +36,7 @@ subroutine Lxi_testing(u1,v1,solvent_model)
    parameter (one=1)
 
    fs1=0;
+   qm2ds%xi=0.d0
    call mo2site(u1,qm2ds%xi,qm2ds%eta) !Change basis of guess vector of Davidson from M.O to A.O
    qm2ds%eta=0.0;
    call Vxi(qm2ds%xi,qm2ds%eta); !Calculate Vacuum Electron Correlation
@@ -75,6 +76,11 @@ subroutine Lxi_testing(u1,v1,solvent_model)
         call commutator(qm2ds%xi,v_solvent_difdens,qm2ds%Nb,tmp,.false.)
         call VxiM_end(qm2ds%eta,tmp)
    elseif(solvent_model.eq.2) then ! 2: State Specific [V_s(T+Z),xi]
+        tmp=0.d0;
+        !v_solvent_difdens=0.d0
+        do p=1,qm2ds%Nb/2
+                v_solvent_difdens(p,p)=1.d0
+        enddo
         !Commutator is performed here for State Specific Solvent Routines
         call commutator(qm2ds%xi,v_solvent_difdens,qm2ds%Nb,tmp,.false.)
         call VxiM_end(qm2ds%eta,tmp)
@@ -97,10 +103,9 @@ subroutine Lxi_testing(u1,v1,solvent_model)
         call VxiM_end(qm2ds%eta,tmp)
    elseif(solvent_model.eq.7) then!7: combined LR and VE
    endif
-  
  
    !add constant electric field potential [V_E,xi]
-   if(EF.eq.2) then!Constant Electric Field in ES onl
+   if(EF.eq.2) then!Constant Electric Field in ES only
         tmp=0.d0; tmp2=0.d0
         call efield_fock(tmp,qm2ds%Nb)
 	call unpacking(qm2ds%Nb,tmp,tmp2,'s'); tmp=0.d0
@@ -115,6 +120,7 @@ subroutine Lxi_testing(u1,v1,solvent_model)
     do h=qm2ds%Np+1,qm2ds%Nb
        i=i+1
        f=qm2ds%ehf(h)-qm2ds%ehf(p);
+       !JAB Test 
        v1(i)=v1(i)+f*u1(i)
        v1(i+qm2ds%Ncis)=-(v1(i+qm2ds%Ncis)+f*u1(i+qm2ds%Ncis))
     end do
@@ -972,7 +978,7 @@ logical function check_symmetry(M,matrix_size)
           end do
        	end do
 	norm= sqrt(sum)
-        write(6,*)"Norm:",norm
+        write(6,*)"Norm:",norm,sum
         if (norm> 1.0d-10) check_symmetry=.false.;
         end
 
