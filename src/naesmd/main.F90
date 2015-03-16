@@ -212,7 +212,6 @@ program MD_Geometry
       !NAESMD-propagate
       if(state.eq.'exct'.and.ibo.ne.1) then
          qmmm_struct%state_of_interest=ihop;
-         write(6,*)'Testing ihop/soi',qmmm_struct%state_of_interest,ihop
          call verlet1(sim)
       else
       !BOMD-propagate

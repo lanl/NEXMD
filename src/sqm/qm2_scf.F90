@@ -135,9 +135,7 @@ if(qmmm_nml%density_predict.gt.0) then
 !      smallsum = 10.0D0 * sqrt(smallsum)
       abstol = 2.0d0 * dlamch('S') !tolerance for dspevr
       qmmm_struct%qm2_scf_first_call=.false.
-      write(6,*) 'Filling Phi first iteration full convergence'
    elseif((qmmm_nml%density_predict==2).and.(qmmm_struct%num_qmmm_calls.lt.(K+2))) then
-      
       !Do nothing until all Phi are full for XL-BOMD
       write(6,*) 'Filling Phi_',qmmm_struct%num_qmmm_calls+1,'with fully converged result'
    else
@@ -208,8 +206,6 @@ end if
           CALL qm2_densmat( scf_iteration, qm2_struct%matsize, den_matrix, density_diff)
        end if ! if (.NOT. first_iteration)
 
-
-
       !Calculate the Mulliken charges for the current density matrix if we require
       !them on every SCF step. Save the results in the scf_mchg array
       !We also need to do this if we are doing QMewald with the image charges fixed but
@@ -220,13 +216,10 @@ end if
      if (qm2_struct%calc_mchg_scf .or. qmewald%ewald_startup) then
       write(6,*)'Calculating Mulliken Charges'
       allocate(density_matrix_unpacked(qm2_struct%norbs,qm2_struct%norbs));
-
       call unpacking(qm2_struct%norbs,qm2_struct%den_matrix,density_matrix_unpacked,'s');
-
         do i=1,qmmm_struct%nquant_nlink 
           call qm2_calc_mulliken(i,scf_mchg(i),density_matrix_unpacked);
         end do
-
       deallocate(density_matrix_unpacked);
       end if
 
@@ -234,10 +227,8 @@ end if
            & SIZE(W), W, SIZE(scf_mchg), scf_mchg, density_diff )
 
       call timer_start(TIME_QMMMENERGYSCFELEC)
-
       scf_energy = qmmm_struct%elec_eng*EV_TO_KCAL
       energy_diff = scf_energy - eold
-
       if (qmmm_mpi%commqmmm_master) then
          ! do this only if we need it, this seriously affects performance
          if ( .not. errmat_is_on ) then
@@ -252,13 +243,8 @@ end if
             errval = current_scf_errval()
          end if
       end if
-
-
-
       
       if (qmmm_mpi%commqmmm_master) then
-         
-         
         if (abs(energy_diff) < abs(smallest_energy_diff(1))) then
            !Keep track of the smallest difference we have found. Useful for
            !when we fail to converge - we can tell the user how close we ever got.
@@ -267,8 +253,6 @@ end if
            if (density_diff/=zero) smallest_energy_diff(2) = density_diff
            if (density_diff/=zero .and. energy_diff/=zero) sm_energy_diff_step_number = scf_iteration
         end if
-        
-
         !If verbosity is >2 then print some info about this SCF step.
         if (qmmm_nml%verbosity > 2 .and. qmmm_mpi%commqmmm_master) then
            if (doing_pseudo_diag) then
@@ -288,21 +272,13 @@ end if
         
      end if
      call timer_stop(TIME_QMMMENERGYSCFELEC)
-
-
-
-
-
-
      if (  qmmm_mpi%commqmmm_master ) then
-        
         ! Step 5 - Check if we have converged.
         !    check energy difference is less than qmmm_nml%scfconv
         !    check density difference is either zero or less than density_conv
         !    Make sure we have done at least 2 SCF iterations to avoid quiting
         !         due to some fluke.
         if (scf_iteration>2) then
-           
            ! Since we have now done more than 2 iterations we can allow the
            ! pseudo diagonalisation as long as it is allowed from the 
            ! namelist pseudo_diag option.

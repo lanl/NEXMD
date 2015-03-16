@@ -244,11 +244,11 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
       !   Setup Density Matrix Prediction Prior to Calling SCF
       !==========================================================
       if (qmmm_nml%density_predict == 1) then !Use simple time-reversible MD algorithm
-        call timer_start(TIME_QMMMENERGYSCFDENPRED)
+        !call timer_start(TIME_QMMMENERGYSCFDENPRED)
         call qm2_density_predict(qmmm_struct%num_qmmm_calls,qm2_struct%matsize, &
                                  qm2_struct%den_matrix,qm2_struct%md_den_mat_guess1, &
                                  qm2_struct%md_den_mat_guess2 )
-        call timer_stop(TIME_QMMMENERGYSCFDENPRED)
+        !call timer_stop(TIME_QMMMENERGYSCFDENPRED)
       elseif (qmmm_nml%density_predict == 2) then !Use full XL-BOMD algorithm
 	call timer_start(TIME_QMMMENERGYSCFDENPRED)
 	call predictdens_xlbomd(qmmm_struct%num_qmmm_calls,qm2_struct%den_matrix)
@@ -257,6 +257,7 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
       !=============================================================
       !   End Setup Density Matrix Prediction Prior to Calling SCF
       !=============================================================
+
       !========================================================
       !   Setup Fock Matrix Prediction Prior to Calling SCF
       !========================================================
@@ -286,7 +287,6 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
       !==========================
       ! End calculate SCF Energy
       !==========================
-
 #ifndef SQM
       if (qmmm_nml%qm_ewald>0) then
 
@@ -300,13 +300,11 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
          call timer_stop(TIME_QMMMENERGYHCOREQMMM)
       end if
 #endif
-
       !Add the nuclear-nuclear energy into the scf energy
       escf = escf + (qmmm_struct%enuclr_qmqm+qmmm_struct%enuclr_qmmm)*EV_TO_KCAL
       if (qmmm_opnq%useOPNQ) then
          escf=escf+(qmmm_opnq%vdWCorrection+qmmm_opnq%OPNQCorrection)*EV_TO_KCAL
       end if
-      
       !Add on the heat of formation.
       if (qmmm_mpi%commqmmm_master) then 
          escf = escf + qm2_params%tot_heat_form
@@ -322,9 +320,7 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
             escf = escf + qmmm_struct%dCorrection + qmmm_struct%hCorrection
          endif
       end if
-
       call timer_stop(TIME_QMMMENERGYSCF)
-
       if (qmmm_nml%peptide_corr) then  !Apply MM correction to peptide linkages
          !Not available for DFTB
          if (qmmm_nml%qmtheory%PM3 .OR. qmmm_nml%qmtheory%PDDGPM3 .OR. qmmm_nml%qmtheory%PM3CARB1 &
@@ -343,22 +339,15 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
             escf=escf+HTYPE*SIN(ANGLE)**2                                   
          end do
       end if
-
    end if
    RETURN                                                                    
 end subroutine qm2_energy
 
-!Note by JAB:
-!This is one Niklasson et al algorithm
-!Another algorithm (XL-BOMD) is available by setting density_predict=2 and is in the xlbomd module
 subroutine qm2_density_predict(num_qmmm_calls,matsize,den_matrix,md_den_mat_guess1,md_den_mat_guess2)
-
    implicit none
-
    !Passed in
    integer, intent(in) :: num_qmmm_calls, matsize
    _REAL_, intent(inout) :: den_matrix(matsize), md_den_mat_guess1(matsize), md_den_mat_guess2(matsize)
-      
    !if this is num_qmmm_calls = 1 then it is the first call so we the guesses should
    !be empty. Do nothing - just do the else below since the two guesses contain zero.
    if (num_qmmm_calls == 2) then
@@ -378,8 +367,6 @@ subroutine qm2_density_predict(num_qmmm_calls,matsize,den_matrix,md_den_mat_gues
      md_den_mat_guess2(1:matsize) = md_den_mat_guess1(1:matsize)
      md_den_mat_guess1(1:matsize) = den_matrix(1:matsize)
    end if
-
    return
-
 end subroutine qm2_density_predict
 
