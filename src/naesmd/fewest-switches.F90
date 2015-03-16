@@ -103,7 +103,7 @@ contains
       ihop=icheck
       call naesmd2qmmm_r(sim)
       call cpu_time(t_start)
-      call deriv(sim%deriv_forces,ihop)
+      call deriv(sim,ihop)
       call cpu_time(t_finish)
       sim%time_deriv_took=sim%time_deriv_took+t_finish-t_start
       call do_sqm_davidson_update(sim,vmdqt=vmdqtnew,vgs=vgs)  
@@ -133,7 +133,7 @@ contains
 ! after the hop, we reinicialize the variables
       call naesmd2qmmm_r(sim)
       call cpu_time(t_start)
-      call deriv(sim%deriv_forces,ihop)
+      call deriv(sim,ihop)
       call cpu_time(t_finish)
       sim%time_deriv_took=sim%time_deriv_took+t_finish-t_start
       do j=1,natom
