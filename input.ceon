@@ -44,14 +44,14 @@
 &moldyn
    !***** General parameters
    rnd_seed=1, ! seed for the random number generator
-   bo_dynamics_flag=0, ! 0-non-BO, 1-BO
-   exc_state_init=2, ! initial excited state (0 - ground state)
+   bo_dynamics_flag=1, ! 0-non-BO, 1-BO
+   exc_state_init=1, ! initial excited state (0 - ground state)
    n_exc_states_propagate=3 ! number of excited states
 
    !***** Dynamics parameters
    time_init=0.d0, ! initial time, fs
    time_step=0.5, !time step, fs
-   n_class_steps=3, !number of classical steps
+   n_class_steps=2, !number of classical steps
    n_quant_steps=1, ! number of quantum steps for each classical step
    moldyn_deriv_flag=1, ! 0-none, 1-analyt, 2-numeric
    num_deriv_step=1.d-5, ! displacement for numerical derivatives, A

@@ -9,10 +9,8 @@ Optimization
 3.) Optimize packing/unpacking subroutines and the number of calls to these subroutines
 4.) Combine modules (qm2_davidson,qmmm_struct,etc.) which are pointed to by Communism module for clarity and possible memory management/optimization
 	This requires a revision of the entire code and room should be left for integrated ambertools using qmmm modules.
+5.) For NACVs specifically 
 
 Features
-1.) State Specific Solvent Z-Vector equation
-2.) State Specific Solvent Gradients
-3.) State Specific Solvent SCF with GS calculations
-4.) QM/MM
-5.) Write documentation
+1.) QM/MM
+2.) Write documentation
