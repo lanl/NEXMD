@@ -9,7 +9,8 @@ Optimization
 3.) Optimize packing/unpacking subroutines and the number of calls to these subroutines
 4.) Combine modules (qm2_davidson,qmmm_struct,etc.) which are pointed to by Communism module for clarity and possible memory management/optimization
 	This requires a revision of the entire code and room should be left for integrated ambertools using qmmm modules.
-5.) For NACVs specifically 
+5.) Comparison of old and new with unoptimized BLAS and B-O dynamics gives new as faster, nonB-O gives old as faster -- NOT SURE HOW TO USE OPTIMIZED BLAS IN THE NEW CODE
+6.) For NACVs specifically, there is a huge speed-up when going to optimized BLAS in the old code
 
 Features
 1.) QM/MM
