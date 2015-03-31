@@ -37,21 +37,21 @@
    Ez=0, !Electric Field Vector Z
    Ey=0, !Electric Field Vector Y
    onsager_radius=4, ! Onsager radius
-   solvent_model=0, ! (0) None, (1) LR, (2) VE, (3) VE with Xi, (4) SS, (5) Variational SS
+   solvent_model=1, ! (0) None, (1) LR, (2) VE, (3) VE with Xi, (4) SS, (5) Variational SS
    potential_type=3, ! (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
 &endqmmm
 
 &moldyn
    !***** General parameters
    rnd_seed=1, ! seed for the random number generator
-   bo_dynamics_flag=1, ! 0-non-BO, 1-BO
+   bo_dynamics_flag=0, ! 0-non-BO, 1-BO
    exc_state_init=1, ! initial excited state (0 - ground state)
    n_exc_states_propagate=3 ! number of excited states
 
    !***** Dynamics parameters
    time_init=0.d0, ! initial time, fs
    time_step=0.5, !time step, fs
-   n_class_steps=2, !number of classical steps
+   n_class_steps=10, !number of classical steps
    n_quant_steps=1, ! number of quantum steps for each classical step
    moldyn_deriv_flag=1, ! 0-none, 1-analyt, 2-numeric
    num_deriv_step=1.d-5, ! displacement for numerical derivatives, A
