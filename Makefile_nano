@@ -1,12 +1,30 @@
 
-#FC = /opt/intel/composerxe/bin/ifort
-#CC = /opt/intel/composerxe/bin/icc
-#LIB_BLAS_LAPAC = -llapack -lblas #./lib/goto2r1.13/libgoto2_nehalem-r1.13.a -lm
-CC = /opt/pgi/linux86-64/10.2/bin/pgcc -g
-LINK = -L/opt/pgi/linux86-64/10.2/lib/ -llapack -lblas
-FC = /opt/pgi/linux86-64/10.2/bin/pgf90 -g#-tp p7-64 -O3
-MODCMD= -module
+FC = /opt/intel/composerxe/bin/ifort
+CC = /opt/intel/composerxe/bin/icc
+#CC = /opt/pgi/linux86-64/10.2/bin/pgcc -c
+#FC = /opt/pgi/linux86-64/10.2/bin/pgf90 -c
+#FC = gfortran
+#CC = gcc
 
+#LIB_BLAS_LAPAC =  -L./goto2r1.13/
+#LIB_BLAS_LAPAC = -llapack ./goto2r1.13/libgoto2_nehalem-r1.13.a -lm
+MKLROOT=/opt/intel/Compiler/11.1/069/mkl
+#LIB_BLAS_LAPAC = -llapack -lblas
+LIB_BLAS_LAPAC = $(MKLROOT)/lib/em64t/libmkl_solver_lp64_sequential.a \
+-Wl,--start-group \
+$(MKLROOT)/lib/em64t/libmkl_intel_lp64.a \
+$(MKLROOT)/lib/em64t/libmkl_sequential.a \
+$(MKLROOT)/lib/em64t/libmkl_core.a \
+-Wl,--end-group \
+-lpthread
+
+#Object compliation flags
+#FFLAG = -fast -Mipa=fast,inline -pg -tp p7-64 -Mprefetch -Mfprelaxed -Mpfi
+FFLAG= -O2
+#Linking flags
+LDFLAGS = $(FFLAG)
+
+MODCMD= -module
 NAESMDDIR = naesmd
 SQMDIR = sqm
 PMEMDDIR = pmemd
@@ -21,15 +39,12 @@ LIBDIR = lib
 OBJDIR = obj
 SRCDIR = src
 MODDIR = mod
-LIB = lib 
+LIB = -L$(LIBDIR) $(LIB_BLAS_LAPAC)
 
 SQMINC = -I$(MODDIR)/$(SQMDIR)/
 AMOEBAINC = -I$(MODDIR)/$(AMOEBADIR)/
 
 INC= -Iinc/ -Iinc/$(SANDERDIR) -Iinc/$(PBSADIR)/ -Imod/$(PBSADIR)/ -Iinc/$(LIBDIR)/ -Iinc/$(PMEMDDIR)/ -Iinc/$(NAESMDDIR)/old/ -Imod/$(SQMDIR)/
-
-FFLAG = -fast -Mipa=fast,inline
-LDFLAGS = $(FFLAG)
 
 DIRECTORIES= $(MODDIR)/$(SQMDIR) $(MODDIR)/$(NAESMDDIR) $(MODDIR)/$(AMEOBADIR) $(MODDIR)/$(PBSADIR) inc/$(SQMDIR) inc/$(SANDERDIR) inc/$(PBSADIR) inc/$(LIBDIR) inc/$(PMEMDDIR) inc/$(NAESMDDIR) inc/$(NAESMDDIR)/old $(OBJDIR)/$(SQMDIR) $(OBJDIR)/$(NAESMDDIR) $(OBJDIR)/$(SANDERDIR) $(OBJDIR)/$(PMEMDIR) $(OBJDIR)/$(PBSADIR) $(OBJDIR)/$(AMOEBADIR) $(OBJDIR)/$(DIRSFF) $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME) $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC) $(OBJDIR)/$(LIBDIR)
 
@@ -508,9 +523,8 @@ $(OBJDIR)/$(PMEMDDIR)/%.o: $(SRCDIR)/$(PMEMDDIR)/%.F90
 $(OBJDIR)/$(PMEMDDIR)/%.o: $(SRCDIR)/$(PMEMDDIR)/%.c
 	$(CC) $(INC) $(FFLAG) -o $@ -c $<
 
-
 sqmceonaesmd.exe: $(OBJSFF) $(OBJSQM) $(OBJLIB) $(OBJNAESMD)
-	$(FC) $(LDFLAGS) -o naesmd.exe $(OBJNAESMD) $(OBJSQM) $(OBJLIB) $(OBJSFF) -L$(LIB) $(LINK) 
+	$(FC) $(LDFLAGS) -o sqmceonaesmd.exe $(OBJNAESMD) $(OBJSQM) $(OBJLIB) $(OBJSFF) -L$(LIB)
 
 clean :
 	rm -f ob*/*.o obj/*/*.o  mod/*.mod *.mod mod/*/*.mod rm lib/*.a
