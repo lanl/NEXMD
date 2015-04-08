@@ -28,7 +28,7 @@ AMOEBAINC = -I$(MODDIR)/$(AMOEBADIR)/
 
 INC= -Iinc/ -Iinc/$(SANDERDIR) -Iinc/$(PBSADIR)/ -Imod/$(PBSADIR)/ -Iinc/$(LIBDIR)/ -Iinc/$(PMEMDDIR)/ -Iinc/$(NAESMDDIR)/old/ -Imod/$(SQMDIR)/
 
-FFLAG = -O0 -mcmodel=medium
+FFLAG = -fast -Mipa=fast,inline
 LDFLAGS = $(FFLAG)
 
 DIRECTORIES= $(MODDIR)/$(SQMDIR) $(MODDIR)/$(NAESMDDIR) $(MODDIR)/$(AMEOBADIR) $(MODDIR)/$(PBSADIR) inc/$(SQMDIR) inc/$(SANDERDIR) inc/$(PBSADIR) inc/$(LIBDIR) inc/$(PMEMDDIR) inc/$(NAESMDDIR) inc/$(NAESMDDIR)/old $(OBJDIR)/$(SQMDIR) $(OBJDIR)/$(NAESMDDIR) $(OBJDIR)/$(SANDERDIR) $(OBJDIR)/$(PMEMDIR) $(OBJDIR)/$(PBSADIR) $(OBJDIR)/$(AMOEBADIR) $(OBJDIR)/$(DIRSFF) $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME) $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC) $(OBJDIR)/$(LIBDIR)
@@ -509,7 +509,7 @@ $(OBJDIR)/$(PMEMDDIR)/%.o: $(SRCDIR)/$(PMEMDDIR)/%.c
 	$(CC) $(INC) $(FFLAG) -o $@ -c $<
 
 
-naesmd.exe: $(OBJSFF) $(OBJSQM) $(OBJLIB) $(OBJNAESMD)
+sqmceonaesmd.exe: $(OBJSFF) $(OBJSQM) $(OBJLIB) $(OBJNAESMD)
 	$(FC) $(LDFLAGS) -o naesmd.exe $(OBJNAESMD) $(OBJSQM) $(OBJLIB) $(OBJSFF) -L$(LIB) $(LINK) 
 
 clean :
