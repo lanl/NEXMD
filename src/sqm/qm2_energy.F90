@@ -245,9 +245,11 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
       !==========================================================
       if (qmmm_nml%density_predict == 1) then !Use simple time-reversible MD algorithm
         !call timer_start(TIME_QMMMENERGYSCFDENPRED)
+        if (qmmm_struct%num_qmmm_calls.gt.1) then
         call qm2_density_predict(qmmm_struct%num_qmmm_calls,qm2_struct%matsize, &
                                  qm2_struct%den_matrix,qm2_struct%md_den_mat_guess1, &
                                  qm2_struct%md_den_mat_guess2 )
+        endif
         !call timer_stop(TIME_QMMMENERGYSCFDENPRED)
       elseif (qmmm_nml%density_predict == 2) then !Use full XL-BOMD algorithm
 	call timer_start(TIME_QMMMENERGYSCFDENPRED)
@@ -348,8 +350,6 @@ subroutine qm2_density_predict(num_qmmm_calls,matsize,den_matrix,md_den_mat_gues
    !Passed in
    integer, intent(in) :: num_qmmm_calls, matsize
    _REAL_, intent(inout) :: den_matrix(matsize), md_den_mat_guess1(matsize), md_den_mat_guess2(matsize)
-   !if this is num_qmmm_calls = 1 then it is the first call so we the guesses should
-   !be empty. Do nothing - just do the else below since the two guesses contain zero.
    if (num_qmmm_calls == 2) then
      !this is the second call to qm_mm. In this case we need to store the converged density matrix
      !from step 1 as guess2.

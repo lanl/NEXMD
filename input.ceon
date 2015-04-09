@@ -2,11 +2,11 @@
    !***** Ground state and output parameters
    qm_theory='AM1', !Integral type
    scfconv=1.0d-8, !Ground state scf convergence criteria
-   verbosity=0, !
+   verbosity=5, !
    printcharges=0, ! Mulliken charges for ground state
    printdipole=0, ! (0) None, (1) Transition (2) Relaxed, and Unrelaxed
    printbondorders=0, ! (0) No, (1) Yes
-   density_predict=0, !(0) None, (1) Reversible MD, (2) XL-BOMD
+   density_predict=0, !(0) Previous Density, (1) Reversible MD, (2) XL-BOMD
    K=3, ! XL-BOMD Parameter (3-9)
    itrmax=300, ! Maximum number of scf iterations for ground state, negative to ignore convergence
 
@@ -44,14 +44,14 @@
 &moldyn
    !***** General parameters
    rnd_seed=1, ! seed for the random number generator
-   bo_dynamics_flag=0, ! 0-non-BO, 1-BO
+   bo_dynamics_flag=1, ! 0-non-BO, 1-BO
    exc_state_init=1, ! initial excited state (0 - ground state)
    n_exc_states_propagate=3 ! number of excited states
 
    !***** Dynamics parameters
    time_init=0.d0, ! initial time, fs
    time_step=0.5, !time step, fs
-   n_class_steps=10, !number of classical steps
+   n_class_steps=3, !number of classical steps
    n_quant_steps=1, ! number of quantum steps for each classical step
    moldyn_deriv_flag=1, ! 0-none, 1-analyt, 2-numeric
    num_deriv_step=1.d-5, ! displacement for numerical derivatives, A
@@ -73,7 +73,7 @@
    heating_steps_per_degree=100, ! number of steps per degree during heating
 
    !***** Output & Log parameters
-   verbosity=0, ! output verbosity (0-minimal, 3-highest) 
+   verbosity=3, ! output verbosity (0-minimal, 3-highest) 
    out_count_init=0, ! the initial count for output files
    out_data_steps=1, ! number of steps to write data
    out_coords_steps=10, ! number of steps to write the restart file
