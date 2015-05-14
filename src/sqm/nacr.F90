@@ -1,7 +1,7 @@
 #include "dprec.fh"
 
 subroutine nacR_analytic(xyz_in, ihop, icheck)
-	use qmmm_module, only : qmmm_struct, qm2_struct
+	use qmmm_module, only : qmmm_struct, qm2_struct, qmmm_nml
 	use qm2_davidson_module
 	use constants, only : KCAL_TO_EV
 
@@ -23,8 +23,9 @@ subroutine nacR_analytic(xyz_in, ihop, icheck)
 !	_REAL_ xx(qmmm_struct%nquant_nlink),yy(qmmm_struct%nquant_nlink),zz(qmmm_struct%nquant_nlink)
 !	_REAL_ xx1(qmmm_struct%nquant_nlink),yy1(qmmm_struct%nquant_nlink),zz1(qmmm_struct%nquant_nlink)
     _REAL_ xyz(3,qmmm_struct%nquant_nlink),dxyz1(3,qmmm_struct%nquant_nlink)
+    if (qmmm_nml%verbosity.gt.4) write(6,*)'nacR_analytic called'
 
-	Na = qmmm_struct%nquant_nlink
+    Na = qmmm_struct%nquant_nlink
     N3 = 3*qmmm_struct%nquant_nlink
     one=1
     ff0=0.0
@@ -56,6 +57,7 @@ subroutine nacR_analytic(xyz_in, ihop, icheck)
 !	end do
 ! But, it's here now to test this function
 ! Note, Davidson must be run prior to this for these assignments
+
 	if (qmmm_struct%qm_mm_first_call) then
 		write(6,*)  'sqm_energy() must be run once before executing this procedure!'
 		if (qm2ds%Mx == 0) write(6,*)  'excN must be > 0 to run this procedure!'

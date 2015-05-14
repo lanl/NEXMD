@@ -311,7 +311,7 @@ module nacT_analytic_module
    parameter(fbar=0.05d0)  ! maximum dE in numerical derivative, eV.
    integer Na,npot
         
-   include 'md.par'
+   !include 'md.par'
 
    Na=qmmm_struct%nquant_nlink ! number of atoms
    N3=3*qmmm_struct%nquant_nlink ! number of degrees of freedom
@@ -425,6 +425,7 @@ module nacT_analytic_module
    _REAL_ t_start,t_finish   
      
    call cpu_time(t_start)
+   write(6,*)'nacT_analytic t_start=',t_start
    if(present(v_version)) then
       if(v_version.ne.0) then
          call nacT_v(sim,nact)
@@ -435,6 +436,7 @@ module nacT_analytic_module
    call nacT_direct(sim,nact,xstep)
 
    call cpu_time(t_finish)
+   write(6,*)'nacT_analytic t_finish=',t_finish
    sim%time_nact_took=sim%time_nact_took+t_finish-t_start 
 
    return

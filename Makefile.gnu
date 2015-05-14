@@ -1,5 +1,5 @@
 
-FFLAG = -O3
+FFLAG = -O0 -pg
 #-mcmodel=medium
 LDFLAGS = $(FFLAG)
 LINK =  -llapack -lblas
