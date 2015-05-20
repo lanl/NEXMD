@@ -106,7 +106,7 @@ if (ihop>0) then
                 elseif(potential_type.eq.2) then
                   call rcnfldgrad2(dxyz1_test,qm2_struct%den_matrix,qm2ds%rhoTZ,qm2ds%nb,.true.)
                 endif
-         dxyz1=dxyz1+0.5*dxyz1_test
+         dxyz1=dxyz1+dxyz1_test
          endif
 
          do i=1,qmmm_struct%nquant_nlink
@@ -133,7 +133,7 @@ if (ihop>0) then
             call rcnfldgrad_full(dxyz1_test,qm2ds%rhoLZ,qm2ds%nb); 
          end if
          end if
-         dxyz1=dxyz1+dxyz1_test
+         dxyz1=dxyz1+0.5*dxyz1_test
          do i=1,qmmm_struct%nquant_nlink
             do j=1,3
                dxyz((i-1)*3+j)=dxyz((i-1)*3+j)-dxyz1(j,i)*KCAL_TO_EV
@@ -164,7 +164,7 @@ if (ihop>0) then
                 elseif(potential_type.eq.2) then
                   call rcnfldgrad2(dxyz1_test,qm2ds%rhoTZ,qm2ds%rhoT,qm2ds%nb,.false.)
                 endif
-	        dxyz1=dxyz1+dxyz1_test
+	        dxyz1=dxyz1+0.5*dxyz1_test
                 do i=1,qmmm_struct%nquant_nlink
                         do j=1,3
                                 dxyz((i-1)*3+j)=dxyz((i-1)*3+j)-dxyz1(j,i)*KCAL_TO_EV

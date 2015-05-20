@@ -37,7 +37,7 @@
    Ez=0, !Electric Field Vector Z
    Ey=0, !Electric Field Vector Y
    onsager_radius=5, ! Onsager radius
-   solvent_model=1, ! (0) None, (1) LR, (2) VE, (3) VE with Xi, (4) SS, (5) Variational SS
+   solvent_model=2, ! (0) None, (1) LR, (2) VE, (3) VE with Xi, (4) SS, (5) Variational SS
    potential_type=2, ! (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
 &endqmmm
 
