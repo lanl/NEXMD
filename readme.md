@@ -3,6 +3,7 @@ Notes
 
 Bugs
 !.) NAESMD is broken -- kinetic energy correction after hop no longer works !!!
+!.) Quantum steps are printed in the pes.out files in the new version, not in the old version
 1.) Possible error: profiler logs calc_rhotz instead of packing/unpacking subroutines possibly because of compilation error from 'Entry'.
 2.) Excited state energies do not print during iterative solvent calculations instead is junk
 3.) Crash when printing excited state dipoles and geometry optimization of the ground state 
