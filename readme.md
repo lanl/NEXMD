@@ -2,6 +2,7 @@ Notes
 1.) The nonadiabatic coupling vector NACR from nacT_analytic_module is calculated using a derivative subroutine, i.e. dcart1_xpm, while in the previous NAESMD version it was calculated using two Fockian constructions and finite difference. This was much faster before, since the gradient calculates the energy on an atom by atom basis. The gradient in the NACR is only necessary along the nuclear trajectory and thus we should go back to the original form of calculating NACR.
 
 Bugs
+!.) NAESMD is broken -- kinetic energy correction after hop no longer works !!!
 1.) Possible error: profiler logs calc_rhotz instead of packing/unpacking subroutines possibly because of compilation error from 'Entry'.
 2.) Excited state energies do not print during iterative solvent calculations instead is junk
 3.) Crash when printing excited state dipoles and geometry optimization of the ground state 
