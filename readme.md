@@ -3,6 +3,8 @@ Notes
 
 Bugs
 !.) NAESMD is broken -- kinetic energy correction after hop no longer works !!!
+	!.) State crossing seems to throw off ground state diagonalizer or the scf procedure in general
+	!.) Velocity rescaling subroutine veladjustment is exited by the variable racine being negative -- is not negative in old 		version -- there is a FIXME there regarding units
 !.) Quantum steps are printed in the pes.out files in the new version, not in the old version
 1.) Possible error: profiler logs calc_rhotz instead of packing/unpacking subroutines possibly because of compilation error from 'Entry'.
 2.) Excited state energies do not print during iterative solvent calculations instead is junk
