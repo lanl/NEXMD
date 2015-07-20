@@ -143,6 +143,9 @@ subroutine outDavidson()
    			close(76)
 			endif
 		endif
+        elseif(qmmm_nml%printtd.eq.-1) then !print all TD's to binary
+                write(6,*) 'Printing Normal Modes to modes.b file'
+                call printNM_binary(76,77)
 	endif
 	return
 endsubroutine outDavidson

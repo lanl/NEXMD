@@ -227,3 +227,32 @@ BohrtoA=0.529177249! A/Bohr
 flush(filenumber)
 return
 end subroutine
+
+!!********************************************************************
+!
+!  Subroutine to print normal modes in binary (MO representation)
+!  (and energies in ee.b)
+!  
+!********************************************************************
+!
+!--------------------------------------------------------------------
+!
+!  Josiah A. Bjorgaard LANL 2015
+!
+!--------------------------------------------------------------------
+
+   subroutine printNM_binary(fn1,fn2)
+   use qm2_davidson_module
+   implicit none
+   integer i,j,fn1,fn2
+   !character(len=20) FMT
+   open (fn1,file='modes.b',form='unformatted')
+   open (fn2,file='ee.b')
+   do i=1,qm2ds%Mx
+      write (10) (qm2ds%v0(i,j),i=1,qm2ds%Nrpa)
+      write (12,*)  qm2ds%e0(j)
+   enddo
+   close(fn1)
+   close(fn2)
+   end subroutine
+
