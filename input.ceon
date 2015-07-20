@@ -17,7 +17,7 @@
    ftol0=1.d-8, !  Acceptance tol.(|emin-eold|)
    ftol1=1.d-8, ! Accept.tol.for residual norm
    dav_maxcyc=100, !Max cycles for davidson diagonalization, negative for fixed number
-   printtd=0, ! (0) (0) No, (1) in MO rep, (2) in MO and AO rep, (3) Also fit NDDO charges
+   printtd=0, ! (-1) Print modes.b and ee.b files  (0) None, (1) in MO rep, (2) in MO and AO rep, (3) Also fit NDDO charges
 
    !***** Geometry optimization
    maxcyc=0, !Number of cycles for geometry optimization
