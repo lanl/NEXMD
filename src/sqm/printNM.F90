@@ -248,9 +248,9 @@ end subroutine
    !character(len=20) FMT
    open (fn1,file='modes.b',form='unformatted')
    open (fn2,file='ee.b')
-   do i=1,qm2ds%Mx
-      write (10) (qm2ds%v0(i,j),i=1,qm2ds%Nrpa)
-      write (12,*)  qm2ds%e0(j)
+   do j=1,qm2ds%Mx
+      write (fn1) (qm2ds%v0(i,j),i=1,qm2ds%Nrpa)
+      write (fn2,*)  qm2ds%e0(j)
    enddo
    close(fn1)
    close(fn2)
