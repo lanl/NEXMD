@@ -261,7 +261,7 @@
 
    qmmm_struct%qm_mm_first_call=.false.
    if ((qmmm_nml%printdipole>0).or.(qmmm_nml%printcharges)) then		
-	    if(qmmm_nml%printdipole<3) then
+	    if((qmmm_nml%printdipole<3).and.(qm2ds%Mx>0)) then
 	          call qm2_calc_molecular_dipole_in_excited_state()
 	     else if (qmmm_nml%printdipole>2) then 
 		  call qm2_calc_dipole(coords)
