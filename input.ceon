@@ -2,7 +2,7 @@
    !***** Ground state and output parameters
    qm_theory='AM1', !Integral type
    scfconv=1.0d-8, !Ground state scf convergence criteria
-   verbosity=1, !
+   verbosity=5, !
    printcharges=0, ! Mulliken charges for ground state
    printdipole=0, ! (0) None, (1) Transition (2) Relaxed, and Unrelaxed
    printbondorders=0, ! (0) No, (1) Yes
@@ -17,7 +17,8 @@
    ftol0=1.d-8, !  Acceptance tol.(|emin-eold|)
    ftol1=1.d-8, ! Accept.tol.for residual norm
    dav_maxcyc=100, !Max cycles for davidson diagonalization, negative for fixed number
-   printtd=-1, ! (-1) Print modes.b and ee.b files  (0) None, (1) in MO rep, (2) in MO and AO rep, (3) Also fit NDDO charges
+   printtd=0, ! (-1) Print modes.b and ee.b files  (0) None, (1) in MO rep, (2) in MO and AO rep, (3) Also fit NDDO charges
+   calcxdens=.true. ! Calculate cross density dipole moments  
 
    !***** Geometry optimization
    maxcyc=0, !Number of cycles for geometry optimization
@@ -25,9 +26,9 @@
    grms_tol=0.01, !Tolerance in eV/A (derivatives)
 
    !***** Solvent models
-   ceps=11; !Dielectric constant
-   index_of_refraction=100; !Dielectric constant for excitation currently useless
-   nspa=1000; !approximate number of cavity points per atom
+   ceps=11, !Dielectric constant
+   index_of_refraction=100, !Dielectric constant for excitation currently useless
+   nspa=1000, !approximate number of cavity points per atom
    cosmo_scf_ftol=1.0d-9, !State specific scf tolerance
    cosmo_scf_maxcyc=500, !State specific scf iterations
    linmixparam=1, !linear mixing parameter
@@ -46,7 +47,7 @@
    rnd_seed=1, ! seed for the random number generator
    bo_dynamics_flag=1, ! 0-non-BO, 1-BO
    exc_state_init=1, ! initial excited state (0 - ground state)
-   n_exc_states_propagate=2, ! number of excited states
+   n_exc_states_propagate=4, ! number of excited states
 
    !***** Dynamics parameters
    time_init=0.d0, ! initial time, fs
@@ -81,13 +82,56 @@
 &endmoldyn
 
 &coord
-    6        -6.110957    1.411698   -0.023266
-    6        -6.066679   -0.073593    0.052020
-    8        -5.021829   -0.724265   -0.078582
-    1        -7.158763    1.782354    0.081679
-    1        -5.700770    1.759051   -1.004731
-    1        -5.487688    1.857365    0.792064
-    1        -7.037656   -0.586911    0.233916
+    6        -2.147526    0.925099    0.037805
+    6        -0.767906    1.102857    0.026948
+    6         0.103049    0.002375    0.047952
+    6        -0.443097   -1.295376    0.080357
+    6        -1.817073   -1.495931    0.091540
+    6        -2.671301   -0.378363    0.069881
+    6         1.550019    0.137223    0.037432
+    6         2.206633    1.310360    0.007549
+    6         3.642558    1.518254   -0.006546
+    6         4.083745    2.854755   -0.049406
+    6         5.439851    3.170618   -0.067286
+    6         6.428684    2.152041   -0.045419
+    6         5.993553    0.826138   -0.001900
+    6         4.628324    0.505998    0.019109
+    1         2.089422   -0.827668    0.055428
+    1         1.628772    2.256947   -0.010682
+    1        -2.817628    1.802413    0.021251
+    1        -0.371744    2.131073    0.001161
+    1        -2.228308   -2.520183    0.116810
+    7        -4.135262   -0.578331    0.080467
+    1         0.227458   -2.170925    0.097080
+    1         3.327876    3.657427   -0.068782
+    1         6.743500    0.019530    0.016722
+    6         7.832864    2.515925   -0.067610
+    6         8.864129    1.653101   -0.042210
+    1         8.017615    3.606043   -0.108757
+    6        10.265489    2.037390   -0.062992
+    1         8.691180    0.561590   -0.001715
+    6        10.683319    3.376022   -0.101029
+    6        12.040424    3.693831   -0.117477
+    6        12.999824    2.682624   -0.096066
+    6        12.596077    1.347035   -0.058582
+    6        11.241955    1.024875   -0.042247
+    1         9.942777    4.190682   -0.117647
+    1        12.352547    4.749362   -0.147175
+    1        14.070716    2.936282   -0.108456
+    1        13.350614    0.545424   -0.041596
+    1        10.931363   -0.031672   -0.012744
+    8         5.920407    4.467465   -0.105187
+    6         4.946695    5.508810   -0.130597
+    8         4.178264   -0.797997    0.070004
+    6         5.165250   -1.827497    0.066665
+    1         5.568659    6.440104   -0.157606
+    1         4.317097    5.482521    0.791379
+    1         4.312082    5.432342   -1.046312
+    1         4.552820   -2.765163    0.096593
+    1         5.815028   -1.753551    0.971827
+    1         5.776145   -1.786358   -0.867137
+    8        -4.869899    0.377466    0.052693
+    8        -4.586347   -1.695683    0.116578
 &endcoord
 
 &veloc

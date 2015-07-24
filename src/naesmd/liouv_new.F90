@@ -66,6 +66,11 @@ subroutine dav_wrap(sim_target)
 	if (qm2ds%verbosity>0) then
 		call outDavidson()
 	endif
+        
+        if (qm2ds%calcxdens) then
+           write(6,*)'Calculating cross densities and printing to CEO.out'
+           call polarizab()
+        endif
 
 	qm2ds%has_been_run = .TRUE.
 

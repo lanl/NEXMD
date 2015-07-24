@@ -21,7 +21,9 @@
 !
    type qm2_davidson_structure_type
 
-	  logical :: has_been_run = .FALSE. ! Has the Davidson calculation been run at least once?
+      logical :: calcxdens ! flag for calculating cross densities !JAKB
+
+      logical :: has_been_run = .FALSE. ! Has the Davidson calculation been run at least once?
 
       integer::verbosity=0 ! verbosity of Davidson output
 
@@ -43,9 +45,9 @@
       _REAL_::ftol0=1.d-8 !  Acceptance tol.(|emin-eold|)
       _REAL_::ftol1=1.d-8 ! Accept.tol.for residual norm
 
-	  ! Non-adiabatic dynamics
-	  _REAL_, allocatable :: dij(:)	! NAD coupling
-	  _REAL_, allocatable :: cmdqt(:,:) ! Coefficients
+      ! Non-adiabatic dynamics
+      _REAL_, allocatable :: dij(:)	! NAD coupling
+      _REAL_, allocatable :: cmdqt(:,:) ! Coefficients
       ! Various sizes
       integer Nb ! basis size, total number of atomic orbitals
       integer Lt ! =Nb*(Nb+1)/2 - triagonal

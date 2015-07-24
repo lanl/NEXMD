@@ -537,6 +537,8 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
    use cosmo_C, only: solvent_model,potential_type,ceps,cosmo_scf_ftol,cosmo_scf_maxcyc,doZ,&
         index_of_refraction,nspa,onsager_radius,Ex,Ey,Ez,EF,linmixparam !COSMO parameters
    use xlbomd_module, only: xlbomd_flag,K,dt2w2,xlalpha,coef
+   use qm2_davidson_module
+
  !XL-BOMD parameters
    implicit none
 
@@ -690,6 +692,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
    character(len=80) :: parameter_file   
    logical :: qxd
    logical :: test
+   logical :: calcxdens
 
    namelist /qmmm/ qmcut, iqmatoms,qmmask,qmgb,qm_theory, qmtheory, &
                    qmcharge, qmqmdx, qmqmdx_exc, verbosity, tight_p_conv, scfconv, & ! CML 7/10/12
@@ -717,7 +720,9 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
                    ceps, chg_lambda, vsolv, nspa, solvent_model,potential_type,cosmo_scf_ftol,cosmo_scf_maxcyc,&
 			doZ,index_of_refraction,onsager_radius,EF,Ex,Ey,Ez,linmixparam, &
 !XL-BOMD parameters
-		   xlbomd_flag,K,dt2w2,xlalpha
+		   xlbomd_flag,K,dt2w2,xlalpha, &
+!Cross densities
+                   calcxdens
 
    !the input value of excNin MUST NOT be changed.
    excN=excNin;   
@@ -776,6 +781,9 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
    K = 5
    dt2w2 = 1.82
    xlalpha = 18d-3
+
+   !Cross densities
+   calcxdens=.false.
 
    !+TJG 01/26/2010
 
@@ -862,6 +870,8 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
     ! turn on OPNQ if necessary 
     qmmm_opnq%useOPNQ=qxd
 
+    qm2ds%calcxdens=calcxdens !JAKB for calculating cross density
+
    ! Disable EXTERN in SQM since
    ! it does not make sense for SQM to be calling the external ADF interface.
    if (qmmm_nml%qmtheory%EXTERN) then                                                  
@@ -913,8 +923,6 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
 
 ! --- Variable QM solvent region - has to be very early here because we
 !     will be changing nquant and iqmatoms.  ---
-
-
    qmmm_nml%vsolv = vsolv
    if (qmmm_nml%vsolv > 0) then
       write(fdes_out,*) 'SQM does not support the use of nearest_qm_solvent.'
