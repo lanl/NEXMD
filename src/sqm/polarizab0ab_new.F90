@@ -1,63 +1,63 @@
-#include "dprec.fh"                                                                                                                                                                                                                                                           
+#include "dprec.fh"                                    
 !ccccccccccccccccccccccccccccccccccccccccccccccccccc
 ! This program calculates the transition dipole moments
-! between excited states using CEO formalism                                                                                                                                                                                                                     
-!                                                                                                                                                                                                                                                                     
+! between excited states using CEO formalism                                         
+!   
 !    MODIFIED FOR SQM_NAESMD by JAKB LANL 2015
 !ccccccccccccccccccccccccccccccccccccccccccccccccccc
-!                                                                                                                                                                                                                                                                     
-                                                                                                                                                                                                                                                                      
-subroutine polarizab()                                                                                                                                                                                                                                                
+!   
+    
+subroutine polarizab()                         
       use qmmm_module,only:qm2_struct,qmmm_struct
       use qm2_davidson_module
       use constants, only : BOHRS_TO_A, SQRT2, ONE_AU
 !TODO compare units between CEO and SQM_NAESMD
-                                                                                                                                                                                                                                                                      
-                                                                                                                                                                                                                                                                      
-      implicit none                                                                                                                                                                                                                                                   
+    
+    
+      implicit none                            
         _REAL_ f0,f1,f2,f3,ddot,freq
         integer zero,one,two,three
-        !integer nfreq_M                                                                                                                                                                                                                                              
+        !integer nfreq_M                       
 
-        parameter (f0 = 0.0)                                                                                                                                                                                                                                          
-        parameter (f1 = 1.0)                                                                                                                                                                                                                                          
-        parameter (f2 = -2.0)                                                                                                                                                                                                                                         
-        parameter (zero=0)                                                                                                                                                                                                                                            
-        parameter (one=1)                                                                                                                                                                                                                                             
-        parameter (two=2)                                                                                                                                                                                                                                             
-        parameter (three=3)                                                                                                                                                                                                                                           
+        parameter (f0 = 0.0)                   
+        parameter (f1 = 1.0)                   
+        parameter (f2 = -2.0)                  
+        parameter (zero=0)                     
+        parameter (one=1)                      
+        parameter (two=2)                      
+        parameter (three=3)                    
         !parameter (nfreq_M=10000)
-                                                                                                                                                                                                                                                                      
-        integer modf(5),modpr(qm2ds%Mx),Mpp,Mhh                                                                                                                                                                                                                       
-        integer nfreq1,nfreq2,nfreq3                                                                                                                                                                                                                                  
-        _REAL_ freq01,freq02,freq03                                                                                                                                                                                                                                   
+    
+        integer modf(5),modpr(qm2ds%Mx),Mpp,Mhh
+        integer nfreq1,nfreq2,nfreq3           
+        _REAL_ freq01,freq02,freq03            
         _REAL_ freq11,freq12,freq13
         _REAL_ rdamp1,rdamp2,rdamp3
-        _REAL_ omega12,omega13,omega23                                                                                                                                                                                                                                
-        character*3 type2,type3                                                                                                                                                                                                                                       
-        _REAL_ tr,f                                                                                                                                                                                                                                                   
+        _REAL_ omega12,omega13,omega23         
+        character*3 type2,type3                
+        _REAL_ tr,f                            
         _REAL_ muax(qm2ds%Mx),muay(qm2ds%Mx),muaz(qm2ds%Mx)
         _REAL_ muabx(-qm2ds%Mx:qm2ds%Mx,-qm2ds%Mx:qm2ds%Mx)
         _REAL_ muaby(-qm2ds%Mx:qm2ds%Mx,-qm2ds%Mx:qm2ds%Mx)
         _REAL_ muabz(-qm2ds%Mx:qm2ds%Mx,-qm2ds%Mx:qm2ds%Mx)
-                                                                                                                                                                                                                                                                      
-                                                                                                                                                                                                                                                                      
+    
+    
         _REAL_ tmp1(qm2ds%Nrpa),tmp2(qm2ds%Nrpa)
         _REAL_ temp1(qm2ds%Nb**2),temp2(qm2ds%Nb**2),temp3(qm2ds%Nb**2),temp4(qm2ds%Nb**2)
         _REAL_ temp5(qm2ds%Nb**2),temp6(qm2ds%Nb**2)
 
       integer itime1,itime2,itime3,itime11,get_time
-      integer i,j                                                                                                                                                                                                                                                     
-      real time11                                                                                                                                                                                                                                                     
+      integer i,j                              
+      real time11                              
       character*20 datetime
       character*(150) txt, txt1*15, machname*36, keywr*6
-      common /keywr/ keywr                                                                                                                                                                                                                                            
-                                                                                                                                                                                                                                                                      
-      _REAL_ dip(3,qm2ds%Lt) !added                                                                                                                                                                                                                                   
-                                                                                                                                                                                                                                                                      
+      common /keywr/ keywr                     
+    
+      _REAL_ dip(3,qm2ds%Lt) !added            
+    
       call get_date(datetime)
       call get_machine(machname)
-      itime1=get_time()                                                                                                                                                                                                                                               
+      itime1=get_time()                        
 
 
       write (6,*)
@@ -97,6 +97,7 @@ subroutine polarizab()
 120   format(' Modes factors Av,S,Px,Py,Pz     ',5i4)
 
 if(0==1) then
+
 ! Note after mo2siteph the mode eta is ksi(-alpha)* sqrt(2) different 
 ! from usual normalization condition, i.e Tr(rho[eta,eta^T])=2
 !     Compute mu_alpha (transition dipoles)

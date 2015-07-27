@@ -18,7 +18,7 @@
    ftol1=1.d-8, ! Accept.tol.for residual norm
    dav_maxcyc=100, !Max cycles for davidson diagonalization, negative for fixed number
    printtd=0, ! (-1) Print modes.b and ee.b files  (0) None, (1) in MO rep, (2) in MO and AO rep, (3) Also fit NDDO charges
-   calcxdens=.true. ! Calculate cross density dipole moments  
+   calcxdens=.false. ! Calculate cross density dipole moments  
 
    !***** Geometry optimization
    maxcyc=0, !Number of cycles for geometry optimization
@@ -38,7 +38,7 @@
    Ez=0, !Electric Field Vector Z
    Ey=0, !Electric Field Vector Y
    onsager_radius=10, ! Onsager radius
-   solvent_model=0, ! (0) None, (1) LR, (2) VE, (3) VE with Xi, (4) SS, (5) Variational SS
+   solvent_model=1, ! (0) None, (1) LR, (2) VE, (3) VE with Xi, (4) SS, (5) Variational SS
    potential_type=3, ! (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
 &endqmmm
 

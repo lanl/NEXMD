@@ -1150,8 +1150,8 @@ subroutine coscav
    real(8),allocatable,save::coord(:,:)
    integer iw
 
+
    if (qmmm_nml%verbosity > 5) print*,'cosmo_call coscav'
-   
    iw=6 ! standard output
 
    if(.not.allocated(coord)) then
@@ -1159,7 +1159,6 @@ subroutine coscav
    end if
    coord(1:3,1:qmmm_struct%nquant)= &
       qmmm_struct%qm_coords(1:3,1:qmmm_struct%nquant)
-
     numat=qmmm_struct%nquant
 
     maxrs = 70 * numat
@@ -1175,7 +1174,7 @@ subroutine coscav
         coord(j, i) = coord(j, i) + Cos (i*j*.1d0) * 3.0d-9
       end do
     end do
-
+write(6,*)'TEST'
    !
     ilipa = 0
     do i = 1, numat
@@ -1559,6 +1558,7 @@ subroutine coscav
         !write(6,*)amat;stop
     endif
     deallocate(rdat,rsc,tm,nn,isort,ipsrs,nipsrs,nset,nipa,lipa,dirtm,finel)
+    write(6,*)'TEST'
     100 continue
 end subroutine coscav
 
