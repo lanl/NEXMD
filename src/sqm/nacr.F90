@@ -110,7 +110,7 @@ subroutine nacR_analytic(xyz_in, ihop, icheck)
 	    end do
 ! Term Tr(F^x rho_ij) (only symmetric part contributes)
 		call packing(Nb,qm2ds%eta,qm2ds%nacr_scratch,'s')
-		call DCART1(dxyz1,qm2_struct%den_matrix,qm2ds%nacr_scratch,xyz)
+		call DCART1(dxyz1,2.0*qm2_struct%den_matrix,qm2ds%nacr_scratch,xyz)
 ! FIXME Why den_matrix is twice of that in old version?
 
 ! Convert from kcal/A to eV/A
