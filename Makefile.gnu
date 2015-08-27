@@ -1,5 +1,5 @@
 
-FFLAG = -O0 -pg
+FFLAG = -O0 -pg #-Wall -Wextra -fbounds-check -fbacktrace
 #-mcmodel=medium
 LDFLAGS = $(FFLAG)
 LINK =  -llapack -lblas
@@ -166,7 +166,9 @@ OBJNAESMD = \
         $(OBJDIR)/$(NAESMDDIR)/sqm_subs.o \
 	$(OBJDIR)/$(NAESMDDIR)/deriv.o \
 	$(OBJDIR)/$(NAESMDDIR)/buildM.o \
-	$(OBJDIR)/$(NAESMDDIR)/liouv_new.o
+	$(OBJDIR)/$(NAESMDDIR)/liouv_new.o \
+        $(OBJDIR)/$(NAESMDDIR)/rescaleveloc.o
+
 OBJPBSA = \
 	$(OBJDIR)/$(PBSADIR)/timer.o \
 	$(OBJDIR)/$(PBSADIR)/sa_driver.o \

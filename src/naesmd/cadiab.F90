@@ -119,6 +119,7 @@ contains
 ! end modified by Seba
 
    type(xstep_t)::xstep
+   write(6,*)'cadiabmiddlecalc called'
 
    if(iimdqt.eq.1) then
       do i=1,npot
@@ -263,8 +264,6 @@ contains
 
 
       xstep=new_xstep(sim,xx,yy,zz,xxp,yyp,zzp,xxm,yym,zzm)
-!          call nacT_analytic(Na,Nm,xxp,yyp,zzp,xxm,yym,zzm, &
-!             npot,dtnact,Omega,mdflag,nmaxpot,cmdqt,cadiab)
       call nacT_analytic(sim,cadiab,xstep)
 
       do i=1,npot
@@ -275,7 +274,6 @@ contains
 
    end if
 
-! modified by Seba################################
 !      if(cross.eq.2) then
 !         if(conthop.eq.0) then
 !            cadiabmiddle(ihop,iorden(ihop))=0.0d0
@@ -311,8 +309,6 @@ contains
       end if
    end do
 
-! end modified by Seba################################
-                 
    if(iimdqt.eq.nquantumstep) then
       do i=1,npot
          do j=1,npot

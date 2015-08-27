@@ -66,7 +66,7 @@ module verlet_module
    axold=ax
    ayold=ay
    azold=az
-   
+write(6,*)'vy=',vy   
    do i=1,natom
       if(ensemble.eq.'langev') then
          rx(i)=rx(i)+vx(i)*vfric(i)+ax(i)*afric(i)  &
@@ -129,6 +129,7 @@ module verlet_module
    !do i=1,npot
       !vmdqt(i)=sim%naesmd%Omega(i)+vgs
    !end do
+
    if((solvent_model.eq.4).or.(solvent_model.eq.5)) then
         call calc_cosmo_4(sim)
    else
@@ -165,6 +166,10 @@ module verlet_module
          vz(i)=vz(i)+az(i)*dt_2
       end if
    end do
+
+   !remove rotation/translation by rescaling velocities
+   call rescaleveloc(rx,ry,rz,vx,vy,vz,massmdqt,natom)
+
 !
 !     kinetic energy calculation
 !
@@ -220,6 +225,7 @@ module verlet_module
 !
 !--------------------------------------------------------------------
 !
+write(6,*)'vy1:',vy
    rxold=rx
    ryold=ry
    rzold=rz
@@ -318,7 +324,7 @@ module verlet_module
 !             ry(j)=ry(j)/convl
 !             rz(j)=rz(j)/convl
 !         enddo
-
+write(6,*)'vy2:',vy
    ! kav: this was commented out for some reason
    ! by Grisha, but without it does not work
    call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs)
@@ -368,6 +374,9 @@ module verlet_module
          vz(i)=vz(i)+az(i)*dt_2
       end if
    end do
+
+   !remove translation/rotation
+   call rescaleveloc(rx,ry,rz,vx,vy,vz,massmdqt,natom)
 
    !write(133,889) (vx(i),vy(i),vz(i),i=1,natom)
    call flush(133)

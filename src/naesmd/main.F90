@@ -1062,6 +1062,7 @@ program MD_Geometry
    vx(1:natom)=vx(1:natom)/convl*convt
    vy(1:natom)=vy(1:natom)/convl*convt
    vz(1:natom)=vz(1:natom)/convl*convt
+   write(6,*)'vy read',vy
 !
 !--------------------------------------------------------------------
 !
@@ -1142,7 +1143,7 @@ program MD_Geometry
    end do
 
    ! define cartesian coordinates for mdqt 
-   ! transform coordiantes from amstrong to atomic units
+   ! transform coordiantes from angstrom to atomic units
    rx(1:natom)=xx(1:natom)/convl
    ry(1:natom)=yy(1:natom)/convl
    rz(1:natom)=zz(1:natom)/convl
@@ -1156,12 +1157,15 @@ program MD_Geometry
    do j=1,natom
       masstot=masstot+massmdqt(j)
    end do
-
    do j=1,natom
       xcmini=xcmini+rx(j)*massmdqt(j)/masstot
       ycmini=ycmini+ry(j)*massmdqt(j)/masstot
       zcmini=zcmini+rz(j)*massmdqt(j)/masstot
    end do
+   
+   !Remove rotation and translation from initial velocity
+   write(6,*)'massmdqt',size(massmdqt),size(rx)
+   call rescaleveloc(rx,ry,rz,vx,vy,vz,massmdqt,natom)
 
    ! compute kinetic energy, for cartesian option
    kin=0.d0

@@ -184,6 +184,7 @@ module nacT_analytic_module
 
    call qmmm2coords_r(sim)
    nact = 0.d0
+   write(6,*)'Called nacT_v'
 
    do i=2,sim%naesmd%npot
       do j=1,i-1

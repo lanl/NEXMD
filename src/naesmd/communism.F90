@@ -18,6 +18,8 @@ module communism
       _REAL_                         :: escf
       _REAL_, dimension(:), pointer  :: deriv_forces ! forces as they come out
                                                        ! of deriv (eV/A)
+      !_REAL_, dimension(:), pointer  :: veloc ! velocities for dynamics
+
       ! Various cumulative times (initial values=0.d0)       
       _REAL_::time_sqm_took=0.d0
       _REAL_::time_davidson_took=0.d0
@@ -291,7 +293,7 @@ module communism
         if(present(dij))  then
             mn = min(size(dij), size(sim%dav%dij))
             !FIXME unit conversion for dij?
-            dij(:mn) = sim%dav%dij(:mn)*convl
+            dij(:mn) = sim%dav%dij(:mn)!*convl
         endif
     end subroutine
 !

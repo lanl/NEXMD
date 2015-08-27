@@ -10,11 +10,11 @@ contains
       if(file.gt.200)STOP'ERROR: file number too large'
       read(file,'(a)',err=100,end=100)card
 !      flen=199
-      flen=1000
+      flen=199
 !      do while(card((flen+1):(flen+1)).eq.' ')
       do while(card(flen:flen).eq.' ')
          flen=flen-1
-!	   if (flen.eq.0) goto 100
+         if (flen.eq.0) goto 100
       enddo
       readstring=flen
       return

@@ -245,6 +245,7 @@ contains
 !    Feed here energies and wavefunctions and geometry, get back dij  
 ! if necessary here the signs of the CI coefficient matrix can be checked right here
 ! analytical calculation of nacR
+write(6,*)'calling nacR_analytic_wrap'
    call nacR_analytic_wrap(sim, ihop, icheck, dij)
 ! end of the calculation of the non-adiabatic coupling vector dij
 !*********************************
@@ -252,22 +253,26 @@ contains
       j=1
       do i=1,natom
          write(29,*) i,dij(j),dij(j+1),dij(j+2)
+         write(6,*) 'dij=',i,dij(j),dij(j+1),dij(j+2)
          j=j+3
       end do
       call flush(29)
    end if
 ! calculation of the current energy
 ! and the velocities adjustment
+   write(6,*)'vybefore:',vy
    ihoptemp=icheck
    vicheck=vtemp(ihoptemp)
    alpha=vmdqtnew(ihop)-vicheck
    racine = 0.0d0
-   !FIXME units dij vs units vxyz
+
    j=1
    do i=1,natom
       racine=racine+vx(i)*dij(j)+vy(i)*dij(j+1) &
          +vz(i)*dij(j+2)
       j=j+3
+        write(6,*)i,'v:',vx(i),vy(i),vz(i)
+        write(6,*)i,'dij:',dij(j:j+2)
    end do
    racine=racine**2
    j=1
@@ -298,11 +303,13 @@ contains
    ctehop1=ctehop1/dctehop1
    j=1
    do i=1,natom
+      write(6,*) i,'velocity rescale:',ctehop1*dij(j:j+2)/massmdqt(i)
       vx(i)=vx(i)-ctehop1*dij(j)/massmdqt(i)
       vy(i)=vy(i)-ctehop1*dij(j+1)/massmdqt(i)
       vz(i)=vz(i)-ctehop1*dij(j+2)/massmdqt(i)
       j=j+3
    end do
+   write(6,*)'vyafter:',vy
 4321     continue
 !********************************************************
 ! end of adjustment of velocities
