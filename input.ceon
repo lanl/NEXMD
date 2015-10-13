@@ -70,7 +70,7 @@
    verbosity=0, ! output verbosity (0-minimal, 3-highest) 
    out_count_init=0, ! the initial count for output files
    out_data_steps=1, ! number of steps to write data
-   out_coords_steps=500, ! number of steps to write the restart file
+   out_coords_steps=1, ! number of steps to write the restart file
    out_data_cube=0, ! write(1) or not(0) view files to generate cubes   
 &endmoldyn
 

@@ -122,6 +122,7 @@ contains
 ! write the atomic positions in angstoms
       card='coordinates' // ktbig(icontini) // '.dat'
       OPEN(10,FILE=card)
+      write(10,557) '$COORD'
       do i=1,txtinicoord
            write(10,555) txtinput(i)
       end do
@@ -147,17 +148,11 @@ contains
       enddo
 
       write(10,556) '$ENDCOEFF'
-      write(10,*) 
-      write(10,558) '$MOLDYN'
-      write(10,999) ibo
-      write(10,999) ihop
-      write(10,999) npot
-      write(10,998) icontini
 
-      do i=txtendcoord+7,jend
-         write(10,555) txtinput(i)
-      end do
-      close(10)
+      !do i=txtendcoord+7,jend
+      !   write(10,555) txtinput(i)
+      !end do
+      !close(10)
 
       if(iview.eq.1) then
 
@@ -375,7 +370,7 @@ contains
 
       card='coordinates' // ktbig(icontpdb) // '.dat'
       open(10,FILE=card)
-
+      write(10,557) '$COORD'
       do k=1,txtinicoord
          write(10,555) txtinput(k)
       end do
@@ -384,7 +379,6 @@ contains
          write(10,999) atomtype(k),rx(k)*convl, &
          ry(k)*convl,rz(k)*convl
       end do
-
       write(10,556) '$ENDCOORD'
       write(10,557) '$VELOC'
 
@@ -401,28 +395,21 @@ contains
       end do
 
       write(10,556) '$ENDCOEFF'
-      write(10,*) 
-      write(10,558) '$MOLDYN'
-      write(10,999) ibo
-      write(10,999) ihop
-      write(10,999) npot 
-      write(10,998) icontpdb
-      write(10,*) tfemto
 
-      do k=txtendcoord+8,txtendcoord+9
-         write(10,555) txtinput(k)
-      end do
+      !do k=txtendcoord+8,txtendcoord+9
+      !   write(10,555) txtinput(k)
+      !end do
 
-      write(10,*)int(nstep-(icontpdb-icontini)*nstepcoord*nstepw) 
-      do k=txtendcoord+11,txtendcoord+21
-         write(10,555) txtinput(k)
-      end do
+      !write(10,*)int(nstep-(icontpdb-icontini)*nstepcoord*nstepw) 
+      !do k=txtendcoord+11,txtendcoord+21
+      !   write(10,555) txtinput(k)
+      !end do
 
-      write(10,*) iseedmdqt
-      do k=txtendcoord+23,jend
-         write(10,555) txtinput(k)
-      end do
-      close(10)
+      !write(10,*) iseedmdqt
+      !do k=txtendcoord+23,jend
+      !   write(10,555) txtinput(k)
+      !end do
+      !close(10)
 
       open (9,file='coords.xyz',access='append')
       write (9,*) natom

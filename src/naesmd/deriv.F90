@@ -284,14 +284,14 @@ end if !ihop>0
       !If verbosity level is greater than 3 we also print the force array on the
       !QM atoms
       !write (6,'("QMMM:")')
-      write (6,'("QMMM: Forces on QM atoms ground state calculation (eV)")')
+      write (6,'("QMMM: Forces on QM atoms ground state calculation (eV/A)")')
       write (6,'("QMMM: state=",2i3)') ihop, qm2ds%struct_opt_state
       write (6,'("QMMM: Atm ",i6,": ",3f20.14)') (j,-dxyz_gs(1+3*(j-1)), &
          -dxyz_gs(2+3*(j-1)), &
          -dxyz_gs(3+3*(j-1)), j=1,qmmm_struct%nquant_nlink)
 	if(ihop>0) then
       !write (6,'("QMMM:")')
-      write (6,'("QMMM: Forces on QM atoms excited state calculation (eV)")')
+      write (6,'("QMMM: Forces on QM atoms excited state calculation (eV/A)")')
       write (6,'("QMMM: state=",2i3)') ihop, qm2ds%struct_opt_state
       write (6,'("QMMM: Atm ",i6,": ",3f20.14)') (j,-dxyz(1+3*(j-1)),&
          -dxyz(2+3*(j-1)), &
