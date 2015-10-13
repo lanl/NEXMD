@@ -179,7 +179,6 @@ program MD_Geometry
 
    itime2=get_time() 
    time12=real(itime2-itime1)/100
-   write(6,*)'itime1,itime2',itime1,itime2
 
    !Calculate derivatives
    call cpu_time(t_start)
@@ -191,6 +190,7 @@ program MD_Geometry
    endif
    call cpu_time(t_finish)
    sim%time_deriv_took=sim%time_deriv_took+t_finish-t_start
+    
 
    !Derivatives to forces
    call deriv2naesmd_accel(sim)
@@ -1062,7 +1062,6 @@ program MD_Geometry
    vx(1:natom)=vx(1:natom)/convl*convt
    vy(1:natom)=vy(1:natom)/convl*convt
    vz(1:natom)=vz(1:natom)/convl*convt
-   write(6,*)'vy read',vy
 !
 !--------------------------------------------------------------------
 !
@@ -1164,7 +1163,6 @@ program MD_Geometry
    end do
    
    !Remove rotation and translation from initial velocity
-   write(6,*)'massmdqt',size(massmdqt),size(rx)
    call rescaleveloc(rx,ry,rz,vx,vy,vz,massmdqt,natom)
 
    ! compute kinetic energy, for cartesian option

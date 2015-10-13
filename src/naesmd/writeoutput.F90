@@ -10,6 +10,7 @@ contains
 
    subroutine writeoutputini(sim,ibo,yg,lprint)
    use communism
+   use qm2_davidson_module,only:qm2ds
    use Cosmo_C, only : solvent_model
    implicit none      
 
@@ -109,11 +110,11 @@ contains
       end if
 
       if(state.eq.'exct'.and.lprint.ge.1) then
-         write(89,889) tfemto,(cicoeffao2(j,ihop),j=1,nao)
+         write(89,889) tfemto,(qm2ds%v2(qm2ds%Nb*(j-1)+j,ihop),j=1,qm2ds%Nb)
          call flush(89)
 ! in order to print the initial transition density of all states
          do k=1,npot
-            write(77,889) tfemto,(cicoeffao2(j,k),j=1,nao)
+            write(77,889) tfemto,(qm2ds%v2(qm2ds%Nb*(j-1)+j,k),j=1,qm2ds%Nb)
             call flush(77)
          end do
       end if
@@ -183,9 +184,9 @@ contains
          end do
 
          write(90,443) ' Eigenvector:   1  with Eigenvalue:   0.0'
-         do k=1,nao
+         do k=1,qm2ds%Nb
 ! to be used in case we want to print the transition densities of all the states at t=0
-            write(90,*) cicoeffao2(k,kki)
+            write(90,*) qm2ds%v2(qm2ds%Nb*(k-1)+k,kki)
          end do
          close(90)
 ! to be used in case we want to print the transition densities of all the states at t=0
@@ -228,6 +229,7 @@ contains
 
    subroutine writeoutput(sim,i,ibo,yg,lprint,cross)
    use communism
+   use qm2_davidson_module,only:qm2ds
    use Cosmo_C,only: solvent_model
    implicit none      
  
@@ -361,7 +363,7 @@ contains
    end if
 
    if(state.eq.'exct'.and.lprint.ge.1) then
-      write(89,889) tfemto,(cicoeffao2(j,ihop),j=1,nao)
+      write(89,889) tfemto,(qm2ds%v2(qm2ds%Nb*(j-1)+j,ihop),j=1,qm2ds%Nb)
       call flush(89)
    end if
 
@@ -452,8 +454,8 @@ contains
          end do
 
          write(90,443) ' Eigenvector:   1  with Eigenvalue:   0.0'
-         do k=1,nao
-            write(90,*) cicoeffao2(k,kki)
+         do k=1,qm2ds%Nb
+            write(90,*) qm2ds%v2(qm2ds%Nb*(k-1)+k,kki)
          end do
          close(90)
       end do

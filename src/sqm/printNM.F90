@@ -22,6 +22,7 @@
    	do j=0,n-1
    		write(filenumber,"(1000F7.4)") (qm2ds%v2(j*n+k,i),k=1,n)
    	end do
+        write(6,*)'v2,test2,',qm2ds%v2(:,i)
    end do
    flush(filenumber)
    end

@@ -66,7 +66,6 @@ module verlet_module
    axold=ax
    ayold=ay
    azold=az
-write(6,*)'vy=',vy   
    do i=1,natom
       if(ensemble.eq.'langev') then
          rx(i)=rx(i)+vx(i)*vfric(i)+ax(i)*afric(i)  &

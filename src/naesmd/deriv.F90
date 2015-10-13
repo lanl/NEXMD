@@ -318,7 +318,6 @@ end if !ihop>0
 	endif
    end if
 simpoint%deriv_forces=dxyz_gs+dxyz !incorporating into sim type
-write(6,*)'dxyz:',simpoint%deriv_forces
   return
    end subroutine deriv
 !

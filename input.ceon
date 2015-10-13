@@ -1,24 +1,22 @@
 &qmmm
    !***** Ground state and output parameters
    qm_theory='AM1', !Integral type
-   scfconv=1.0d-6 !Ground state scf convergence criteria
-   verbosity=5, !
+   scfconv=1.0d-8, !Ground state scf convergence criteria
+   verbosity=0, !
    printcharges=0, ! Mulliken charges for ground state
-   printdipole=0, ! (0) None, (1) Transition (2) Relaxed, and Unrelaxed
+   printdipole=0, ! (0) None, (1) Transition, Relaxed, and Unrelaxed
    printbondorders=0, ! (0) No, (1) Yes
    density_predict=0, !(0) None, (1) Reversible MD, (2) XL-BOMD
-   K=3, ! XL-BOMD Parameter (3-9)
+   K=5, ! XL-BOMD Parameter (3-9)
    itrmax=300, ! Maximum number of scf iterations for ground state, negative to ignore convergence
 
    !***** Excited state parameters
-   exst_method=1, ! CIS (1) or RPA (2)
+   exst_method=2, ! CIS (1) or RPA (2)
    dav_guess=0, ! restart Davidson from previous (1) or from scratch (0) or XL-BOXMD (2)
    ftol=0.d0, !   Min tolerance (|emin-eold|)
    ftol0=1.d-5, !  Acceptance tol.(|emin-eold|)
-   ftol1=1.d-4, ! Accept.tol.for residual norm
-   dav_maxcyc=100, !Max cycles for davidson diagonalization, negative for fixed number
-   printtd=0, ! (-1) Print modes.b and ee.b files  (0) None, (1) in MO rep, (2) in MO and AO rep, (3) Also fit NDDO charges
-   calcxdens=.false. ! Calculate cross density dipole moments  
+   ftol1=1.d-6, ! Accept.tol.for residual norm
+   dav_maxcyc=200, !Max cycles for davidson diagonalization, negative for fixed number
 
    !***** Geometry optimization
    maxcyc=0, !Number of cycles for geometry optimization
@@ -26,34 +24,29 @@
    grms_tol=0.01, !Tolerance in eV/A (derivatives)
 
    !***** Solvent models
-   ceps=11, !Dielectric constant
-   index_of_refraction=100, !Dielectric constant for excitation currently useless
-   nspa=1000, !approximate number of cavity points per atom
-   cosmo_scf_ftol=1.0d-9, !State specific scf tolerance
-   cosmo_scf_maxcyc=500, !State specific scf iterations
-   linmixparam=1, !linear mixing parameter
-   doZ=.false. !Do relaxed (.true.) or unrelaxed (.false) density in state specific cosmo
+   ceps=10, !Dielectric constant
+   cosmo_scf_ftol=1.0d-5, !State specific scf tolerance
    EF=0, !(1) Electric field in ground and excited state, (2) Electric field in excited state only
-   Ex=0, !Electric Field Vector X
+   Ex=0, !Electric Field Vector X 
    Ez=0, !Electric Field Vector Z
-   Ey=0, !Electric Field Vector Y
-   onsager_radius=10, ! Onsager radius
-   solvent_model=0, ! (0) None, (1) LR, (2) VE, (3) VE with Xi, (4) SS, (5) Variational SS
+   Ey=0.01, !Electric Field Vector Y
+   onsager_radius=2, ! Onsager radius
+   solvent_model=0, ! (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi 
    potential_type=3, ! (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
 &endqmmm
 
 &moldyn
    !***** General parameters
    rnd_seed=1, ! seed for the random number generator
-   bo_dynamics_flag=0, ! 0-non-BO, 1-BO
-   exc_state_init=6, !initial excited state (0 - ground state)
-   n_exc_states_propagate=9, ! number of excited states
+   bo_dynamics_flag=1, ! 0-non-BO, 1-BO
+   exc_state_init=3, ! initial excited state (0 - ground state)
+   n_exc_states_propagate=3, ! number of excited states
 
    !***** Dynamics parameters
    time_init=0.d0, ! initial time, fs
-   time_step=0.5, !time step, fs
-   n_class_steps=1000, !number of classical steps
-   n_quant_steps=2, ! number of quantum steps for each classical step
+   time_step=0.05, !time step, fs
+   n_class_steps=100, !number of classical steps
+   n_quant_steps=5, ! number of quantum steps for each classical step
    moldyn_deriv_flag=1, ! 0-none, 1-analyt, 2-numeric
    num_deriv_step=1.d-5, ! displacement for numerical derivatives, A
    rk_tolerance=1.d-7, ! tolerance for the Runge-Kutta propagator
@@ -68,113 +61,79 @@
    !***** Thermostat parameters
    therm_type=0, ! Thermostat type (0-no thermostat,1-Langevin,2-Berendsen)
    therm_temperature=300.d0, ! Thermostate temperature, K
-   therm_friction=20.d0, ! thermostate friction coefficient, 1/ps
+   therm_friction=2.d0, ! thermostate friction coefficient, 1/ps
    berendsen_relax_const=0.4d0, ! bath relaxation constant, only for Berendsen
    heating=0, ! heating (1) or equilibrated(0)
    heating_steps_per_degree=100, ! number of steps per degree during heating
 
    !***** Output & Log parameters
-   verbosity=4, ! output verbosity (0-minimal, 3-highest) 
+   verbosity=0, ! output verbosity (0-minimal, 3-highest) 
    out_count_init=0, ! the initial count for output files
    out_data_steps=1, ! number of steps to write data
-   out_coords_steps=1, ! number of steps to write the restart file
+   out_coords_steps=500, ! number of steps to write the restart file
    out_data_cube=0, ! write(1) or not(0) view files to generate cubes   
 &endmoldyn
 
 &coord
-  6       -7.8189874273       0.8174292560       0.2787235524                                                                                                                                                                                                         
-  6       -7.2289998503       0.6648597791       1.5596035795                                                                                                                                                                                                         
-  6       -6.9113265462       0.8806674622      -0.8330986083                                                                                                                                                                                                         
-  6       -5.8203528314       0.4854788989       1.6842249966                                                                                                                                                                                                         
-  6       -5.5338617153       0.8288346557      -0.7427738482                                                                                                                                                                                                         
-  6       -4.9880272605       0.5620895034       0.5512622452                                                                                                                                                                                                         
-  6       -3.5407656766       0.3005159077       0.6718427340                                                                                                                                                                                                         
-  6       -2.6639520434       0.4224068490      -0.3285512117                                                                                                                                                                                                         
-  6       -1.2418780106       0.2898929055      -0.1799304080                                                                                                                                                                                                         
-  6       -0.6404955933      -0.1421971811       0.9748842573                                                                                                                                                                                                         
-  6       -0.4160469795       0.6796087333      -1.2995836495                                                                                                                                                                                                         
-  6        0.8157931456      -0.1419473134       1.1147747430                                                                                                                                                                                                         
-  6        0.9535484164       0.6073702786      -1.2208383048                                                                                                                                                                                                         
-  6        1.5739473399       0.1869512748       0.0123188711                                                                                                                                                                                                         
-  6        3.0351360162       0.3768681515       0.1113469579                                                                                                                                                                                                         
-  6        3.8922814202      -0.6176250219      -0.1273599625                                                                                                                                                                                                         
-  6        5.3382911841      -0.4692950838      -0.0366643782                                                                                                                                                                                                         
-  6        6.0796425192      -0.2751208966       1.1746433250                                                                                                                                                                                                         
-  6        5.9997811607      -0.4119818611      -1.2520067819                                                                                                                                                                                                         
-  6        7.4527223759       0.0498702851       1.1573938296                                                                                                                                                                                                         
-  6        7.3797713336      -0.1386448780      -1.2758617590                                                                                                                                                                                                         
-  6        8.0803924469       0.0513386121      -0.0973617660                                                                                                                                                                                                         
-  1       -8.9457697457       0.7054650992       0.1245938084                                                                                                                                                                                                         
-  1       -7.9162963900       0.5153616596       2.4761178023                                                                                                                                                                                                         
-  1       -7.4125853092       0.9016250695      -1.8440976608                                                                                                                                                                                                         
-  1       -5.3227626539       0.1740103063       2.6692830471                                                                                                                                                                                                         
-  1       -4.9216511939       0.7069431451      -1.6402145094                                                                                              
-  1       -3.2138843045      -0.1291713061       1.5974287572                                                                                 
-  1       -2.9361545800       0.8151581094      -1.3184921858 
-  1       -1.2783991335      -0.5354844855       1.7856317                                                                                       
-  1       -0.8979555686       0.9097786502      -2.2653013737                                                                                   
-  1        1.1650275400      -0.4322597303       2.1151902402 
-  1        1.6109988105       0.9423719156      -2.0354847323                                                                               
-  1        3.2900260409       1.3750066789       0.5713449292
-  1        3.6457971750      -1.6125285928      -0.5408102417                                    
-  1        5.4874668071      -0.2357758355       2.0561784090
-  1        5.4381487424      -0.5267229682      -2.1940144055
-  1        7.9992162804       0.0917389833       2.1238790154                                                                                    
-  1        7.9520699312      -0.1782416759      -2.2207390233
-  1        9.2052023616       0.1884559374      -0.1525827688 
+    6        -2.147526    0.925099    0.037805
+    6        -0.767906    1.102857    0.026948
+    6         0.103049    0.002375    0.047952
+    6        -0.443097   -1.295376    0.080357
+    6        -1.817073   -1.495931    0.091540
+    6        -2.671301   -0.378363    0.069881
+    6         1.550019    0.137223    0.037432
+    6         2.206633    1.310360    0.007549
+    6         3.642558    1.518254   -0.006546
+    6         4.083745    2.854755   -0.049406
+    6         5.439851    3.170618   -0.067286
+    6         6.428684    2.152041   -0.045419
+    6         5.993553    0.826138   -0.001900
+    6         4.628324    0.505998    0.019109
+    1         2.089422   -0.827668    0.055428
+    1         1.628772    2.256947   -0.010682
+    1        -2.817628    1.802413    0.021251
+    1        -0.371744    2.131073    0.001161
+    1        -2.228308   -2.520183    0.116810
+    7        -4.135262   -0.578331    0.080467
+    1         0.227458   -2.170925    0.097080
+    1         3.327876    3.657427   -0.068782
+    1         6.743500    0.019530    0.016722
+    6         7.832864    2.515925   -0.067610
+    6         8.864129    1.653101   -0.042210
+    1         8.017615    3.606043   -0.108757
+    6        10.265489    2.037390   -0.062992
+    1         8.691180    0.561590   -0.001715
+    6        10.683319    3.376022   -0.101029
+    6        12.040424    3.693831   -0.117477
+    6        12.999824    2.682624   -0.096066
+    6        12.596077    1.347035   -0.058582
+    6        11.241955    1.024875   -0.042247
+    1         9.942777    4.190682   -0.117647
+    1        12.352547    4.749362   -0.147175
+    1        14.070716    2.936282   -0.108456
+    1        13.350614    0.545424   -0.041596
+    1        10.931363   -0.031672   -0.012744
+    8         5.920407    4.467465   -0.105187
+    6         4.946695    5.508810   -0.130597
+    8         4.178264   -0.797997    0.070004
+    6         5.165250   -1.827497    0.066665
+    1         5.568659    6.440104   -0.157606
+    1         4.317097    5.482521    0.791379
+    1         4.312082    5.432342   -1.046312
+    1         4.552820   -2.765163    0.096593
+    1         5.815028   -1.753551    0.971827
+    1         5.776145   -1.786358   -0.867137
+    8        -4.869899    0.377466    0.052693
+    8        -4.586347   -1.695683    0.116578
 &endcoord
 
 &veloc
-    -7.3473734734    -1.9325728295     4.7700288304
-    -2.6131607328     0.1354577854    -3.2385327017
-     4.4098033831    -1.0016984014     4.1225314882
-    14.2055318671    -0.2968224568    -7.2048036692
-    -9.1373303004     3.7898447836     1.4391275711
-    11.9679820261    -6.2454920164    -1.0553990975
-    -6.1805612139   -12.8929500420    -2.7871475868
-    -2.5990145099    -3.1250799826    -4.4839717234
-     9.7033849413     0.8882126899     2.0291975782
-    -1.6399226221     1.3340940281    -2.2715984685
-   -11.4746845538     1.6087677892    -1.7608127624
-     3.2580922763     1.0627748417     3.2627477957
-    -4.5291644874    -1.0307080159     0.4668873623
-     8.2508685930    -3.4277546965     0.4393974527
-    -4.1574423527    -3.4057525044    -9.3898740811
-     1.2267001622     5.9007053004     0.2439100907
-     4.4741902179    -0.3731357114    -2.1453604980
-     8.9702155012     4.9732223820    -3.4411326358
-    -2.0038131993    -3.5982038675     4.6001890914
-    -5.2343243395     2.9326052429    -3.7050449710
-    -2.7829568501    -3.0953148378    -5.3489195809
-     7.1973198288     4.2572567360     1.6082067359
-   -20.7204554245    14.6205687814   -15.5105762184
-    36.6763894013   -15.9952126020    14.9873393981
-     1.4155432750     6.0539022803    27.3545714938
-     0.9713194814    18.8169962512   -14.8478322058
-    10.3891300977    29.7939715673     0.6898908164
-   -38.0317935814    -1.1397435547    -3.0620332265
-     2.7940758459     1.1244078803   -33.8507942562
-   -22.6760022697    -7.2343091792    -7.2844052263
-    13.0619240821    -4.6640492319    20.6798416614
-   -11.4779461889    -9.5787688189     5.1929520107
-   -25.2017684631   -17.7391983531   -14.2325509637
-     6.3174592872    16.5584420072    -6.1237140996
-    15.9113289819    50.3761696682    10.8573534769
-   -13.3876468142    15.4183375337   -20.0385226097
-    -3.0056673107   -20.4446146135    18.2919331971
-    -6.9521185852    23.6133595096    -4.0026894595
-     0.4586342386    -6.2717769134    11.4170973341
-    -5.2429169551    -0.8484626927   -18.0397182358
+   0.0   0.0   0.0
+   0.0   0.0   0.0
 &endveloc
 
 &coeff
-  0.0000  0.0000
-  0.0000  0.0000
-  0.0000  0.0000
-  0.0000  0.0000
-  0.0000  0.0000
-  1.0000  0.0000
-  0.0000  0.0000
-  0.0000  0.0000
+  1.00	0.00
+  0.00	0.00
 &endcoeff
 

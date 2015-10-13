@@ -522,7 +522,6 @@
 
    if (nd1.le.j1) j1=nd1
 ! **** End assign Davidson trial vectors
-write(6,*)'New trial vectors',lprint
 10 continue
 ! **** Write some things, check the number of iterations, etc.
    icount=icount+1 !iteration counter
