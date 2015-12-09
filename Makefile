@@ -1,6 +1,5 @@
 
-FFLAG = -O0 -pg #-Wall -Wextra -fbounds-check -fbacktrace
-#-mcmodel=medium
+FFLAG = -O3 -mcmodel=medium
 LDFLAGS = $(FFLAG)
 LINK =  -llapack -lblas
 
