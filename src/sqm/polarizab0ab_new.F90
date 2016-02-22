@@ -96,7 +96,7 @@ subroutine polarizab()
 110   format(I5,'     ',F12.6,i4)
 120   format(' Modes factors Av,S,Px,Py,Pz     ',5i4)
 
-if(0==1) then
+if(1==1) then
 
 ! Note after mo2siteph the mode eta is ksi(-alpha)* sqrt(2) different 
 ! from usual normalization condition, i.e Tr(rho[eta,eta^T])=2
@@ -227,6 +227,7 @@ if(0==1) then
          f=sqrt(muabx(j,i)**2+muaby(j,i)**2+muabz(j,i)**2)
          write(13,130) i,qm2ds%e0(i)-qm2ds%e0(-j),2*(qm2ds%e0(i)-qm2ds%e0(-j))*f**2/21.0
       enddo
+      flush(13)
       close(13)
 
       itime11=get_time()

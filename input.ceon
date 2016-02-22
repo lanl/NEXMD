@@ -17,6 +17,7 @@
    ftol0=1.d-5, !  Acceptance tol.(|emin-eold|) [1.d-4]
    ftol1=1.d-6, ! Accept.tol.for residual norm [1.d-5]
    dav_maxcyc=200, !Max cycles for davidson diagonalization, negative for fixed number, [100]
+   calcxdens=.true.,
 
    !***** Geometry optimization
    maxcyc=0, !Number of cycles for geometry optimization [0]
