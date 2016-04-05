@@ -172,11 +172,8 @@
    !============================
    !ceps-Dielectric Permittivity from COSMO module
    if((solvent_model.gt.0).and.(potential_type.eq.3)) then ! non-default non-vacuum permittivity
-write(6,*)'test'
 	call coscav ! constructing COSMO cavity
-write(6,*)'test'
 	call mkbmat ! constructing B matrix
-write(6,*)'test'
       !This part is for calculating the COSMO potential operator with matrix inversion
       !init indices array;
       !size of triangular = i(i-1)/2+j (i==j)

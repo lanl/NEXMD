@@ -7,7 +7,6 @@
    printdipole=0, ! (0) None, (1) Transition, Relaxed, and Unrelaxed [0]
    printbondorders=0, ! (0) No, (1) Yes [0]
    density_predict=0, !(0) None, (1) Reversible MD, (2) XL-BOMD [0]
-   K=5, ! XL-BOMD Parameter 3-9 [5]
    itrmax=300, ! Maximum number of scf iterations for ground state, negative to ignore convergence [300]
 
    !***** Excited state parameters
@@ -17,7 +16,7 @@
    ftol0=1.d-5, !  Acceptance tol.(|emin-eold|) [1.d-4]
    ftol1=1.d-6, ! Accept.tol.for residual norm [1.d-5]
    dav_maxcyc=200, !Max cycles for davidson diagonalization, negative for fixed number, [100]
-   calcxdens=.true.,
+   calcxdens=.false.,
 
    !***** Geometry optimization
    maxcyc=0, !Number of cycles for geometry optimization [0]
@@ -25,9 +24,10 @@
    grms_tol=0.01, !Tolerance in eV/A (derivatives) [0.01]
 
    !***** Solvent models
-   solvent_model=0, ! (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi [0]
+   solvent_model=4, ! (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi [0]
    potential_type=3, ! (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
    ceps=10, !Dielectric constant [10]
+   linmixparam=0.1
    cosmo_scf_ftol=1.0d-5, !State specific scf tolerance [1.d-5]
    EF=0, !(1) Electric field in ground and excited state, (2) Electric field in excited state only [0]
    Ex=0, !Electric Field Vector X [0]

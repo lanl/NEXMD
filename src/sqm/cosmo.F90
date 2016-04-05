@@ -555,7 +555,6 @@ dx = (xx(ix)*db(0, j)-db(ix, j)) * (ff + fft)
 	end do
 	!write(6,*)'testing surface B derivative:',dx
 	end do
-	!write(6,*)'TEST',dxyz
 	end if
 	iden = iden + (idel*(idel+1))/2
 	end do
@@ -1174,7 +1173,6 @@ subroutine coscav
         coord(j, i) = coord(j, i) + Cos (i*j*.1d0) * 3.0d-9
       end do
     end do
-write(6,*)'TEST'
    !
     ilipa = 0
     do i = 1, numat
@@ -1558,7 +1556,6 @@ write(6,*)'TEST'
         !write(6,*)amat;stop
     endif
     deallocate(rdat,rsc,tm,nn,isort,ipsrs,nipsrs,nset,nipa,lipa,dirtm,finel)
-    write(6,*)'TEST'
     100 continue
 end subroutine coscav
 
