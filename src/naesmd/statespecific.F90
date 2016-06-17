@@ -330,7 +330,6 @@ subroutine calc_cosmo_4(sim_target)
                         if(qm2ds%verbosity.gt.4) write(6,*)'Overlaps=',f0,f1
                         if(f0<f1) then
                                 if(abs(f0-f1)>0.95) then
-                                        write(6,*)'TEST:',abs(f0-f1)
                                         write(6,*)'State crossing',qmmm_struct%state_of_interest,' to ',i
                                         write(6,*)'New state of interest is',i
                                         soi_temp=i
