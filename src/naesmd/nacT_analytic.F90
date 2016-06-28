@@ -424,17 +424,20 @@ module nacT_analytic_module
 
    integer,optional::v_version
    _REAL_ t_start,t_finish   
-     
+
+   !FIXME as of 6/2016 this is not used in the program JAKB     
    call cpu_time(t_start)
    write(6,*)'nacT_analytic t_start=',t_start
    if(present(v_version)) then
       if(v_version.ne.0) then
          call nacT_v(sim,nact)
+         write(6,*)'nacT_v called:',nact
          return
       end if
    end if
 
    call nacT_direct(sim,nact,xstep)
+   write(6,*)'nacT_direct called:',nact
 
    call cpu_time(t_finish)
    write(6,*)'nacT_analytic t_finish=',t_finish

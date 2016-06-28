@@ -60,8 +60,8 @@ module communism
    type(simulation_t),pointer::sim
    integer::mn
    if (qm2ds%Mx>0) then
-	mn=min(size(sim%dav%e0),size(sim%naesmd%Omega))
-	sim%naesmd%Omega(1:mn) = sim%dav%e0(1:mn)/feVmdqt;
+        mn=min(size(sim%dav%e0),size(sim%naesmd%Omega))
+        sim%naesmd%Omega(1:mn) = sim%dav%e0(1:mn)/feVmdqt;
    endif
    sim%naesmd%E0=sim%dav%Eground/feVmdqt
    return
@@ -292,8 +292,7 @@ module communism
         call nacR_analytic(sim%coords,ihop,icheck)
         if(present(dij))  then
             mn = min(size(dij), size(sim%dav%dij))
-            !FIXME unit conversion for dij?
-            dij(:mn) = sim%dav%dij(:mn)!*convl
+            dij(:mn) = -sim%dav%dij(:mn)
         endif
     end subroutine
 !
