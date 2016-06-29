@@ -83,14 +83,20 @@ subroutine nacR_analytic(xyz_in, ihop, icheck)
    
 ! Form transition density martix between state ihop and icheck
 !  xi_ih_ic = (I-2rho)(xi_ih xi_ic + xi_ic xi_ih)
+   qm2ds%nacr_scratch=0
+   write(6,*)shape(qm2ds%cmdqt),size(qm2ds%cmdqt),Np,Nh,Nb
    call getmodef(M2_M,Mx_M,Np,Nh,ihop,qm2ds%cmdqt,qm2ds%nacr_scratch)
+   write(6,*)'Xi_i',sum(qm2ds%nacr_scratch(1:(Np+Nh)**2)**2)
+   write(6,*)'Xi_i2',qm2ds%cmdqt(1:2*Np*Nh,ihop)
    call getmodef(M2_M,Mx_M,Np,Nh,icheck,qm2ds%cmdqt,qm2ds%eta_scratch)
+   write(6,*)'Xi_j',sum(qm2ds%eta_scratch(1:(Np+Nh)**2)**2)
+   write(6,*)'Xi_j2',qm2ds%cmdqt(1:2*Np*Nh,icheck)
    call dgemm('N','T',Nb,Nb,Nb,ff1,qm2ds%nacr_scratch,Nb,qm2ds%eta_scratch,Nb,ff0,qm2ds%eta,Nb)
    call dgemm('T','N',Nb,Nb,Nb,ff1,qm2ds%eta_scratch,Nb,qm2ds%nacr_scratch,Nb,ff1,qm2ds%eta,Nb)
    call Iminus2rho(Nb,Np,qm2ds%eta,qm2ds%xi)
    call mo2sitef (Nb,qm2ds%vhf,qm2ds%xi,qm2ds%eta,qm2ds%xi_scratch)
-! Above eta contains transition density martix between state ihop and icheck in AO
-   write(6,*)'Ti->j',qm2ds%eta(1:3)
+! Above eta contains transition density matrix between state ihop and icheck in AO
+   write(6,*)'Ti->j',sum(qm2ds%eta(1:Nb**2))
 
    call getmodef(M2_M,Mx_M,Np,Nh,ihop,qm2ds%cmdqt,qm2ds%nacr_scratch)
    call mo2sitef (Nb,qm2ds%vhf,qm2ds%nacr_scratch,qm2ds%xi,qm2ds%eta_scratch)
@@ -114,9 +120,9 @@ subroutine nacR_analytic(xyz_in, ihop, icheck)
 
 ! Convert from kcal/A to eV/A
        do j = 3,N3,3
-          qm2ds%dij(j-2)= dxyz1(1,j/3)*KCAL_TO_EV/(qm2ds%e0(qm2ds%kx(ihop))-qm2ds%e0(qm2ds%kx(icheck)))
-          qm2ds%dij(j-1)= dxyz1(2,j/3)*KCAL_TO_EV/(qm2ds%e0(qm2ds%kx(ihop))-qm2ds%e0(qm2ds%kx(icheck)))
-          qm2ds%dij(j)  = dxyz1(3,j/3)*KCAL_TO_EV/(qm2ds%e0(qm2ds%kx(ihop))-qm2ds%e0(qm2ds%kx(icheck)))
+          qm2ds%dij(j-2)= -dxyz1(1,j/3)*KCAL_TO_EV/(qm2ds%e0(qm2ds%kx(ihop))-qm2ds%e0(qm2ds%kx(icheck)))
+          qm2ds%dij(j-1)= -dxyz1(2,j/3)*KCAL_TO_EV/(qm2ds%e0(qm2ds%kx(ihop))-qm2ds%e0(qm2ds%kx(icheck)))
+          qm2ds%dij(j)  = -dxyz1(3,j/3)*KCAL_TO_EV/(qm2ds%e0(qm2ds%kx(ihop))-qm2ds%e0(qm2ds%kx(icheck)))
        end do
    end if
        write(6,*)'qm2ds%dij',qm2ds%dij(1:3)

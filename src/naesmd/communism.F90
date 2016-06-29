@@ -229,7 +229,7 @@ module communism
 
       f=ddot(sim%dav%Ncis, &
          sim%dav%cmdqt(1,j),1,sim%dav%v0(1,sim%dav%kx(j)),1)
-
+      
       if(f.lt.0.d0) then
          do i=1,sim%dav%Ncis
             sim%dav%cmdqt(i,j)=-sim%dav%v0(i,sim%dav%kx(j))

@@ -169,7 +169,8 @@ module nacT_analytic_module
 !  hovewer the result is diffirent from 'direct' version. They should
 !  coincide when dt -> 0. For the direct version the +/- coordinates are
 !  calculated with accelerations and thermostat.
-!
+! 
+!  JAKB This is not currently used or tested
 !********************************************************************
 !
    subroutine nacT_v(sim,nact)
@@ -379,7 +380,7 @@ module nacT_analytic_module
    end function nacT_direct_ihc
 !
 !********************************************************************
-!
+! 
 !********************************************************************
 !
    subroutine nacT_direct(sim,nact,xs)
