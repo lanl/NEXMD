@@ -353,6 +353,7 @@ module nacT_analytic_module
         
    ! Above eta contains transition density martix between state 
    ! ihop and icheck in AO
+   write(6,*)ihop,icheck,'nacT AO density matrix', qm2ds%eta
 
    call getmodef(M2_M,Mx_M,Np,Nh,ihop,qm2ds%cmdqt,qm2ds%nacr_scratch)
    call mo2sitef (Nb,qm2ds%vhf,qm2ds%nacr_scratch,qm2ds%xi,qm2ds%eta_scratch)
@@ -366,13 +367,19 @@ module nacT_analytic_module
    ! Term Tr(F^x rho_ij) (only symmetric part contributes)
    call packing(Nb,qm2ds%eta,qm2ds%nacr_scratch,'s')
 
+
    nacT_direct_ihc=dcart1_xpm(qm2_struct%den_matrix, &
       qm2ds%nacr_scratch,xstep%Rp,xstep%Rm) 
+
+   write(6,*)'nacT_deriv+denmat',nacT_direct_ihc
 
    nacT_direct_ihc=nacT_direct_ihc*kcalev &
       /(qm2ds%e0(qm2ds%kx(icheck))-qm2ds%e0(qm2ds%kx(ihop))) &
       / sim%naesmd%dtnact/2.d0 
    ! factor of 2. is because dt = 2.0 * dtnact
+
+   write(6,*)'nacT',nacT_direct_ihc
+
 
    flush(6)
 
@@ -380,7 +387,7 @@ module nacT_analytic_module
    end function nacT_direct_ihc
 !
 !********************************************************************
-! 
+!  Wrapper for NACT called from the program 
 !********************************************************************
 !
    subroutine nacT_direct(sim,nact,xs)
@@ -399,9 +406,11 @@ module nacT_analytic_module
    nact=0.d0
 
    call xstep_au2A(xs)
+   !FIXME nacT_direct_ihc calls derivatives each time.. not necessary since
+   !always the same
    do i=2,sim%naesmd%npot
       do j=1,i-1
-         nact(i,j)=nacT_direct_ihc(sim,j,i,xs) ! notice j corresponds to 
+         nact(i,j)=nacT_direct_ihc(sim,i,j,xs) ! notice i corresponds to 
                                                         ! ihop, i - icheck
          nact(j,i)=-nact(i,j)
       end do

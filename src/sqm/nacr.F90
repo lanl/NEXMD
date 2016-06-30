@@ -120,9 +120,9 @@ subroutine nacR_analytic(xyz_in, ihop, icheck)
 
 ! Convert from kcal/A to eV/A
        do j = 3,N3,3
-          qm2ds%dij(j-2)= -dxyz1(1,j/3)*KCAL_TO_EV/(qm2ds%e0(qm2ds%kx(ihop))-qm2ds%e0(qm2ds%kx(icheck)))
-          qm2ds%dij(j-1)= -dxyz1(2,j/3)*KCAL_TO_EV/(qm2ds%e0(qm2ds%kx(ihop))-qm2ds%e0(qm2ds%kx(icheck)))
-          qm2ds%dij(j)  = -dxyz1(3,j/3)*KCAL_TO_EV/(qm2ds%e0(qm2ds%kx(ihop))-qm2ds%e0(qm2ds%kx(icheck)))
+          qm2ds%dij(j-2)= dxyz1(1,j/3)*KCAL_TO_EV/(qm2ds%e0(qm2ds%kx(ihop))-qm2ds%e0(qm2ds%kx(icheck)))
+          qm2ds%dij(j-1)= dxyz1(2,j/3)*KCAL_TO_EV/(qm2ds%e0(qm2ds%kx(ihop))-qm2ds%e0(qm2ds%kx(icheck)))
+          qm2ds%dij(j)  = dxyz1(3,j/3)*KCAL_TO_EV/(qm2ds%e0(qm2ds%kx(ihop))-qm2ds%e0(qm2ds%kx(icheck)))
        end do
    end if
        write(6,*)'qm2ds%dij',qm2ds%dij(1:3)
