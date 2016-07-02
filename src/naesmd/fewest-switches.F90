@@ -245,17 +245,13 @@ contains
 !    Feed here energies and wavefunctions and geometry, get back dij  
 ! if necessary here the signs of the CI coefficient matrix can be checked right here
 ! analytical calculation of nacR
-write(6,*)'calling nacR_analytic_wrap'
    call nacR_analytic_wrap(sim, ihop, icheck, dij)
-   write(6,*)'dij after analytic',dij
 ! end of the calculation of the non-adiabatic coupling vector dij
 !*********************************
    if(lprint.ge.1) then
       j=1
       do i=1,natom
          write(29,*) i,dij(j),dij(j+1),dij(j+2)
-         write(6,*) 'dij=',i,dij(j),dij(j+1),dij(j+2)
-         write(6,*) 'v=',i,vx(i),vy(i),vz(i)
          j=j+3
       end do
       call flush(29)
@@ -304,15 +300,12 @@ write(6,*)'calling nacR_analytic_wrap'
 ! option to adjust the velocities in the direction of
 ! the nonadiabatic coupling vector
    j=1
-   write(6,*)'vybefore:',vy
    do i=1,natom
       vx(i)=vx(i)-ctehop1*dij(j)/massmdqt(i)
       vy(i)=vy(i)-ctehop1*dij(j+1)/massmdqt(i)
       vz(i)=vz(i)-ctehop1*dij(j+2)/massmdqt(i)
-      write(6,*) i,'velocity rescale:',vx(i),vy(i),vz(i)
       j=j+3
    end do
-   write(6,*)'vyafter:',vy
 4321     continue
 !********************************************************
 ! end of adjustment of velocities

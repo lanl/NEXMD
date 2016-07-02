@@ -119,7 +119,6 @@ contains
 ! end modified by Seba
 
    type(xstep_t)::xstep
-   write(6,*)'cadiabmiddlecalc called'
 
    if(iimdqt.eq.1) then
       do i=1,npot

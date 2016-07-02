@@ -491,7 +491,6 @@ program MD_Geometry
 !##########################################################
 
    itime11=get_time() 
-   write(6,*)'itime1,itime11',itime1,itime11
    time11=real(itime11-itime1)/100 
    itime11=time11
    itime1=MOD(itime11,60)

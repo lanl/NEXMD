@@ -353,7 +353,6 @@ module nacT_analytic_module
         
    ! Above eta contains transition density martix between state 
    ! ihop and icheck in AO
-   write(6,*)ihop,icheck,'nacT AO density matrix', qm2ds%eta
 
    call getmodef(M2_M,Mx_M,Np,Nh,ihop,qm2ds%cmdqt,qm2ds%nacr_scratch)
    call mo2sitef (Nb,qm2ds%vhf,qm2ds%nacr_scratch,qm2ds%xi,qm2ds%eta_scratch)
@@ -371,14 +370,12 @@ module nacT_analytic_module
    nacT_direct_ihc=dcart1_xpm(qm2_struct%den_matrix, &
       qm2ds%nacr_scratch,xstep%Rp,xstep%Rm) 
 
-   write(6,*)'nacT_deriv+denmat',nacT_direct_ihc
 
    nacT_direct_ihc=nacT_direct_ihc*kcalev &
       /(qm2ds%e0(qm2ds%kx(icheck))-qm2ds%e0(qm2ds%kx(ihop))) &
       / sim%naesmd%dtnact/2.d0 
    ! factor of 2. is because dt = 2.0 * dtnact
 
-   write(6,*)'nacT',nacT_direct_ihc
 
 
    flush(6)
@@ -437,20 +434,16 @@ module nacT_analytic_module
 
    !FIXME as of 6/2016 this is not used in the program JAKB     
    call cpu_time(t_start)
-   write(6,*)'nacT_analytic t_start=',t_start
    if(present(v_version)) then
       if(v_version.ne.0) then
          call nacT_v(sim,nact)
-         write(6,*)'nacT_v called:',nact
          return
       end if
    end if
 
    call nacT_direct(sim,nact,xstep)
-   write(6,*)'nacT_direct called:',nact
 
    call cpu_time(t_finish)
-   write(6,*)'nacT_analytic t_finish=',t_finish
    sim%time_nact_took=sim%time_nact_took+t_finish-t_start 
 
    return

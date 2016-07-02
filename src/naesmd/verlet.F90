@@ -224,7 +224,6 @@ module verlet_module
 !
 !--------------------------------------------------------------------
 !
-write(6,*)'vy1:',vy
    rxold=rx
    ryold=ry
    rzold=rz
@@ -323,7 +322,6 @@ write(6,*)'vy1:',vy
 !             ry(j)=ry(j)/convl
 !             rz(j)=rz(j)/convl
 !         enddo
-write(6,*)'vy2:',vy
    ! kav: this was commented out for some reason
    ! by Grisha, but without it does not work
    call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs)
