@@ -106,6 +106,7 @@ contains
       call deriv(sim,ihop)
       call cpu_time(t_finish)
       sim%time_deriv_took=sim%time_deriv_took+t_finish-t_start
+      write(6,*)'here2'
       call do_sqm_davidson_update(sim,vmdqt=vmdqtnew,vgs=vgs)  
       if(decorhop.eq.1) then
          do j=1,npot
@@ -141,6 +142,7 @@ contains
          yy(j)=ry(j)
          zz(j)=rz(j)
       end do
+      write(6,*)'here3'
       call do_sqm_davidson_update(sim,vmdqt=vmdqtnew,vgs=vgs)        
       ytemp=yg(ihopavant)
       ytemp2=yg(ihopavant+npot)
@@ -241,6 +243,7 @@ contains
 !********************************************************
 ! Added by ST: calculate here NAC <psi| d psi/dR> in one step:
 !   Current energy calculation
+write(6,*)'here1'
    call do_sqm_davidson_update(sim,vmdqt=vtemp,vgs=vgstemp)        
 !    Feed here energies and wavefunctions and geometry, get back dij  
 ! if necessary here the signs of the CI coefficient matrix can be checked right here

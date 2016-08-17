@@ -184,7 +184,7 @@ module communism
 !
 !********************************************************************
 !
-   subroutine do_sqm_and_davidson(sim,rx,ry,rz,r)
+   subroutine do_sqm_and_davidson(sim,rx,ry,rz,r,statelimit)
    use qm2_davidson_module,only:qm2ds
    implicit none
 
@@ -199,6 +199,7 @@ module communism
    _REAL_ ctest
 
    integer quir_vhf,quir_cmdqt
+   integer,optional::statelimit
 
  
    if(present(rx).and.present(ry).and.present(rz)) then
@@ -211,7 +212,12 @@ module communism
 
    call qmmm2coords_r(sim)
 
-   sim%dav%Mx=sim%excN ! as many excited state as required, no more
+   sim%dav%Mx=sim%excN
+   if(present(statelimit)) then
+       sim%dav%Mx=statelimit
+       write(6,*)'statelimit present:',sim%dav%Mx
+   endif
+
    ! CML Includes call to Davidson within sqm_energy() 7/16/12
    call sqm_energy(sim%Na,sim%coords,sim%escf,born_radii, &
       one_born_radii,intdiel,extdiel,Arad,sim%qm2%scf_mchg, &
@@ -257,16 +263,27 @@ module communism
 !
 !********************************************************************
 !  
-   subroutine do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs,rx,ry,rz,r)
+   subroutine do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs,rx,ry,rz,r,statelimit)
    implicit none
    type(simulation_t),pointer::sim
    _REAL_,intent(inout),optional::cmdqt(:,:),vmdqt(:),vgs
    _REAL_,intent(in),optional::rx(:),ry(:),rz(:)
    type(realp_t),intent(in),optional::r(3)
    integer i
+   integer,optional::statelimit
+   integer statelimitout
 
    sim%dav%mdflag=2
-   call do_sqm_and_davidson(sim,rx,ry,rz,r)
+   write(6,*)'made it in here'
+   !if(.not.present(statelimit)) then
+   !  write(6,*)'statelimit not present'
+   !  statelimitout=0
+   !else
+   !  write(6,*)'statelimit present'
+   !  statelimitout=statelimit
+   !endif
+
+   call do_sqm_and_davidson(sim,rx,ry,rz,r,statelimit)
    call dav2naesmd_Omega(sim) ! energy conversion
    if(present(vgs)) vgs=sim%naesmd%E0
    if(present(vmdqt)) then

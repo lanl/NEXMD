@@ -26,26 +26,11 @@ contains
    include 'common'
       
    if(imdqt.eq.1) then
-
-         ! call ceo(Na,xx,yy,zz,atoms,npot,E0,Omega,fosc,mdflag)
+      write(6,*)'old adiabatic coupling call'
       call do_sqm_davidson_update(sim,cmdqt=cmdqtnew, &
-         vmdqt=vmdqtnew,vgs=vgs,r=sim%naesmd%r%vold)
-      cmdqt=cmdqtnew
-! added by Seba
-! can you explain me how these lines repacle these others?
-!        do i=1,npot
-!            vmdqtnew(i)=(Omega(i)+E0)/feVmdqt
-!         enddo
-!
-!         do i=1,nbasis
-!            do j=1,npot
-!               cmdqtnew(i,j)=cmdqt(i,j)
-!            enddo
-!         enddo
-! and also the ancient call to xxpxxm
-! end added by Seba
-         
-          ! call xxpxxm(xx,yy,zz,xxp,yyp,zzp,xxm,yym,zzm)
+         vmdqt=vmdqtnew,vgs=vgs,r=sim%naesmd%r%vold)!, cmdqt=cmdqtnew) !JAKB, not necessary bc updated already in
+      !dynamics must now have all variables added like in this call
+
       xstep=new_xstep_dtnact_r3(sim,sim%naesmd%r%vold)
        
       do k=1,3
@@ -55,9 +40,6 @@ contains
             -xstep%R(k,1:natom)
       end do
          
-         
-         !call nacT_analytic(Na,Nm,xxp,yyp,zzp,xxm,yym,zzm, &
-         !  npot,dtnact,Omega,mdflag,nmaxpot,cmdqt,cadiabnew)
       call nacT_analytic(sim,cadiabnew,xstep)
                  
    end if
@@ -206,31 +188,6 @@ contains
 
       call do_sqm_davidson_update(sim,cmdqt=cmdqtmiddle, &
          vmdqt=vmdqtmiddle,vgs=vgs,rx=xx,ry=yy,rz=zz)
-
-!          mdflag=2
-!          ! call ceo(Na,xx,yy,zz,atoms,npot,E0,Omega,fosc,mdflag)
-!          call do_sqm_and_davidson(sim, xx, yy, zz)
-!          call dav2naesmd_Omega(sim)
-! 
-!          vgs=E0
-!          do i=1,npot
-!             vmdqtmiddle(i)=(Omega(i)+E0) ! /feVmdqt
-!          enddo
-         !vgs=vgs!/feVmdqt
-
-!         call dav2cmdqt(sim, cmdqtmiddle)
-
-!          do i=1,nbasis
-!             do j=1,npot
-!                cmdqtmiddle(i,j)=cmdqt(i,j)
-!             enddo
-!          enddo
-! 
-!          do j=1,natom
-!             xx(j)=xx(j)/convl
-!             yy(j)=yy(j)/convl
-!             zz(j)=zz(j)/convl
-!          enddo
 
 ! xxp,yyp, and zzp are xyz at t + dtnact
 ! xxm,xym, and zzm are xyz at t - dtnact

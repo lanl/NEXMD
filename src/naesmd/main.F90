@@ -219,12 +219,10 @@ program MD_Geometry
          call verlet(sim)
          ihop=qmmm_struct%state_of_interest
       end if
-      write(6,*)"End classical propagation step #",imdqt
 
       if(state.eq.'exct'.and.ibo.ne.1) then
+         write(6,*)'Begin nonadiabatic couplings and crossings calculations'
          call initialize(yg)
-         write(6,*)'Classical step ',tfemto
-
 !*******************************************************
 ! The analytic NAC for t.
 ! are calculated inside of cadiaboldcalc,cadiabmiddlecalc, and cadiabnewcalc
@@ -344,11 +342,15 @@ program MD_Geometry
                end if
             end if
          end do
+        write(6,*)'End nonadiabatic couplings calculation'
 !--------------------------------------------------------------------
 ! Loop for quantum propagation steps
 ! that implies CEO energy calculations
 !--------------------------------------------------------------------
+         write(6,*)"End classical propagation step #",imdqt
+
          do iimdqt=1,nquantumstep
+         write(6,*)'Begin quantum step ',tfemto
             tfemtoquantum=tfemto-dtmdqt*convtf &
                +iimdqt*dtquantum*convtf
 ! Definition of initial and final time for the quantum propagator
@@ -409,12 +411,16 @@ program MD_Geometry
                      +vnqcorrhop(k,j)*dtquantum
                end do
             end do
+         write(6,*)'End quantum step ',tfemto
          end do
+
+         write(6,*)'Now doing some other things'
 !--------------------------------------------------------------------
-         write(6,*)'Quantum step ',tfemto
 ! last part of velocity verlet algorithm
 ! for ehrenfest should go after evalhop
+         write(6,*)'verlet2'
          call verlet2(sim)
+         write(6,*)'end verlet2'
 !--------------------------------------------------------------------
 ! analyze the hopping
 !--------------------------------------------------------------------
@@ -445,8 +451,10 @@ program MD_Geometry
                   param,yg,constcoherE0,constcoherC,cohertype,idocontrol)
             end if
          end if
+         write(6,*)'Now finished with the other things'
 !--------------------------------------------------------------------
       end if
+
 
       ! evaluation of current kinetic energy
       call temperature(imdqt)
@@ -462,6 +470,7 @@ program MD_Geometry
          call writeoutput(sim,imdqt,ibo,yg,lprint,cross)
       end if
    end do
+
 !  final call to divprk to release workspace
 !  which was automatically allocated by the initial call with IDO=1.
       if(state.eq.'exct'.and.ibo.ne.1) then
@@ -470,12 +479,6 @@ program MD_Geometry
             call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
          end if
       end if
-
-!  KGB: BUG? this was already realeased at the last call to coherence()
-!       if(.false..and.state.eq.'exct'.and.ibo.ne.1) then
-!          ido=3
-!          call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
-!       endif
 
 !***********************************
 !      ttime=dtime(tarray)

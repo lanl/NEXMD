@@ -403,8 +403,8 @@ module nacT_analytic_module
    nact=0.d0
 
    call xstep_au2A(xs)
-   !FIXME nacT_direct_ihc calls derivatives each time.. not necessary since
-   !always the same
+   !FIXME nacT_direct_ihc calls part of derivative each time.. is this necessary
+   !or calculated previously?
    do i=2,sim%naesmd%npot
       do j=1,i-1
          nact(i,j)=nacT_direct_ihc(sim,i,j,xs) ! notice i corresponds to 
@@ -432,7 +432,6 @@ module nacT_analytic_module
    integer,optional::v_version
    _REAL_ t_start,t_finish   
 
-   !FIXME as of 6/2016 this is not used in the program JAKB     
    call cpu_time(t_start)
    if(present(v_version)) then
       if(v_version.ne.0) then

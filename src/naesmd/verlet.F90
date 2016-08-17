@@ -4,7 +4,6 @@
 !***************************************************
 !** Verlet velocity algorithm                     **
 !***************************************************
-!Na,Nm,d,E0,Omega)
 module verlet_module
    use naesmd_constants
    use langevin_temperature
@@ -99,40 +98,10 @@ module verlet_module
 !     Newton second law to get the next accelerations;
 !     the accelerations and forces are calculated at deriv.f
 
-!         do j=1,natom
-!             rx(j)=rx(j)*convl
-!             ry(j)=ry(j)*convl
-!             rz(j)=rz(j)*convl
-!         enddo
-! for classical path
-!        temp=ihop
-!        ihop=0
-!      call deriv(Na,Nm,d,tfemto,E0,Omega)
-!        ihop=temp
-!         do j=1,natom
-!             rx(j)=rx(j)/convl
-!             ry(j)=ry(j)/convl
-!             rz(j)=rz(j)/convl
-!         enddo
-
-   ! kav: the following block is subsituted by
-   !call do_sqm_and_davidson(sim)
-
-   !call deriv(sim%deriv_forces) 
-
-   !call deriv2naesmd_forces(sim)
-   !call dav2naesmd_Omega(sim)
-
-   !vgs=sim%naesmd%E0
-
-   !do i=1,npot
-      !vmdqt(i)=sim%naesmd%Omega(i)+vgs
-   !end do
-
    if((solvent_model.eq.4).or.(solvent_model.eq.5)) then
         call calc_cosmo_4(sim)
    else
-   	call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs)
+        call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs,statelimit=qmmm_struct%state_of_interest)
    endif
    ihop=qmmm_struct%state_of_interest
 
@@ -145,17 +114,11 @@ module verlet_module
 ! 
 !
 !     find the full-step velocities using the Verlet recursion
-!
    do i=1,natom
       if(ensemble.eq.'langev') then
          vx(i)=vx(i)+0.5d0*ax(i)*vfric(i)+vrand(1,i)
          vy(i)=vy(i)+0.5d0*ay(i)*vfric(i)+vrand(2,i)
          vz(i)=vz(i)+0.5d0*az(i)*vfric(i)+vrand(3,i)
-!            if(i.eq.47.or.i.eq.73) then
-!              vx(i)=0.0d0
-!              vy(i)=0.0d0
-!              vz(i)=0.0d0
-!            endif
       end if
 
       if(ensemble.eq.'energy'.or.ensemble.eq.'temper') then
@@ -170,7 +133,7 @@ module verlet_module
    call rescaleveloc(rx,ry,rz,vx,vy,vz,massmdqt,natom)
 
 !
-!     kinetic energy calculation
+!  kinetic energy calculation
 !
    kin=0.d0
 
@@ -288,7 +251,6 @@ module verlet_module
    _REAL_ E0,d
    include 'md.par'
    include 'parH.par'
-   !real*8 Omega(Mx_M),fosc(Mx_M)
    include 'md.cmn'
    include 'common'
 
@@ -305,26 +267,9 @@ module verlet_module
 !
 !     Get the potential energy, atomic forces and accelerations
 !     Newton second law to get the next accelerations;
-!     the accelerations and forces are calculated at deriv.f
+!     the forces are calculated by deriv
 
-!         do j=1,natom
-!             rx(j)=rx(j)*convl
-!             ry(j)=ry(j)*convl
-!             rz(j)=rz(j)*convl
-!         enddo
-! for classical path
-!        temp=ihop
-!        ihop=0
-!      call deriv(Na,Nm,d,tfemto,E0,Omega)
-!        ihop=temp
-!         do j=1,natom
-!             rx(j)=rx(j)/convl
-!             ry(j)=ry(j)/convl
-!             rz(j)=rz(j)/convl
-!         enddo
-   ! kav: this was commented out for some reason
-   ! by Grisha, but without it does not work
-   call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs)
+   call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs,statelimit=qmmm_struct%state_of_interest)
 
    call cpu_time(t_start)
    call deriv(sim,ihop)
@@ -333,24 +278,7 @@ module verlet_module
  
    call deriv2naesmd_accel(sim)
 
-   ! kav: I do not understand how the following works,
-   ! this subroutine is defined in deriv.F90 with multiple
-   ! arguments, not just one used here   
-
-   !call dav2naesmd_Omega(sim)
-
-   !vgs=sim%naesmd%E0
-
-   !do i=1,npot
-   !   vmdqt(i)=sim%naesmd%Omega(i)+vgs
-   !end do
-! 
-!
-!     find the full-step velocities using the Verlet recursion
-!
-   !write(125,889) tfemto,(ax(i),i=1,natom)
-   !stop ! kav: checking
-
+!  find the full-step velocities using the Verlet recursion
    do i=1,natom
       if(ensemble.eq.'langev') then
          vx(i)=vx(i)+0.5d0*ax(i)*vfric(i)+vrand(1,i)
