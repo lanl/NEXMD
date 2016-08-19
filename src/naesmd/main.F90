@@ -221,7 +221,7 @@ program MD_Geometry
       end if
 
       if(state.eq.'exct'.and.ibo.ne.1) then
-         write(6,*)'Begin nonadiabatic couplings and crossings calculations'
+         !write(6,*)'Begin nonadiabatic couplings and crossings calculations'
          call initialize(yg)
 !*******************************************************
 ! The analytic NAC for t.
@@ -342,15 +342,15 @@ program MD_Geometry
                end if
             end if
          end do
-        write(6,*)'End nonadiabatic couplings calculation'
+         !write(6,*)'End nonadiabatic couplings calculation'
 !--------------------------------------------------------------------
 ! Loop for quantum propagation steps
 ! that implies CEO energy calculations
 !--------------------------------------------------------------------
          write(6,*)"End classical propagation step #",imdqt
-
+         
          do iimdqt=1,nquantumstep
-         write(6,*)'Begin quantum step ',tfemto
+         !write(6,*)'Begin quantum step ',tfemto
             tfemtoquantum=tfemto-dtmdqt*convtf &
                +iimdqt*dtquantum*convtf
 ! Definition of initial and final time for the quantum propagator
@@ -411,16 +411,14 @@ program MD_Geometry
                      +vnqcorrhop(k,j)*dtquantum
                end do
             end do
-         write(6,*)'End quantum step ',tfemto
+         !write(6,*)'End quantum step ',tfemto
          end do
 
-         write(6,*)'Now doing some other things'
+         !write(6,*)'Now doing some other things'
 !--------------------------------------------------------------------
 ! last part of velocity verlet algorithm
 ! for ehrenfest should go after evalhop
-         write(6,*)'verlet2'
          call verlet2(sim)
-         write(6,*)'end verlet2'
 !--------------------------------------------------------------------
 ! analyze the hopping
 !--------------------------------------------------------------------
@@ -451,7 +449,7 @@ program MD_Geometry
                   param,yg,constcoherE0,constcoherC,cohertype,idocontrol)
             end if
          end if
-         write(6,*)'Now finished with the other things'
+         !write(6,*)'Now finished with the other things'
 !--------------------------------------------------------------------
       end if
 
@@ -475,6 +473,7 @@ program MD_Geometry
 !  which was automatically allocated by the initial call with IDO=1.
       if(state.eq.'exct'.and.ibo.ne.1) then
          if(1==0) then ! kav: to skip it whatsoever
+                       ! jakb: not sure if this should be skipped or not
             ido=3
             call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
          end if

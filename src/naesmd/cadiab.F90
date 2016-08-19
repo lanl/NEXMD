@@ -26,7 +26,6 @@ contains
    include 'common'
       
    if(imdqt.eq.1) then
-      write(6,*)'old adiabatic coupling call'
       call do_sqm_davidson_update(sim,cmdqt=cmdqtnew, &
          vmdqt=vmdqtnew,vgs=vgs,r=sim%naesmd%r%vold)!, cmdqt=cmdqtnew) !JAKB, not necessary bc updated already in
       !dynamics must now have all variables added like in this call

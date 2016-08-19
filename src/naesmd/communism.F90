@@ -213,9 +213,8 @@ module communism
    call qmmm2coords_r(sim)
 
    sim%dav%Mx=sim%excN
-   if(present(statelimit)) then
+   if(present(statelimit)) then !reduces the calculated number of states
        sim%dav%Mx=statelimit
-       write(6,*)'statelimit present:',sim%dav%Mx
    endif
 
    ! CML Includes call to Davidson within sqm_energy() 7/16/12
@@ -248,7 +247,7 @@ module communism
       end if
    end do
    if((quir_cmdqt>0).and.(qm2ds%verbosity>0)) then ! quirality was restored at least once above
-      print*,' Restoring quirality in cmdqt'
+      write(6,*) ' Restoring quirality in cmdqt'
    end if
    return
    end subroutine
@@ -274,14 +273,6 @@ module communism
    integer statelimitout
 
    sim%dav%mdflag=2
-   write(6,*)'made it in here'
-   !if(.not.present(statelimit)) then
-   !  write(6,*)'statelimit not present'
-   !  statelimitout=0
-   !else
-   !  write(6,*)'statelimit present'
-   !  statelimitout=statelimit
-   !endif
 
    call do_sqm_and_davidson(sim,rx,ry,rz,r,statelimit)
    call dav2naesmd_Omega(sim) ! energy conversion
@@ -294,6 +285,7 @@ module communism
    if(present(cmdqt)) then
       call dav2cmdqt(sim,cmdqt)
    end if
+ 
    return
    end subroutine
 !
