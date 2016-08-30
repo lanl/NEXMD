@@ -22,7 +22,7 @@ contains
    integer ido,neq,idocontrol
    include 'sizes'
    _REAL_ tini,tend,toldivprk,param(50)
-   _REAL_ g(nmaxpot),gacum(nmaxpot)
+   _REAL_ g(sim%excN),gacum(sim%excN)
    _REAL_ iseedhop,eavant, eapres 
    _REAL_ E0,d
    include 'md.par'
@@ -30,9 +30,9 @@ contains
    _REAL_ Omega(Mx_M),fosc(Mx_M)
    _REAL_ xx(Na),yy(Na),zz(Na)
    include 'common'
-   _REAL_ yg(nmaxpot),ytemp,ytemp2
+   _REAL_ yg(sim%excN),ytemp,ytemp2
    _REAL_ t_start,t_finish 
-   integer cross(nmaxpot),crosstemp,ininonhop
+   integer cross(sim%excN),crosstemp,ininonhop
    external fcn
    idocontrol=0
 ! conthop is used to not allow crossing inmediately after a hop
@@ -52,20 +52,20 @@ contains
    do j=1,natom
       eavant=eavant+0.5d0*massmdqt(j)*(vx(j)**2+vy(j)**2+vz(j)**2)
    end do
-   do j=1,npot
+   do j=1,sim%excN
       g(j)=0.d0
       gacum(j)=0.d0
    end do
 ! g(j) is the probability to hop from the 
 ! current state to the state j
-   do j=1,npot
+   do j=1,sim%excN
       if(j.ne.ihop) then
          g(j)=vnqcorrhoptot(j,ihop)/(nqold**2)
          if(g(j).lt.0.0d0) g(j)=0.0d0
       end if
    end do
    icheck=0
-   do j=1,npot
+   do j=1,sim%excN
       gacum(j)=0.0d0
       if(j.ne.ihop) then
          do k=1,j
@@ -74,7 +74,7 @@ contains
       end if
    end do
    itest=0
-   do j=1,npot
+   do j=1,sim%excN
       if(j.ne.ihop) then
          if(iseedhop.le.gacum(j).and.itest.eq.0) then
             icheck=j
@@ -108,9 +108,9 @@ contains
       sim%time_deriv_took=sim%time_deriv_took+t_finish-t_start
       call do_sqm_davidson_update(sim,vmdqt=vmdqtnew,vgs=vgs)  
       if(decorhop.eq.1) then
-         do j=1,npot
+         do j=1,sim%excN
             yg(j)=0.0d0
-            yg(j+npot)=rranf1(iseedmdqt)
+            yg(j+sim%excN)=rranf1(iseedmdqt)
          end do
          yg(ihop)=1.d0
          ido=3
@@ -143,11 +143,11 @@ contains
       end do
       call do_sqm_davidson_update(sim,vmdqt=vmdqtnew,vgs=vgs)        
       ytemp=yg(ihopavant)
-      ytemp2=yg(ihopavant+npot)
+      ytemp2=yg(ihopavant+sim%excN)
       yg(ihopavant)=yg(ihop)
-      yg(ihopavant+npot)=yg(ihop+npot)
+      yg(ihopavant+sim%excN)=yg(ihop+sim%excN)
       yg(ihop)=ytemp
-      yg(ihop+npot)=ytemp2
+      yg(ihop+sim%excN)=ytemp2
       if(idocontrol.eq.0) then
          ido=3
          call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
@@ -158,18 +158,18 @@ contains
 ! Evaluation of other crossings that do not involve the ihop state
 !*************************************************************
    ininonhop=1
-   do i=1,npot
+   do i=1,sim%excN
    if(i.lt.iorden(i).and.i.ne.ihopavant.and.i.ne.iorden(ihopavant)) then
       if(cross(i).eq.2) then
          ininonhop=0
          icheck=i
 ! after the hop, we reinicialize the variables
          ytemp=yg(i)
-         ytemp2=yg(i+npot)
+         ytemp2=yg(i+sim%excN)
          yg(i)=yg(iorden(i))
-         yg(i+npot)=yg(iorden(i)+npot)
+         yg(i+sim%excN)=yg(iorden(i)+sim%excN)
          yg(iorden(i))=ytemp
-         yg(iorden(i)+npot)=ytemp2
+         yg(iorden(i)+sim%excN)=ytemp2
          if(idocontrol.eq.0) then
             ido=3
             call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
@@ -189,7 +189,7 @@ contains
             kin=kin+massmdqt(j)*(vx(j)**2+vy(j)**2+vz(j)**2)/2
          end do
          eapres=eapres+kin
-         do j=1,npot
+         do j=1,sim%excN
             if(j.ne.ihop) then
                if(j.lt.iorden(j)) then
                   if(cross(j).ne.0) then
@@ -230,7 +230,7 @@ contains
    include 'md.cmn'
    double precision dij(nmax*3),vicheck
    double precision alpha,racine,ctehop1,dctehop1 
-   double precision vtemp(nmaxpot),vgstemp
+   double precision vtemp(sim%excN),vgstemp
    real*8 xx(Na),yy(Na),zz(Na)
    real*8 E0,d
    include 'parH.par'

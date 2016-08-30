@@ -157,24 +157,24 @@ contains
       end SUBROUTINE
 
       SUBROUTINE checknorm(ido,neq,tini,tend,toldivprk,param,yg)
-
+      use qm2_davidson_module
       IMPLICIT NONE
 
       integer k,ido,neq
       double precision tini,tend,toldivprk,norm,normdiff,param(50)
       include 'sizes'
       include 'common'
-      double precision yg(nmaxpot) 
+      double precision yg(qm2ds%Mx) 
 
       external fcn
 
       norm=0.0d0
-      do k = 1,npot
+      do k = 1,qm2ds%Mx
          norm=norm+yg(k)*yg(k)
       enddo
       normdiff=dabs(norm-1.0d0)
       if(normdiff.ge.1.0d-5) then
-         do k = 1,npot
+         do k = 1,qm2ds%Mx
             yg(k)=yg(k)/dsqrt(norm)
          enddo
          ido=3
@@ -191,21 +191,20 @@ contains
 ! cadiab and vmdqt during propagation
 
         SUBROUTINE fitcoeff 
-
+        use qm2_davidson_module
         IMPLICIT NONE
-
         integer k,j
         include 'sizes'
         include 'common'
 
-        do k=1,npot
-          do j=1,npot
+        do k=1,qm2ds%Mx
+          do j=1,qm2ds%Mx
              bcoeffcadiab(k,j)=(cadiabmiddle(k,j)- &
       cadiabmiddleold(k,j))/dtquantum
           enddo
         enddo
         
-        do k=1,npot
+        do k=1,qm2ds%Mx
            bcoeffvmdqt(k)=(vmdqtmiddle(k)- &
       vmdqtmiddleold(k))/dtquantum
         enddo
@@ -218,18 +217,19 @@ contains
 ! it also store the value of yg(ihop) at t to be used in the hopping evaluation
 
         SUBROUTINE initialize(yg)
-
+        !use qmmm_module,only:qm2_struct
+        use qm2_davidson_module
         IMPLICIT NONE
 
         integer k,j
         include 'sizes'
-        double precision yg(nmaxpot) 
+        double precision yg(qm2ds%Mx)!yg(nmaxpot) 
         include 'common'
 
         nqold=yg(ihop)
 
-        do k=1,npot
-           do j=1,npot
+        do k=1,qm2ds%Mx
+           do j=1,qm2ds%Mx
               vnqcorrhoptot(k,j)=0.0d0
            enddo
         enddo

@@ -2,8 +2,8 @@
       integer Nb_M,Np_M,Nh_M,Lt_M,Mb_M,M4_M,M2_M,Nc_M
       integer Mx_M,Ni_M,Nd_M,Nd_MM,Mx_s,Mx_ss
 !  User needs to set only following 3 parameters:
-      parameter (Nb_M = 600)        ! max. Basis set size
-      parameter (Mx_M = 100)           ! max. TDHF modes
+      parameter (Nb_M = 300)        ! max. Basis set size
+      parameter (Mx_M = 8)           ! max. TDHF modes
       parameter (Mx_ss = 2)          ! max. TDHF modes (smaller space)
       parameter (Ni_M = 1999)        ! max. Lanczos iterations	   
                 

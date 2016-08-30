@@ -74,6 +74,7 @@ contains
 !********************************************************************
 !
    subroutine cadiabmiddlecalc(sim,iimdqt,Na,Nm,cross)
+   use qm2_davidson_module
    implicit none
 
    type(simulation_t),pointer::sim
@@ -96,7 +97,7 @@ contains
    include 'common'
 
 ! modified by Seba
-   integer cross(nmaxpot)
+   integer cross(qm2ds%Mx)
 ! end modified by Seba
 
    type(xstep_t)::xstep

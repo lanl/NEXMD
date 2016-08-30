@@ -99,9 +99,10 @@ program MD_Geometry
    integer cohertype
 
    include 'sizes'
-
-   real(8) yg(2*nmaxpot) 
-   integer cross(nmaxpot),crosstot
+   
+   real(8),allocatable :: yg(:)!2*nmaxpot)
+   integer,allocatable :: cross(:)!nmaxpot)
+   integer crosstot
 
    real(8)ctest,ctemp
    real(8) tempa,tempb
@@ -153,13 +154,14 @@ program MD_Geometry
 
    nbasis=sim%dav%Nb  ! this is number of atomic orbitals
    sim%nbasis=nbasis  ! not to confuse with Ncis or Nrpa !!!
+
    ! calling the first time to check the quirality in what follows
-!  uumdqtflag =0 means that ceo is called by the first time,
-!     so m.o. matrix is stored
-!  uumdqtflag =1 means that the quirality of m.o. must be checked
+   !  uumdqtflag =0 means that ceo is called by the first time,
+   !     so m.o. matrix is stored
+   !  uumdqtflag =1 means that the quirality of m.o. must be checked
    uumdqtflag=0
-!
-   do i=1,npot
+   !
+   do i=1,qm2ds%Mx!npot
       iorden(i)=i
    end do
      
@@ -173,7 +175,7 @@ program MD_Geometry
 
    vgs=E0;
 
-   vmdqt(1:npot)=Omega(1:npot)+vgs
+   vmdqt(1:sim%excN)=Omega(1:sim%excN)+vgs
    
    t=0.0
 
@@ -253,16 +255,16 @@ program MD_Geometry
 ! loop to detect the crossing point
 !******************************************
          crosstot=0
-         do i=1,npot
+         do i=1,sim%excN
             if(cross(i).eq.1) crosstot=1
          end do
          if(crosstot.eq.1) then
             print*,'there is crossing'
-            print*,'cross(:)=',cross(1:npot)
+            print*,'cross(:)=',cross(1:sim%excN)
             cadiabhop=cadiabnew(qmmm_struct%state_of_interest,iorden(qmmm_struct%state_of_interest))
             nquantumstep=nquantumreal*nstepcross
             dtquantum=dtmdqt/dfloat(nquantumstep)
-            do j=1,npot
+            do j=1,sim%excN
               lowvalue(j)=1000.0d0
             end do
             do iimdqt=1,nquantumstep
@@ -271,7 +273,7 @@ program MD_Geometry
                call vmdqtmiddlecalc(sim,iimdqt,Na,Nm)
                call checkcrossingmiddle(sim,Na,Nm,cross)
                if(lprint.ge.2) then
-                  do j=1,npot
+                  do j=1,sim%excN
                      if(cross(j).eq.1) then
                         write(101,888) tfemto,tfemtoquantum, &
                            cross(j),j,iordenhop(j),scpr(j,iordenhop(j)), &
@@ -283,7 +285,7 @@ program MD_Geometry
                end if
             end do
             do win=1,3
-               do j=1,npot
+               do j=1,sim%excN
                   if(cross(j).eq.1) then
                      if(j.lt.iordenhop(j).or.j.eq.ihop) then
                         if(j.ne.iordenhop(j)) then
@@ -307,7 +309,7 @@ program MD_Geometry
 !
 !  remove the couplings if cross=2
 !
-         do i=1,npot
+         do i=1,sim%excN
             if(i.eq.qmmm_struct%state_of_interest) then
 
                if(cross(i).eq.2) then
@@ -374,10 +376,10 @@ program MD_Geometry
             if(lprint.ge.3) then
                if(iimdqt.ne.nquantumstep) then 
                   write(96,889) tfemtoquantum, &
-                     vgs*feVmdqt,(vmdqtmiddle(j)*feVmdqt,j=1,npot)
+                     vgs*feVmdqt,(vmdqtmiddle(j)*feVmdqt,j=1,sim%excN)
 
                   write(93,889) tfemtoquantum, &
-                     ((cadiabmiddle(j,k),k=1,npot),j=1,npot)
+                     ((cadiabmiddle(j,k),k=1,sim%excN),j=1,sim%excN)
                   call flush(96)
                   call flush(93)
                end if
@@ -397,16 +399,16 @@ program MD_Geometry
             call checknorm(ido,neq,tini,tend,toldivprk,param,yg)
 !******************************************************
 ! values for hop probability
-            do k=1,npot
-               do j=1,npot
+            do k=1,sim%excN
+               do j=1,sim%excN
                   vnqcorrhop(k,j)=-1.0d0*yg(j) &
-                     *dcos(yg(j+npot)-yg(k+npot))*cadiabmiddle(k,j)
+                     *dcos(yg(j+sim%excN)-yg(k+sim%excN))*cadiabmiddle(k,j)
                   vnqcorrhop(k,j)=vnqcorrhop(k,j)*2.0d0*yg(k)
                end do
             end do
 
-            do k=1,npot
-               do j=1,npot
+            do k=1,sim%excN
+               do j=1,sim%excN
                   vnqcorrhoptot(k,j)=vnqcorrhoptot(k,j) &
                      +vnqcorrhop(k,j)*dtquantum
                end do
@@ -431,11 +433,11 @@ program MD_Geometry
                if(lprint.ge.1) then
                   ntotcoher=0.0d0
 
-                  do j=1,npot
+                  do j=1,sim%excN
                      ntotcoher=ntotcoher+yg(j)**2
                   end do
 
-                  write(105,999) ihop,tfemto,(yg(j)**2,j=1,npot), &
+                  write(105,999) ihop,tfemto,(yg(j)**2,j=1,sim%excN), &
                      ntotcoher
                   call flush(105)
                end if
@@ -900,7 +902,6 @@ program MD_Geometry
     	
    else
        qmmm_struct%state_of_interest=imdtype
-   write(6,*)"state3=",qmmm_struct%state_of_interest,ihop,imdtype
    write(6,*)'Excited state MD,      state=',imdtype
       print *,'Number of states to propagate',npot
    end if
@@ -1021,22 +1022,26 @@ program MD_Geometry
 
       read(12,'(a)',err=29) txt
    end do
-   natom=Na
 
+   !--------------------------------------------------------------------
+   !Allocate variables
+   write(6,*)'Allocating variables'
+   natom=Na
    sim%Na=Na
    sim%nbasis=nbasis
-
    sim%Na=Na
    allocate(sim%coords(Na*3))
-
+   
    sim%excN=npot
-!
-!--------------------------------------------------------------------
-!
-!  Reading velocities
-!
-!--------------------------------------------------------------------
-!
+   allocate(yg(2*sim%excN))
+   allocate(cross(sim%excN))
+
+   !--------------------------------------------------------------------
+   !
+   !  Reading velocities
+   !
+   !--------------------------------------------------------------------
+
    rewind (12)
    do
       read(12,'(a)',err=29) txt
@@ -1089,13 +1094,13 @@ program MD_Geometry
          .or.txt(1:9).eq.'&ENDCOEFF' &
          .or.txt(1:9).eq.'&endcoeff') exit
 
-      read(txt,*,err=29) yg(i),yg(i+npot)
+      read(txt,*,err=29) yg(i),yg(i+sim%excN)
 
       yg(i)=dsqrt(yg(i))
-      yg(i+npot)=dasin(yg(i+npot))
+      yg(i+sim%excN)=dasin(yg(i+sim%excN))
 
       i=i+1
-      if(i.gt.nmaxpot) exit ! too many coefficients - leaving the loop
+      if(i.gt.sim%excN) exit ! too many coefficients - leaving the loop
    end do
       
    close (12) 

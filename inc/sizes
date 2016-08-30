@@ -15,9 +15,10 @@
 ! nmax is the maximum number of atoms allowed
 ! nmaxpot is the maximum number of electronic surfaces allowed
 ! nmaxbasis is the maximum of basis set allowed
-      parameter(nmax=600) 
-      parameter(nmaxpot=100) 
+      parameter(nmax=30) 
+      parameter(nmaxpot=8) 
       parameter(nmaxbasis=nmax*nmax/2) 
+      !parameter(nmaxbasis=qm2_struct%norbs) !JAKB added
 ! nmaxmo is the maximun number of molecular orbitals
 !***************************************************
 ! ATENTION nmax should be greater or equal to Na_M defined in md.par
@@ -25,7 +26,8 @@
 ! as M2M=2*M4_M being M4M=Np_M*Nh_M and Np_M=Nh_M=Nb_M/2
 ! ATENTION nmaxmo should be greater or equal to Nb_M defined in parH.par
 !***************************************************
-      parameter(nmaxmo=1000)
+      parameter(nmaxmo=300)
+      !parameter(nmaxmo=qm2_struct%norbs) !JAKB added
 ! added by Seba
       integer iordenhop(nmaxpot)
 ! end added by Seba

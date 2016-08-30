@@ -7,7 +7,7 @@
       ido,neq,tini,tend,toldivprk, &
       param,yg,constcoherE0,constcoherC,cohertype,idocontrol)
 ! end modified by Seba
-
+   use qm2_davidson_module
    use communism
    
    implicit none
@@ -37,13 +37,13 @@
    double precision iseedhop,eavant, eapres 
    double precision constcoherE0,constcoherC 
    include 'common'
-   double precision yg(nmaxpot),ytemp,ytemp2 
-   double precision taocoher(nmaxpot) 
+   double precision yg(qm2ds%Mx),ytemp,ytemp2 
+   double precision taocoher(qm2ds%Mx) 
 ! modified by Seba
 !        double precision norm 
    double precision norm,norm1,norm2,normdij
    double precision vect1(nmax*3),vect2(nmax*3),vecs(nmax*3)
-   double precision dij(nmax*3),kinec(nmaxpot)
+   double precision dij(nmax*3),kinec(qm2ds%Mx)
 ! end modified by Seba
 
    external fcn

@@ -23,7 +23,7 @@ contains
    character*1000 card
    character*1000 cardmopac
 
-   double precision yg(2*nmaxpot) 
+   double precision yg(2*qm2ds%Mx) 
    double precision energy !!JAB VE model
 
    if(solvent_model.eq.2) then
@@ -234,11 +234,11 @@ contains
    double precision xcm,ycm,zcm 
    include 'sizes'
    include 'common'
-   integer cross(nmaxpot)
+   integer cross(qm2ds%Mx)
    character*1000 card
    character*1000 cardmopac
 
-   double precision yg(2*nmaxpot) 
+   double precision yg(2*qm2ds%Mx) 
    double precision poblacring1,poblacring4
 
    double precision energy !JAB Test

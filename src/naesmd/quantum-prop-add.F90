@@ -22,11 +22,11 @@ contains
    include 'md.cmn'
    include 'common'
 ! added by Seba################
-   integer cross(nmaxpot)
+   integer cross(sim%excN)
 ! end added by Seba################
    integer ascpr(260,260),z
    _REAL_ scprold,xmax
-   _REAL_ normcheck(npot),normcheckhop 
+   _REAL_ normcheck(sim%excN),normcheckhop 
 !      double precision normcheckhop 
 
 !--------------------------------------------------------------------
@@ -39,7 +39,7 @@ contains
 !
 !--------------------------------------------------------------------
 !
-   scpr(1:npot,1:npot)=0.d0
+   scpr(1:sim%excN,1:sim%excN)=0.d0
 
    ! kav: FIXME
    ! Here and below, in the old code the size Ncis is used as a size of
@@ -47,8 +47,8 @@ contains
    ! Nrpa=2*Ncis (check it!!!). However, it can be very accurate becuase
    ! the contribution of negative energies to a positive excitation
    ! energy can be very small (would be great to check it)
-   do i=1,npot
-      do j=1,npot
+   do i=1,sim%excN
+      do j=1,sim%excN
          do k=1,sim%dav%Ncis
             scpr(i,j)=scpr(i,j)+cmdqtold(k,i)*cmdqtnew(k,j)
          end do
@@ -57,14 +57,14 @@ contains
 
 ! modified by Seba######################################
 ! this part of the code that was previously commented, I have discommented it.
-   do i=1,npot
-      do j=1,npot
+   do i=1,sim%excN
+      do j=1,sim%excN
          ascpr(i,j)=int(scpr(i,j)**2*1.d5)
       end do
    end do
 ! window**************************************
-   do i=1,npot
-      do j=1,npot
+   do i=1,sim%excN
+      do j=1,sim%excN
          if((j.lt.(i-2)).or.(j.gt.(i+2))) then
             ascpr(i,j)=-1*ifix(sngl(1.d5))
          end if
@@ -73,13 +73,13 @@ contains
 
 !************************************
 
-   do i=1,npot
-      do j=1,npot
+   do i=1,sim%excN
+      do j=1,sim%excN
          ascpr(i,j)=-1*ascpr(i,j)
       enddo
    end do
 
-   call apc(npot,ascpr,iorden,z)
+   call apc(sim%excN,ascpr,iorden,z)
 
 ! end modified by Seba##############################
 
@@ -88,7 +88,7 @@ contains
 !      xmax=0.0d0
 !      xmax=0.0d0
 !      imax=ihop
-!      do i=1,npot
+!      do i=1,sim%excN
 !         if(dabs(scpr(ihop,i)).gt.xmax) then
 !           xmax=dabs(scpr(ihop,i))
 !           imax=i
@@ -98,7 +98,7 @@ contains
 !
 !      if(iorden(ihop).ne.ihop) then 
 !!         normcheckhop=0.0d0
-!!         do j=1,npot
+!!         do j=1,sim%excN
 !!            normcheckhop=normcheckhop+scpr(j,iorden(ihop))**2
 !!         enddo
 !         if(dabs(scpr(ihop,iorden(ihop))).lt.0.9d0) then
@@ -116,7 +116,7 @@ contains
 !         cross=0
 !      endif
 
-   do i=1,npot
+   do i=1,sim%excN
       if(iorden(i).ne.i) then
          if(i.lt.iorden(i).or.i.eq.ihop) then
             if(dabs(scpr(i,iorden(i))).lt.0.9d0) then
@@ -143,8 +143,8 @@ contains
 
 ! Store the overlap matrix to print it if hops or cross
 
-   do i=1,npot
-      do j=1,npot
+   do i=1,sim%excN
+      do j=1,sim%excN
          scprreal(i,j)=scpr(i,j)
       end do
    end do
@@ -175,19 +175,19 @@ contains
    include 'md.cmn'
    include 'common'
 ! modified by Seba
-   integer cross(nmaxpot)
+   integer cross(sim%excN)
 ! end modified by Seba
    integer ascpr(260,260),z
    double precision scprold
-   double precision normcheck(npot),normcheckhop 
+   double precision normcheck(sim%excN),normcheckhop 
 !      double precision normcheckhop 
 
 
 !***************************************************
 ! following the nonavoiding crossing of states
 !***************************************************
-   do i=1,npot
-      do j=1,npot
+   do i=1,sim%excN
+      do j=1,sim%excN
          scpr(i,j)=0.0d0
          do k=1,sim%dav%Ncis
             scpr(i,j)=scpr(i,j)+cmdqtmiddleold(k,i)*cmdqtmiddle(k,j)
@@ -198,7 +198,7 @@ contains
 !      if(dabs(scpr(ihop,iordenhop)).ge.0.9d0) then
 !         cross=2
 !      endif
-   do i=1,npot
+   do i=1,sim%excN
       if(i.lt.iorden(i).or.i.eq.ihop) then
          if(i.ne.iorden(ihop)) then
             if(dabs(scpr(i,iorden(i))).ge.0.9d0) then
@@ -248,23 +248,23 @@ contains
    include 'common'
 
    if(iimdqt.eq.1) then
-      do i=1,npot
+      do i=1,sim%excN
          vmdqtmiddleold(i)=vmdqtold(i) 
       end do
 
       do i=1,sim%dav%Ncis
-         do j=1,npot
+         do j=1,sim%excN
             cmdqtmiddleold(i,j)=cmdqtold(i,j)
          end do
       end do
 
    else
-      do i=1,npot
+      do i=1,sim%excN
          vmdqtmiddleold(i)=vmdqtmiddle(i) 
       end do
 
       do i=1,sim%dav%Ncis
-         do j=1,npot
+         do j=1,sim%excN
             cmdqtmiddleold(i,j)=cmdqtmiddle(i,j)
          end do
       end do
@@ -272,12 +272,12 @@ contains
 
    if(iimdqt.eq.nquantumstep) then
 
-      do i=1,npot
+      do i=1,sim%excN
          vmdqtmiddle(i)=vmdqtnew(i)
       end do
 
       do i=1,sim%dav%Ncis
-         do j=1,npot
+         do j=1,sim%excN
             cmdqtmiddle(i,j)=cmdqtnew(i,j)
          end do
       end do
@@ -327,19 +327,19 @@ contains
       call do_sqm_davidson_update(sim,cmdqt=cmdqtmiddle, &
          vmdqt=vmdqtmiddle,vgs=vgs,rx=xx,ry=yy,rz=zz)        
 !          !KGB
-!          ! call ceo(Na,xx,yy,zz,atoms,npot,E0,Omega,fosc,mdflag)
+!          ! call ceo(Na,xx,yy,zz,atoms,sim%excN,E0,Omega,fosc,mdflag)
 !          sim%dav%mdflag=2
 !          call do_sqm_and_davidson(sim, xx, yy, zz)
 !          call dav2naesmd_Omega(sim)
 ! 
 !          vgs=E0
-!          do i=1,npot
+!          do i=1,sim%excN
 !             vmdqtmiddle(i)=(Omega(i)+E0) 
 !          enddo
 ! 
 !          call dav2cmdqt(sim, cmdqtmiddle)
 !          do i=1,nbasis
-!             do j=1,npot
+!             do j=1,sim%excN
 !                cmdqtmiddle(i,j)=cmdqt(i,j)
 !             enddo
 !          enddo
@@ -355,7 +355,7 @@ contains
 !         lowvaluestep=iimdqt
 !      endif
 
-   do j=1,npot
+   do j=1,sim%excN
       if(lowvalue(j).gt.dabs(vmdqtmiddle(j)- &
          vmdqtmiddle(iordenhop(j)))) then
 
@@ -445,14 +445,14 @@ contains
       vmdqt=vmdqtmiddle,vgs=vgs,rx=xx,ry=yy,rz=zz)        
 
          ! KGB
-         ! call ceo(Na,xx,yy,zz,atoms,npot,E0,Omega,fosc,mdflag)
+         ! call ceo(Na,xx,yy,zz,atoms,sim%excN,E0,Omega,fosc,mdflag)
 !          sim%dav%mdflag=2
 !          call do_sqm_and_davidson(sim, xx, yy, zz)
 !          call dav2naesmd_Omega(sim)
 !          call dav2cmdqt(sim, cmdqtmiddle)
 
 !          do i=1,nbasis
-!             do j=1,npot
+!             do j=1,sim%excN
 !                cmdqtmiddle(i,j)=cmdqt(i,j) !FIXME
 !             enddo
 !          enddo
@@ -502,13 +502,13 @@ contains
 !             zz(j)=zz(j)*convl
 !          enddo
 
-         ! call ceo(Na,xx,yy,zz,atoms,npot,E0,Omega,fosc,mdflag)
+         ! call ceo(Na,xx,yy,zz,atoms,sim%excN,E0,Omega,fosc,mdflag)
    
    call do_sqm_davidson_update(sim,cmdqtmiddleold,rx=xx,ry=yy,rz=zz)
 
          ! FIXME
 !          do i=1,nbasis
-!             do j=1,npot
+!             do j=1,sim%excN
 !                cmdqtmiddleold(i,j)=cmdqt(i,j)
 !             enddo
 !          enddo

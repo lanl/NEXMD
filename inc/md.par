@@ -1,7 +1,7 @@
 !  Main parameters
 	integer Na_M,N3_M,Nm_M,N2_M
 	real*8 Ry2,TeV,fcoeff,dcoeff,ocoeff,freqcoeff
-      parameter (Na_M = 1100)      ! max. number of atoms
+      parameter (Na_M = 30)      ! max. number of atoms
       parameter (N3_M = 3*Na_M)   ! max. number of cartesian coordinates
 !      parameter (Nm_M = 3*Na_M-6) ! max. number of normal modes
       parameter (Nm_M = 3*Na_M) ! max. number of normal modes
