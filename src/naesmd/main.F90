@@ -49,14 +49,15 @@ program MD_Geometry
    integer ii,jjj,l,ibo
    integer imdqt,iimdqt
    real(8) h,d,t,Ek,Etot,f
-   real(8) fosc(Mx_M)
-   real(8),target::Omega(Mx_M),E0 
+   real(8),allocatable::fosc(:)!Mx_M)
+   real(8),target,allocatable::Omega(:)!Mx_M)
+   real(8),target::E0 
    real(8),pointer::pOmega(:),pE0
    real(8) xi,nu,c0,c1,c2,kT
    integer ither,win
-   real(8) xx(Na_M),yy(Na_M),zz(Na_M)
-   real(8) xxp(Na_M),yyp(Na_M),zzp(Na_M)
-   real(8) xxm(Na_M),yym(Na_M),zzm(Na_M)
+   real(8),allocatable::xx(:),yy(:),zz(:)
+   real(8),allocatable::xxp(:),yyp(:),zzp(:)
+   real(8),allocatable::xxm(:),yym(:),zzm(:)
 
    real(8) tini,tend,toldivprk,norm,normdiff,param(50)
 
@@ -108,7 +109,7 @@ program MD_Geometry
    real(8) tempa,tempb
    real(8) ntotcoher 
 
-   real(8) dij(nmax*3)
+   real(8),allocatable ::  dij(:)!3*nmax)
 
    real(8) constcoherE0,constcoherC,icoher
    real(8) mu(3);
@@ -1030,10 +1031,16 @@ program MD_Geometry
    sim%nbasis=nbasis
    sim%Na=Na
    allocate(sim%coords(Na*3))
-   
+   allocate(dij(Na*3))
+   allocate(xx(Na),yy(Na),zz(Na))
+   allocate(xxp(Na),yyp(Na),zzp(Na))
+   allocate(xxm(Na),yym(Na),zzm(Na))
+ 
    sim%excN=npot
    allocate(yg(2*sim%excN))
    allocate(cross(sim%excN))
+   allocate(fosc(sim%excN))
+   allocate(Omega(sim%excN))
 
    !--------------------------------------------------------------------
    !

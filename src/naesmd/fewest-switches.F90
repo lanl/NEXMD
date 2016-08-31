@@ -27,7 +27,7 @@ contains
    _REAL_ E0,d
    include 'md.par'
    include 'parH.par'
-   _REAL_ Omega(Mx_M),fosc(Mx_M)
+   _REAL_ Omega(sim%excN),fosc(sim%excN)
    _REAL_ xx(Na),yy(Na),zz(Na)
    include 'common'
    _REAL_ yg(sim%excN),ytemp,ytemp2
@@ -228,13 +228,13 @@ contains
    include 'sizes'
    include 'md.par'
    include 'md.cmn'
-   double precision dij(nmax*3),vicheck
+   double precision dij(Na*3),vicheck
    double precision alpha,racine,ctehop1,dctehop1 
    double precision vtemp(sim%excN),vgstemp
    real*8 xx(Na),yy(Na),zz(Na)
    real*8 E0,d
    include 'parH.par'
-   real*8 Omega(Mx_M),fosc(Mx_M)
+   real*8 Omega(sim%excN),fosc(sim%excN)
    include 'common'
 !********************************************************
 ! adjustment of velocities

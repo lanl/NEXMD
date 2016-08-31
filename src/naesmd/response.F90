@@ -113,49 +113,49 @@
         call wrb_arr(tt,Lt,'rho2x.b','w','s')
         
         call wrb_arr(xi,Lt,'rho1y.b','r','s')
-	call wrb_arr(eta,Lt,'rhogr.b','r','s')
-	call wrb_arr(tt,Lt,'dip0y.b','r','s')
-	call quadr2(Nb,tt,eta,xi,rrwork,v0,beta1y)
+        call wrb_arr(eta,Lt,'rhogr.b','r','s')
+        call wrb_arr(tt,Lt,'dip0y.b','r','s')
+        call quadr2(Nb,tt,eta,xi,rrwork,v0,beta1y)
         call wrb_arr(xi,Lt,'rho2y.b','w','s')
-      	call response1(Nb,Nb_M,Mx,M2,e0, &
+        call response1(Nb,Nb_M,Mx,M2,e0, &
           tt,eta,xi,rrwork,mu2y,beta2y)
         call wrb_arr(tt,Lt,'rho2y.b','r','d')
         call summing(Lt,xi,tt)
         call wrb_arr(tt,Lt,'rho2y.b','w','s')
         
         call wrb_arr(xi,Lt,'rho1z.b','r','s')
-	call wrb_arr(eta,Lt,'rhogr.b','r','s')
-	call wrb_arr(tt,Lt,'dip0z.b','r','s')
-	call quadr2(Nb,tt,eta,xi,rrwork,v0,beta1z)
+        call wrb_arr(eta,Lt,'rhogr.b','r','s')
+        call wrb_arr(tt,Lt,'dip0z.b','r','s')
+        call quadr2(Nb,tt,eta,xi,rrwork,v0,beta1z)
         call wrb_arr(xi,Lt,'rho2z.b','w','s')
-      	call response1(Nb,Nb_M,Mx,M2,e0, &
+        call response1(Nb,Nb_M,Mx,M2,e0, &
           tt,eta,xi,rrwork,mu2z,beta2z)
         call wrb_arr(tt,Lt,'rho2z.b','r','d')
         call summing(Lt,xi,tt)
         call wrb_arr(tt,Lt,'rho2z.b','w','s')
 
-      	do j=1,Mx
-      	ftot2(j)=2*e0(j)*(mu2x(j)**2+mu2y(j)**2+mu2z(j)**2)
-      	enddo
-		
-        print *, 'Frequencies (eV) and Oscillator strength (Unitless)'
-	print 110 
-	do j=1,Mx
-	fx=2*e0(j)*mu2x(j)**2
-	fy=2*e0(j)*mu2y(j)**2
-	fz=2*e0(j)*mu2z(j)**2
-	ft=ftot2(j)
-	print "(i4,5g15.7)",j,e0(j), fx, fy, fz, ft
+        do j=1,Mx
+        ftot2(j)=2*e0(j)*(mu2x(j)**2+mu2y(j)**2+mu2z(j)**2)
         enddo
 
-	betax=beta1x+beta2x
-	betay=beta1y+beta2y
-	betaz=beta1z+beta2z
+        print *, 'Frequencies (eV) and Oscillator strength (Unitless)'
+        print 110 
+        do j=1,Mx
+        fx=2*e0(j)*mu2x(j)**2
+        fy=2*e0(j)*mu2y(j)**2
+        fz=2*e0(j)*mu2z(j)**2
+        ft=ftot2(j)
+        print "(i4,5g15.7)",j,e0(j), fx, fy, fz, ft
+        enddo
+
+        betax=beta1x+beta2x
+        betay=beta1y+beta2y
+        betaz=beta1z+beta2z
         beta=(betaz+betay+betax)/3
         f=4.323d-29
 
         print *
-	print*, beta1x,beta2x
+        print*, beta1x,beta2x
 	print*, beta1y,beta2y
 	print*, beta1z,beta2z
         print *, 'Quadratic polarizabilities, (e*A**3/V**2) and esu'    	

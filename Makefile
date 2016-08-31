@@ -145,14 +145,13 @@ OBJNAESMD = \
 	$(OBJDIR)/$(NAESMDDIR)/apc.o \
         $(OBJDIR)/$(NAESMDDIR)/naesmd_constants.o\
         $(OBJDIR)/$(NAESMDDIR)/naesmd_space_module.o \
+        $(OBJDIR)/$(NAESMDDIR)/communism.o \
         $(OBJDIR)/$(NAESMDDIR)/additional-subroutines.o \
         $(OBJDIR)/$(NAESMDDIR)/dcart_xpm_module.o \
         $(OBJDIR)/$(NAESMDDIR)/fcn.o \
         $(OBJDIR)/$(NAESMDDIR)/quantum-prop.o \
-        $(OBJDIR)/$(NAESMDDIR)/response.o \
 	$(OBJDIR)/$(NAESMDDIR)/random.o \
 	$(OBJDIR)/$(NAESMDDIR)/langevin-temperature.o \
-	$(OBJDIR)/$(NAESMDDIR)/communism.o \
         $(OBJDIR)/$(NAESMDDIR)/statespecific.o \
 	$(OBJDIR)/$(NAESMDDIR)/nacT_analytic.o \
 	$(OBJDIR)/$(NAESMDDIR)/fewest-switches.o \

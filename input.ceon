@@ -53,7 +53,7 @@
    rk_tolerance=1.d-7, ! tolerance for the Runge-Kutta propagator [1.d-7]
 
    !***** Non-adiabatic parameters
-   quant_coeffs_reinit=0, ! reinit (1) or not (0) quantum coeffs after a hop [0]
+   quant_coeffs_reinit=1, ! reinit (1) or not (0) quantum coeffs after a hop [0]
    quant_step_reduction_factor=1d0, ! quantum step reduction factor [0.1]
    decoher_type=0, ! type of decoherence: Persico/Granucci (0), Truhlar(1) [0]
    decoher_e0=0.d0, ! decoherence parameter E0 [0.1]

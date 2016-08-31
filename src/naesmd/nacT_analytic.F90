@@ -92,7 +92,7 @@ module nacT_analytic_module
    integer k,j,i,ii,iii,iimdqt
    _REAL_ x 
 
-   include 'md.par'
+   !include 'md.par'
    include 'sizes'
    include 'common'
 
@@ -208,78 +208,7 @@ module nacT_analytic_module
 
    return
    end subroutine
-!
-!********************************************************************
-!
-!  KGB moved this subroutine from cadiab.F90
-!  where it was formerly used.
-!  Calculates coordinates at time +/-dtnact.
-!
-!********************************************************************
-!
-   subroutine xxpxxm(xx,yy,zz,xxp,yyp,zzp,xxm,yym,zzm)
-   implicit none
 
-   include 'md.par'
-   include 'sizes'
-   include 'common'
-
-   integer k,j,i,ii,iii,iimdqt
-   _REAL_ x 
-
-   _REAL_,intent(in)::xx(Na_M),yy(Na_M),zz(Na_M)
-   _REAL_ xxp(Na_M),yyp(Na_M),zzp(Na_M)
-   _REAL_ xxm(Na_M),yym(Na_M),zzm(Na_M)
-
-   do j=1,natom
-      if(ensemble.eq.'energy'.or. ensemble.eq.'temper') then
-         xxp(j)=xx(j)+vxold(j)*dtnact+axold(j)*0.5d0*dtnact*dtnact
-         yyp(j)=yy(j)+vyold(j)*dtnact+ayold(j)*0.5d0*dtnact*dtnact
-         zzp(j)=zz(j)+vzold(j)*dtnact + azold(j)*0.5d0*dtnact*dtnact
-
-! xxm,m,yym, and zzm are xyz at t - dtnact
-         xxm(j)=xx(j)-vxold(j)*dtnact-axold(j)*0.5d0*dtnact*dtnact
-         yym(j)=yy(j)-vyold(j)*dtnact-ayold(j)*0.5d0*dtnact*dtnact
-         zzm(j)=zz(j)-vzold(j)*dtnact-azold(j)*0.5d0*dtnact*dtnact
-
-      else if(ensemble.eq.'langev') then
-         xxp(j)=xx(j)+vxold(j)*vfric(j)/dtmdqt*dtnact      &
-            +axold(j)*afric(j)/(dtmdqt*dtmdqt)*dtnact*dtnact &
-            +prand(1,j)/dtmdqt*dtnact
-
-         yyp(j)=yy(j)+vyold(j)*vfric(j)/dtmdqt*dtnact &
-            +ayold(j)*afric(j)/(dtmdqt*dtmdqt)*dtnact*dtnact &
-            +prand(2,j)/dtmdqt*dtnact
-
-         zzp(j)=zz(j)+vzold(j)*vfric(j)/dtmdqt*dtnact &
-            +azold(j)*afric(j)/(dtmdqt*dtmdqt)*dtnact*dtnact &
-            +prand(3,j)/dtmdqt*dtnact
-
-         xxm(j)=xx(j)-vxold(j)*vfric(j)/dtmdqt*dtnact &
-            -axold(j)*afric(j)/(dtmdqt*dtmdqt)*dtnact*dtnact &
-            -prand(1,j)/dtmdqt*dtnact
-
-         yym(j)=yy(j)-vyold(j)*vfric(j)/dtmdqt*dtnact &
-            -ayold(j)*afric(j)/(dtmdqt*dtmdqt)*dtnact*dtnact &
-            -prand(2,j)/dtmdqt*dtnact
-
-         zzm(j)=zz(j)-vzold(j)*vfric(j)/dtmdqt*dtnact &
-            -azold(j)*afric(j)/(dtmdqt*dtmdqt)*dtnact*dtnact &
-            -prand(3,j)/dtmdqt*dtnact
-
-      end if
-
-      xxp(j)=xxp(j)*convl
-      yyp(j)=yyp(j)*convl
-      zzp(j)=zzp(j)*convl
-      xxm(j)=xxm(j)*convl
-      yym(j)=yym(j)*convl
-      zzm(j)=zzm(j)*convl
-   end do
-
-   return
-   end subroutine
-!
 !********************************************************************
 !
 !  This version is similar to the nacT_analytic in the old code

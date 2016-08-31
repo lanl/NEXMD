@@ -24,8 +24,8 @@
    double precision E0,d
    include 'md.par'
    include 'parH.par'
-   real*8 Omega(Mx_M),fosc(Mx_M)
-   real*8 xx(Na_M),yy(Na_M),zz(Na_M)
+   real*8 Omega(sim%excN),fosc(sim%excN)
+   real*8 xx(Na),yy(Na),zz(Na)
 ! end modified by Seba
    integer k,i,j,icheck,itest,ini,ihopavant
    integer ido,neq
@@ -42,8 +42,10 @@
 ! modified by Seba
 !        double precision norm 
    double precision norm,norm1,norm2,normdij
-   double precision vect1(nmax*3),vect2(nmax*3),vecs(nmax*3)
-   double precision dij(nmax*3),kinec(sim%excN)
+   double precision vect1(Na*3) &
+                   ,vect2(Na*3) &
+                   ,vecs(Na*3)
+   double precision dij(Na*3),kinec(sim%excN)
 ! end modified by Seba
 
    external fcn

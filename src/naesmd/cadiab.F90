@@ -89,10 +89,10 @@ contains
  
    include 'md.par'
    include 'parH.par'
-   real*8 Omega(Mx_M),fosc(Mx_M)
-   real*8 xx(Na_M),yy(Na_M),zz(Na_M)
-   real*8 xxp(Na_M),yyp(Na_M),zzp(Na_M)
-   real*8 xxm(Na_M),yym(Na_M),zzm(Na_M)
+   real*8 Omega(qm2ds%Mx),fosc(qm2ds%Mx)
+   real*8 xx(Na),yy(Na),zz(Na)
+   real*8 xxp(Na),yyp(Na),zzp(Na)
+   real*8 xxm(Na),yym(Na),zzm(Na)
    include 'sizes'
    include 'md.cmn'
    include 'common'

@@ -1,3 +1,5 @@
+module naesmd_module
+      implicit none
       integer natom,npot,ihop,nquantumstep,nstep,nquantumreal
       integer nstepcross
       integer icontw,nstepw,icontini
@@ -88,4 +90,4 @@
       character*200 txtinput(1000)
       double precision cadiabhop 
       double precision scprreal(nmaxpot,nmaxpot)
-
+end module
