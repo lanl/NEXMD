@@ -161,7 +161,7 @@ program MD_Geometry
    !  uumdqtflag =1 means that the quirality of m.o. must be checked
    uumdqtflag=0
    !
-   do i=1,qm2ds%Mx!npot
+   do i=1,sim%excN!npot
       iorden(i)=i
    end do
      
@@ -224,7 +224,7 @@ program MD_Geometry
 
       if(state.eq.'exct'.and.ibo.ne.1) then
          !write(6,*)'Begin nonadiabatic couplings and crossings calculations'
-         call initialize(yg)
+         call initialize(sim,yg)
 !*******************************************************
 ! The analytic NAC for t.
 ! are calculated inside of cadiaboldcalc,cadiabmiddlecalc, and cadiabnewcalc
@@ -390,13 +390,13 @@ program MD_Geometry
 !  vmdqt during propagation
 !
 !--------------------------------------------------------------------
-            call fitcoeff
+            call fitcoef(sim)
 !--------------------------------------------------------------------
 ! Runge-Kutta-Verner propagator 
 !--------------------------------------------------------------------
             call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
             ! Check the norm
-            call checknorm(ido,neq,tini,tend,toldivprk,param,yg)
+            call checknorm(sim,ido,neq,tini,tend,toldivprk,param,yg)
 !******************************************************
 ! values for hop probability
             do k=1,sim%excN
@@ -708,8 +708,7 @@ program MD_Geometry
    end if
 
    npot=n_exc_states_propagate
-   !if(imdtype==0) npot=0 !to calculate excited states while propagating on the ground state PES
-   neq=2*npot
+   neq=2*npot !Number of equations for divprk -- could use 2*sim%excN instead
    
    icontini=out_count_init
    tfemto=time_init

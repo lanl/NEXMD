@@ -187,7 +187,7 @@ module nacT_analytic_module
    nact = 0.d0
    write(6,*)'Called nacT_v'
 
-   do i=2,sim%naesmd%npot
+   do i=2,sim%excN
       do j=1,i-1
          call nacR_analytic(sim%coords,j,i) ! notice j corresponds to 
                                                    ! ihop, i - icheck
@@ -311,10 +311,8 @@ module nacT_analytic_module
 
    parameter(fPi=3.1415926535898d0)
    parameter(fbar=0.05d0)  ! maximum dE in numerical derivative, eV.
-   integer Na,npot
+   integer Na
         
-   !include 'md.par'
-
    Na=qmmm_struct%nquant_nlink ! number of atoms
    N3=3*qmmm_struct%nquant_nlink ! number of degrees of freedom
 
@@ -331,7 +329,6 @@ module nacT_analytic_module
    M2_M=M4_M*2
    Mx=qm2ds%Mx 
    Mx_M=Mx
-   npot=Mx
 
    ! Note, Davidson must be run prior to this for these assignments
    if(qmmm_struct%qm_mm_first_call) then
@@ -405,7 +402,7 @@ module nacT_analytic_module
    call xstep_au2A(xs)
    !FIXME nacT_direct_ihc calls part of derivative each time.. is this necessary
    !or calculated previously?
-   do i=2,sim%naesmd%npot
+   do i=2,sim%excN
       do j=1,i-1
          nact(i,j)=nacT_direct_ihc(sim,i,j,xs) ! notice i corresponds to 
                                                         ! ihop, i - icheck

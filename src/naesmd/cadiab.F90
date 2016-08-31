@@ -10,8 +10,9 @@ contains
 
 
    subroutine cadiaboldcalc(sim,imdqt,Na,Nm)
+   use qm2_davidson_module
    implicit none
-
+ 
    type(simulation_t), pointer :: sim
 
    integer k,j,i,ii,iii,imdqt
@@ -48,18 +49,18 @@ contains
        sim%naesmd%deltaRm%vold(k)%p(1:natom)=sim%naesmd%deltaRm%v(k)%p(:natom) 
    end do
 
-   do j=1,npot
+   do j=1,qm2ds%Mx
       vmdqtold(j)=vmdqtnew(j)
    enddo
 
    do i=1,sim%dav%Ncis
-      do j=1,npot
+      do j=1,qm2ds%Mx
          cmdqtold(i,j)=cmdqtnew(i,j)
       enddo
    enddo
 
-   do j=1,npot
-      do k=1,npot
+   do j=1,qm2ds%Mx
+      do k=1,qm2ds%Mx
          cadiabold(j,k)=cadiabnew(j,k)
       end do
    end do
@@ -96,15 +97,13 @@ contains
    include 'md.cmn'
    include 'common'
 
-! modified by Seba
-   integer cross(qm2ds%Mx)
-! end modified by Seba
+   integer cross(sim%excN)
 
    type(xstep_t)::xstep
 
    if(iimdqt.eq.1) then
-      do i=1,npot
-         do j=1,npot
+      do i=1,qm2ds%Mx
+         do j=1,qm2ds%Mx
             cadiabmiddleold(i,j)=cadiabold(i,j) 
          end do
 
@@ -112,13 +111,13 @@ contains
       end do
 
       do i=1,sim%dav%Ncis
-         do j=1,npot
+         do j=1,qm2ds%Mx
             cmdqtmiddleold(i,j)=cmdqtold(i,j)
          end do
       end do
    else
-      do i=1,npot
-         do j=1,npot
+      do i=1,qm2ds%Mx
+         do j=1,qm2ds%Mx
             cadiabmiddleold(i,j)=cadiabmiddle(i,j) 
          end do
 
@@ -126,7 +125,7 @@ contains
       end do
 
       do i=1,sim%dav%Ncis
-         do j=1,npot
+         do j=1,qm2ds%Mx
             cmdqtmiddleold(i,j)=cmdqtmiddle(i,j)
          end do
       end do
@@ -134,18 +133,18 @@ contains
 
    if(iimdqt.eq.nquantumstep) then
 
-      do i=1,npot
+      do i=1,qm2ds%Mx
          vmdqtmiddle(i)=vmdqtnew(i)
       end do
 
-      do i=1,npot
-         do j=1,npot
+      do i=1,qm2ds%Mx
+         do j=1,qm2ds%Mx
             cadiabmiddle(i,j)=cadiabnew(i,j) 
          end do
       end do
 
       do i=1,sim%dav%Ncis
-         do j=1,npot
+         do j=1,qm2ds%Mx
             cmdqtmiddle(i,j)=cmdqtnew(i,j)
          end do
       end do
@@ -222,8 +221,8 @@ contains
       xstep=new_xstep(sim,xx,yy,zz,xxp,yyp,zzp,xxm,yym,zzm)
       call nacT_analytic(sim,cadiab,xstep)
 
-      do i=1,npot
-         do j=1,npot
+      do i=1,qm2ds%Mx
+         do j=1,qm2ds%Mx
             cadiabmiddle(i,j)=cadiab(i,j) 
          end do
       end do
@@ -237,7 +236,7 @@ contains
 !         endif
 !      endif
 
-   do i=1,npot
+   do i=1,qm2ds%Mx
       if(i.eq.ihop) then
          if(cross(i).eq.2) then
             if(conthop.gt.0) then
@@ -266,8 +265,8 @@ contains
    end do
 
    if(iimdqt.eq.nquantumstep) then
-      do i=1,npot
-         do j=1,npot
+      do i=1,qm2ds%Mx
+         do j=1,qm2ds%Mx
             cadiabnew(i,j)=cadiabmiddle(i,j)
          end do
       end do
@@ -282,7 +281,7 @@ contains
 !
 
    subroutine cadiabnewcalc(sim,Na,Nm)
-
+   use qm2_davidson_module
    implicit none
 
    type(simulation_t), pointer :: sim
@@ -314,8 +313,8 @@ contains
 
    call nacT_analytic(sim,cadiab,xstep)
 
-   do i=1,npot
-      do j=1,npot
+   do i=1,qm2ds%Mx
+      do j=1,qm2ds%Mx
          cadiabnew(i,j)=cadiab(i,j) 
       end do
    end do

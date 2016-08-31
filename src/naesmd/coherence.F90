@@ -37,13 +37,13 @@
    double precision iseedhop,eavant, eapres 
    double precision constcoherE0,constcoherC 
    include 'common'
-   double precision yg(qm2ds%Mx),ytemp,ytemp2 
-   double precision taocoher(qm2ds%Mx) 
+   double precision yg(sim%excN),ytemp,ytemp2 
+   double precision taocoher(sim%excN) 
 ! modified by Seba
 !        double precision norm 
    double precision norm,norm1,norm2,normdij
    double precision vect1(nmax*3),vect2(nmax*3),vecs(nmax*3)
-   double precision dij(nmax*3),kinec(qm2ds%Mx)
+   double precision dij(nmax*3),kinec(sim%excN)
 ! end modified by Seba
 
    external fcn
@@ -58,14 +58,14 @@
 !        enddo
 !        kin = 0.5d0 * kin
 !
-!        do j=1,npot
+!        do j=1,sim%excN
 !           if(j.ne.ihop) then
 !             taocoher(j)=1.0d0/dabs((vmdqtnew(j)-vmdqtnew(ihop))) &
 !      *(constcoherC+constcoherE0/kin)
 !           endif
 !        enddo
 !
-!        do j=1,npot
+!        do j=1,sim%excN
 !           if(j.ne.ihop) then
 !              if(yg(j).ne.0.0d0) then
 !                  yg(j)=yg(j)*dexp(-dtmdqt/taocoher(j))
@@ -74,7 +74,7 @@
 !        enddo
 !
 !        norm=0.0d0
-!        do k = 1,npot
+!        do k = 1,sim%excN
 !           if(k.ne.ihop) then
 !              norm=norm+yg(k)*yg(k)
 !           endif
@@ -87,7 +87,7 @@
 !      toldivprk,param,yg)
 !        ido=1
 
-   do j=1,npot
+   do j=1,sim%excN
       kinec(j)=0.0d0
    end do
 
@@ -98,14 +98,14 @@
          kin=kin+massmdqt(i)*(vx(i)**2+vy(i)**2+vz(i)**2)/2
       end do
 
-      do j=1,npot
+      do j=1,sim%excN
          if(j.ne.ihop) then
             taocoher(j)=1.0d0/dabs((vmdqtnew(j)-vmdqtnew(ihop))) &
                *(constcoherC+constcoherE0/kin)
          end if
       end do
 
-      do j=1,npot
+      do j=1,sim%excN
          if(j.ne.ihop) then
             if(yg(j).ne.0.0d0) then
                yg(j)=yg(j)*dexp(-dtmdqt/taocoher(j))
@@ -124,16 +124,16 @@
       end do
 
       !mdflag=2
-      !call ceo(Na,xx,yy,zz,atoms,npot,E0,Omega,fosc,mdflag)
+      !call ceo(Na,xx,yy,zz,atoms,sim%excN,E0,Omega,fosc,mdflag)
       sim%dav%mdflag=2
       call do_sqm_davidson_update(sim,cmdqt=cmdqt, &
          vmdqt=vmdqt,vgs=vgs,rx=xx,ry=yy,rz=zz)
 
-      do j=1,npot
+      do j=1,sim%excN
          if(j.ne.ihop) then
             if(yg(j).ne.0.d0) then
 ! calculate the non-adiabatic coupling vector(nacR)
-               !call nacR_analytic(Na,Nm,d,xx,yy,zz,npot,Omega, &
+               !call nacR_analytic(Na,Nm,d,xx,yy,zz,sim%excN,Omega, &
                !   mdflag,ihop,j,cmdqt,dij)
 
                call nacR_analytic_wrap(sim,ihop,j,dij)
@@ -255,12 +255,12 @@
          end if
       end do
 
-      write(111,888) tfemto,(kinec(k),k=1,npot)
+      write(111,888) tfemto,(kinec(k),k=1,sim%excN)
       call flush(111)
    end if
 
    norm=0.d0
-   do k=1,npot
+   do k=1,sim%excN
       if(k.ne.ihop) then
          norm=norm+yg(k)*yg(k)
       end if

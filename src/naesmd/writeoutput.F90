@@ -23,7 +23,7 @@ contains
    character*1000 card
    character*1000 cardmopac
 
-   double precision yg(2*qm2ds%Mx) 
+   double precision yg(2*sim%excN) 
    double precision energy !!JAB VE model
 
    if(solvent_model.eq.2) then
@@ -37,7 +37,7 @@ contains
    end do
 
    ntot=0
-   do j=1,npot
+   do j=1,sim%excN
       ntot=ntot+yg(j)**2
    end do
 
@@ -64,15 +64,15 @@ contains
    if(state.eq.'exct') then
       if(lprint.ge.1) then
          write(96,889) tfemto,vgs*feVmdqt, &
-            (vmdqt(j)*feVmdqt,j=1,npot)
+            (vmdqt(j)*feVmdqt,j=1,sim%excN)
          if(ibo.ne.1) then
-            write(95,999) ihop,tfemto,(yg(j)**2,j=1,npot),ntot
+            write(95,999) ihop,tfemto,(yg(j)**2,j=1,sim%excN),ntot
          end if
       end if
 
       if(lprint.ge.3.and.ibo.ne.1) then
       write(94,*)'Test4'
-         write(94,889) tfemto,(dsin(yg(j+npot)),j=1,npot)
+         write(94,889) tfemto,(dsin(yg(j+sim%excN)),j=1,sim%excN)
          call flush(94)
       end if
 
@@ -113,7 +113,7 @@ contains
          write(89,889) tfemto,(qm2ds%v2(qm2ds%Nb*(j-1)+j,ihop),j=1,qm2ds%Nb)
          call flush(89)
 ! in order to print the initial transition density of all states
-         do k=1,npot
+         do k=1,sim%excN
             write(77,889) tfemto,(qm2ds%v2(qm2ds%Nb*(j-1)+j,k),j=1,qm2ds%Nb)
             call flush(77)
          end do
@@ -143,8 +143,8 @@ contains
       write(10,556) '$ENDVELOC'
       write(10,557) '$COEFF'
 
-      do k=1,npot
-         write(10,223) yg(k)**2,dsin(yg(k+npot))
+      do k=1,sim%excN
+         write(10,223) yg(k)**2,dsin(yg(k+sim%excN))
       enddo
 
       write(10,556) '$ENDCOEFF'
@@ -157,7 +157,7 @@ contains
       if(iview.eq.1) then
 
 ! to be used in case we want to print the transition densities of all the states at t=0
-      do kki=1,npot
+      do kki=1,sim%excN
          card='view' // ktbig(icontini) // '-' //  ktbig(kki) // '.DATA'
 !************************************************************************************
 !       card='view' // ktbig(icontini) // '-' //  ktbig(ihop) // '.DATA'
@@ -234,16 +234,16 @@ contains
    double precision xcm,ycm,zcm 
    include 'sizes'
    include 'common'
-   integer cross(qm2ds%Mx)
+   integer cross(sim%excN)
    character*1000 card
    character*1000 cardmopac
 
-   double precision yg(2*qm2ds%Mx) 
+   double precision yg(2*sim%excN) 
    double precision poblacring1,poblacring4
 
    double precision energy !JAB Test
 
-   integer nring,indx(npot),npota
+   integer nring,indx(sim%excN)
 
    logical first
    data first /.true./
@@ -283,19 +283,19 @@ contains
    !ntot is the variable to check the norm conservation
    if(state.eq.'exct') then
       ntot=0
-      do j=1,npot
+      do j=1,sim%excN
          ntot=ntot+yg(j)**2
       end do
 
       if(lprint.ge.1) then
          if(ibo.eq.1) then
             write(96,889) tfemto,vgs*feVmdqt, &
-               (vmdqt(j)*feVmdqt,j=1,npot)
+               (vmdqt(j)*feVmdqt,j=1,sim%excN)
          else    
             write(96,889) tfemto,vgs*feVmdqt, &
-               (vmdqt(j)*feVmdqt,j=1,npot)
-            write(95,999) ihop,tfemto,(yg(j)**2,j=1,npot),ntot
-            write(93,888) tfemto,((cadiabnew(j,k),k=1,npot),j=1,npot)
+               (vmdqt(j)*feVmdqt,j=1,sim%excN)
+            write(95,999) ihop,tfemto,(yg(j)**2,j=1,sim%excN),ntot
+            write(93,888) tfemto,((cadiabnew(j,k),k=1,sim%excN),j=1,sim%excN)
 
             call flush(95)
             call flush(93)
@@ -305,7 +305,7 @@ contains
       end if
 
       if(lprint.ge.3.and.ibo.ne.1) then
-         write(94,889) tfemto,(dsin(yg(j+npot)),j=1,npot)
+         write(94,889) tfemto,(dsin(yg(j+sim%excN)),j=1,sim%excN)
          call flush(94)
       end if
    end if
@@ -351,8 +351,8 @@ contains
    end if
 
    if(state.eq.'exct'.and.lprint.ge.2) then
-      write(100,688) tfemto,(iorden(j),j=1,npot),cross
-      write(120,688) tfemto,(cross(j),j=1,npot)
+      write(100,688) tfemto,(iorden(j),j=1,sim%excN),cross
+      write(120,688) tfemto,(cross(j),j=1,sim%excN)
       call flush(120)
       call flush(100)
    end if
@@ -390,8 +390,8 @@ contains
       write(10,556) '$ENDVELOC'
       write(10,557) '$COEFF'
 
-      do k=1,npot
-         write(10,223) yg(k)**2,dsin(yg(k+npot))
+      do k=1,sim%excN
+         write(10,223) yg(k)**2,dsin(yg(k+sim%excN))
       end do
 
       write(10,556) '$ENDCOEFF'
@@ -422,7 +422,7 @@ contains
       close (9)
 
       if(iview.eq.1) then
-         do kki=1,npot
+         do kki=1,sim%excN
          card='view' // ktbig(icontpdb) // '-' //  ktbig(kki) // '.DATA'
          OPEN(90,FILE=card)
          write(90,440) ' Number of atoms:'

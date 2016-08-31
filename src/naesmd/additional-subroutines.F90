@@ -156,25 +156,25 @@ contains
       return
       end SUBROUTINE
 
-      SUBROUTINE checknorm(ido,neq,tini,tend,toldivprk,param,yg)
-      use qm2_davidson_module
+      SUBROUTINE checknorm(sim,ido,neq,tini,tend,toldivprk,param,yg)
+      use communism
       IMPLICIT NONE
-
+      type(simulation_t), pointer :: sim
       integer k,ido,neq
       double precision tini,tend,toldivprk,norm,normdiff,param(50)
       include 'sizes'
       include 'common'
-      double precision yg(qm2ds%Mx) 
+      double precision yg(sim%excN) 
 
       external fcn
 
       norm=0.0d0
-      do k = 1,qm2ds%Mx
+      do k = 1,sim%excN
          norm=norm+yg(k)*yg(k)
       enddo
       normdiff=dabs(norm-1.0d0)
       if(normdiff.ge.1.0d-5) then
-         do k = 1,qm2ds%Mx
+         do k = 1,sim%excN
             yg(k)=yg(k)/dsqrt(norm)
          enddo
          ido=3
@@ -190,21 +190,22 @@ contains
 ! Subroutine to calculate the coefficients to fit to a linear eq. the values of
 ! cadiab and vmdqt during propagation
 
-        SUBROUTINE fitcoeff 
-        use qm2_davidson_module
+        SUBROUTINE fitcoef(sim)
+        use communism
         IMPLICIT NONE
+        type(simulation_t), pointer :: sim
         integer k,j
         include 'sizes'
         include 'common'
 
-        do k=1,qm2ds%Mx
-          do j=1,qm2ds%Mx
+        do k=1,sim%excN
+          do j=1,sim%excN
              bcoeffcadiab(k,j)=(cadiabmiddle(k,j)- &
       cadiabmiddleold(k,j))/dtquantum
           enddo
         enddo
         
-        do k=1,qm2ds%Mx
+        do k=1,sim%excN
            bcoeffvmdqt(k)=(vmdqtmiddle(k)- &
       vmdqtmiddleold(k))/dtquantum
         enddo
@@ -216,20 +217,20 @@ contains
 ! vnqcorrhoptot that are integrated in time during each quantum propagation
 ! it also store the value of yg(ihop) at t to be used in the hopping evaluation
 
-        SUBROUTINE initialize(yg)
-        !use qmmm_module,only:qm2_struct
-        use qm2_davidson_module
+        SUBROUTINE initialize(sim,yg)
+        use communism
         IMPLICIT NONE
 
+        type(simulation_t), pointer :: sim
         integer k,j
         include 'sizes'
-        double precision yg(qm2ds%Mx)!yg(nmaxpot) 
+        double precision yg(sim%excN)!yg(nmaxpot) 
         include 'common'
 
         nqold=yg(ihop)
 
-        do k=1,qm2ds%Mx
-           do j=1,qm2ds%Mx
+        do k=1,sim%excN
+           do j=1,sim%excN
               vnqcorrhoptot(k,j)=0.0d0
            enddo
         enddo

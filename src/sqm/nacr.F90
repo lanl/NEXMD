@@ -19,7 +19,7 @@ subroutine nacR_analytic(xyz_in, ihop, icheck)
 
 	parameter (fPi = 3.1415926535898d0)
 	parameter (fbar = 0.05d0)  ! maximum dE in numerical derivative, eV.
-    integer Na,npot
+    integer Na
 !	_REAL_ xx(qmmm_struct%nquant_nlink),yy(qmmm_struct%nquant_nlink),zz(qmmm_struct%nquant_nlink)
 !	_REAL_ xx1(qmmm_struct%nquant_nlink),yy1(qmmm_struct%nquant_nlink),zz1(qmmm_struct%nquant_nlink)
     _REAL_ xyz(3,qmmm_struct%nquant_nlink),dxyz1(3,qmmm_struct%nquant_nlink)
@@ -40,7 +40,6 @@ subroutine nacR_analytic(xyz_in, ihop, icheck)
 	M2_M = M4_M*2
 	Mx = qm2ds%Mx 
 	Mx_M = Mx
-	npot = Mx
 
 ! This will need to be put outside of this routine because cmdqt is important for NAD calcs
 !	do j=1,npot

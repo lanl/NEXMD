@@ -6,14 +6,12 @@
 !   
    subroutine fcn(n,x,yg,yprime)
    implicit none
-
    integer n,k,j
    _REAL_ x,yg(n),yprime(n)
  
-   include 'sizes'
-   include 'common'
-
-   call interpolate(x)
+   !include 'sizes'
+   !include 'common'
+   call interpolate(n,x)
    call vqcalc(n,yg,yprime)
 
    return
@@ -26,23 +24,22 @@
 !
 !********************************************************************
 !
-   subroutine interpolate(x)
+   subroutine interpolate(n,x)
    implicit none
-
-   integer k,j
+   integer n,k,j
    _REAL_ x
  
    include 'sizes'
    include 'common'
 
-   do k=1,npot
-      do j=1,npot
+   do k=1,n/2
+      do j=1,n/2
          cadiab(k,j)=cadiabmiddleold(k,j) &
             +bcoeffcadiab(k,j)*(x-tini0) 
       end do
    end do
 
-   do k=1,npot
+   do k=1,n/2
       vmdqt(k)=vmdqtmiddleold(k)+bcoeffvmdqt(k)*(x-tini0) 
    end do
         
@@ -61,8 +58,9 @@
 !
 
    subroutine vqcalc(n,yg,yprime)
+   !use communism
    implicit none
-
+   !type(simulation_t), pointer :: sim
    integer n,k,j
    _REAL_ x,yg(n),yprime(n)
    _REAL_ norm 
@@ -70,34 +68,34 @@
    include 'sizes'
    include 'common'
 
-   do k=1,npot
+   do k=1,n/2
       yprime(k)=0.d0
-      yprime(k+npot)=-1.0d0*vmdqt(k)
+      yprime(k+n/2)=-1.0d0*vmdqt(k)
 
-      do j=1,npot
+      do j=1,n/2
 !                vnqcorrhop(k,j) = -2.0d0*dsqrt(yg(j)*yg(k))*
-!     $dcos(yg(j+npot)-yg(k+npot))*cadiab(k,j)
+!     $dcos(yg(j+n)-yg(k+n))*cadiab(k,j)
          vnqcorrhop(k,j)=-1.0d0*yg(j)* &
-            dcos(yg(j+npot)-yg(k+npot))*cadiab(k,j)
+            dcos(yg(j+n/2)-yg(k+n/2))*cadiab(k,j)
 
          yprime(k)=yprime(k)+vnqcorrhop(k,j) 
          vnqcorrhop(k,j)=vnqcorrhop(k,j)*2.0d0*yg(k)
       end do
 
       if(dabs(yg(k)).lt.1.0d-7) then
-         yprime(k+npot)=0.0d0
+         yprime(k+n/2)=0.0d0
       else
-         do j=1,npot
+         do j=1,n/2
 !                vqqcorr(k) = vqqcorr(k) - dsqrt(yg(j)/yg(k))*
-!     $dsin(yg(j+npot)-yg(k+npot))*cadiab(k,j) 
-            yprime(k+npot)=yprime(k+npot)-yg(j)/yg(k)* &
-               dsin(yg(j+npot)-yg(k+npot))*cadiab(k,j) 
+!     $dsin(yg(j+n)-yg(k+n))*cadiab(k,j) 
+            yprime(k+n/2)=yprime(k+n/2)-yg(j)/yg(k)* &
+               dsin(yg(j+n/2)-yg(k+n/2))*cadiab(k,j) 
          end do
       end if
    end do
 
 !        norm=0.0d0
-!        do k = 1,npot
+!        do k = 1,n
 !            norm=norm+yg(k)*yprime(k)
 !        enddo
 !        write(10,*) norm
