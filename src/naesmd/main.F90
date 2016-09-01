@@ -44,7 +44,7 @@ program MD_Geometry
 
    integer ido,neq,idocontrol
    integer icheck
-   integer Na,Nm,N1,N2,N3,ic0
+   integer Na,Nm,N1,N2,N3,ic0,natoms
    integer MM,i,j,k,n,m,im,im1,ia
    integer ii,jjj,l,ibo
    integer imdqt,iimdqt
@@ -87,7 +87,7 @@ program MD_Geometry
    real(8) qmdipole(3);
    integer decoher_type
 
-   namelist /moldyn/ bo_dynamics_flag,exc_state_init, &
+   namelist /moldyn/ natoms,bo_dynamics_flag,exc_state_init, &
       n_exc_states_propagate,out_count_init,time_init, &
       rk_tolerance,time_step,n_class_steps,n_quant_steps, &
       quant_coeffs_reinit,num_deriv_step, &
@@ -653,6 +653,7 @@ program MD_Geometry
 !--------------------------------------------------------------------
 !                               
    ! Default parameters for moldyn
+   natoms=1000 !max number of atoms
    bo_dynamics_flag=1 ! 0-non-BO, 1-BO
    exc_state_init=0 ! initial excited state
    n_exc_states_propagate=0 ! total number of excited state to propagate
@@ -838,6 +839,12 @@ program MD_Geometry
    print *, 'Cartesian coordinates are used'
 
 
+!***************************************************
+! Initial allocations
+! **************************************************
+   call allocate_naesmd_module_init(natoms)
+   call allocate_md_module_init(natoms)
+
 ! reading atoms and modes:
    rewind (12)
    Na=0
@@ -910,9 +917,9 @@ program MD_Geometry
    allocate(xx(Na),yy(Na),zz(Na))
    allocate(xxp(Na),yyp(Na),zzp(Na))
    allocate(xxm(Na),yym(Na),zzm(Na))
-   call allocate_naesmd_module(Na,npot,nbasis,nbasis) 
-   call allocate_md_module(Na)
    sim%excN=npot
+   call allocate_naesmd_module(Na,npot,nbasis,nbasis)
+   call allocate_md_module(Na)
    allocate(yg(2*sim%excN))
    allocate(cross(sim%excN))
    allocate(fosc(sim%excN))

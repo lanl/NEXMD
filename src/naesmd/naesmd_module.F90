@@ -12,7 +12,7 @@ module naesmd_module
       double precision temp0,tempf,tempi,tao
       integer,allocatable :: iordenhop(:)
       integer iorden(260)
-      integer,target,allocatable:: atomtype(:)
+      integer,target,allocatable:: atomtype(:) !atom types currently max 1000
       integer,allocatable:: lowvaluestep(:)
       double precision,allocatable:: lowvalue(:)
       double precision tini0
@@ -75,10 +75,19 @@ module naesmd_module
       double precision cadiabhop
       double precision,allocatable:: scprreal(:,:)
 
-      contains 
+      contains
+      subroutine allocate_naesmd_module_init(natoms)
+      implicit none
+        integer natoms
+        write(6,*)'Allocating initial naesmd_module variables'
+        allocate(atomtype(natoms),atomtype2(natoms))
+        allocate(massmdqt(natoms))
+      end 
       subroutine allocate_naesmd_module(Na,Nexc,Nmo,Nbasis)
+        implicit none
+        integer Na,Nexc,Nmo,Nbasis
+        write(6,*)'Allocating naesmd_module variables',Na,Nexc,Nmo,Nbasis
         allocate(iordenhop(Nexc))
-        allocate(atomtype(Na))
         allocate(lowvaluestep(Nexc))
         allocate(lowvalue(Nexc))
         allocate(rx(Na),ry(Na),rz(Na))
@@ -94,7 +103,6 @@ module naesmd_module
         allocate(ax(Na),ay(Na),az(Na))
         allocate(axold(Na),ayold(Na),azold(Na))
         allocate(fxmdqt(Na),fymdqt(Na),fzmdqt(Na))
-        allocate(massmdqt(Na))
         allocate(vmdqt(Nexc))
         allocate(bcoeffvmdqt(Nexc))
         allocate(vmdqtnew(Nexc))
@@ -120,7 +128,6 @@ module naesmd_module
         allocate(uuold(Nmo,Nmo))
         allocate(pfric(Na),vfric(Na),afric(Na))
         allocate(prand(3,Na),vrand(3,Na))
-        allocate(atomtype2(Na))
         allocate(scprreal(Nexc,Nexc))
       end
 
