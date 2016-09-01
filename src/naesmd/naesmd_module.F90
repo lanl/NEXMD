@@ -83,10 +83,10 @@ module naesmd_module
         allocate(atomtype(natoms),atomtype2(natoms))
         allocate(massmdqt(natoms))
       end 
-      subroutine allocate_naesmd_module(Na,Nexc,Nmo,Nbasis)
+      subroutine allocate_naesmd_module(Na,Nexc)
         implicit none
-        integer Na,Nexc,Nmo,Nbasis
-        write(6,*)'Allocating naesmd_module variables',Na,Nexc,Nmo,Nbasis
+        integer Na,Nexc,Nmo
+        write(6,*)'Allocating naesmd_module variables',Na,Nexc
         allocate(iordenhop(Nexc))
         allocate(lowvaluestep(Nexc))
         allocate(lowvalue(Nexc))
@@ -118,17 +118,21 @@ module naesmd_module
         allocate(cadiabmiddle(Nexc,Nexc))
         allocate(cadiabmiddleold(Nexc,Nexc))
         allocate(bcoeffcadiab(Nexc,Nexc))
+        allocate(scpr(Nexc,Nexc))
+        allocate(pfric(Na),vfric(Na),afric(Na))
+        allocate(prand(3,Na),vrand(3,Na))
+        allocate(scprreal(Nexc,Nexc))
+      end
+      subroutine allocate_naesmd_module2(Nbasis,Nmo,Nexc)
+      implicit none
+        integer Nbasis,Nmo,Nexc
         allocate(cmdqt(Nbasis,Nexc))
         allocate(cmdqtold(Nbasis,Nexc))
         allocate(cmdqtmiddleold(Nbasis,Nexc))
         allocate(cmdqtmiddle(Nbasis,Nexc))
         allocate(cmdqtnew(Nbasis,Nexc))
-        allocate(scpr(Nexc,Nexc))
         allocate(cicoeffao2(Nbasis,Nexc))
         allocate(uuold(Nmo,Nmo))
-        allocate(pfric(Na),vfric(Na),afric(Na))
-        allocate(prand(3,Na),vrand(3,Na))
-        allocate(scprreal(Nexc,Nexc))
       end
 
 end module

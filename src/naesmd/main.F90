@@ -22,7 +22,8 @@ program MD_Geometry
    use quantum_prop_add
    use verlet_module
    use communism
-   
+   use naesmd_module,only: allocate_naesmd_module2
+ 
    implicit none
 !
 !--------------------------------------------------------------------
@@ -137,7 +138,7 @@ program MD_Geometry
    
    call init0_simulation(sim)
    call init_main()
-
+   write(6,*)'out of init main'
    !Put derivative variables into module
    qmmm_struct%ideriv=moldyn_deriv_flag
    qmmm_struct%numder_step=num_deriv_step
@@ -155,6 +156,8 @@ program MD_Geometry
 
    nbasis=sim%dav%Nb  ! this is number of atomic orbitals
    sim%nbasis=nbasis  ! not to confuse with Ncis or Nrpa !!!
+
+   call allocate_naesmd_module2(sim%nbasis,sim%nbasis,sim%excN)
 
    ! calling the first time to check the quirality in what follows
    !  uumdqtflag =0 means that ceo is called by the first time,
@@ -910,7 +913,6 @@ program MD_Geometry
    write(6,*)'Allocating variables'
    natom=Na
    sim%Na=Na
-   sim%nbasis=nbasis
    sim%Na=Na
    allocate(sim%coords(Na*3))
    allocate(dij(Na*3))
@@ -918,7 +920,7 @@ program MD_Geometry
    allocate(xxp(Na),yyp(Na),zzp(Na))
    allocate(xxm(Na),yym(Na),zzm(Na))
    sim%excN=npot
-   call allocate_naesmd_module(Na,npot,nbasis,nbasis)
+   call allocate_naesmd_module(Na,npot)
    call allocate_md_module(Na)
    allocate(yg(2*sim%excN))
    allocate(cross(sim%excN))
@@ -959,7 +961,7 @@ program MD_Geometry
    vz(1:natom)=vz(1:natom)/convl*convt
 !
 !--------------------------------------------------------------------
-!
+write(6,*)'velocity read'
 ! Reading quantum coeffients
 !
 !--------------------------------------------------------------------
@@ -996,13 +998,13 @@ program MD_Geometry
 !
 !--------------------------------------------------------------------
 ! 
-! Finish reading coordinates
+write(6,*)' Finish reading coordinates '
 !
 !--------------------------------------------------------------------
 !
    Nm=3*Na
    v(1:Nm,1:Nm)=0.d0
-
+write(6,*)'here'
    do i=1,Na
       if (atoms(i).eq.1) then
          fo(3*i-2)=3000
@@ -1021,8 +1023,7 @@ program MD_Geometry
       v(3*i-1,3*i-1)=1.0
       v(3*i,3*i)=1.0
    end do
-
-   print "(a,f8.3,a,f8.3)",' time step: ',h,' fs'
+write(6,*)'not here'
 
    ! initialize variables:
    N3=3*Na
@@ -1042,6 +1043,7 @@ program MD_Geometry
    ry(1:natom)=yy(1:natom)/convl
    rz(1:natom)=zz(1:natom)/convl
 
+write(6,*)'perhaps here'
    ! position of the center of mass
    xcmini=0.d0
    ycmini=0.d0
@@ -1058,6 +1060,7 @@ program MD_Geometry
    end do
    
    !Remove rotation and translation from initial velocity
+   write(6,*)'Rescaling velocity'
    call rescaleveloc(rx,ry,rz,vx,vy,vz,massmdqt,natom)
 
    ! compute kinetic energy, for cartesian option
@@ -1066,31 +1069,32 @@ program MD_Geometry
       kin=kin+massmdqt(i)*(vx(i)**2+vy(i)**2+vz(i)**2)/2
    end do
 
-   print*
-   print*,'Initial Geometry'
+   write(6,*)
+   write(6,*)'Initial Geometry'
 
    do i=1,Na
        write(6,100) atoms(i),xx(i),yy(i),zz(i)
    end do
 
-100   format(I5,'     ',3F12.6)
 
+write(6,*)'here2'
    if(tfemto.eq.0.d0) then
       open (9,file='coords.xyz')
       write (9,*) Na
       write (9,*) 'Input Geometry'
 
-      do j = 3,N3,3
-         write(9,302) ELEMNT(atoms(j/3)),xx(j/3),yy(j/3),zz(j/3)
+      do j = 1,Na
+         write(9,302) ELEMNT(atoms(j)),xx(j),yy(j),zz(j)
       end do
       close (9)
    end if
-
+write(6,*)'here3'
    sim%coords(1:3*Na)=r0(1:3*Na) 
    allocate(sim%deriv_forces(3*Na))
    pOmega=>Omega
    pE0=>E0
 
+   write(6,*)'init_naemd_space_globs'
    call init_naesmd_space_globs(sim%naesmd, Na, Nm, pOmega, pE0)
 
    return
@@ -1098,6 +1102,7 @@ program MD_Geometry
  7    format (' ',A12,' ',A35,A2) 
  8    format (' ',A27,'  ',A30,A2)
  9    format (' ',A20,'    ',g16.5,A10)
+100   format(I5,'     ',3F12.6)
 301   format(' |     ',i2,' days ',i2,' hours ',i2,' minutes ',i2, &
        ' seconds     |')
 302   format(A3,3f12.6)
