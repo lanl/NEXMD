@@ -1,8 +1,8 @@
 
 FC = ifort
 CC = icc
-#CC = /opt/pgi/linux86-64/10.2/bin/pgcc -c
-#FC = /opt/pgi/linux86-64/10.2/bin/pgf90 -c
+#CC = pgcc -c
+#FC = pgf90 -c
 #FC = gfortran
 #CC = gcc
 
@@ -10,20 +10,16 @@ CC = icc
 #LIB_BLAS_LAPAC = -llapack ./goto2r1.13/libgoto2_nehalem-r1.13.a -lm
 #MKLROOT=/opt/intel/Compiler/11.1/069/mkl
 #LIB_BLAS_LAPAC = -llapack -lblas
-#LIB_BLAS_LAPAC = $(MKLROOT)/lib/em64t/libmkl_solver_lp64_sequential.a \
--Wl,--start-group \
-$(MKLROOT)/lib/em64t/libmkl_intel_lp64.a \
-$(MKLROOT)/lib/em64t/libmkl_sequential.a \
-$(MKLROOT)/lib/em64t/libmkl_core.a \
--Wl,--end-group \
--lpthread
-LIB_BLAS_LAPAC = -mkl
+#LIB_BLAS_LAPAC =  -Wl,--start-group ${MKLROOT}/lib/ia32/libmkl_intel.a ${MKLROOT}/lib/ia32/libmkl_core.a ${MKLROOT}/lib/ia32/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl 
+#LIB_BLAS_LAPAC =  -L${MKLROOT}/lib/intel64 -lmkl_intel_lp64 -lmkl_core -lmkl_sequential -lpthread -lm -ldl
+LIB_BLAS_LAPAC =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_ilp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
 
-#Object compliation flags
+#Object compilation flags
 #FFLAG = -fast -Mipa=fast,inline -pg -tp p7-64 -Mprefetch -Mfprelaxed -Mpfi
-FFLAG= -O2
+FFLAG= -O2 -I${MKLROOT}/include -i8
+CFLAG= -O2 -I${MKLROOT}/include -DMKL_LP64
 #Linking flags
-LDFLAGS = $(FFLAG)
+LDFLAGS = -O2
 
 MODCMD= -module
 NAESMDDIR = naesmd
@@ -160,7 +156,6 @@ OBJSQM = \
 	$(OBJDIR)/$(SQMDIR)/qm2_print_bondorders.o \
 	$(OBJDIR)/$(SQMDIR)/printNM.o \
         $(OBJDIR)/$(SQMDIR)/polarizab0ab_new.o
-
 OBJNAESMD = \
 	$(OBJDIR)/$(NAESMDDIR)/apc.o \
         $(OBJDIR)/$(NAESMDDIR)/naesmd_constants.o\
@@ -266,7 +261,6 @@ OBJPBSA = \
 	$(OBJDIR)/$(PBSADIR)/pb_list.o \
 	$(OBJDIR)/$(PBSADIR)/periodic_cg/random.o \
 	$(OBJDIR)/$(PBSADIR)/np_force.o
-
 OBJSANDER = \
 	$(OBJDIR)/$(SANDERDIR)/amoeba_mdin.o \
 	$(OBJDIR)/$(SANDERDIR)/trace.o \
@@ -433,13 +427,11 @@ OBJPMEMD = \
 	$(OBJDIR)/$(PMEMDDIR)/runfiles.o \
 	$(OBJDIR)/$(PMEMDDIR)/pmemd_clib.o \
 	$(OBJDIR)/$(PMEMDDIR)/erfcfun.o 
-
 OBJSFF = \
 	$(OBJDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC)/utility.o \
 	$(OBJDIR)/$(DIRSFF)/xminC.o
 OBJSFF = \
 	$(OBJDIR)/$(DIRSFF)/xminC.o 
-
 OBJAMOEBA = \
 	$(OBJDIR)/$(AMOEBADIR)/nextprmtop_section.o \
 	$(OBJDIR)/$(AMOEBADIR)/state_info.o \
@@ -466,7 +458,6 @@ OBJAMOEBA = \
 	$(OBJDIR)/$(AMOEBADIR)/runfiles.o \
 	$(OBJDIR)/$(AMOEBADIR)/erfcfun.o \
 	$(OBJDIR)/$(AMOEBADIR)/pmemd_clib.o
-
 OBJLIB = \
 	$(OBJDIR)/$(LIBDIR)/rfree.o \
 	$(OBJDIR)/$(LIBDIR)/nxtsec.o \
@@ -476,7 +467,7 @@ OBJLIB = \
 	$(OBJDIR)/$(LIBDIR)/random.o
 
 $(OBJDIR)/$(DIRSFF)/%.o: $(SRCDIR)/$(DIRSFF)/%.c
-	$(CC) $(INC) -DSQM -o $@ -c $<
+	$(CC) $(INC) $(CFLAG) -DSQM -o $@ -c $<
 
 $(OBJDIR)/$(LIBDIR)/%.o: $(SRCDIR)/$(LIBDIR)/%.F90
 	$(FC) $(INC) $(FFLAG) -o $@ -c $<
@@ -488,19 +479,19 @@ $(OBJDIR)/$(AMOEBADIR)/%.o: $(SRCDIR)/$(AMOEBADIR)/%.F90
 	$(FC) $(INC) $(FFLAG) -J$(MODDIR)/$(AMOEBADIR)/  -o $@ -c $<
 
 $(OBJDIR)/$(AMOEBADIR)/%.o: $(SRCDIR)/$(AMOEBADIR)/%.c
-	$(CC) $(INC) -o $@ -c $<
+	$(CC) $(INC) $(CFLAG) -o $@ -c $<
 
 $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC)/%.o: $(SRCDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC)/%.f
 	$(FC) $(INC) $(FFLAG) -o $@ -c $<
 
 $(OBJDIR)/$(LIBDIR)/%.o: $(SRCDIR)/$(LIBDIR)/%.c
-	$(CC) $(INC) $(FFLAG) -o $@ -c $<
+	$(CC) $(INC) $(CFLAG) -o $@ -c $<
 
 $(OBJDIR)/$(SANDERDIR)/%.o: $(SRCDIR)/$(SANDERDIR)/%.F90
 	$(FC) $(INC) $(FFLAG) $(SQMINC) $(MODCMD) $(MODDIR)/$(SANDERDIR)/ -o $@ -c $<
 
 $(OBJDIR)/$(SANDERDIR)/%.o: $(SRCDIR)/$(SANDERDIR)/%.c
-	$(CC) $(INC) $(FFLAG) -o $@ -c $<
+	$(CC) $(INC) $(CFLAG) -o $@ -c $<
 
 $(OBJDIR)/$(SQMDIR)/%.o: $(SRCDIR)/$(SQMDIR)/%.F90
 	$(FC) $(INC) $(FFLAG) -DSQM $(MODCMD) $(MODDIR)/$(SQMDIR)/ -o $@ -c $< 
@@ -524,7 +515,7 @@ $(OBJDIR)/$(PMEMDDIR)/%.o: $(SRCDIR)/$(PMEMDDIR)/%.F90
 	$(FC) $(INC) $(FFLAG) $(MODCMD) $(MODDIR)/$(PMEMDDIR) -o $@ -c $<
 
 $(OBJDIR)/$(PMEMDDIR)/%.o: $(SRCDIR)/$(PMEMDDIR)/%.c
-	$(CC) $(INC) $(FFLAG) -o $@ -c $<
+	$(CC) $(INC) $(CFLAG) -o $@ -c $<
 
 sqmceonaesmd.exe: $(OBJSFF) $(OBJSQM) $(OBJLIB) $(OBJNAESMD)
 	$(FC) $(LDFLAGS) -o sqmceonaesmd.exe $(OBJNAESMD) $(OBJSQM) $(OBJLIB) $(OBJSFF) -L$(LIB)
