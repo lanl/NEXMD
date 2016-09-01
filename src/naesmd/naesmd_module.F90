@@ -1,93 +1,127 @@
 module naesmd_module
-      implicit none
       integer natom,npot,ihop,nquantumstep,nstep,nquantumreal
       integer nstepcross
       integer icontw,nstepw,icontini
       integer istepheat,iconttemperature,icontpdb,icont,nstepcoord
-      integer txtinicoord,txtendcoord, nmax, nmaxpot,nmaxmo
-      integer nbasis,nmaxbasis,nao 
+      integer txtinicoord,txtendcoord
+      integer nbasis,nmaxbasis,nao
       integer ihopprev
       integer uumdqtflag
       integer iview,jend,decorhop
       integer iseedmdqt,conthop,conthop2
       double precision temp0,tempf,tempi,tao
-! nmax is the maximum number of atoms allowed
-! nmaxpot is the maximum number of electronic surfaces allowed
-! nmaxbasis is the maximum of basis set allowed
-      parameter(nmax=30) 
-      parameter(nmaxpot=8) 
-      parameter(nmaxbasis=nmax*nmax/2) 
-      !parameter(nmaxbasis=qm2_struct%norbs) !JAKB added
-! nmaxmo is the maximun number of molecular orbitals
-!***************************************************
-! ATENTION nmax should be greater or equal to Na_M defined in md.par
-! ATENTION nmaxbasis should be greater or equal to M2_M defined in parH.par
-! as M2M=2*M4_M being M4M=Np_M*Nh_M and Np_M=Nh_M=Nb_M/2
-! ATENTION nmaxmo should be greater or equal to Nb_M defined in parH.par
-!***************************************************
-      parameter(nmaxmo=300)
-      integer iordenhop(nmaxpot)
+      integer,allocatable :: iordenhop(:)
       integer iorden(260)
-      integer,target :: atomtype(nmax)
-      integer lowvaluestep(nmaxpot)
-      double precision lowvalue(nmaxpot)
-      double precision tini0 
-      double precision,target :: rx(nmax),ry(nmax),rz(nmax)
-      double precision,target :: rxold(nmax),ryold(nmax),rzold(nmax)
-      double precision,target :: deltaxxpold(nmax),deltayypold(nmax)
-      double precision,target :: deltazzpold(nmax),deltaxxmold(nmax)
-      double precision,target :: deltayymold(nmax),deltazzmold(nmax)
-      double precision,target :: deltaxxpnew(nmax),deltayypnew(nmax)
-      double precision,target :: deltazzpnew(nmax),deltaxxmnew(nmax)
-      double precision,target :: deltayymnew(nmax),deltazzmnew(nmax)
-      double precision,target :: vx(nmax),vy(nmax),vz(nmax)
-      double precision,target :: vxold(nmax),vyold(nmax),vzold(nmax)
-      double precision,target :: ax(nmax),ay(nmax),az(nmax)
-      double precision,target :: axold(nmax),ayold(nmax),azold(nmax)
-      double precision fxmdqt(nmax),fymdqt(nmax),fzmdqt(nmax)
-      double precision,target ::massmdqt(nmax)
+      integer,target,allocatable:: atomtype(:)
+      integer,allocatable:: lowvaluestep(:)
+      double precision,allocatable:: lowvalue(:)
+      double precision tini0
+      double precision,target,allocatable:: rx(:),ry(:),rz(:)
+      double precision,target,allocatable:: rxold(:),ryold(:),rzold(:)
+      double precision,target,allocatable:: deltaxxpold(:),deltayypold(:)
+      double precision,target,allocatable:: deltazzpold(:),deltaxxmold(:)
+      double precision,target,allocatable:: deltayymold(:),deltazzmold(:)
+      double precision,target,allocatable:: deltaxxpnew(:),deltayypnew(:)
+      double precision,target,allocatable:: deltazzpnew(:),deltaxxmnew(:)
+      double precision,target,allocatable:: deltayymnew(:),deltazzmnew(:)
+      double precision,target,allocatable:: vx(:),vy(:),vz(:)
+      double precision,target,allocatable:: vxold(:),vyold(:),vzold(:)
+      double precision,target,allocatable:: ax(:),ay(:),az(:)
+      double precision,target,allocatable:: axold(:),ayold(:),azold(:)
+      double precision,allocatable:: fxmdqt(:),fymdqt(:),fzmdqt(:)
+      double precision,target,allocatable::massmdqt(:)
       double precision dtquantum,kin
-      double precision,target ::dtnact, dtmdqt
-      double precision vmdqt(nmaxpot)
-      double precision bcoeffvmdqt(nmaxpot)
-      double precision vmdqtnew(nmaxpot)
-      double precision vmdqtmiddle(nmaxpot)
-      double precision vmdqtmiddleold(nmaxpot)
-      double precision vmdqtold(nmaxpot)
-      double precision vnqcorrhoptot(nmaxpot,nmaxpot)
-      double precision vnqcorrhop(nmaxpot,nmaxpot)
-      double precision cadiab(nmaxpot,nmaxpot)
-      double precision cadiab_analt(nmaxpot,nmaxpot)
-      double precision cadiabnew(nmaxpot,nmaxpot)
-      double precision cadiabold(nmaxpot,nmaxpot)
-      double precision cadiabmiddle(nmaxpot,nmaxpot)
-      double precision cadiabmiddleold(nmaxpot,nmaxpot)
-      double precision bcoeffcadiab(nmaxpot,nmaxpot)
-      double precision cmdqt(nmaxbasis,nmaxpot)
-      double precision cmdqtold(nmaxbasis,nmaxpot)
-      double precision cmdqtmiddleold(nmaxbasis,nmaxpot)
-      double precision cmdqtmiddle(nmaxbasis,nmaxpot)
-      double precision cmdqtnew(nmaxbasis,nmaxpot)
-      double precision scpr(nmaxpot,nmaxpot)
-      double precision cicoeffao2(nmaxbasis,nmaxpot)
-      double precision uuold(nmaxmo,nmaxmo)
+      double precision,target,allocatable::dtnact, dtmdqt
+      double precision,allocatable:: vmdqt(:)
+      double precision,allocatable:: bcoeffvmdqt(:)
+      double precision,allocatable:: vmdqtnew(:)
+      double precision,allocatable:: vmdqtmiddle(:)
+      double precision,allocatable:: vmdqtmiddleold(:)
+      double precision,allocatable:: vmdqtold(:)
+      double precision,allocatable:: vnqcorrhoptot(:,:)
+      double precision,allocatable:: vnqcorrhop(:,:)
+      double precision,allocatable:: cadiab(:,:)
+      double precision,allocatable:: cadiab_analt(:,:)
+      double precision,allocatable:: cadiabnew(:,:)
+      double precision,allocatable:: cadiabold(:,:)
+      double precision,allocatable:: cadiabmiddle(:,:)
+      double precision,allocatable:: cadiabmiddleold(:,:)
+      double precision,allocatable:: bcoeffcadiab(:,:)
+      double precision,allocatable:: cmdqt(:,:)
+      double precision,allocatable:: cmdqtold(:,:)
+      double precision,allocatable:: cmdqtmiddleold(:,:)
+      double precision,allocatable:: cmdqtmiddle(:,:)
+      double precision,allocatable:: cmdqtnew(:,:)
+      double precision,allocatable:: scpr(:,:)
+      double precision,allocatable:: cicoeffao2(:,:)
+      double precision,allocatable:: uuold(:,:)
       double precision xcmini,ycmini,zcmini,masstot
-      double precision tfemto 
-      double precision tfemtoquantum 
+      double precision tfemto
+      double precision tfemtoquantum
       double precision nqold
-      double precision kinini,vini,etotini 
-      double precision vgs 
-      double precision friction 
-      double precision pfric(nmax),vfric(nmax),afric(nmax) 
-      double precision prand(3,nmax),vrand(3,nmax) 
-      double precision deltax 
+      double precision kinini,vini,etotini
+      double precision vgs
+      double precision friction
+      double precision,allocatable:: pfric(:),vfric(:),afric(:)
+      double precision,allocatable:: prand(:,:),vrand(:,:)
+      double precision deltax
       parameter(deltax=1.0d-4)
-      character*2 atomtype2(nmax)
+      character*2,allocatable:: atomtype2(:)
       character*4 state,prep
-      character*6 ensemble 
+      character*6 ensemble
       character*200 cardini
       character*4 ktbig(0:9999)
       character*200 txtinput(1000)
-      double precision cadiabhop 
-      double precision scprreal(nmaxpot,nmaxpot)
+      double precision cadiabhop
+      double precision,allocatable:: scprreal(:,:)
+
+      contains 
+      subroutine allocate_naesmd_module(Na,Nexc,Nmo,Nbasis)
+        allocate(iordenhop(Nexc))
+        allocate(atomtype(Na))
+        allocate(lowvaluestep(Nexc))
+        allocate(lowvalue(Nexc))
+        allocate(rx(Na),ry(Na),rz(Na))
+        allocate(rxold(Na),ryold(Na),rzold(Na))
+        allocate(deltaxxpold(Na),deltayypold(Na))
+        allocate(deltazzpold(Na),deltaxxmold(Na))
+        allocate(deltayymold(Na),deltazzmold(Na))
+        allocate(deltaxxpnew(Na),deltayypnew(Na))
+        allocate(deltazzpnew(Na),deltaxxmnew(Na))
+        allocate(deltayymnew(Na),deltazzmnew(Na))
+        allocate(vx(Na),vy(Na),vz(Na))
+        allocate(vxold(Na),vyold(Na),vzold(Na))
+        allocate(ax(Na),ay(Na),az(Na))
+        allocate(axold(Na),ayold(Na),azold(Na))
+        allocate(fxmdqt(Na),fymdqt(Na),fzmdqt(Na))
+        allocate(massmdqt(Na))
+        allocate(vmdqt(Nexc))
+        allocate(bcoeffvmdqt(Nexc))
+        allocate(vmdqtnew(Nexc))
+        allocate(vmdqtmiddle(Nexc))
+        allocate(vmdqtmiddleold(Nexc))
+        allocate(vmdqtold(Nexc))
+        allocate(vnqcorrhoptot(Nexc,Nexc))
+        allocate(vnqcorrhop(Nexc,Nexc))
+        allocate(cadiab(Nexc,Nexc))
+        allocate(cadiab_analt(Nexc,Nexc))
+        allocate(cadiabnew(Nexc,Nexc))
+        allocate(cadiabold(Nexc,Nexc))
+        allocate(cadiabmiddle(Nexc,Nexc))
+        allocate(cadiabmiddleold(Nexc,Nexc))
+        allocate(bcoeffcadiab(Nexc,Nexc))
+        allocate(cmdqt(Nbasis,Nexc))
+        allocate(cmdqtold(Nbasis,Nexc))
+        allocate(cmdqtmiddleold(Nbasis,Nexc))
+        allocate(cmdqtmiddle(Nbasis,Nexc))
+        allocate(cmdqtnew(Nbasis,Nexc))
+        allocate(scpr(Nexc,Nexc))
+        allocate(cicoeffao2(Nbasis,Nexc))
+        allocate(uuold(Nmo,Nmo))
+        allocate(pfric(Na),vfric(Na),afric(Na))
+        allocate(prand(3,Na),vrand(3,Na))
+        allocate(atomtype2(Na))
+        allocate(scprreal(Nexc,Nexc))
+      end
+
 end module

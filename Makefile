@@ -144,6 +144,8 @@ OBJSQM = \
 OBJNAESMD = \
 	$(OBJDIR)/$(NAESMDDIR)/apc.o \
         $(OBJDIR)/$(NAESMDDIR)/naesmd_constants.o\
+        $(OBJDIR)/$(NAESMDDIR)/naesmd_module.o\
+        $(OBJDIR)/$(NAESMDDIR)/md_module.o\
         $(OBJDIR)/$(NAESMDDIR)/naesmd_space_module.o \
         $(OBJDIR)/$(NAESMDDIR)/communism.o \
         $(OBJDIR)/$(NAESMDDIR)/additional-subroutines.o \

@@ -552,6 +552,9 @@ program MD_Geometry
 !********************************************************************
 !
    subroutine init_main()
+   use naesmd_module
+   use md_module
+
    implicit none
 
    ! dtnact is the incremental time to be used at nact calculation
@@ -646,8 +649,6 @@ program MD_Geometry
 !--------------------------------------------------------------------
 !
 !  Reading moldyn parameters
-!
-!  kav: As of 10/31/12 - slow and painful migration to namelist reading
 !
 !--------------------------------------------------------------------
 !                               
@@ -764,132 +765,6 @@ program MD_Geometry
    constcoherC=decoher_c
 
    cohertype=decoher_type
-
-   if(1==0) then ! kav: tentatively to skip (so far) the following reading
-   do       
-      read(12,'(a)',err=29) txt
-      if( &
-         txt(1:7).eq.'$MOLDYN' &
-         .or.txt(1:7).eq.'$moldyn' &
-         .or.txt(1:7).eq.'&MOLDYN' &
-         .or.txt(1:7).eq.'&moldyn') exit ! leaving the infinite loop
-   end do
-
-   read(12,'(a)',err=29) txt         !=0 non Bon-Oppenheimer dynamics
-   read(txt,*,err=29) ibo           ! =1 means Born-Oppenheimer dynamics
-
-   read(12,'(a)',err=29) txt ! MD type: 0-ground,1-first exc. state
-   read(txt,*,err=29) imdtype
-   ihop = imdtype
-!   qmmm_struct%state_of_interest=imdtype
-!   write(6,*)"state3=",qmmm_struct%state_of_interest,ihop,imdtype		
-   if(imdtype.eq.0) state='fund'
-   if(imdtype.ne.0) state='exct'
-
-   read(12,'(a)',err=29) txt ! number of excited states to propagate
-   read(txt,*,err=29) npot 
-   if(imdtype.eq.0) npot=0
-
-! neq=number of differential eq. of the quantum propagation
-
-   neq=2*npot
-
-   read(12,'(a)',err=29) txt		! the initial count for output files
-   read(txt,*,err=29) icontini 
-
-   read(12,'(a)',err=29) txt		! initial time
-   read(txt,*,err=29) tfemto 
-
-   read(12,'(a)',err=29) txt         ! tolerance for the Runge-Kutta propagator
-   read(txt,*,err=29) toldivprk
-
-   read(12,'(a)',err=29) txt		! time itep, fs
-   read(txt,*,err=29) dtmdqt
-   h=dtmdqt
-!  1/convtf transform the time from femtoseconds to a.u.
-   dtmdqt=dtmdqt/convtf
-
-   read(12,'(a)',err=29) txt		! number of steps
-   read(txt,*,err=29) nstep 
-
-   read(12,'(a)',err=29) txt         ! number of quantum steps for
-                                        ! each classical step
-   read(txt,*,err=29) nquantumreal
-   dtquantum=dtmdqt/dfloat(nquantumreal)
-
-   read(12,'(a)',err=29) txt         ! reinitialize the quantum coefficients
-                                        ! after a hop(1=yes,0=no) 
-   read(txt,*,err=29) decorhop 
-
-   read(12,'(a)',err=29) txt		! displacement for derivatives, A
-   read(txt,*,err=29) d	
-
-   read(12,'(a)',err=29) txt		! Initial temperature, K
-   read(txt,*,err=29) temp0
-   ttt=temp0
-
-   read(12,'(a)',err=29) txt		! Thermostat type: 0-none,1-Langevin,2-Berendsen
-   read(txt,*,err=29) ither
-   if(ither.eq.0) ensemble ='energy' 
-   if(ither.eq.1) ensemble ='langev' 
-   if(ither.eq.2) ensemble ='temper' 
-	  
-   read(12,'(a)',err=29) txt		! bath relaxation constant, only for Berendsen 
-   read(txt,*,err=29) tao 
-	
-
-   read(12,'(a)',err=29) txt		! heating or equilibrated
-                                     ! 'heat' for heating from T=0
-                                     ! 'equi' for equilibrated
-                                        ! systems 
-   read(txt,*,err=29) prep 
-
-   read(12,'(a)',err=29) txt		! number of steps per degree
-                                        ! during heating
-   read(txt,*,err=29) istepheat
-
-   read(12,'(a)',err=29) txt		! number of steps to write data 
-   read(txt,*,err=29) nstepw 
-
-   read(12,'(a)',err=29) txt		! number of steps to write 
-                                        ! the coordinate file 
-   read(txt,*,err=29) nstepcoord 
-
-!! thermostat flag line added in input and reading
-!      read(12,'(a)',err=29) txt		! coefficient of friction, xi
-!      read(txt,*,err=29) xi
-   read(12,'(a)',err=29) txt		! coefficient of friction, ps-1 
-   read(txt,*,err=29) friction
-   friction=friction/1.0D3
-
-   read(12,'(a)',err=29) txt ! initial seed 
-   read(txt,*,err=29) iseedmdqt 
-
-   read(12,'(a)',err=29) txt ! write view files to generate cubes, 0=no, 1=yes 
-   read(txt,*,err=29) iview 
-
-   read(12,'(a)',err=29) txt ! level of printing data (0-minimal, 1-large, 2-larger, 3-largest)
-   read(txt,*,err=29) lprint
-
-   read(12,'(a)',err=29) txt		! MD derivatives flag
-   read(txt,*,err=29) ideriv
-
-   read(12,'(a)',err=29) txt		! times the quantum step is reduced if the overlap between crossing states is < 0.9
-   read(txt,*,err=29) nstepcross 
-
-   read(12,'(a)',err=29) txt ! constant E0 to be used for decoherence (normally = 0.1 hartree)
-! C. Zhu, S. Nangia, A. W. Jasper and D. G. Truhlar, JCP 121, 7658 (2004)
-   read(txt,*,err=29) constcoherE0 
-   read(12,'(a)',err=29) txt ! constant C to be used for decoherence (normally = 0.1 hartree)
-   read(txt,*,err=29) constcoherC 
-
-!       nstepcross=10
-!       constcoherE0=0.0d0
-!       constcoherC=0.0d0
-
-!***************************************************************************
-
-   end if
 
    write(6,*) '!!!!!!-----MD INPUT-----!!!!!!'
    write(6,*)
@@ -1035,7 +910,8 @@ program MD_Geometry
    allocate(xx(Na),yy(Na),zz(Na))
    allocate(xxp(Na),yyp(Na),zzp(Na))
    allocate(xxm(Na),yym(Na),zzm(Na))
- 
+   call allocate_naesmd_module(Na,npot,nbasis,nbasis) 
+   call allocate_md_module(Na)
    sim%excN=npot
    allocate(yg(2*sim%excN))
    allocate(cross(sim%excN))
