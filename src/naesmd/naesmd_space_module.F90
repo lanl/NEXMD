@@ -90,12 +90,14 @@ implicit none
 
 
     subroutine init_naesmd_space_globs(nsp,Na,Nm,pOmega, E0)
+        use naesmd_module
+        use md_module
         type(naesmd_data_t), pointer :: nsp
         integer,intent(in)           :: Na, Nm
         _REAL_,              pointer :: pOmega(:), E0
-
-        include 'sizes'
-        include 'common'
+ 
+        !include 'sizes'
+        !include 'common'
 
         nsp%r%x    => rx
         nsp%r%y    => ry

@@ -514,8 +514,8 @@ $(OBJDIR)/$(PMEMDDIR)/%.o: $(SRCDIR)/$(PMEMDDIR)/%.c
 	$(CC) $(INC) $(FFLAG) -o $@ -c $<
 
 
-debug: FFLAG += -DDEBUG -g
-debug: LDFLAGS += -DDEBUG -g
+debug: FFLAG = -O0 -DDEBUG -g
+debug: LDFLAGS = -O0 -DDEBUG -g
 debug: sqmceonaesmd.exe
 
 all: sqmceonaesmd.exe

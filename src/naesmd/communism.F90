@@ -320,19 +320,22 @@ module communism
    use file_io_dat,only:MAX_FN_LEN
    use qm2_davidson_module ! CML 7/11/12
    use Cosmo_C,only:solvent_model
+   use md_module
+   use naesmd_module
 
    implicit none
 
-   include 'sizes'
-   include 'md.par'
-   include 'parH.par'
-   include 'md.cmn'
-   include 'common'
+   !include 'sizes'
+   !include 'md.par'
+   !include 'parH.par'
+   !include 'md.cmn'
+   !include 'common'
 
    type(simulation_t),pointer::sim 
 
    integer,intent(in)::fdes_in,fdes_out
-
+  !FIXME Why are the specific sizes of variables given below? These should be
+  !allocated and are likely based on number of atoms JAKB
    _REAL_ f(3000), reff(1000), onereff(1000), work(18000)
   ! _REAL_ x(3000)	
    _REAL_, dimension(:,:), pointer :: x	
@@ -373,6 +376,7 @@ module communism
    qmmm_struct%adj_mm_link_pair_crd_first_call = .true.
    ncharge=0;
    igb = 0
+
    call sqm_read_and_alloc(fdes_in, fdes_out, &
       sim%Na,igb,atnam,sim%naesmd%atomtype,maxcyc, &
       grms_tol,ntpr, ncharge,excharge,chgatnum, &

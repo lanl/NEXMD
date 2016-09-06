@@ -1,4 +1,13 @@
 module naesmd_module
+      !parvar.var variables
+      !real*8 intf(6)
+      !integer Nb,Np,Nh,Lt,Mb,M4,M2,Nc,Mx,Mj,Ni,Nat,Ntot
+      !integer Charg,inttyp,irflag
+      !real*8 ftol,ftol0,ftol1
+      integer lprint!,Nrestart, idav
+      !real*8 Eelec,Enucl,Esol,Atheat,Escf,Energy,rtol
+
+      !sizes variables
       integer natom,npot,ihop,nquantumstep,nstep,nquantumreal
       integer nstepcross
       integer icontw,nstepw,icontini
@@ -85,7 +94,7 @@ module naesmd_module
       end 
       subroutine allocate_naesmd_module(Na,Nexc)
         implicit none
-        integer Na,Nexc,Nmo
+        integer Na,Nexc
         write(6,*)'Allocating naesmd_module variables',Na,Nexc
         allocate(iordenhop(Nexc))
         allocate(lowvaluestep(Nexc))

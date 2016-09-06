@@ -38,6 +38,7 @@
 
 &moldyn
    !***** General parameters
+   natoms=30,
    rnd_seed=1, ! seed for the random number generator
    bo_dynamics_flag=0, ! 0-non-BO, 1-BO [1]
    exc_state_init=4, ! initial excited state (0 - ground state) [0]
