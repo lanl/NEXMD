@@ -1,9 +1,9 @@
 module md_module
     implicit none
-    ! mode and atom variables:
-    real(8),allocatable::xx(:),yy(:),zz(:),dij(:)
-    real(8),allocatable::xxp(:),yyp(:),zzp(:)
-    real(8),allocatable::xxm(:),yym(:),zzm(:)
+    !mode and atom variables:
+    !real(8),allocatable::xx(:),yy(:),zz(:)!,dij(:)
+    !real(8),allocatable::xxp(:),yyp(:),zzp(:)
+    !real(8),allocatable::xxm(:),yym(:),zzm(:)
     integer,allocatable:: atoms(:)        ! atomic numbers (currently max 1000)
     real*8,allocatable:: atmass(:)        ! atomic masses (currently max 1000)
     real*8,allocatable:: v(:,:)         ! unit matrix
@@ -31,9 +31,9 @@ contains
         if(.not.allocated(v)) allocate(v(Nm,Nm))
         if(.not.allocated(fm)) allocate(fm(Nm)) ! mode masses
         if(.not.allocated(fo)) allocate(fo(Nm))            ! mode frequencies (used to determine friction)
-        if(.not.allocated(dij)) allocate(dij(Na*3))
-        allocate(xx(Na),yy(Na),zz(Na))
-        allocate(xxp(Na),yyp(Na),zzp(Na))
-        allocate(xxm(Na),yym(Na),zzm(Na))
+        !if(.not.allocated(dij)) allocate(dij(Na*3))
+        !allocate(xx(Na),yy(Na),zz(Na))
+        !allocate(xxp(Na),yyp(Na),zzp(Na))
+        !allocate(xxm(Na),yym(Na),zzm(Na))
     end
 end module

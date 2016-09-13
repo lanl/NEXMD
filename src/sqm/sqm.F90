@@ -296,7 +296,9 @@ subroutine sqm_energy(natom,coords,escf, &
 !=============================================================================
 
 !  If this is the first call to the routine, do some initial allocation
+
 !  that has not been done elsewhere.
+!write(6,*)'in sqm_energy'
    if(qmmm_struct%qm_mm_first_call) then
 
       allocate(qmmm_struct%qm_coords(3,qmmm_struct%nquant_nlink),stat=ier)

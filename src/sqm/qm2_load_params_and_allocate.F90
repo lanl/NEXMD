@@ -110,7 +110,6 @@ subroutine qm2_load_params_and_allocate()
         qm2_struct%norbs = qm2_struct%norbs+n_atomic_orb
         qm2_params%tot_heat_form=qm2_params%tot_heat_form+heat_of_form(iqm_atomic)
     end do !i=1,qmmm_struct%nquant_nlink
-
     !Work out how many 2 electron integrals there will be
 
     !! old code

@@ -69,15 +69,6 @@ subroutine sqm_energy(natom,coords,escf,born_radii,one_born_radii, &
     _REAL_ t_start,t_finish ! to monitor execution time
     _REAL_, dimension (:), allocatable :: ground_state_forces;
 
-    ! interface
-    !   subroutine qm2_calc_dipole(coord,mass,ipres,lbres,nres)
-    !   integer, optional, intent(in) :: nres, ipres(*)
-    !   _REAL_, optional, intent(inout) :: mass(*)
-    !   _REAL_, intent(inout) :: coord(*)
-    !   character(len=4), optional, intent(in) :: lbres(*)
-    !   end subroutine qm2_calc_dipole
-    ! end interface
-
     !=============================================================================
     !                   START OF QMMM SETUP: allocate list memory
     !=============================================================================
@@ -107,22 +98,9 @@ subroutine sqm_energy(natom,coords,escf,born_radii,one_born_radii, &
         end if
     end if ! ---- first call end if ----------
 
-    !        ! KGB: coords are already there
-    !
-    !        ! call qm_extract_coords(coords)
-    !        i3 = 0
-    !        !do i=1,natom
-    !        do i=1,qmmm_struct%nquant_nlink
-    !           qmmm_struct%qm_coords(1,i) = coords(i3+1)
-    !           qmmm_struct%qm_coords(2,i) = coords(i3+2)
-    !           qmmm_struct%qm_coords(3,i) = coords(i3+3)
-    !           i3 = i3 + 3
-    !        end do
-
     !=============================================================================
     !                   START OF REST OF QMMM SETUP
     !=============================================================================
-
     if(qmmm_struct%qm_mm_first_call) then
         if (qmmm_mpi%commqmmm_master) then
             write(6,'(/80(1H-)/''  QM CALCULATION INFO'',/80(1H-))')

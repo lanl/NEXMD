@@ -9,7 +9,7 @@ module verlet_module
    use langevin_temperature
    use communism
    use cosmo_C,only:solvent_model
-   use qmmm_module, only:qmmm_struct
+   use qmmm_module, only:qmmm_struct,qm2_params
    implicit none
 
    contains
@@ -17,6 +17,8 @@ module verlet_module
 !--------------------------------------------------------------------
 !
    subroutine verlet(sim)
+        use naesmd_module
+        use md_module
    implicit none
 
    type(simulation_t),pointer::sim
@@ -24,20 +26,19 @@ module verlet_module
    integer Na,Nm,temp
    integer k,i,j
 
-   include 'sizes'
+   !include 'sizes'
    _REAL_ E0,d
-   include 'md.par'
-   include 'parH.par'
+   !include 'md.par'
+   !include 'parH.par'
    !real*8 Omega(Mx_M),fosc(Mx_M)
-   include 'md.cmn'
-   include 'common'
+   !include 'md.cmn'
+   !include 'common'
 
    _REAL_ dt_2,dt2_2
    _REAL_ t_start,t_finish 
 
    Na=sim%naesmd%Na
    Nm=sim%naesmd%Nm
-
    dt_2=dtmdqt/2.d0 ! dt/2
    dt2_2=dtmdqt**2/2 ! dt^2/2
 !
@@ -97,19 +98,16 @@ module verlet_module
 !     Get the potential energy, atomic forces and accelerations
 !     Newton second law to get the next accelerations;
 !     the accelerations and forces are calculated at deriv.f
-
    if((solvent_model.eq.4).or.(solvent_model.eq.5)) then
         call calc_cosmo_4(sim)
    else
         call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs,statelimit=qmmm_struct%state_of_interest)
    endif
    ihop=qmmm_struct%state_of_interest
-
    call cpu_time(t_start)
    call deriv(sim,ihop)
    call cpu_time(t_finish)
    sim%time_deriv_took=sim%time_deriv_took+t_finish-t_start
-
    call deriv2naesmd_accel(sim)
 ! 
 !
@@ -149,6 +147,9 @@ module verlet_module
 !--------------------------------------------------------------------
 !
    subroutine verlet1(sim)
+        use naesmd_module
+        use md_module
+
    implicit none
 
    type(simulation_t),pointer :: sim
@@ -156,13 +157,13 @@ module verlet_module
    integer Na,Nm,temp
    integer k,i,j
 
-   include 'sizes'
+   !include 'sizes'
    real(8) E0,d
-   include 'md.par'
-   include 'parH.par'
+   !include 'md.par'
+   !include 'parH.par'
    !real*8 Omega(Mx_M),fosc(Mx_M)
-   include 'md.cmn'
-   include 'common'
+   !include 'md.cmn'
+   !include 'common'
 
    real(8) dt_2,dt2_2 
 
@@ -240,6 +241,8 @@ module verlet_module
 !--------------------------------------------------------------------
 !
    subroutine verlet2(sim)
+        use naesmd_module
+        use md_module
    implicit none
 
    type(simulation_t),pointer :: sim
@@ -247,12 +250,12 @@ module verlet_module
    integer Na,Nm,temp
    integer k,i,j
 
-   include 'sizes'
+   !include 'sizes'
    _REAL_ E0,d
-   include 'md.par'
-   include 'parH.par'
-   include 'md.cmn'
-   include 'common'
+   !include 'md.par'
+   !include 'parH.par'
+   !include 'md.cmn'
+   !include 'common'
 
    _REAL_ dt_2,dt2_2
    _REAL_ t_start,t_finish 

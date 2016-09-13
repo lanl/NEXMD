@@ -42,7 +42,7 @@ program MD_Geometry
     !include 'parH.par'
     !include 'parvar.var'
 
-    integer ido,neq,idocontrol
+    integer ido,neq,idocontrol,lprint
     integer icheck
     integer Na,Nm,N1,N2,N3,ic0,natoms
     integer MM,i,j,k,n,m,im,im1,ia
@@ -132,7 +132,7 @@ program MD_Geometry
    
     call init0_simulation(sim)
     call init_main()
-    write(6,*)'out of init main'
+
     !Put derivative variables into module
     qmmm_struct%ideriv=moldyn_deriv_flag
     qmmm_struct%numder_step=num_deriv_step
@@ -151,7 +151,7 @@ program MD_Geometry
     nbasis=sim%dav%Nb  ! this is number of atomic orbitals
     sim%nbasis=nbasis  ! not to confuse with Ncis or Nrpa !!!
 
-    call allocate_naesmd_module2(sim%nbasis,sim%nbasis,sim%excN)
+    call allocate_naesmd_module2(sim%dav%Ncis,sim%nbasis,sim%excN)
 
     ! calling the first time to check the quirality in what follows
     !  uumdqtflag =0 means that ceo is called by the first time,
@@ -205,6 +205,7 @@ program MD_Geometry
     call open_output(ibo,tfemto,imdtype,lprint)
     ihop=qmmm_struct%state_of_interest !FIXME change ihop to module variable
     if(tfemto.eq.0.d0) call writeoutputini(sim,ibo,yg,lprint)
+
     do imdqt=1,nstep !Main loop
         !Classical propagation step - BOMD or NAESMD
         write(6,*)"Begin classical propagation step #",imdqt
@@ -553,6 +554,7 @@ contains
         use md_module
 
         implicit none
+        _REAL_,allocatable::xx(:),yy(:),zz(:)
 
         ! dtnact is the incremental time to be used at nact calculation
         dtnact=0.002d0
@@ -768,7 +770,7 @@ contains
             if (imdtype.eq.0) then
                 qmmm_struct%state_of_interest=imdtype
                 write(6,*)'Ground state MD,      imdtype=',imdtype
-    	
+    
             else
                 qmmm_struct%state_of_interest=imdtype
                 write(6,*)'Excited state MD,      state=',imdtype
@@ -837,6 +839,7 @@ contains
             ! **************************************************
             call allocate_naesmd_module_init(natoms)
             call allocate_md_module_init(natoms)
+            allocate(xx(natoms),yy(natoms),zz(natoms))
 
             ! reading atoms and modes:
             rewind (12)
@@ -904,6 +907,7 @@ contains
             sim%Na=Na
             allocate(sim%coords(Na*3))
             sim%excN=npot
+            write(6,*)'FixMe! if npot=0 then don not allocate these variables here'
             call allocate_naesmd_module(Na,npot)
             call allocate_md_module(Na)
             allocate(yg(2*sim%excN))

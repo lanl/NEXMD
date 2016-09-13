@@ -112,6 +112,7 @@ contains
    end if
 
       if(lprint.ge.1) then
+          write(6,*)'LPRINT:',lprint,imdtype
           if (imdtype.gt.0) OPEN(96, FILE= 'pes.out',  &
        status=file_status, access=file_access)
           if (imdtype.gt.0.)  &
@@ -157,13 +158,15 @@ contains
       end SUBROUTINE
 
       SUBROUTINE checknorm(sim,ido,neq,tini,tend,toldivprk,param,yg)
+      use naesmd_module
+      use md_module
       use communism
       IMPLICIT NONE
       type(simulation_t), pointer :: sim
       integer k,ido,neq
       double precision tini,tend,toldivprk,norm,normdiff,param(50)
-      include 'sizes'
-      include 'common'
+      !include 'sizes'
+      !include 'common'
       double precision yg(sim%excN) 
 
       external fcn
@@ -191,12 +194,14 @@ contains
 ! cadiab and vmdqt during propagation
 
         SUBROUTINE fitcoef(sim)
+        use naesmd_module
+        use md_module
         use communism
         IMPLICIT NONE
         type(simulation_t), pointer :: sim
         integer k,j
-        include 'sizes'
-        include 'common'
+        !include 'sizes'
+        !include 'common'
 
         do k=1,sim%excN
           do j=1,sim%excN
@@ -218,14 +223,16 @@ contains
 ! it also store the value of yg(ihop) at t to be used in the hopping evaluation
 
         SUBROUTINE initialize(sim,yg)
+        use naesmd_module
+        use md_module
         use communism
         IMPLICIT NONE
 
         type(simulation_t), pointer :: sim
         integer k,j
-        include 'sizes'
+        !include 'sizes'
         double precision yg(sim%excN)!yg(nmaxpot) 
-        include 'common'
+        !include 'common'
 
         nqold=yg(ihop)
 

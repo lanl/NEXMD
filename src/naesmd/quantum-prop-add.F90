@@ -4,30 +4,25 @@
 module quantum_prop_add
 use naesmd_constants
 use communism
-
 contains
 
    subroutine checkcrossing(sim,Na,Nm,cross,lprint)
+   use naesmd_module
+   use md_module
    implicit none
 
    type(simulation_t),pointer::sim
    integer k,j,i,ii,iii,iimdqt,lprint
-! modified by Seba################
-!      integer cross
-! end modified by Seba################
    integer mdflag,Na,Nm,imax
-   include 'md.par'
-   include 'parH.par'
-   include 'sizes'
-   include 'md.cmn'
-   include 'common'
-! added by Seba################
+   !include 'md.par'
+   !include 'parH.par'
+   !include 'sizes'
+   !include 'md.cmn'
+   !include 'common'
    integer cross(sim%excN)
-! end added by Seba################
    integer ascpr(260,260),z
    _REAL_ scprold,xmax
    _REAL_ normcheck(sim%excN),normcheckhop 
-!      double precision normcheckhop 
 
 !--------------------------------------------------------------------
 !
@@ -55,8 +50,6 @@ contains
       end do
    end do
 
-! modified by Seba######################################
-! this part of the code that was previously commented, I have discommented it.
    do i=1,sim%excN
       do j=1,sim%excN
          ascpr(i,j)=int(scpr(i,j)**2*1.d5)
@@ -81,41 +74,6 @@ contains
 
    call apc(sim%excN,ascpr,iorden,z)
 
-! end modified by Seba##############################
-
-! modified by Seba#################################
-!
-!      xmax=0.0d0
-!      xmax=0.0d0
-!      imax=ihop
-!      do i=1,sim%excN
-!         if(dabs(scpr(ihop,i)).gt.xmax) then
-!           xmax=dabs(scpr(ihop,i))
-!           imax=i
-!         endif
-!      enddo
-!      iorden(ihop)=imax
-!
-!      if(iorden(ihop).ne.ihop) then 
-!!         normcheckhop=0.0d0
-!!         do j=1,sim%excN
-!!            normcheckhop=normcheckhop+scpr(j,iorden(ihop))**2
-!!         enddo
-!         if(dabs(scpr(ihop,iorden(ihop))).lt.0.9d0) then
-!           cross=1
-!         else
-!           cross=2
-!         endif
-!         iordenhop=iorden(ihop)
-!         if(lprint.ge.2) then
-!            write(101,687) tfemto,cross,ihop,iordenhop, &
-!      scpr(ihop,iorden(ihop))
-!            call flush(101)
-!         endif
-!      else
-!         cross=0
-!      endif
-
    do i=1,sim%excN
       if(iorden(i).ne.i) then
          if(i.lt.iorden(i).or.i.eq.ihop) then
@@ -127,9 +85,6 @@ contains
 
             iordenhop(i)=iorden(i)
             if(lprint.ge.2) then
-!                 write(101,687) tfemto,cross(i),i,iordenhop(i),
-!     $scpr(i,iorden(i))
-!                 call flush(101)
             endif
          else
             cross(i)=0
@@ -139,7 +94,6 @@ contains
       end if
    end do
 
-! end modified by Seba#########################################
 
 ! Store the overlap matrix to print it if hops or cross
 
@@ -160,27 +114,22 @@ contains
    end subroutine
 
    subroutine checkcrossingmiddle(sim,Na,Nm,cross)
-
+   use naesmd_module
+   use md_module
    implicit none
 
    type(simulation_t),pointer::sim
-! modified by Seba
-!      integer k,j,i,ii,iii,iimdqt,cross
    integer k,j,i,ii,iii,iimdqt
-! end modified by Seba
    integer mdflag,Na,Nm
-   include 'md.par'
-   include 'parH.par'
-   include 'sizes'
-   include 'md.cmn'
-   include 'common'
-! modified by Seba
+   !include 'md.par'
+   !include 'parH.par'
+   !include 'sizes'
+   !include 'md.cmn'
+   !include 'common'
    integer cross(sim%excN)
-! end modified by Seba
    integer ascpr(260,260),z
    double precision scprold
    double precision normcheck(sim%excN),normcheckhop 
-!      double precision normcheckhop 
 
 
 !***************************************************
@@ -194,10 +143,6 @@ contains
          end do
       end do
    end do
-! modified by Seba
-!      if(dabs(scpr(ihop,iordenhop)).ge.0.9d0) then
-!         cross=2
-!      endif
    do i=1,sim%excN
       if(i.lt.iorden(i).or.i.eq.ihop) then
          if(i.ne.iorden(ihop)) then
@@ -207,7 +152,6 @@ contains
          end if
       end if
    end do
-! end modified by Seba
 
 
 
@@ -223,29 +167,24 @@ contains
    return
    end subroutine 
 
-! modified by Seba
-!      SUBROUTINE vmdqtmiddlecalc(sim, iimdqt,Na,Nm,cross)
    subroutine vmdqtmiddlecalc(sim, iimdqt,Na,Nm)
-! end modified by Seba
-
+   use naesmd_module
+   use md_module
    implicit none
 
    type(simulation_t), pointer :: sim
-! modified by Seba
-!      integer k,j,i,ii,iii,iimdqt,cross
    integer k,j,i,ii,iii,iimdqt
-! end modified by Seba
    integer mdflag,Na,Nm
    double precision E0 
-   include 'md.par'
-   include 'parH.par'
+   !include 'md.par'
+   !include 'parH.par'
    real*8 Omega(sim%excN),fosc(sim%excN)
    real*8 xx(Na),yy(Na),zz(Na)
    real*8 xxp(Na),yyp(Na),zzp(Na)
    real*8 xxm(Na),yym(Na),zzm(Na)
-   include 'sizes'
-   include 'md.cmn'
-   include 'common'
+   !include 'sizes'
+   !include 'md.cmn'
+   !include 'common'
 
    if(iimdqt.eq.1) then
       do i=1,sim%excN
@@ -326,34 +265,7 @@ contains
 
       call do_sqm_davidson_update(sim,cmdqt=cmdqtmiddle, &
          vmdqt=vmdqtmiddle,vgs=vgs,rx=xx,ry=yy,rz=zz)        
-!          !KGB
-!          ! call ceo(Na,xx,yy,zz,atoms,sim%excN,E0,Omega,fosc,mdflag)
-!          sim%dav%mdflag=2
-!          call do_sqm_and_davidson(sim, xx, yy, zz)
-!          call dav2naesmd_Omega(sim)
-! 
-!          vgs=E0
-!          do i=1,sim%excN
-!             vmdqtmiddle(i)=(Omega(i)+E0) 
-!          enddo
-! 
-!          call dav2cmdqt(sim, cmdqtmiddle)
-!          do i=1,nbasis
-!             do j=1,sim%excN
-!                cmdqtmiddle(i,j)=cmdqt(i,j)
-!             enddo
-!          enddo
-
-
    end if
-
-! modified by Seba
-!      if(lowvalue.gt.dabs(vmdqtmiddle(ihop)- &
-!      vmdqtmiddle(iordenhop))) then
-!         lowvalue=dabs(vmdqtmiddle(ihop)- &
-!      vmdqtmiddle(iordenhop))
-!         lowvaluestep=iimdqt
-!      endif
 
    do j=1,sim%excN
       if(lowvalue(j).gt.dabs(vmdqtmiddle(j)- &
@@ -365,41 +277,30 @@ contains
       end if
    end do
 
-! end modified by Seba
-
-!      write(103,687) tfemtoquantum, vmdqtmiddle(ihop)
-!     $-vmdqtmiddle(iordenhop)
-!      call flush(103)
-
 889   FORMAT(10000(1X,F18.10))
 687   format(1000(1x,f18.10))
 
    return
    end subroutine
 
-! modified by Seba
-!      SUBROUTINE vmdqtlowvalue(sim,win,iimdqt,Na,Nm,cross)
    subroutine vmdqtlowvalue(sim,win,iimdqt,Na,Nm)
-! end modified by Seba
-
+   use naesmd_module
+   use md_module
    implicit none
 
    type(simulation_t), pointer :: sim
-! modified by Seba
-!      integer k,j,i,ii,iii,iimdqt,cross,win
    integer k,j,i,ii,iii,iimdqt,win
-! end modified by Seba
    integer mdflag,Na,Nm
    double precision E0 
-   include 'md.par'
-   include 'parH.par'
+   !include 'md.par'
+   !include 'parH.par'
    real*8 Omega(sim%excN),fosc(sim%excN)
    real*8 xx(Na),yy(Na),zz(Na)
    real*8 xxp(Na),yyp(Na),zzp(Na)
    real*8 xxm(Na),yym(Na),zzm(Na)
-   include 'sizes'
-   include 'md.cmn'
-   include 'common'
+   !include 'sizes'
+   !include 'md.cmn'
+   !include 'common'
 
    if(ensemble.eq.'energy'.or.ensemble.eq.'temper') then
       do j=1,natom
@@ -444,20 +345,6 @@ contains
    call do_sqm_davidson_update(sim,cmdqt=cmdqtmiddle, &
       vmdqt=vmdqtmiddle,vgs=vgs,rx=xx,ry=yy,rz=zz)        
 
-         ! KGB
-         ! call ceo(Na,xx,yy,zz,atoms,sim%excN,E0,Omega,fosc,mdflag)
-!          sim%dav%mdflag=2
-!          call do_sqm_and_davidson(sim, xx, yy, zz)
-!          call dav2naesmd_Omega(sim)
-!          call dav2cmdqt(sim, cmdqtmiddle)
-
-!          do i=1,nbasis
-!             do j=1,sim%excN
-!                cmdqtmiddle(i,j)=cmdqt(i,j) !FIXME
-!             enddo
-!          enddo
-
-
    if(ensemble.eq.'energy'.or.ensemble.eq.'temper') then
       do j=1,natom
          xx(j)=rxold(j) &
@@ -496,31 +383,8 @@ contains
       end do
    end if
 
-!          do j=1,natom
-!             xx(j)=xx(j)*convl
-!             yy(j)=yy(j)*convl
-!             zz(j)=zz(j)*convl
-!          enddo
-
-         ! call ceo(Na,xx,yy,zz,atoms,sim%excN,E0,Omega,fosc,mdflag)
-   
    call do_sqm_davidson_update(sim,cmdqtmiddleold,rx=xx,ry=yy,rz=zz)
-
-         ! FIXME
-!          do i=1,nbasis
-!             do j=1,sim%excN
-!                cmdqtmiddleold(i,j)=cmdqt(i,j)
-!             enddo
-!          enddo
-! 
-!          do j=1,natom
-!             xx(j)=xx(j)/convl
-!             yy(j)=yy(j)/convl
-!             zz(j)=zz(j)/convl
-!          enddo
 
    return
    end subroutine
-!
 end module
-!

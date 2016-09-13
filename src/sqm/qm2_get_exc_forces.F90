@@ -29,7 +29,7 @@ subroutine qm2_get_exc_forces(dxyzqm, xyz_in) ! CML add coordinates passed in 7/
 
 !Passed in
       _REAL_, intent(out) :: dxyzqm(3,qmmm_struct%nquant_nlink)                                  
-	  _REAL_, intent(inout) :: xyz_in(3,qmmm_struct%nquant_nlink)	! CML Just in case we don't update coords in qmmm_struct 7/13/12
+      _REAL_, intent(inout) :: xyz_in(3,qmmm_struct%nquant_nlink)	! CML Just in case we don't update coords in qmmm_struct 7/13/12
 
 !Local
 

@@ -5,11 +5,13 @@ module cadiab_module
 use naesmd_constants
 use communism
 use nacT_analytic_module
-
 contains
 
 
    subroutine cadiaboldcalc(sim,imdqt,Na,Nm)
+        use naesmd_module
+        use md_module
+
    use qm2_davidson_module
    implicit none
  
@@ -20,11 +22,11 @@ contains
    _REAL_ E0
    type(xstep_t)::xstep
  
-   include 'md.par'
-   include 'parH.par'
-   include 'sizes'
-   include 'md.cmn'
-   include 'common'
+   !include 'md.par'
+   !include 'parH.par'
+   !include 'sizes'
+   !include 'md.cmn'
+   !include 'common'
       
    if(imdqt.eq.1) then
       call do_sqm_davidson_update(sim,cmdqt=cmdqtnew, &
@@ -76,6 +78,9 @@ contains
 !
    subroutine cadiabmiddlecalc(sim,iimdqt,Na,Nm,cross)
    use qm2_davidson_module
+        use naesmd_module
+        use md_module
+
    implicit none
 
    type(simulation_t),pointer::sim
@@ -87,15 +92,15 @@ contains
    integer mdflag,Na,Nm
    real(8) E0
  
-   include 'md.par'
-   include 'parH.par'
+   !include 'md.par'
+   !include 'parH.par'
    real*8 Omega(qm2ds%Mx),fosc(qm2ds%Mx)
    real*8 xx(Na),yy(Na),zz(Na)
    real*8 xxp(Na),yyp(Na),zzp(Na)
    real*8 xxm(Na),yym(Na),zzm(Na)
-   include 'sizes'
-   include 'md.cmn'
-   include 'common'
+   !include 'sizes'
+   !include 'md.cmn'
+   !include 'common'
 
    integer cross(sim%excN)
 
@@ -281,6 +286,8 @@ contains
 !
 
    subroutine cadiabnewcalc(sim,Na,Nm)
+        use naesmd_module
+        use md_module
    use qm2_davidson_module
    implicit none
 
@@ -288,14 +295,13 @@ contains
    integer k,j,i,ii,iii,iimdqt
    integer mdflag,Na,Nm
    double precision E0 
-   include 'md.par'
-   include 'parH.par'
-   include 'sizes'
-   include 'md.cmn'
-   include 'common'
+   !include 'md.par'
+   !include 'parH.par'
+   !include 'sizes'
+   !include 'md.cmn'
+   !include 'common'
 
    type(xstep_t) :: xstep
-
    call do_sqm_davidson_update(sim,cmdqt=cmdqtnew, &
       vmdqt=vmdqtnew,vgs=vgs)
 

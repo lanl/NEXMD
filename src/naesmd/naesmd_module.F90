@@ -4,7 +4,7 @@ module naesmd_module
       !integer Nb,Np,Nh,Lt,Mb,M4,M2,Nc,Mx,Mj,Ni,Nat,Ntot
       !integer Charg,inttyp,irflag
       !real*8 ftol,ftol0,ftol1
-      integer lprint!,Nrestart, idav
+      !integer lprint!,Nrestart, idav
       !real*8 Eelec,Enucl,Esol,Atheat,Escf,Energy,rtol
 
       !sizes variables
@@ -132,16 +132,15 @@ module naesmd_module
         allocate(prand(3,Na),vrand(3,Na))
         allocate(scprreal(Nexc,Nexc))
       end
-      subroutine allocate_naesmd_module2(Nbasis,Nmo,Nexc)
+      subroutine allocate_naesmd_module2(Ncis,Nmo,Nexc)
       implicit none
-        integer Nbasis,Nmo,Nexc
-        allocate(cmdqt(Nbasis,Nexc))
-        allocate(cmdqtold(Nbasis,Nexc))
-        allocate(cmdqtmiddleold(Nbasis,Nexc))
-        allocate(cmdqtmiddle(Nbasis,Nexc))
-        allocate(cmdqtnew(Nbasis,Nexc))
-        allocate(cicoeffao2(Nbasis,Nexc))
+        integer Ncis,Nmo,Nexc
+        allocate(cmdqt(Ncis,Nexc))
+        allocate(cmdqtold(Ncis,Nexc))
+        allocate(cmdqtmiddleold(Ncis,Nexc))
+        allocate(cmdqtmiddle(Ncis,Nexc))
+        allocate(cmdqtnew(Ncis,Nexc))
+        allocate(cicoeffao2(Ncis,Nexc))
         allocate(uuold(Nmo,Nmo))
       end
-
 end module

@@ -15,21 +15,22 @@
 !
 !      subroutine sdterm (pfric,vfric,afric,prand,vrand)
 module langevin_temperature
-use naesmd_constants
-use random
+   use naesmd_constants
+   use random
 !implicit none
 
 contains
 
       subroutine sdterm 
-
+        use naesmd_module
+        use md_module
         implicit none
 
-        include 'sizes'
-        include 'common'
+        !include 'sizes'
+        !include 'common'
 
         integer i,j
-        double precision  xgamma(nmax) 
+        double precision  xgamma(natom) 
         double precision  gdt,egdt 
         double precision  pterm,vterm 
         double precision  rho,rhoc 
@@ -139,11 +140,13 @@ contains
 !
 !
       function normal ()
+        use naesmd_module
+        use md_module
 
       implicit none
 
-      include 'sizes'
-      include 'common'
+      !include 'sizes'
+      !include 'common'
 
       double precision v1,v2,rsq,iseedhop
       double precision factor,store,normal
@@ -185,13 +188,15 @@ contains
 ! Subroutine to thermaize the velocities
 
         SUBROUTINE temperature(i) 
+        use naesmd_module
+        use md_module
 
         IMPLICIT NONE
 
         integer i,j
         double precision scltmp
-        include 'sizes'
-        include 'common'
+        !include 'sizes'
+        !include 'common'
 
 
        call temper
@@ -247,14 +252,17 @@ contains
 ! MOMENTUM, ARE 3*N
 
    subroutine temper
+        use naesmd_module
+        use md_module
+
    implicit none
 
    integer i
    _REAL_ xkboltz
    _REAL_ xkinsum
         
-   include 'sizes'
-   include 'common'
+   !include 'sizes'
+   !include 'common'
 
    xkboltz=3.166829662D-6
 

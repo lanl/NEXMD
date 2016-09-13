@@ -1,93 +1,40 @@
 ! Subroutine to loose coherence
 
-! modified by Seba
-!        SUBROUTINE coherence(ido,neq,tini,tend,toldivprk, &
-!      param,yg,constcoherE0,constcoherC)
    subroutine coherence(sim,Na,Nm,mdflag,d,E0,Omega,fosc, &
       ido,neq,tini,tend,toldivprk, &
       param,yg,constcoherE0,constcoherC,cohertype,idocontrol)
-! end modified by Seba
    use qm2_davidson_module
    use communism
-   
+   use naesmd_module
+   use md_module   
    implicit none
 
    type(simulation_t),pointer::sim
-
-! modified by Seba
    integer cohertype,idocontrol
-! end modified by Seba
-
-! modified by Seba
-!        integer Na
    integer mdflag,Na,Nm,kk
    double precision E0,d
-   include 'md.par'
-   include 'parH.par'
+   !include 'md.par'
+   !include 'parH.par'
    real*8 Omega(sim%excN),fosc(sim%excN)
    real*8 xx(Na),yy(Na),zz(Na)
-! end modified by Seba
    integer k,i,j,icheck,itest,ini,ihopavant
    integer ido,neq
-   include 'sizes'
-! modified by Seba
-   include 'md.cmn'
-! end modified by Seba
+   !include 'sizes'
+   !include 'md.cmn'
    double precision tini,tend,toldivprk,param(50)
    double precision iseedhop,eavant, eapres 
    double precision constcoherE0,constcoherC 
-   include 'common'
+   !include 'common'
    double precision yg(sim%excN),ytemp,ytemp2 
    double precision taocoher(sim%excN) 
-! modified by Seba
-!        double precision norm 
    double precision norm,norm1,norm2,normdij
    double precision vect1(Na*3) &
                    ,vect2(Na*3) &
                    ,vecs(Na*3)
-   double precision dij(Na*3),kinec(sim%excN)
-! end modified by Seba
+   double precision kinec(sim%excN)
+   double precision dij(Na*3)
 
    external fcn
-
-! modified by Seba
-! We need to modify it in order to call the proper ceo and nacR_analitic subroutines
-!
-!        kin=0.0d0
-!
-!        do i =1, natom
-!            kin = kin + massmdqt(I)*(VX(I)**2+VY(I)**2+VZ(I)**2)
-!        enddo
-!        kin = 0.5d0 * kin
-!
-!        do j=1,sim%excN
-!           if(j.ne.ihop) then
-!             taocoher(j)=1.0d0/dabs((vmdqtnew(j)-vmdqtnew(ihop))) &
-!      *(constcoherC+constcoherE0/kin)
-!           endif
-!        enddo
-!
-!        do j=1,sim%excN
-!           if(j.ne.ihop) then
-!              if(yg(j).ne.0.0d0) then
-!                  yg(j)=yg(j)*dexp(-dtmdqt/taocoher(j))
-!              endif
-!           endif
-!        enddo
-!
-!        norm=0.0d0
-!        do k = 1,sim%excN
-!           if(k.ne.ihop) then
-!              norm=norm+yg(k)*yg(k)
-!           endif
-!        enddo
-!
-!        yg(ihop)=yg(ihop)*dsqrt((1-norm)/(yg(ihop)*yg(ihop)))
-!
-!        ido=3
-!        call divprk(ido,neq,fcn,tini,tend, &
-!      toldivprk,param,yg)
-!        ido=1
 
    do j=1,sim%excN
       kinec(j)=0.0d0
@@ -125,8 +72,6 @@
          zz(j)=rz(j)*convl
       end do
 
-      !mdflag=2
-      !call ceo(Na,xx,yy,zz,atoms,sim%excN,E0,Omega,fosc,mdflag)
       sim%dav%mdflag=2
       call do_sqm_davidson_update(sim,cmdqt=cmdqt, &
          vmdqt=vmdqt,vgs=vgs,rx=xx,ry=yy,rz=zz)
@@ -134,10 +79,6 @@
       do j=1,sim%excN
          if(j.ne.ihop) then
             if(yg(j).ne.0.d0) then
-! calculate the non-adiabatic coupling vector(nacR)
-               !call nacR_analytic(Na,Nm,d,xx,yy,zz,sim%excN,Omega, &
-               !   mdflag,ihop,j,cmdqt,dij)
-
                call nacR_analytic_wrap(sim,ihop,j,dij)
 ! calculate the magnitude of nacR ina a.u. 
                do k=1,natom*3

@@ -4,7 +4,7 @@
 #include "def_time.h"
 subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, scaled_mm_charges)
 
-   ! qm2_energy calculates the energy of the QMMM system in KCal/mol and places 
+   ! qm2_energy calculates the energy of the QMMM system in KCal/mol and places
    ! the answer in escf.
 
    !     Variables for qm-mm:
@@ -40,7 +40,7 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
    !Local
    integer i
    _REAL_ ANGLE, HTYPE
-   _REAL_ ,allocatable, dimension(:,:) :: density_matrix_unpacked; 
+   _REAL_ ,allocatable, dimension(:,:) :: density_matrix_unpacked;
 
    !Initialisations required on every call...
    qm2_struct%hmatrix = zero  !Note this zeros the entire array
@@ -232,7 +232,7 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
          call qm2_hcore_qmmm(qm2_struct%hmatrix, &
                qmmm_struct%enuclr_qmmm,qmmm_struct%qm_xcrd)
 
-         if (qmmm_nml%qmmm_switch) then 
+         if (qmmm_nml%qmmm_switch) then
             call qm2_hcore_add_switched(qm2_struct%hmatrix, qmmm_struct%switched_mmpot)
          end if
       end if
@@ -308,7 +308,7 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
          escf=escf+(qmmm_opnq%vdWCorrection+qmmm_opnq%OPNQCorrection)*EV_TO_KCAL
       end if
       !Add on the heat of formation.
-      if (qmmm_mpi%commqmmm_master) then 
+      if (qmmm_mpi%commqmmm_master) then
          escf = escf + qm2_params%tot_heat_form
          ! Add PM6 corrections to Heat of Formation
          if (qmmm_nml%qmtheory%PM6) then
@@ -327,22 +327,22 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
          !Not available for DFTB
          if (qmmm_nml%qmtheory%PM3 .OR. qmmm_nml%qmtheory%PDDGPM3 .OR. qmmm_nml%qmtheory%PM3CARB1 &
              .OR. qmmm_nml%qmtheory%PM3ZNB .OR. qmmm_nml%qmtheory%PDDGPM3_08) then
-            htype = 7.1853D0                                                      
+            htype = 7.1853D0
          elseif (qmmm_nml%qmtheory%AM1 .OR. qmmm_nml%qmtheory%RM1) then
             htype = 3.3191D0 !Note for RM1 this may or may not be any good since they make no mention of
                              !it in the underlying manuscript.
          else !Assume MNDO
-            htype = 6.1737D0                                                      
+            htype = 6.1737D0
          end if
          !Parallel
          do I=qmmm_mpi%mytaskid+1,qm2_struct%n_peptide_links,qmmm_mpi%numthreads !1,n_peptide_links
             CALL qm2_dihed(qmmm_struct%qm_coords,qm2_struct%peptide_links(1,I),qm2_struct%peptide_links(2,I), &
-                  qm2_struct%peptide_links(3,I),qm2_struct%peptide_links(4,I),ANGLE)        
-            escf=escf+HTYPE*SIN(ANGLE)**2                                   
+                  qm2_struct%peptide_links(3,I),qm2_struct%peptide_links(4,I),ANGLE)
+            escf=escf+HTYPE*SIN(ANGLE)**2
          end do
       end if
    end if
-   RETURN                                                                    
+   RETURN
 end subroutine qm2_energy
 
 subroutine qm2_density_predict(num_qmmm_calls,matsize,den_matrix,md_den_mat_guess1,md_den_mat_guess2)

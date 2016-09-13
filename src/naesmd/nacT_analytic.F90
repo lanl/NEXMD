@@ -8,7 +8,6 @@ module nacT_analytic_module
    use communism
    use naesmd_space_module
    use dcart_xpm_module
-
    implicit none
 
    type xstep_t
@@ -80,36 +79,38 @@ module nacT_analytic_module
 !
 !  This is a new version of subrotine xxpxxm.
 !  It calculates coordinates at time +/-dtnact
-!
+!  JAKB, there are many pointers in here making it confusing
 !********************************************************************
 !
-   function new_xstep_dtnact(sim,xx,yy,zz) result(xs)
+   function new_xstep_dtnact(sim,xxx,yyy,zzz) result(xs)
+   use naesmd_module
+   use md_module
    implicit none
 
    type(simulation_t),pointer::sim
    type(xstep_t)::xs
-   _REAL_,target,intent(in)::xx(sim%Na),yy(sim%Na),zz(sim%Na)
+   _REAL_,target,intent(in)::xxx(sim%Na),yyy(sim%Na),zzz(sim%Na)
    integer k,j,i,ii,iii,iimdqt
    _REAL_ x 
 
    !include 'md.par'
-   include 'sizes'
-   include 'common'
+   !include 'sizes'
+   !include 'common'
 
    !_REAL_ :: dtnact, dtmdqt
 
-   type(realp_t),pointer::v(:),a(:)
+   type(realp_t),pointer::vv(:),aa(:)
    type(realp_t)::r(3)
 
 
    !dtnact = sim%naemsd%dtnact
    !dtmdqt = sim%naemsd%dtmdqt
 
-   v=>sim%naesmd%v%vold
-   a=>sim%naesmd%a%vold
-   r(1)%p=>xx
-   r(2)%p=>yy
-   r(3)%p=>zz
+   vv=>sim%naesmd%v%vold
+   aa=>sim%naesmd%a%vold
+   r(1)%p=>xxx
+   r(2)%p=>yyy
+   r(3)%p=>zzz
 
    allocate(xs%Rp(3,sim%Na))
    allocate(xs%Rm(3,sim%Na))
@@ -119,29 +120,29 @@ module nacT_analytic_module
    do j=1,natom
       if(ensemble.eq.'energy'.or.ensemble.eq.'temper') then
          do k=1,3
-            xs%Rp(k,j)=r(k)%p(j)+v(k)%p(j)*dtnact &
-               +a(k)%p(j)*0.5d0*dtnact*dtnact
+            xs%Rp(k,j)=r(k)%p(j)+vv(k)%p(j)*dtnact &
+               +aa(k)%p(j)*0.5d0*dtnact*dtnact
 
-            xs%Rm(k,j)=r(k)%p(j)-v(k)%p(j)*dtnact &
-               -a(k)%p(j)*0.5d0*dtnact*dtnact
+            xs%Rm(k,j)=r(k)%p(j)-vv(k)%p(j)*dtnact &
+               -aa(k)%p(j)*0.5d0*dtnact*dtnact
          end do
 
       else if(ensemble.eq.'langev') then
          do k=1,3
-            xs%Rp(k,j)=r(k)%p(j)+v(k)%p(j)*vfric(j)/dtmdqt*dtnact  &
-               +a(k)%p(j)*afric(j)/(dtmdqt*dtmdqt)*dtnact*dtnact     &
+            xs%Rp(k,j)=r(k)%p(j)+vv(k)%p(j)*vfric(j)/dtmdqt*dtnact  &
+               +aa(k)%p(j)*afric(j)/(dtmdqt*dtmdqt)*dtnact*dtnact     &
                +prand(k,j)/dtmdqt*dtnact
 
-            xs%Rm(k,j)=r(k)%p(j)-v(k)%p(j)*vfric(j)/dtmdqt*dtnact  &
-               -a(k)%p(j)*afric(j)/(dtmdqt*dtmdqt)*dtnact*dtnact     &
+            xs%Rm(k,j)=r(k)%p(j)-vv(k)%p(j)*vfric(j)/dtmdqt*dtnact  &
+               -aa(k)%p(j)*afric(j)/(dtmdqt*dtmdqt)*dtnact*dtnact     &
                -prand(k,j)/dtmdqt*dtnact
          end do
       end if
    end do
 
-   xs%R(1,:)=xx(:)
-   xs%R(2,:)=yy(:)
-   xs%R(3,:)=zz(:)
+   xs%R(1,:)=xxx(:)
+   xs%R(2,:)=yyy(:)
+   xs%R(3,:)=zzz(:)
 
    return
    end function

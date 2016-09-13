@@ -157,13 +157,13 @@ module communism
 !********************************************************************
 !
    subroutine dav2cmdqt(sim,cmdqt)
+   use qmmm_module,only:qm2_params
+   implicit none
    type(simulation_t), pointer::sim
    _REAL_,intent(inout)::cmdqt(:,:)
    integer i,j
-
    do i=1,sim%dav%Ncis
       do j=1,sim%excN
-
          cmdqt(i,j)=sim%dav%cmdqt(i,j)
          !cmdqt(i,j)=sim%dav%v0(i,sim%dav%kx(j))
       end do
@@ -186,6 +186,7 @@ module communism
 !
    subroutine do_sqm_and_davidson(sim,rx,ry,rz,r,statelimit)
    use qm2_davidson_module,only:qm2ds
+   use qmmm_module,only:qm2_params
    implicit none
 
    type(simulation_t),pointer::sim
@@ -211,7 +212,6 @@ module communism
    end if
 
    call qmmm2coords_r(sim)
-
    sim%dav%Mx=sim%excN
    if(present(statelimit)) then !reduces the calculated number of states
        sim%dav%Mx=statelimit
@@ -221,13 +221,11 @@ module communism
    call sqm_energy(sim%Na,sim%coords,sim%escf,born_radii, &
       one_born_radii,intdiel,extdiel,Arad,sim%qm2%scf_mchg, &
       sim%time_sqm_took,sim%time_davidson_took) !The use of sim here is a hack right now and could be fixed
-
    ! ground state energy
    sim%dav%Eground=qm2ds%Eground
    sim%nbasis=sim%dav%Nb
 
-   if (allocated(qm2ds%vhf_old)) deallocate (qm2ds%vhf_old);
-   allocate(qm2ds%vhf_old(sim%dav%Nb,sim%dav%Nb));
+   if (.not.allocated(qm2ds%vhf_old)) allocate(qm2ds%vhf_old(sim%dav%Nb,sim%dav%Nb));
    qm2ds%vhf_old(1:sim%dav%Nb,1:sim%dav%Nb)=qm2ds%vhf(1:sim%dav%Nb,1:sim%dav%Nb); ! updating hartree-fock vectors
    ! Checking and restoring the sign of the transition density matrix (cmdqt)
    do j=1,sim%excN
@@ -263,6 +261,7 @@ module communism
 !********************************************************************
 !  
    subroutine do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs,rx,ry,rz,r,statelimit)
+   use qmmm_module,only:qm2_params
    implicit none
    type(simulation_t),pointer::sim
    _REAL_,intent(inout),optional::cmdqt(:,:),vmdqt(:),vgs
@@ -277,15 +276,16 @@ module communism
    call do_sqm_and_davidson(sim,rx,ry,rz,r,statelimit)
    call dav2naesmd_Omega(sim) ! energy conversion
    if(present(vgs)) vgs=sim%naesmd%E0
+
    if(present(vmdqt)) then
       do i=1,sim%excN
          vmdqt(i)=(sim%naesmd%Omega(i)+sim%naesmd%E0) 
       end do
    end if
+
    if(present(cmdqt)) then
       call dav2cmdqt(sim,cmdqt)
    end if
- 
    return
    end subroutine
 !

@@ -9,17 +9,20 @@ implicit none
 contains
 
    subroutine writeoutputini(sim,ibo,yg,lprint)
+   use naesmd_constants
+   use naesmd_module
+   use md_module
    use communism
    use qm2_davidson_module,only:qm2ds
    use Cosmo_C, only : solvent_model
    implicit none      
 
    type(simulation_t) sim
-   integer  i,j,k,kk,slen,readstring,ibo,lprint,kki
+   integer  i,j,k,kk,slen,readstring,ibo,kki,lprint
    double precision ntot
    double precision xcm,ycm,zcm 
-   include 'sizes'
-   include 'common'
+   !include 'sizes'
+   !include 'common'
    character*1000 card
    character*1000 cardmopac
 
@@ -71,7 +74,6 @@ contains
       end if
 
       if(lprint.ge.3.and.ibo.ne.1) then
-      write(94,*)'Test4'
          write(94,889) tfemto,(dsin(yg(j+sim%excN)),j=1,sim%excN)
          call flush(94)
       end if
@@ -223,17 +225,20 @@ contains
 !***********************************************
 
    subroutine writeoutput(sim,i,ibo,yg,lprint,cross)
+   use naesmd_constants
+   use naesmd_module
+   use md_module
    use communism
    use qm2_davidson_module,only:qm2ds
    use Cosmo_C,only: solvent_model
    implicit none      
  
    type(simulation_t),pointer::sim
-   INTEGER l,i,j,jj,k,kk,slen,readstring,Nb,ibo,lprint,kki
+   INTEGER l,i,j,jj,k,kk,slen,readstring,Nb,ibo,kki,lprint
    double precision ntot
    double precision xcm,ycm,zcm 
-   include 'sizes'
-   include 'common'
+   !include 'sizes'
+   !include 'common'
    integer cross(sim%excN)
    character*1000 card
    character*1000 cardmopac
@@ -289,8 +294,17 @@ contains
 
       if(lprint.ge.1) then
          if(ibo.eq.1) then
+            write(6,*)tfemto,shape(tfemto)
+            write(6,*)vgs,shape(vgs)
+            write(6,*)feVmdqt,shape(feVmdqt)
+            write(6,*)vmdqt,shape(vmdqt)
+            write(6,*)sim%excN,shape(sim%excN)
+            write(6,*) tfemto,vgs*feVmdqt, &
+               (vmdqt(j)*feVmdqt,j=1,sim%excN)
+            write(6,*)'done0'
             write(96,889) tfemto,vgs*feVmdqt, &
                (vmdqt(j)*feVmdqt,j=1,sim%excN)
+            write(6,*)'done'
          else    
             write(96,889) tfemto,vgs*feVmdqt, &
                (vmdqt(j)*feVmdqt,j=1,sim%excN)

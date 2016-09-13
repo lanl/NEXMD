@@ -148,10 +148,9 @@ module dcart_xpm_module
 
               end do
            end do
-           !dcart1_xpm = dcart1_xpm*2.0d0 ! FIXME ???
     !************** end PSEUDO NUMERICAL DERIVATIVES **************
        end if                                           
-
+       return
     end function dcart1_xpm
 
     subroutine qm2_dhc1(P,PTZ,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, & ! CML 7/13/12
@@ -173,8 +172,8 @@ module dcart_xpm_module
           implicit none
 
     !Passed in
-          _REAL_ P(*)
-          _REAL_ PTZ(*) ! CML 7/13/12
+          _REAL_ P(:)
+          _REAL_ PTZ(:) ! CML 7/13/12
           _REAL_, intent(in)  :: xyz_qmi(3),xyz_qmj(3)
           integer, intent(in) :: iqm, jqm, natqmi, natqmj, qmitype, qmjtype
           integer, intent(in) :: iif, iil, jjf, jjl
@@ -190,7 +189,7 @@ module dcart_xpm_module
           _REAL_ :: F(MaxValenceOrbitals*(MaxValenceOrbitals*2+1))
           _REAL_ :: SHMAT(MaxValenceOrbitals,MaxValenceOrbitals)
           _REAL_ :: W(MaxValenceDimension**2)
-          _REAL_ :: enuclr, ee, temp
+          _REAL_ :: enuclr, ee
           _REAL_ :: r2, rij, r2InAu, rijInAu, oneOverRij
           
           _REAL_ :: RI(22), CORE(10,2)
@@ -198,10 +197,8 @@ module dcart_xpm_module
           _REAL_, allocatable:: WW(:,:)
           integer ::orb_loc(2,2),KR
           logical::hasDOrbital
-
           !qm2_Helect1 is a function
-          _REAL_ qm2_helect1	! CML 7/13/12
-
+          _REAL_ qm2_helect1    ! CML 7/13/12
           if (iif < jjf) then
             i=iif-1
             j=jjf-iil+iif-2
@@ -272,9 +269,8 @@ module dcart_xpm_module
             i_dimension=n_atomic_orbi*(n_atomic_orbi+1)/2
             j_dimension=n_atomic_orbj*(n_atomic_orbj+1)/2
            
-            allocate(ww(1:j_dimension, 1:i_dimension)) 
+            allocate(ww(j_dimension, i_dimension))
             WW=0.0D0
-
             ! calculate the 2-center integrals and core-core interaction integrals
             call qm2_repp_d(qmitype,qmjtype,rijInAu,RI,CORE,WW,i_dimension,j_dimension,1)
      
@@ -293,7 +289,6 @@ module dcart_xpm_module
             
        end if ! ((n_atomic_orbi.ge.9) .and. (n_atomic_orbj.ge.9))
        
-       
        ! calculate the core-core contribution to the H matrix
         ii=qm2_params%pascal_tri2(firstIndexAO_i)
         jj=qm2_params%pascal_tri2(firstIndexAO_j)   
@@ -308,18 +303,23 @@ module dcart_xpm_module
         F(1:linear)=H(1:linear)
            
         ! 2-center 2-electron contribution to the Fock matrix      
+        !write(6,*)'W',shape(W)
+        !write(6,*)'F',shape(F)
+        !write(6,*)'P',shape(P)
+        !write(6,*)'n',n_atomic_orbj,n_atomic_orbi,firstIndexAO_J,firstIndexAO_i
         call W2Fock_atompair(W, F, P, n_atomic_orbj, n_atomic_orbi,  &
           firstIndexAO_j, firstIndexAO_i)
+        !write(6,*)'here2.1'
         call W2Fock_atompair(W, F, P, n_atomic_orbi, n_atomic_orbj,  &
           firstIndexAO_i, firstIndexAO_j)   
+        !write(6,*)'here2.2'
 
         EE=qm2_helect1(n_atomic_orbi+n_atomic_orbj-1,PTZ,F)   ! CML 7/13/12
         ! SQM uses only RHF, so we need to multiply by 2 for the upper triangle.
         ! If UHF is implemented in the future, we need to make sure we calculate the
         ! upper triangle of the matrix as well. CML 6/26/12
         DENER=EE*2.d0
-       
-       
+        !write(6,*)'here3'
     end subroutine qm2_dhc1
 
     function qm2_helect1(nminus,den_matrix,F)
