@@ -18,8 +18,6 @@ module communism
       _REAL_                         :: escf
       _REAL_, dimension(:), pointer  :: deriv_forces ! forces as they come out
                                                        ! of deriv (eV/A)
-      !_REAL_, dimension(:), pointer  :: veloc ! velocities for dynamics
-
       ! Various cumulative times (initial values=0.d0)       
       _REAL_::time_sqm_took=0.d0
       _REAL_::time_davidson_took=0.d0
@@ -56,7 +54,6 @@ module communism
    use qm2_davidson_module,only:qm2ds
 
    implicit none
-   integer i;
    type(simulation_t),pointer::sim
    integer::mn
    if (qm2ds%Mx>0) then
@@ -72,39 +69,33 @@ module communism
     subroutine qmmm2naesmd_r(sim)
         type(simulation_t), pointer :: sim
         integer :: mn
-
         mn = min(size(sim%naesmd%r%x), size(sim%qmmm%qm_coords(1,:)))
-
         sim%naesmd%r%x(:mn) = sim%qmmm%qm_coords(1,:mn) / convl
         sim%naesmd%r%y(:mn) = sim%qmmm%qm_coords(2,:mn) / convl
         sim%naesmd%r%z(:mn) = sim%qmmm%qm_coords(3,:mn) / convl
-
+    return
     end subroutine
 
     subroutine naesmd2qmmm_r(sim)
         type(simulation_t), pointer :: sim
         integer :: mn
-
         mn = min(size(sim%naesmd%r%x), size(sim%qmmm%qm_coords(1,:)))
-
         sim%qmmm%qm_coords(1,:mn) = sim%naesmd%r%x(:mn) * convl
         sim%qmmm%qm_coords(2,:mn) = sim%naesmd%r%y(:mn) * convl
         sim%qmmm%qm_coords(3,:mn) = sim%naesmd%r%z(:mn) * convl
-
+    return
     end subroutine
 
     subroutine xyz2qmmm_r(sim, rx, ry, rz)
         type(simulation_t), pointer :: sim
         _REAL_, intent(in) :: rx(:), ry(:), rz(:)
         integer :: mn
-
         mn = min(size(rx), size(sim%qmmm%qm_coords(1,:)))
-
         sim%qmmm%qm_coords(1,:mn) = rx(:mn) * convl
         sim%qmmm%qm_coords(2,:mn) = ry(:mn) * convl
         sim%qmmm%qm_coords(3,:mn) = rz(:mn) * convl
-
-    end subroutine
+   return
+   end subroutine
 
 !
 !********************************************************************
@@ -117,7 +108,6 @@ module communism
 !
    subroutine deriv2naesmd_accel(sim)
    implicit none
-
    type(simulation_t),pointer::sim
    integer i
         
@@ -131,10 +121,6 @@ module communism
       sim%naesmd%a%z(i)=sim%deriv_forces(i*3) &
          *convl/feVmdqt/sim%naesmd%mass(i)
    end do
-
-   !write(126,889) (sim%naesmd%a%x(i),i=1,sim%Na)
-889   format(10000(1x,f18.10))
-   !stop !kav: checking
    return
    end subroutine
 
@@ -157,7 +143,6 @@ module communism
 !********************************************************************
 !
    subroutine dav2cmdqt(sim,cmdqt)
-   use qmmm_module,only:qm2_params
    implicit none
    type(simulation_t), pointer::sim
    _REAL_,intent(inout)::cmdqt(:,:)
@@ -165,15 +150,11 @@ module communism
    do i=1,sim%dav%Ncis
       do j=1,sim%excN
          cmdqt(i,j)=sim%dav%cmdqt(i,j)
-         !cmdqt(i,j)=sim%dav%v0(i,sim%dav%kx(j))
       end do
    end do
-
    return
    end subroutine
 
-        
-!
 !********************************************************************
 !
 !  Doing sqm (ground state) and davidson (excited states)
@@ -186,20 +167,17 @@ module communism
 !
    subroutine do_sqm_and_davidson(sim,rx,ry,rz,r,statelimit)
    use qm2_davidson_module,only:qm2ds
-   use qmmm_module,only:qm2_params
    implicit none
 
    type(simulation_t),pointer::sim
    _REAL_,intent(in),optional::rx(:),ry(:),rz(:)
+   _REAL_ born_radii(sim%Na), one_born_radii(sim%Na)
+   _REAL_ intdiel, extdiel, Arad
+   _REAL_ f
    type(realp_t),intent(in),optional::r(3)
-
-   _REAL_ born_radii(1000), one_born_radii(1000)
-   _REAL_ intdiel, extdiel, Arad, escf, f
-   integer i,j,l
+   integer i,j
    _REAL_ ddot
-   _REAL_ ctest
-
-   integer quir_vhf,quir_cmdqt
+   integer quir_cmdqt
    integer,optional::statelimit
 
  
@@ -261,7 +239,6 @@ module communism
 !********************************************************************
 !  
    subroutine do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs,rx,ry,rz,r,statelimit)
-   use qmmm_module,only:qm2_params
    implicit none
    type(simulation_t),pointer::sim
    _REAL_,intent(inout),optional::cmdqt(:,:),vmdqt(:),vgs
@@ -269,7 +246,6 @@ module communism
    type(realp_t),intent(in),optional::r(3)
    integer i
    integer,optional::statelimit
-   integer statelimitout
 
    sim%dav%mdflag=2
 
@@ -313,10 +289,9 @@ module communism
 !
    subroutine init_sqm(sim,fdes_in,fdes_out)
    use qmmm_module,only:qmmm_nml, qmmm_struct,qmmm_mpi, &
-      qm2_struct,qm_gb,qmmm_vsolv,qm2_params,deallocate_qmmm
+      qm2_struct,deallocate_qmmm
 
    use constants,only:KCAL_TO_EV,EV_TO_KCAL
-   use qm2_pm6_hof_module,only:cct,nsp2,print,strlen
    use file_io_dat,only:MAX_FN_LEN
    use qm2_davidson_module ! CML 7/11/12
    use Cosmo_C,only:solvent_model
@@ -325,51 +300,24 @@ module communism
 
    implicit none
 
-   !include 'sizes'
-   !include 'md.par'
-   !include 'parH.par'
-   !include 'md.cmn'
-   !include 'common'
-
    type(simulation_t),pointer::sim 
 
    integer,intent(in)::fdes_in,fdes_out
-  !FIXME Why are the specific sizes of variables given below? These should be
-  !allocated and are likely based on number of atoms JAKB
-   _REAL_ f(3000), reff(1000), onereff(1000), work(18000)
-  ! _REAL_ x(3000)	
-   _REAL_, dimension(:,:), pointer :: x	
-   character(len=8) atnam(1000)
-   _REAL_ born_radii(1000), one_born_radii(1000)
-   _REAL_ intdiel, extdiel, Arad
-   !integer natom
-   integer ier, atnum(1000), xmin_iter
-   character(len=80) arg ! temp for each of the command line arguments
-   integer iarg !         index of the current argument
-   integer last_arg_index !   index of the last argument
+   character(len=8) atnam(sim%Na)
+   integer ier, xmin_iter
    integer ntpr
-   character owrite
-   character(len=MAX_FN_LEN) mdin, mdout 
-   ! external charge
-   _REAL_ excharge(4000)
-   integer chgatnum(1000)
-   character(len=8) chgnam(1000)
-   integer ncharge,i
-
+   _REAL_ excharge(qmmm_struct%qm_mm_pairs*4)
+   integer chgatnum(sim%Na)
+   integer ncharge
    integer :: igb, maxcyc
    _REAL_  :: grms_tol
-   _REAL_  :: total_energy
    logical :: master=.true.
-
-   character(len=strlen) :: string
 
    ! ==== Initialise first_call flags for QMMM ====
    qmmm_struct%qm_mm_first_call = .true.
    qmmm_struct%fock_first_call = .true.
    qmmm_struct%fock2_2atm_first_call = .true.
-   ! qmmm_struct%qm2_deriv_qm_analyt_first_call = .true.
    qmmm_struct%qm2_allocate_e_repul_first_call = .true.
-   ! qmmm_struct%qm2_rotate_qmqm_first_call = .true.
    qmmm_struct%qm2_calc_rij_eqns_first_call = .true.
    qmmm_struct%qm2_scf_first_call = .true.
    qmmm_struct%zero_link_charges_first_call = .true.
@@ -407,40 +355,38 @@ module communism
    REQUIRE(ier == 0)
 
 !Check if we are doing Geometry Optimization or Dynamics and act accordingly
-   if (maxcyc < 1) then   	    
-	   qm2ds%minimization = .FALSE.   
-	   sim%Ncharge  = ncharge
-	   sim%qmmm     => qmmm_struct
-	   sim%qm2      => qm2_struct
-	   sim%dav      => qm2ds
-	   call naesmd2qmmm_r(sim)
-	   !sim%dav%Mx = sim%excN
-	   !sim%dav%mdflag=2
-	if ((solvent_model.eq.4).or.(solvent_model.eq.5)) then !solvent model that loops over ground state
-		call calc_cosmo_4(sim)
-	else
-		call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs)
-	endif
+   if (maxcyc < 1) then       
+           qm2ds%minimization = .FALSE.   
+           sim%Ncharge  = ncharge
+           sim%qmmm     => qmmm_struct
+           sim%qm2      => qm2_struct
+           sim%dav      => qm2ds
+           call naesmd2qmmm_r(sim)
+           !sim%dav%Mx = sim%excN
+           !sim%dav%mdflag=2
+        if ((solvent_model.eq.4).or.(solvent_model.eq.5)) then !solvent model that loops over ground state
+                call calc_cosmo_4(sim)
+        else
+                call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs)
+        endif
    else if (nstep<1) then ! nstep - number of classical steps for dynamics
-	
-	qm2ds%minimization = .TRUE.
+
+        qm2ds%minimization = .TRUE.
         sim%Ncharge  = ncharge
         sim%qmmm     => qmmm_struct
         sim%qm2 => qm2_struct
         sim%dav      => qm2ds
 
-	if (qmmm_nml%verbosity<5) then
-	        qm2ds%verbosity=0 !don't print output from scf calculations
-		qmmm_nml%verbosity=0
-	endif
+        if (qmmm_nml%verbosity<5) then
+                qm2ds%verbosity=0 !don't print output from scf calculations
+                qmmm_nml%verbosity=0
+        endif
         call naesmd2qmmm_r(sim)
-        !call xmin(natom, qmmm_struct%qm_coords , f, sim%escf, xmin_iter, maxcyc, born_radii, &
-        !   one_born_radii, intdiel, extdiel, Arad, qm2_struct%scf_mchg, grms_tol, ntpr,sim)
         call xmin(natom, qmmm_struct%qm_coords, xmin_iter, maxcyc, grms_tol, ntpr,sim)
    else 
-	write(6,*)"You must run Dynamics(n_class_steps>0) or Geom. optimization (maxcyc>0). Running both of them are not possible"	
-	STOP 0;
-   end if	
+        write(6,*)"You must run Dynamics(n_class_steps>0) or Geom. optimization (maxcyc>0). Running both of them are not possible"
+        STOP 0;
+   end if
    return      
 end subroutine
 
@@ -448,9 +394,8 @@ end subroutine
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !+ Driver routine for XMIN minimization.
 !-----------------------------------------------------------------------
-#include "xmin.h" !includes return_flag definitions for select_case statement shared with XminC
-!subroutine xmin( natom, x, fg, escf, xmin_iter, maxiter, born_radii, &
-!     one_born_radii, intdiel, extdiel, Arad, scf_mchg, grms_tol, ntpr,sim_pass )
+#include "xmin.h" 
+!includes return_flag definitions for select_case statement shared with XminC
 subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
 
    use qm2_davidson_module
@@ -503,7 +448,6 @@ subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
 
    type(simulation_t),pointer::sim_pass
    integer, intent(in) :: natom, maxiter, ntpr
-   !_REAL_ born_radii(*), one_born_radii(*), intdiel, extdiel, Arad, scf_mchg(*)
    _REAL_,  intent(inout) :: x(natom*3) !coordinates
    integer, intent(inout) :: xmin_iter  
    _REAL_,  intent(in)  :: grms_tol

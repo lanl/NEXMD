@@ -1,3 +1,0 @@
-!
-      common /cart/ xx,yy,zz,atm,atmass,Ntype,order
-

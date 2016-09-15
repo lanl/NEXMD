@@ -1,6 +1,0 @@
-! modes vectors:
-      real*8 v0(M2_M,Mx_M)                     	  ! eigenvectors found
-!      real*8 v2(Mb_M,Mx_ss)                       ! small space for cross-terms
-      real*8 v2(Mb_M,Mx_M)                       ! small space for cross-terms
-      real*8 e0(Mx_M)                             ! eigenvalues found
-

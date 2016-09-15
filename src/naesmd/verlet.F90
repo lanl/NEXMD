@@ -25,15 +25,7 @@ module verlet_module
 
    integer Na,Nm,temp
    integer k,i,j
-
-   !include 'sizes'
    _REAL_ E0,d
-   !include 'md.par'
-   !include 'parH.par'
-   !real*8 Omega(Mx_M),fosc(Mx_M)
-   !include 'md.cmn'
-   !include 'common'
-
    _REAL_ dt_2,dt2_2
    _REAL_ t_start,t_finish 
 
@@ -156,15 +148,7 @@ module verlet_module
 
    integer Na,Nm,temp
    integer k,i,j
-
-   !include 'sizes'
    real(8) E0,d
-   !include 'md.par'
-   !include 'parH.par'
-   !real*8 Omega(Mx_M),fosc(Mx_M)
-   !include 'md.cmn'
-   !include 'common'
-
    real(8) dt_2,dt2_2 
 
    Na=sim%naesmd%Na
@@ -249,14 +233,7 @@ module verlet_module
 
    integer Na,Nm,temp
    integer k,i,j
-
-   !include 'sizes'
    _REAL_ E0,d
-   !include 'md.par'
-   !include 'parH.par'
-   !include 'md.cmn'
-   !include 'common'
-
    _REAL_ dt_2,dt2_2
    _REAL_ t_start,t_finish 
 

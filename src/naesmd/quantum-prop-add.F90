@@ -14,11 +14,6 @@ contains
    type(simulation_t),pointer::sim
    integer k,j,i,ii,iii,iimdqt,lprint
    integer mdflag,Na,Nm,imax
-   !include 'md.par'
-   !include 'parH.par'
-   !include 'sizes'
-   !include 'md.cmn'
-   !include 'common'
    integer cross(sim%excN)
    integer ascpr(sim%excN,sim%excN),z
    _REAL_ scprold,xmax
@@ -33,7 +28,10 @@ contains
 !  to identity matrix
 !
 !--------------------------------------------------------------------
-!
+   if (sim%excN>260) then
+        write(6,*)'Error:quantum propagator does not yet handle more than 260 states'
+   endif
+
    scpr(1:sim%excN,1:sim%excN)=0.d0
 
    ! kav: FIXME
@@ -75,8 +73,6 @@ contains
    call apc(sim%excN,ascpr,iorden,z)
 
    do i=1,sim%excN
-      write(6,*)'iorden iordenhop i',iordenhop(i),iorden(i),i
-
       if(iorden(i).ne.i) then
          if(i.lt.iorden(i).or.i.eq.ihop) then
             if(dabs(scpr(i,iorden(i))).lt.0.9d0) then
@@ -85,7 +81,6 @@ contains
                cross(i)=2
             end if
             iordenhop(i)=iorden(i)
-            write(6,*)'crossing: iorden iordenhop i',iorden(i),iordenhop(i),i
             if(lprint.ge.2) then
             endif
          else
@@ -123,15 +118,7 @@ contains
    type(simulation_t),pointer::sim
    integer k,j,i,ii,iii,iimdqt
    integer mdflag,Na,Nm
-   !include 'md.par'
-   !include 'parH.par'
-   !include 'sizes'
-   !include 'md.cmn'
-   !include 'common'
    integer cross(sim%excN)
-   !integer ascpr(260,260),z
-   !double precision scprold
-   !double precision normcheck(sim%excN),normcheckhop 
 
 !***************************************************
 ! following the nonavoiding crossing of states
@@ -173,15 +160,10 @@ contains
    integer k,j,i,ii,iii,iimdqt
    integer mdflag,Na,Nm
    double precision E0 
-   !include 'md.par'
-   !include 'parH.par'
    real*8 Omega(sim%excN),fosc(sim%excN)
    real*8 xx(Na),yy(Na),zz(Na)
    real*8 xxp(Na),yyp(Na),zzp(Na)
    real*8 xxm(Na),yym(Na),zzm(Na)
-   !include 'sizes'
-   !include 'md.cmn'
-   !include 'common'
 
    if(iimdqt.eq.1) then
       do i=1,sim%excN
@@ -289,15 +271,10 @@ contains
    integer k,j,i,ii,iii,iimdqt,win
    integer mdflag,Na,Nm
    double precision E0 
-   !include 'md.par'
-   !include 'parH.par'
    real*8 Omega(sim%excN),fosc(sim%excN)
    real*8 xx(Na),yy(Na),zz(Na)
    real*8 xxp(Na),yyp(Na),zzp(Na)
    real*8 xxm(Na),yym(Na),zzm(Na)
-   !include 'sizes'
-   !include 'md.cmn'
-   !include 'common'
 
    if(ensemble.eq.'energy'.or.ensemble.eq.'temper') then
       do j=1,natom

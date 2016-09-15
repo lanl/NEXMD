@@ -21,8 +21,6 @@ contains
    integer  i,j,k,kk,slen,readstring,ibo,kki,lprint
    double precision ntot
    double precision xcm,ycm,zcm 
-   !include 'sizes'
-   !include 'common'
    character*1000 card
    character*1000 cardmopac
 
@@ -237,19 +235,13 @@ contains
    INTEGER l,i,j,jj,k,kk,slen,readstring,Nb,ibo,kki,lprint
    double precision ntot
    double precision xcm,ycm,zcm 
-   !include 'sizes'
-   !include 'common'
    integer cross(sim%excN)
    character*1000 card
    character*1000 cardmopac
-
    double precision yg(2*sim%excN) 
    double precision poblacring1,poblacring4
-
    double precision energy !JAB Test
-
    integer nring,indx(sim%excN)
-
    logical first
    data first /.true./
    save first

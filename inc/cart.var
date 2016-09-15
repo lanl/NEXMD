@@ -1,3 +1,0 @@
-!
-      real*8 xx(Nb_M),yy(Nb_M),zz(Nb_M),atmass(Nb_M)    ! Cartesian coordinates and masses
-      integer atm(Nb_M),Ntype(Nb_M),order(Nb_M)    	! Atomic Numbers

@@ -1,6 +1,0 @@
-!
-      real*8 W(Nc_M),WJ,WK                       ! Coulomb matrix elements
-      real*8 GSS,GSP,GPP,GP2,HSP,GSD,GPD,GDD
-      integer NFIRST(Nb_M),ID,ITYPE         
-      integer NMIDLE(Nb_M)
-      integer NLAST(Nb_M)

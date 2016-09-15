@@ -9,8 +9,6 @@
    integer n,k,j
    _REAL_ x,yg(n),yprime(n)
  
-   !include 'sizes'
-   !include 'common'
    call interpolate(n,x)
    call vqcalc(n,yg,yprime)
 
@@ -31,9 +29,6 @@
    integer n,k,j
    _REAL_ x
  
-   !include 'sizes'
-   !include 'common'
-
    do k=1,n/2
       do j=1,n/2
          cadiab(k,j)=cadiabmiddleold(k,j) &
@@ -60,17 +55,12 @@
 !
 
    subroutine vqcalc(n,yg,yprime)
-   !use communism
    use naesmd_module
    use md_module
    implicit none
-   !type(simulation_t), pointer :: sim
    integer n,k,j
    _REAL_ x,yg(n),yprime(n)
    _REAL_ norm 
-
-   !include 'sizes'
-   !include 'common'
 
    do k=1,n/2
       yprime(k)=0.d0

@@ -37,10 +37,6 @@ program MD_Geometry
     !  as well as initial coordinates, velocities, and quantum coefficients;
     !
     !--------------------------------------------------------------------
-    !
-    !include 'md.par'
-    !include 'parH.par'
-    !include 'parvar.var'
 
     integer ido,neq,idocontrol,lprint
     integer icheck
@@ -55,18 +51,13 @@ program MD_Geometry
     real(8),pointer::pOmega(:),pE0
     real(8) xi,nu,c0,c1,c2,kT
     integer ither,win
-
     real(8) tini,tend,toldivprk,norm,normdiff,param(50)
-
     integer jj,jx
     integer slen
-
     integer ifind
     logical moldyn_found
-
     type(simulation_t),target::sim_notp
     type(simulation_t),pointer::sim
-
     ! variables of the moldyn namelist
     integer bo_dynamics_flag,exc_state_init,n_exc_states_propagate
     integer out_count_init
@@ -83,7 +74,6 @@ program MD_Geometry
     real(8) decoher_e0,decoher_c
     real(8) qmdipole(3);
     integer decoher_type
-
     namelist /moldyn/ natoms,bo_dynamics_flag,exc_state_init, &
         n_exc_states_propagate,out_count_init,time_init, &
         rk_tolerance,time_step,n_class_steps,n_quant_steps, &
@@ -93,19 +83,13 @@ program MD_Geometry
         heating_steps_per_degree,out_data_steps,out_coords_steps, &
         therm_friction,rnd_seed,out_data_cube,verbosity,moldyn_deriv_flag, &
         quant_step_reduction_factor,decoher_e0,decoher_c,decoher_type
-
     integer cohertype
-
-    !include 'sizes'
-   
-    real(8),allocatable :: yg(:)!2*nmaxpot)
-    integer,allocatable :: cross(:)!nmaxpot)
+    real(8),allocatable :: yg(:)
+    integer,allocatable :: cross(:)
     integer crosstot
-
     real(8)ctest,ctemp
     real(8) tempa,tempb
     real(8) ntotcoher
-
     real(8) constcoherE0,constcoherC,icoher
     real(8) mu(3);
     character*(150) txt
@@ -114,18 +98,11 @@ program MD_Geometry
     character*3 symm
     external diff
     integer mdflag     ! 0,1,2 - standard molecular dynamics
-
-    !include 'md.cmn'
-
     integer itime1,itime11,itime2,itime3,get_time
     _REAL_ time11,time12,time13,time23
     character*30 datetime, keywr*6, machname*36
-
     external fcn ! function call for interpolation
     _REAL_ t_start,t_finish
-
-    !include 'common'
-
     integer inputfdes
 
     sim=>sim_notp
@@ -164,18 +141,14 @@ program MD_Geometry
         iordenhop(i)=0
     end do
      
-    ! Ek is always zero on start? FIXME? KGB
     !uumdqtflag=1
     if(imdtype.eq.0) then
         Etot=E0+Ek
     else
         Etot=E0+Omega(imdtype)+Ek
     endif
-
     vgs=E0;
-
     vmdqt(1:sim%excN)=Omega(1:sim%excN)+vgs
-   
     t=0.0
 
     itime2=get_time()
@@ -212,8 +185,9 @@ program MD_Geometry
         write(6,*)"Begin classical propagation step #",imdqt
         tfemto=tfemto+dtmdqt*convtf
         qmmm_struct%num_qmmm_calls=imdqt !necessary for BO dynamics
-        !NAESMD-propagate
+
         if(state.eq.'exct'.and.ibo.ne.1) then
+            !NAESMD-propagate
             qmmm_struct%state_of_interest=ihop;
             call verlet1(sim)
         else
@@ -225,7 +199,6 @@ program MD_Geometry
         if(state.eq.'exct'.and.ibo.ne.1) then
             write(6,*)'Begin nonadiabatic couplings and crossings calculations'
             call initialize(sim,yg)
-
             !*******************************************************
             ! The analytic NAC for t.
             ! are calculated inside of cadiaboldcalc,cadiabmiddlecalc, and cadiabnewcalc
@@ -261,8 +234,8 @@ program MD_Geometry
             end do
             if(crosstot.eq.1) then
                 if (lprint.gt.1) then
-                        write(6,*)'there is crossing'
-                        write(6,*)'cross(:)=',cross(1:sim%excN)
+                    write(6,*)'there is crossing'
+                    write(6,*)'cross(:)=',cross(1:sim%excN)
                 endif
                 cadiabhop=cadiabnew(qmmm_struct%state_of_interest,iorden(qmmm_struct%state_of_interest))
                 nquantumstep=nquantumreal*nstepcross
@@ -271,7 +244,6 @@ program MD_Geometry
                     lowvalue(j)=1000.0d0
                 end do
                 do iimdqt=1,nquantumstep
-                write(6,*)
                     tfemtoquantum=tfemto-dtmdqt*convtf &
                         +iimdqt*dtquantum*convtf
                     call vmdqtmiddlecalc(sim,iimdqt,Na,Nm)
@@ -418,7 +390,7 @@ program MD_Geometry
                             +vnqcorrhop(k,j)*dtquantum
                     end do
                 end do
-            write(6,*)'End quantum step ',tfemto
+                write(6,*)'End quantum step ',tfemto
             end do
 
             !write(6,*)'Now doing some other things'
@@ -700,408 +672,407 @@ contains
             read(inputfdes,nml=moldyn)
         else
             write(6,*)'Could not find moldyn namelist'
-                stop
-            endif
+            stop
+        endif
 
-            ! Tentatively, loading new parameter from the moldyn namelist to
-            ! old parameters
-            ibo=bo_dynamics_flag
+        ! Tentatively, loading new parameter from the moldyn namelist to
+        ! old parameters
+        ibo=bo_dynamics_flag
    
-            imdtype=exc_state_init
-            ihop=imdtype
-            if(imdtype==0) then
-                state='fund'
-            else
-                state='exct'
-            end if
+        imdtype=exc_state_init
+        ihop=imdtype
+        if(imdtype==0) then
+            state='fund'
+        else
+            state='exct'
+        end if
 
-            npot=n_exc_states_propagate
-            neq=2*npot !Number of equations for divprk -- could use 2*sim%excN instead
+        npot=n_exc_states_propagate
+        neq=2*npot !Number of equations for divprk -- could use 2*sim%excN instead
    
-            icontini=out_count_init
-            tfemto=time_init
-            toldivprk=rk_tolerance
+        icontini=out_count_init
+        tfemto=time_init
+        toldivprk=rk_tolerance
 
-            dtmdqt=time_step
-            h=dtmdqt
-            dtmdqt=dtmdqt/convtf
+        dtmdqt=time_step
+        h=dtmdqt
+        dtmdqt=dtmdqt/convtf
 
-            nstep=n_class_steps
+        nstep=n_class_steps
 
-            nquantumreal=n_quant_steps
-            dtquantum=dtmdqt/dfloat(nquantumreal)
+        nquantumreal=n_quant_steps
+        dtquantum=dtmdqt/dfloat(nquantumreal)
 
-            decorhop=quant_coeffs_reinit
-            d=num_deriv_step
+        decorhop=quant_coeffs_reinit
+        d=num_deriv_step
 
-            temp0=therm_temperature
-            ttt=temp0
+        temp0=therm_temperature
+        ttt=temp0
 
-            ither=therm_type
-            if(ither==0) ensemble ='energy'
-            if(ither==1) ensemble ='langev'
-            if(ither==2) ensemble ='temper'
+        ither=therm_type
+        if(ither==0) ensemble ='energy'
+        if(ither==1) ensemble ='langev'
+        if(ither==2) ensemble ='temper'
 
-            tao=berendsen_relax_const
+        tao=berendsen_relax_const
 
-            if(heating==1) then
-                prep='heat'
-            else
-                prep='equi'
-            end if
+        if(heating==1) then
+            prep='heat'
+        else
+            prep='equi'
+        end if
 
-            istepheat=heating_steps_per_degree
-            nstepw=out_data_steps
-            nstepcoord=out_coords_steps
+        istepheat=heating_steps_per_degree
+        nstepw=out_data_steps
+        nstepcoord=out_coords_steps
    
-            friction=therm_friction
-            friction=friction/1.d3
-            friction=friction*convtf
+        friction=therm_friction
+        friction=friction/1.d3
+        friction=friction*convtf
 
-            iseedmdqt=rnd_seed
-            write(6,*)"rnd_seed=",rnd_seed
-            iview=out_data_cube
-            lprint=verbosity
-            ideriv=moldyn_deriv_flag
+        iseedmdqt=rnd_seed
+        write(6,*)"rnd_seed=",rnd_seed
+        iview=out_data_cube
+        lprint=verbosity
+        ideriv=moldyn_deriv_flag
 
-            nstepcross=int(1.d0/quant_step_reduction_factor)
-            constcoherE0=decoher_e0
-            constcoherC=decoher_c
+        nstepcross=int(1.d0/quant_step_reduction_factor)
+        constcoherE0=decoher_e0
+        constcoherC=decoher_c
 
-            cohertype=decoher_type
+        cohertype=decoher_type
 
-            write(6,*) '!!!!!!-----MD INPUT-----!!!!!!'
-            write(6,*)
+        write(6,*) '!!!!!!-----MD INPUT-----!!!!!!'
+        write(6,*)
 
-            if (imdtype.eq.0) then
-                qmmm_struct%state_of_interest=imdtype
-                write(6,*)'Ground state MD,      imdtype=',imdtype
+        if (imdtype.eq.0) then
+            qmmm_struct%state_of_interest=imdtype
+            write(6,*)'Ground state MD,      imdtype=',imdtype
     
+        else
+            qmmm_struct%state_of_interest=imdtype
+            write(6,*)'Excited state MD,      state=',imdtype
+            write(6,*)'Number of states to propagate',npot
+        end if
+
+        write(6,*)'Initial count for out files   ',icontini
+
+        if(ensemble.eq.'langev') then
+            write(6,*)'MD using Langevin '
+            write(6,*)'with friction coefficient [1/ps]=',friction*1.0D3
+
+        else
+            if(ensemble.eq.'temper') then
+                write(6,*)'MD using Berendsen thermostat'
+                write(6,*)'with bath relaxation constant [ps]=',tao
             else
-                qmmm_struct%state_of_interest=imdtype
-                write(6,*)'Excited state MD,      state=',imdtype
-                write(6,*)'Number of states to propagate',npot
+                write(6,*)'MD at constant energy'
             end if
+        end if
 
-            write(6,*)'Initial count for out files   ',icontini
+        write(6,*)'Starting time, fs        ',tfemto
+        write(6,*)'Time step, fs		      ',dtmdqt*convtf
+        write(6,*)'Number of classical steps (CS) ',nstep
+        write(6,*)'Quantum steps/per CS         ',nquantumreal
+        !	write(6,*)	'Vibr. modes to consider      ',   symm
+        write(6,*)'Displacement for deriv. [A]   ',d
 
-            if(ensemble.eq.'langev') then
-                write(6,*)'MD using Langevin '
-                write(6,*)'with friction coefficient [1/ps]=',friction*1.0D3
+        if(ither.eq.0) then
+            write(6,*)'Newtonian dynamics,           ither=',ither
+        else if(ither.eq.1) then
+            write(6,*)'Langevin thermostat dynamics, ither=',ither
+        else if(ither.eq.2) then
+            write(6,*)'Temperature thermostat,       ither=',ither
+        end if
 
-            else
-                if(ensemble.eq.'temper') then
-                    write(6,*)'MD using Berendsen thermostat'
-                    write(6,*)'with bath relaxation constant [ps]=',tao
-                else
-                    write(6,*)'MD at constant energy'
-                end if
-            end if
+        write(6,*)'Temperature, K               ',temp0
+        write(6,*)'Bath relaxation constant     ',tao
 
-            write(6,*)'Starting time, fs        ',tfemto
-            write(6,*)'Time step, fs		      ',dtmdqt*convtf
-            write(6,*)'Number of classical steps (CS) ',nstep
-            write(6,*)'Quantum steps/per CS         ',nquantumreal
-            !	write(6,*)	'Vibr. modes to consider      ',   symm
-            write(6,*)'Displacement for deriv. [A]   ',d
+        if(prep.eq.'equi') write(6,*)'Equilibrated dynamics'
+        if(prep.eq.'heat') write(6,*)'Heating dynamics from T=0'
 
-            if(ither.eq.0) then
-                write(6,*)'Newtonian dynamics,           ither=',ither
-            else if(ither.eq.1) then
-                write(6,*)'Langevin thermostat dynamics, ither=',ither
-            else if(ither.eq.2) then
-                write(6,*)'Temperature thermostat,       ither=',ither
-            end if
+        write(6,*)'Number of steps per degree K  ',istepheat
+        write(6,*)'Number of steps to write data ',nstepw
+        write(6,*)'Number of steps to write coords',nstepcoord
+        write(6,*)'Friction coefficient [1/ps]   ',friction
+        write(6,*)'Seed for random generator    ',iseedmdqt
 
-            write(6,*)'Temperature, K               ',temp0
-            write(6,*)'Bath relaxation constant     ',tao
+        if(iview.eq.1) write(6,*)'Will write files to generate cubes'
 
-            if(prep.eq.'equi') write(6,*)'Equilibrated dynamics'
-            if(prep.eq.'heat') write(6,*)'Heating dynamics from T=0'
+        write(6,*)'NAESMD verbosity, ',lprint
 
-            write(6,*)'Number of steps per degree K  ',istepheat
-            write(6,*)'Number of steps to write data ',nstepw
-            write(6,*)'Number of steps to write coords',nstepcoord
-            write(6,*)'Friction coefficient [1/ps]   ',friction
-            write(6,*)'Seed for random generator    ',iseedmdqt
+        if(ideriv.eq.0) then
+            write(6,*)'MD will use numerical deriv, ideriv=',ideriv
+        else if(ideriv.ge.2) then
+            write(6,*)'MD will use fast GS analytic deriv,  ideriv=',ideriv
+        else
+            write(6,*)'MD will use analytic deriv,  ideriv=',ideriv
+        end if
 
-            if(iview.eq.1) write(6,*)'Will write files to generate cubes'
-
-            write(6,*)'NAESMD verbosity, ',lprint
-
-            if(ideriv.eq.0) then
-                write(6,*)'MD will use numerical deriv, ideriv=',ideriv
-            else if(ideriv.ge.2) then
-                write(6,*)'MD will use fast GS analytic deriv,  ideriv=',ideriv
-            else
-                write(6,*)'MD will use analytic deriv,  ideriv=',ideriv
-            end if
-
-            write(6,*) 'Cartesian coordinates are used'
+        write(6,*) 'Cartesian coordinates are used'
 
 
-            !***************************************************
-            ! Initial allocations
-            ! **************************************************
-            call allocate_naesmd_module_init(natoms)
-            call allocate_md_module_init(natoms)
-            allocate(xx(natoms),yy(natoms),zz(natoms))
+        !***************************************************
+        ! Initial allocations
+        ! **************************************************
+        call allocate_naesmd_module_init(natoms)
+        call allocate_md_module_init(natoms)
+        allocate(xx(natoms),yy(natoms),zz(natoms))
 
-            ! reading atoms and modes:
-            rewind (12)
-            Na=0
-            ! read the cartesian coordinates
-            !****************************************************************************
-            do
-                read(12,'(a)',err=29) txt
-                if ( &
-                    txt(1:6).eq.'$COORD' &
-                    .or.txt(1:6).eq.'$coord' &
-                    .or.txt(1:6).eq.'&COORD' &
-                    .or.txt(1:6).eq.'&coord') exit ! breaking infinite loop
-            end do
+        ! reading atoms and modes:
+        rewind (12)
+        Na=0
+        ! read the cartesian coordinates
+        !****************************************************************************
+        do
+            read(12,'(a)',err=29) txt
+            if ( &
+                txt(1:6).eq.'$COORD' &
+                .or.txt(1:6).eq.'$coord' &
+                .or.txt(1:6).eq.'&COORD' &
+                .or.txt(1:6).eq.'&coord') exit ! breaking infinite loop
+        end do
+
+        read(12,'(a)',err=29) txt
+
+        do while( &
+            txt(1:9).ne.'$ENDCOORD' &
+            .and.txt(1:9).ne.'$endcoord' &
+            .and.txt(1:9).ne.'&ENDCOORD' &
+            .and.txt(1:9).ne.'&endcoord')
+
+            Na=Na+1 ! counting atoms
+
+            read(txt,*,err=29) atoms(Na),r0(3*Na-2),r0(3*Na-1),r0(3*Na)
+            atmass(Na)=2*atoms(Na)
+            atomtype(Na)=atoms(Na)
+            !         if(atomtype(Na).eq.1) massmdqt(Na)=1.0079d0*convm
+            if(atomtype(Na).eq.1) massmdqt(Na)=1.00d0*convm
+            if(atomtype(Na).eq.1) atomtype2(Na)='H '
+            if(atomtype(Na).eq.2) massmdqt(Na)=4.0026d0*convm
+            if(atomtype(Na).eq.2) atomtype2(Na)='He'
+            if(atomtype(Na).eq.3) massmdqt(Na)=6.941d0*convm
+            if(atomtype(Na).eq.3) atomtype2(Na)='Li'
+            if(atomtype(Na).eq.4) massmdqt(Na)=9.0122d0*convm
+            if(atomtype(Na).eq.4) atomtype2(Na)='Be'
+            if(atomtype(Na).eq.5) massmdqt(Na)=10.811d0*convm
+            if(atomtype(Na).eq.5) atomtype2(Na)='B '
+            if(atomtype(Na).eq.6) massmdqt(Na)=12.011d0*convm
+            if(atomtype(Na).eq.6) atomtype2(Na)='C '
+            if(atomtype(Na).eq.7) massmdqt(Na)=14.007d0*convm
+            if(atomtype(Na).eq.7) atomtype2(Na)='N '
+            if(atomtype(Na).eq.8) massmdqt(Na)=15.9994d0*convm
+            if(atomtype(Na).eq.8) atomtype2(Na)='O '
+            if(atomtype(Na).eq.9) massmdqt(Na)=18.998d0*convm
+            if(atomtype(Na).eq.9) atomtype2(Na)='F '
+            if(atomtype(Na).eq.10) massmdqt(Na)=20.180d0*convm
+            if(atomtype(Na).eq.10) atomtype2(Na)='Ne'
+            if(atomtype(Na).eq.14) massmdqt(Na)=28.086d0*convm
+            if(atomtype(Na).eq.14) atomtype2(Na)='Si'
+            if(atomtype(Na).eq.15) massmdqt(Na)=30.974d0*convm
+            if(atomtype(Na).eq.15) atomtype2(Na)='P '
+            if(atomtype(Na).eq.16) massmdqt(Na)=32.065d0*convm
+            if(atomtype(Na).eq.16) atomtype2(Na)='S '
+            if(atomtype(Na).eq.17) massmdqt(Na)=35.453d0*convm
+            if(atomtype(Na).eq.17) atomtype2(Na)='Cl'
 
             read(12,'(a)',err=29) txt
+        end do
+        !--------------------------------------------------------------------
+        !Allocate variables
+        write(6,*)'Allocating variables'
+        natom=Na
+        sim%Na=Na
+        allocate(sim%coords(Na*3))
+        sim%excN=npot
+        write(6,*)'FixMe! if npot=0 then don not allocate these variables here'
+        call allocate_naesmd_module(Na,npot)
+        call allocate_md_module(Na)
+        allocate(yg(2*sim%excN))
+        allocate(cross(sim%excN))
+        allocate(fosc(sim%excN))
+        allocate(Omega(sim%excN))
 
-            do while( &
-                txt(1:9).ne.'$ENDCOORD' &
-                .and.txt(1:9).ne.'$endcoord' &
-                .and.txt(1:9).ne.'&ENDCOORD' &
-                .and.txt(1:9).ne.'&endcoord')
+        !--------------------------------------------------------------------
+        !
+        !  Reading velocities
+        !
+        !--------------------------------------------------------------------
 
-                Na=Na+1 ! counting atoms
+        rewind (12)
+        do
+            read(12,'(a)',err=29) txt
+            if( &
+                txt(1:6).eq.'$VELOC' &
+                .or.txt(1:6).eq.'$veloc' &
+                .or.txt(1:6).eq.'&VELOC' &
+                .or.txt(1:6).eq.'&veloc') exit ! exiting infinite loop
+        end do
 
-                read(txt,*,err=29) atoms(Na),r0(3*Na-2),r0(3*Na-1),r0(3*Na)
-                atmass(Na)=2*atoms(Na)
-                atomtype(Na)=atoms(Na)
-                !         if(atomtype(Na).eq.1) massmdqt(Na)=1.0079d0*convm
-                if(atomtype(Na).eq.1) massmdqt(Na)=1.00d0*convm
-                if(atomtype(Na).eq.1) atomtype2(Na)='H '
-                if(atomtype(Na).eq.2) massmdqt(Na)=4.0026d0*convm
-                if(atomtype(Na).eq.2) atomtype2(Na)='He'
-                if(atomtype(Na).eq.3) massmdqt(Na)=6.941d0*convm
-                if(atomtype(Na).eq.3) atomtype2(Na)='Li'
-                if(atomtype(Na).eq.4) massmdqt(Na)=9.0122d0*convm
-                if(atomtype(Na).eq.4) atomtype2(Na)='Be'
-                if(atomtype(Na).eq.5) massmdqt(Na)=10.811d0*convm
-                if(atomtype(Na).eq.5) atomtype2(Na)='B '
-                if(atomtype(Na).eq.6) massmdqt(Na)=12.011d0*convm
-                if(atomtype(Na).eq.6) atomtype2(Na)='C '
-                if(atomtype(Na).eq.7) massmdqt(Na)=14.007d0*convm
-                if(atomtype(Na).eq.7) atomtype2(Na)='N '
-                if(atomtype(Na).eq.8) massmdqt(Na)=15.9994d0*convm
-                if(atomtype(Na).eq.8) atomtype2(Na)='O '
-                if(atomtype(Na).eq.9) massmdqt(Na)=18.998d0*convm
-                if(atomtype(Na).eq.9) atomtype2(Na)='F '
-                if(atomtype(Na).eq.10) massmdqt(Na)=20.180d0*convm
-                if(atomtype(Na).eq.10) atomtype2(Na)='Ne'
-                if(atomtype(Na).eq.14) massmdqt(Na)=28.086d0*convm
-                if(atomtype(Na).eq.14) atomtype2(Na)='Si'
-                if(atomtype(Na).eq.15) massmdqt(Na)=30.974d0*convm
-                if(atomtype(Na).eq.15) atomtype2(Na)='P '
-                if(atomtype(Na).eq.16) massmdqt(Na)=32.065d0*convm
-                if(atomtype(Na).eq.16) atomtype2(Na)='S '
-                if(atomtype(Na).eq.17) massmdqt(Na)=35.453d0*convm
-                if(atomtype(Na).eq.17) atomtype2(Na)='Cl'
+        i=1
+        do
+            read(12,'(a)',err=29) txt
+            if( &
+                txt(1:9).eq.'$ENDVELOC' &
+                .or.txt(1:9).eq.'$endveloc' &
+                .or.txt(1:9).eq.'&ENDVELOC' &
+                .or.txt(1:9).eq.'&endveloc') exit
 
-                read(12,'(a)',err=29) txt
-            end do
-            !--------------------------------------------------------------------
-            !Allocate variables
-            write(6,*)'Allocating variables'
-            natom=Na
-            sim%Na=Na
-            allocate(sim%coords(Na*3))
-            sim%excN=npot
-            write(6,*)'FixMe! if npot=0 then don not allocate these variables here'
-            call allocate_naesmd_module(Na,npot)
-            call allocate_md_module(Na)
-            allocate(yg(2*sim%excN))
-            allocate(cross(sim%excN))
-            allocate(fosc(sim%excN))
-            allocate(Omega(sim%excN))
+            read(txt,*,err=29) vx(i),vy(i),vz(i)
+            i=i+1
+        end do
 
-            !--------------------------------------------------------------------
-            !
-            !  Reading velocities
-            !
-            !--------------------------------------------------------------------
+        vx(1:natom)=vx(1:natom)/convl*convt
+        vy(1:natom)=vy(1:natom)/convl*convt
+        vz(1:natom)=vz(1:natom)/convl*convt
+        !
+        !--------------------------------------------------------------------
+        ! Reading quantum coeffients
+        !
+        !--------------------------------------------------------------------
+        !
+        rewind (12)
+        do
+            read(12,'(a)',err=29) txt
+            if( &
+                txt(1:6).eq.'$COEFF' &
+                .or.txt(1:6).eq.'$coeff' &
+                .or.txt(1:6).eq.'&COEFF' &
+                .or.txt(1:6).eq.'&coeff') exit ! leaving the infinite loop
+        end do
 
-            rewind (12)
-            do
-                read(12,'(a)',err=29) txt
-                if( &
-                    txt(1:6).eq.'$VELOC' &
-                    .or.txt(1:6).eq.'$veloc' &
-                    .or.txt(1:6).eq.'&VELOC' &
-                    .or.txt(1:6).eq.'&veloc') exit ! exiting infinite loop
-            end do
+        i=1
+        do
+            read(12,'(a)',err=29) txt
+            if( &
+                txt(1:9).eq.'$ENDCOEFF' &
+                .or.txt(1:9).eq.'$endcoeff' &
+                .or.txt(1:9).eq.'&ENDCOEFF' &
+                .or.txt(1:9).eq.'&endcoeff') exit
 
-            i=1
-            do
-                read(12,'(a)',err=29) txt
-                if( &
-                    txt(1:9).eq.'$ENDVELOC' &
-                    .or.txt(1:9).eq.'$endveloc' &
-                    .or.txt(1:9).eq.'&ENDVELOC' &
-                    .or.txt(1:9).eq.'&endveloc') exit
+            read(txt,*,err=29) yg(i),yg(i+sim%excN)
 
-                read(txt,*,err=29) vx(i),vy(i),vz(i)
-                i=i+1
-            end do
+            yg(i)=dsqrt(yg(i))
+            yg(i+sim%excN)=dasin(yg(i+sim%excN))
 
-            vx(1:natom)=vx(1:natom)/convl*convt
-            vy(1:natom)=vy(1:natom)/convl*convt
-            vz(1:natom)=vz(1:natom)/convl*convt
-            !
-            !--------------------------------------------------------------------
-            write(6,*)'velocity read'
-            ! Reading quantum coeffients
-            !
-            !--------------------------------------------------------------------
-            !
-            rewind (12)
-            do
-                read(12,'(a)',err=29) txt
-                if( &
-                    txt(1:6).eq.'$COEFF' &
-                    .or.txt(1:6).eq.'$coeff' &
-                    .or.txt(1:6).eq.'&COEFF' &
-                    .or.txt(1:6).eq.'&coeff') exit ! leaving the infinite loop
-            end do
-
-            i=1
-            do
-                read(12,'(a)',err=29) txt
-                if( &
-                    txt(1:9).eq.'$ENDCOEFF' &
-                    .or.txt(1:9).eq.'$endcoeff' &
-                    .or.txt(1:9).eq.'&ENDCOEFF' &
-                    .or.txt(1:9).eq.'&endcoeff') exit
-
-                read(txt,*,err=29) yg(i),yg(i+sim%excN)
-
-                yg(i)=dsqrt(yg(i))
-                yg(i+sim%excN)=dasin(yg(i+sim%excN))
-
-                i=i+1
-                if(i.gt.sim%excN) exit ! too many coefficients - leaving the loop
-            end do
+            i=i+1
+            if(i.gt.sim%excN) exit ! too many coefficients - leaving the loop
+        end do
       
-            close (12)
-            !
-            !--------------------------------------------------------------------
-            !
-            write(6,*)' Finish reading coordinates '
-            !
-            !--------------------------------------------------------------------
-            !
-            Nm=3*Na
-            v(1:Nm,1:Nm)=0.d0
-            do i=1,Na
-                if (atoms(i).eq.1) then
-                    fo(3*i-2)=3000
-                    fo(3*i-1)=3000
-                    fo(3*i)=3000
-                else
-                    fo(3*i-2)=1000
-                    fo(3*i-1)=1000
-                    fo(3*i)=1000
-                end if
-   
-                fm(3*i-2)=atmass(i)
-                fm(3*i-1)=atmass(i)
-                fm(3*i)=atmass(i)
-                v(3*i-2,3*i-2)=1.0
-                v(3*i-1,3*i-1)=1.0
-                v(3*i,3*i)=1.0
-            end do
-
-            ! initialize variables:
-            N3=3*Na
-            N2=2*Nm
-            N1=Nm+1
-
-            ! compute initial cartesian coordinates:
-            do j=3,N3,3
-                xx(j/3)=r0(j-2)
-                yy(j/3)=r0(j-1)
-                zz(j/3)=r0(j)
-            end do
-
-            ! define cartesian coordinates for mdqt
-            ! transform coordiantes from angstrom to atomic units
-            rx(1:natom)=xx(1:natom)/convl
-            ry(1:natom)=yy(1:natom)/convl
-            rz(1:natom)=zz(1:natom)/convl
-
-            ! position of the center of mass
-            xcmini=0.d0
-            ycmini=0.d0
-            zcmini=0.d0
-
-            masstot=0.d0 ! kav: - zeroing was not here, needed?
-            do j=1,natom
-                masstot=masstot+massmdqt(j)
-            end do
-            do j=1,natom
-                xcmini=xcmini+rx(j)*massmdqt(j)/masstot
-                ycmini=ycmini+ry(j)*massmdqt(j)/masstot
-                zcmini=zcmini+rz(j)*massmdqt(j)/masstot
-            end do
-   
-            !Remove rotation and translation from initial velocity
-            write(6,*)'Rescaling velocity'
-            call rescaleveloc(rx,ry,rz,vx,vy,vz,massmdqt,natom)
-
-            ! compute kinetic energy, for cartesian option
-            kin=0.d0
-            do i=1,natom
-                kin=kin+massmdqt(i)*(vx(i)**2+vy(i)**2+vz(i)**2)/2
-            end do
-
-            write(6,*)
-            write(6,*)'Initial Geometry'
-
-            do i=1,Na
-                write(6,100) atoms(i),xx(i),yy(i),zz(i)
-            end do
-100         format(I5,'     ',3F12.6)
-
-
-            if(tfemto.eq.0.d0) then
-                open (9,file='coords.xyz')
-                write (9,*) Na
-                write (9,*) 'Input Geometry'
-
-                do j = 1,Na
-                    write(9,302) ELEMNT(atoms(j)),xx(j),yy(j),zz(j)
-                end do
-                close (9)
+        close (12)
+        !
+        !--------------------------------------------------------------------
+        !
+        write(6,*)' Finish reading coordinates '
+        !
+        !--------------------------------------------------------------------
+        !
+        Nm=3*Na
+        v(1:Nm,1:Nm)=0.d0
+        do i=1,Na
+            if (atoms(i).eq.1) then
+                fo(3*i-2)=3000
+                fo(3*i-1)=3000
+                fo(3*i)=3000
+            else
+                fo(3*i-2)=1000
+                fo(3*i-1)=1000
+                fo(3*i)=1000
             end if
-            sim%coords(1:3*Na)=r0(1:3*Na)
-            allocate(sim%deriv_forces(3*Na))
-            pOmega=>Omega
-            pE0=>E0
+   
+            fm(3*i-2)=atmass(i)
+            fm(3*i-1)=atmass(i)
+            fm(3*i)=atmass(i)
+            v(3*i-2,3*i-2)=1.0
+            v(3*i-1,3*i-1)=1.0
+            v(3*i,3*i)=1.0
+        end do
 
-            call init_naesmd_space_globs(sim%naesmd, Na, Nm, pOmega, pE0)
+        ! initialize variables:
+        N3=3*Na
+        N2=2*Nm
+        N1=Nm+1
 
-            return
+        ! compute initial cartesian coordinates:
+        do j=3,N3,3
+            xx(j/3)=r0(j-2)
+            yy(j/3)=r0(j-1)
+            zz(j/3)=r0(j)
+        end do
 
-7           format (' ',A12,' ',A35,A2)
-8           format (' ',A27,'  ',A30,A2)
-9           format (' ',A20,'    ',g16.5,A10)
-301         format(' |     ',i2,' days ',i2,' hours ',i2,' minutes ',i2, &
-                ' seconds     |')
-302         format(A3,3f12.6)
-303         format(i6,f9.3,g11.3,5g16.8)
-304         format('STEP:',i5,f9.3,6g13.5,g10.2,f16.10)
-305         format(a,i5,6g16.8,g12.4)
-306         format(i7,10000g12.4)
-307         format(a,g8.4,6g16.8,g12.4)
-999         FORMAT(I3,1X,1000(1X,F18.10))
-29          write(6,*) txt
-98          stop 'bad input'
-        end subroutine
+        ! define cartesian coordinates for mdqt
+        ! transform coordiantes from angstrom to atomic units
+        rx(1:natom)=xx(1:natom)/convl
+        ry(1:natom)=yy(1:natom)/convl
+        rz(1:natom)=zz(1:natom)/convl
+
+        ! position of the center of mass
+        xcmini=0.d0
+        ycmini=0.d0
+        zcmini=0.d0
+
+        masstot=0.d0 ! kav: - zeroing was not here, needed?
+        do j=1,natom
+            masstot=masstot+massmdqt(j)
+        end do
+        do j=1,natom
+            xcmini=xcmini+rx(j)*massmdqt(j)/masstot
+            ycmini=ycmini+ry(j)*massmdqt(j)/masstot
+            zcmini=zcmini+rz(j)*massmdqt(j)/masstot
+        end do
+   
+        !Remove rotation and translation from initial velocity
+        write(6,*)'Rescaling velocity'
+        call rescaleveloc(rx,ry,rz,vx,vy,vz,massmdqt,natom)
+
+        ! compute kinetic energy, for cartesian option
+        kin=0.d0
+        do i=1,natom
+            kin=kin+massmdqt(i)*(vx(i)**2+vy(i)**2+vz(i)**2)/2
+        end do
+
+        write(6,*)
+        write(6,*)'Initial Geometry'
+
+        do i=1,Na
+            write(6,100) atoms(i),xx(i),yy(i),zz(i)
+        end do
+100     format(I5,'     ',3F12.6)
+
+
+        if(tfemto.eq.0.d0) then
+            open (9,file='coords.xyz')
+            write (9,*) Na
+            write (9,*) 'Input Geometry'
+
+            do j = 1,Na
+                write(9,302) ELEMNT(atoms(j)),xx(j),yy(j),zz(j)
+            end do
+            close (9)
+        end if
+        sim%coords(1:3*Na)=r0(1:3*Na)
+        allocate(sim%deriv_forces(3*Na))
+        pOmega=>Omega
+        pE0=>E0
+
+        call init_naesmd_space_globs(sim%naesmd, Na, Nm, pOmega, pE0)
+
+        return
+
+7       format (' ',A12,' ',A35,A2)
+8       format (' ',A27,'  ',A30,A2)
+9       format (' ',A20,'    ',g16.5,A10)
+301     format(' |     ',i2,' days ',i2,' hours ',i2,' minutes ',i2, &
+            ' seconds     |')
+302     format(A3,3f12.6)
+303     format(i6,f9.3,g11.3,5g16.8)
+304     format('STEP:',i5,f9.3,6g13.5,g10.2,f16.10)
+305     format(a,i5,6g16.8,g12.4)
+306     format(i7,10000g12.4)
+307     format(a,g8.4,6g16.8,g12.4)
+999     FORMAT(I3,1X,1000(1X,F18.10))
+29      write(6,*) txt
+98      stop 'bad input'
+    end subroutine
   
-    end
+end

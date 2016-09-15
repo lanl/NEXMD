@@ -22,16 +22,12 @@ contains
    integer k,i,j,icheck,itest,ini,ihopavant
    integer atm2(Na)
    integer ido,neq,idocontrol
-   !include 'sizes'
    _REAL_ tini,tend,toldivprk,param(50)
    _REAL_ g(sim%excN),gacum(sim%excN)
    _REAL_ iseedhop,eavant, eapres 
    _REAL_ E0,d
-   !include 'md.par'
-   !include 'parH.par'
    _REAL_ Omega(sim%excN),fosc(sim%excN)
    _REAL_ xx(Na),yy(Na),zz(Na)
-   !include 'common'
    _REAL_ yg(sim%excN),ytemp,ytemp2
    _REAL_ t_start,t_finish 
    integer cross(sim%excN),crosstemp,ininonhop
@@ -229,17 +225,12 @@ contains
    integer mdflag
    integer atm2(Na)
    integer i,j,icheck,ini,ihoptemp 
-   !include 'sizes'
-   !include 'md.par'
-   !include 'md.cmn'
    double precision dij(Na*3),vicheck
    double precision alpha,racine,ctehop1,dctehop1 
    double precision vtemp(sim%excN),vgstemp
    real*8 xx(Na),yy(Na),zz(Na)
    real*8 E0,d
-   !include 'parH.par'
    real*8 Omega(sim%excN),fosc(sim%excN)
-   !include 'common'
 !********************************************************
 ! adjustment of velocities
 !********************************************************

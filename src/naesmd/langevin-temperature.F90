@@ -26,9 +26,6 @@ contains
         use md_module
         implicit none
 
-        !include 'sizes'
-        !include 'common'
-
         integer i,j
         double precision  xgamma(natom) 
         double precision  gdt,egdt 
@@ -38,8 +35,6 @@ contains
         double precision  ktm 
         double precision  psig,vsig 
         double precision  pnorm,vnorm 
-        ! double precision  normal 
-
 !
 !     set the atomic friction coefficients to the global value
 !
@@ -145,13 +140,8 @@ contains
 
       implicit none
 
-      !include 'sizes'
-      !include 'common'
-
       double precision v1,v2,rsq,iseedhop
       double precision factor,store,normal
-      ! double precision rranf1
-
       logical compute
       save compute,store
       data compute  / .true. /
@@ -195,9 +185,6 @@ contains
 
         integer i,j
         double precision scltmp
-        !include 'sizes'
-        !include 'common'
-
 
        call temper
 
@@ -261,8 +248,6 @@ contains
    _REAL_ xkboltz
    _REAL_ xkinsum
         
-   !include 'sizes'
-   !include 'common'
 
    xkboltz=3.166829662D-6
 

@@ -1241,11 +1241,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
     !Note non master mpi threads need to call this allocation routine manually themselves.
     qmmm_nml%nquant = qmmm_struct%nquant
     qmmm_struct%natom = natom
-    !write(6,*)qmmm_struct%natom
     call allocate_qmmm( qmmm_nml, qmmm_struct, natom )
-    !write(6,*)size(qmmm_struct%iqm_atomic_numbers),size(atnum)
-    !qmmm_struct%iqm_atomic_numbers(1:natom) = atnum(1:natom)
-    !qmmm_nml%iqmatoms(1:natom) = iqmatoms(1:natom)
     qmmm_struct%iqm_atomic_numbers(1:qmmm_struct%nquant_nlink) = atnum(1:qmmm_struct%nquant_nlink)
     qmmm_nml%iqmatoms(1:qmmm_struct%nquant_nlink) = iqmatoms(1:qmmm_struct%nquant_nlink)
     if (ncharge_in > 0) then

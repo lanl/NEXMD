@@ -9,7 +9,6 @@ implicit none
         _REAL_, dimension(:), pointer :: p
     end type realp_t
 
-
     type xyz_t
         _REAL_, dimension(:), pointer  :: x
         _REAL_, dimension(:), pointer  :: y
@@ -24,29 +23,22 @@ implicit none
         type(realp_t), dimension(3)    :: vold
     end type xyz_t
 
-
     type xyz_and_derivs_t
         type(xyz_t),pointer :: r
         type(xyz_t),pointer :: v
         type(xyz_t),pointer :: a
 
         integer                        :: Na
-       ! integer                        :: Nm
     end type xyz_and_derivs_t
-
-
 
     type  naesmd_data_t
         type(xyz_t)     :: r,v,a,deltaRp, deltaRm
         _REAL_, pointer :: mass(:)
         integer,pointer :: atomtype(:)
-
         _REAL_,pointer  :: Omega(:)
         _REAL_,pointer  :: E0
-
         integer         :: Na,Nm
         integer         :: npot
-
         _REAL_,pointer  :: dtnact
         _REAL_,pointer  :: dtmdqt
 
@@ -59,11 +51,9 @@ implicit none
 
     subroutine v_assoc(xyz)
         type(xyz_t), intent(inout) :: xyz
-
         xyz%v(1)%p => xyz%x
         xyz%v(2)%p => xyz%y
         xyz%v(3)%p => xyz%z
-
         xyz%vold(1)%p => xyz%xold
         xyz%vold(2)%p => xyz%yold
         xyz%vold(3)%p => xyz%zold
@@ -75,7 +65,6 @@ implicit none
         allocate(v%x(sz))
         allocate(v%y(sz))
         allocate(v%z(sz))
-
         allocate(v%xold(sz))
         allocate(v%yold(sz))
         allocate(v%zold(sz))
@@ -95,9 +84,6 @@ implicit none
         type(naesmd_data_t), pointer :: nsp
         integer,intent(in)           :: Na, Nm
         _REAL_,              pointer :: pOmega(:), E0
- 
-        !include 'sizes'
-        !include 'common'
 
         nsp%r%x    => rx
         nsp%r%y    => ry
@@ -114,7 +100,6 @@ implicit none
         nsp%v%yold => vyold
         nsp%v%zold => vzold
         call v_assoc(nsp%v)
-
 
         nsp%a%x    => ax
         nsp%a%y    => ay
@@ -150,17 +135,6 @@ implicit none
 
         nsp%dtnact => dtnact
         nsp%dtmdqt => dtmdqt
-
     end subroutine
-
-
 end module
-
-!     subroutine init_xyz_and_derivs(s, r,v,a,Na)
-!         type(xyz_and_derivs_t), intent(inout) :: s
-!         type(xyz_t), target,    intent(in)    :: r,x,a
-!         s%r => r
-!         s%v => v
-!         s%a => a
-!     end subroutine
 ! 

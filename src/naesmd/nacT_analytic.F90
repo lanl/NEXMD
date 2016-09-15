@@ -92,19 +92,8 @@ module nacT_analytic_module
    _REAL_,target,intent(in)::xxx(sim%Na),yyy(sim%Na),zzz(sim%Na)
    integer k,j,i,ii,iii,iimdqt
    _REAL_ x 
-
-   !include 'md.par'
-   !include 'sizes'
-   !include 'common'
-
-   !_REAL_ :: dtnact, dtmdqt
-
    type(realp_t),pointer::vv(:),aa(:)
    type(realp_t)::r(3)
-
-
-   !dtnact = sim%naemsd%dtnact
-   !dtmdqt = sim%naemsd%dtmdqt
 
    vv=>sim%naesmd%v%vold
    aa=>sim%naesmd%a%vold
@@ -115,7 +104,6 @@ module nacT_analytic_module
    allocate(xs%Rp(3,sim%Na))
    allocate(xs%Rm(3,sim%Na))
    allocate(xs%R(3,sim%Na))
-
 
    do j=1,natom
       if(ensemble.eq.'energy'.or.ensemble.eq.'temper') then
@@ -163,52 +151,6 @@ module nacT_analytic_module
 
    return
    end function
-!
-!********************************************************************
-!
-!  KGB this version calculates nacR and multiplies it by nuclear velocities 
-!  hovewer the result is diffirent from 'direct' version. They should
-!  coincide when dt -> 0. For the direct version the +/- coordinates are
-!  calculated with accelerations and thermostat.
-! 
-!  JAKB This is not currently used or tested
-!********************************************************************
-!
-   subroutine nacT_v(sim,nact)
-   use qmmm_module,only:qmmm_nml
-
-   implicit none
-
-   type(simulation_t),pointer :: sim
-   _REAL_,intent(inout)::nact(:,:)
-   integer::i,j,k
-   _REAL_::s
-
-   call qmmm2coords_r(sim)
-   nact = 0.d0
-   write(6,*)'Called nacT_v'
-
-   do i=2,sim%excN
-      do j=1,i-1
-         call nacR_analytic(sim%coords,j,i) ! notice j corresponds to 
-                                                   ! ihop, i - icheck
-         do k=1,sim%Na
-            s=sim%naesmd%v%xold(k)*sim%dav%dij(k*3-2) &
-               +sim%naesmd%v%yold(k)*sim%dav%dij(k*3-1) &
-               +sim%naesmd%v%zold(k)*sim%dav%dij(k*3)
-
-               s=s*convl !FIXME unit conversion for dij?
-               nact(i,j) = nact(i,j) + s
-         end do
-
-         nact(j,i)=-nact(i,j)
-      end do
-   end do
-
-   k=1
-
-   return
-   end subroutine
 
 !********************************************************************
 !
@@ -233,7 +175,6 @@ module nacT_analytic_module
    ! NEW OR MODIFIED VARIABLES
    integer M4_M,M2_M,Np,Nh,Nb,Mx_M,Mx
    integer ideriv ! This will come from a module later
-   !_REAL_, intent(in) :: xyz_in(3*qmmm_struct%nquant_nlink)
 
    ! OLD VARIABLES (MAY BE DEPRECATED)
    _REAL_ fPi,fbar,f,t,d,d1,ff,ff0,ff1,ff11,ddot
@@ -324,9 +265,6 @@ module nacT_analytic_module
    _REAL_ s
    type(xstep_t),intent(inout)::xs
 
-   !xs = new_xstep_dtnact_r3(sim, sim%naesmd%r%vold)
-
-   !call qmmm2coords_r(sim)
    nact=0.d0
 
    call xstep_au2A(xs)
@@ -375,5 +313,50 @@ module nacT_analytic_module
    return
    end subroutine
 !
+!********************************************************************
+!
+!  KGB this version calculates nacR and multiplies it by nuclear velocities 
+!  hovewer the result is diffirent from 'direct' version. They should
+!  coincide when dt -> 0. For the direct version the +/- coordinates are
+!  calculated with accelerations and thermostat.
+! 
+!  JAKB This is not currently used or tested
+!********************************************************************
+!
+   subroutine nacT_v(sim,nact)
+   use qmmm_module,only:qmmm_nml
+
+   implicit none
+
+   type(simulation_t),pointer :: sim
+   _REAL_,intent(inout)::nact(:,:)
+   integer::i,j,k
+   _REAL_::s
+
+   call qmmm2coords_r(sim)
+   nact = 0.d0
+
+   do i=2,sim%excN
+      do j=1,i-1
+         call nacR_analytic(sim%coords,j,i) ! notice j corresponds to 
+                                                   ! ihop, i - icheck
+         do k=1,sim%Na
+            s=sim%naesmd%v%xold(k)*sim%dav%dij(k*3-2) &
+               +sim%naesmd%v%yold(k)*sim%dav%dij(k*3-1) &
+               +sim%naesmd%v%zold(k)*sim%dav%dij(k*3)
+
+               s=s*convl !FIXME unit conversion for dij?
+               nact(i,j) = nact(i,j) + s
+         end do
+
+         nact(j,i)=-nact(i,j)
+      end do
+   end do
+
+   k=1
+
+   return
+   end subroutine
+
 end module
 !
