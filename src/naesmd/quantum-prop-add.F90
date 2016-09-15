@@ -20,7 +20,7 @@ contains
    !include 'md.cmn'
    !include 'common'
    integer cross(sim%excN)
-   integer ascpr(260,260),z
+   integer ascpr(sim%excN,sim%excN),z
    _REAL_ scprold,xmax
    _REAL_ normcheck(sim%excN),normcheckhop 
 
@@ -170,7 +170,6 @@ contains
    implicit none
 
    type(simulation_t), pointer :: sim
-   integer iordenhoptest(sim%excN)
    integer k,j,i,ii,iii,iimdqt
    integer mdflag,Na,Nm
    double precision E0 
@@ -183,7 +182,6 @@ contains
    !include 'sizes'
    !include 'md.cmn'
    !include 'common'
-   iordenhoptest=iordenhop
 
    if(iimdqt.eq.1) then
       do i=1,sim%excN

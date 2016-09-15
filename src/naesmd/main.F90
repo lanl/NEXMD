@@ -161,6 +161,7 @@ program MD_Geometry
     !
     do i=1,sim%excN
         iorden(i)=i
+        iordenhop(i)=0
     end do
      
     ! Ek is always zero on start? FIXME? KGB
@@ -222,9 +223,8 @@ program MD_Geometry
         end if
 
         if(state.eq.'exct'.and.ibo.ne.1) then
-            !write(6,*)'Begin nonadiabatic couplings and crossings calculations'
+            write(6,*)'Begin nonadiabatic couplings and crossings calculations'
             call initialize(sim,yg)
-                write(6,*)'iordenhop',iordenhop
 
             !*******************************************************
             ! The analytic NAC for t.
@@ -260,9 +260,10 @@ program MD_Geometry
                 if(cross(i).eq.1) crosstot=1
             end do
             if(crosstot.eq.1) then
-                write(6,*)'there is crossing'
-                write(6,*)'cross(:)=',cross(1:sim%excN)
-                write(6,*)'iordenhop',iordenhop
+                if (lprint.gt.1) then
+                        write(6,*)'there is crossing'
+                        write(6,*)'cross(:)=',cross(1:sim%excN)
+                endif
                 cadiabhop=cadiabnew(qmmm_struct%state_of_interest,iorden(qmmm_struct%state_of_interest))
                 nquantumstep=nquantumreal*nstepcross
                 dtquantum=dtmdqt/dfloat(nquantumstep)
@@ -270,6 +271,7 @@ program MD_Geometry
                     lowvalue(j)=1000.0d0
                 end do
                 do iimdqt=1,nquantumstep
+                write(6,*)
                     tfemtoquantum=tfemto-dtmdqt*convtf &
                         +iimdqt*dtquantum*convtf
                     call vmdqtmiddlecalc(sim,iimdqt,Na,Nm)
@@ -308,7 +310,6 @@ program MD_Geometry
                 nquantumstep=nquantumreal
                 dtquantum=dtmdqt/dfloat(nquantumstep)
             end if
-                write(6,*)'iordenhop',iordenhop
 
             !
             !  remove the couplings if cross=2
@@ -348,7 +349,7 @@ program MD_Geometry
                     end if
                 end if
             end do
-            !write(6,*)'End nonadiabatic couplings calculation'
+            write(6,*)'End nonadiabatic couplings calculation'
             !--------------------------------------------------------------------
             ! Loop for quantum propagation steps
             ! that implies CEO energy calculations
@@ -356,7 +357,7 @@ program MD_Geometry
             write(6,*)"End classical propagation step #",imdqt
          
             do iimdqt=1,nquantumstep
-                !write(6,*)'Begin quantum step ',tfemto
+                write(6,*)'Begin quantum step ',tfemto
                 tfemtoquantum=tfemto-dtmdqt*convtf &
                     +iimdqt*dtquantum*convtf
                 ! Definition of initial and final time for the quantum propagator
@@ -417,7 +418,7 @@ program MD_Geometry
                             +vnqcorrhop(k,j)*dtquantum
                     end do
                 end do
-            !write(6,*)'End quantum step ',tfemto
+            write(6,*)'End quantum step ',tfemto
             end do
 
             !write(6,*)'Now doing some other things'
