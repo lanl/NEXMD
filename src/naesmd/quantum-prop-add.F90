@@ -6,18 +6,15 @@ use naesmd_constants
 use communism
 contains
 
-   subroutine checkcrossing(sim,Na,Nm,cross,lprint)
+   subroutine checkcrossing(sim,cross,lprint)
    use naesmd_module
    use md_module
    implicit none
 
    type(simulation_t),pointer::sim
-   integer k,j,i,ii,iii,iimdqt,lprint
-   integer mdflag,Na,Nm,imax
+   integer k,j,i,lprint
    integer cross(sim%excN)
    integer ascpr(sim%excN,sim%excN),z
-   _REAL_ scprold,xmax
-   _REAL_ normcheck(sim%excN),normcheckhop 
 
 !--------------------------------------------------------------------
 !
@@ -102,22 +99,17 @@ contains
 
 !***********************************
 
-687   format(F18.10,1X,I4,1X,I4,1X,I4,1000(1x,f18.10))
-688   FORMAT(f18.10,10000(1X,I4))
-889   format(1000(1x,f18.10))
-886   FORMAT(10000(1X,F7.4))
 
    return
    end subroutine
 
-   subroutine checkcrossingmiddle(sim,Na,Nm,cross)
+   subroutine checkcrossingmiddle(sim,cross)
    use naesmd_module
    use md_module
    implicit none
 
    type(simulation_t),pointer::sim
-   integer k,j,i,ii,iii,iimdqt
-   integer mdflag,Na,Nm
+   integer k,j,i
    integer cross(sim%excN)
 
 !***************************************************
@@ -140,30 +132,18 @@ contains
          end if
       end if
    end do
-!***********************************
-
-687   format(F18.10,1X,I4,1X,I4,1X,I4,1000(1x,f18.10))
-688   FORMAT(f18.10,10000(1X,I4))
-889   format(1000(1x,f18.10))
-886   FORMAT(10000(1X,F7.4))
-686   FORMAT(10000(F18.10,1X,F7.4))
-
    return
    end subroutine 
 
-   subroutine vmdqtmiddlecalc(sim, iimdqt,Na,Nm)
+   subroutine vmdqtmiddlecalc(sim, iimdqt,Na)
    use naesmd_module
    use md_module
    implicit none
 
    type(simulation_t), pointer :: sim
-   integer k,j,i,ii,iii,iimdqt
-   integer mdflag,Na,Nm
-   double precision E0 
-   real*8 Omega(sim%excN),fosc(sim%excN)
-   real*8 xx(Na),yy(Na),zz(Na)
-   real*8 xxp(Na),yyp(Na),zzp(Na)
-   real*8 xxm(Na),yym(Na),zzm(Na)
+   integer i,j,iimdqt
+   integer Na
+   _REAL_ xx(Na),yy(Na),zz(Na)
 
    if(iimdqt.eq.1) then
       do i=1,sim%excN
@@ -256,25 +236,19 @@ contains
       end if
    end do
 
-889   FORMAT(10000(1X,F18.10))
-687   format(1000(1x,f18.10))
 
    return
    end subroutine
 
-   subroutine vmdqtlowvalue(sim,win,iimdqt,Na,Nm)
+   subroutine vmdqtlowvalue(sim,win,iimdqt,Na)
    use naesmd_module
    use md_module
    implicit none
 
    type(simulation_t), pointer :: sim
-   integer k,j,i,ii,iii,iimdqt,win
-   integer mdflag,Na,Nm
-   double precision E0 
-   real*8 Omega(sim%excN),fosc(sim%excN)
-   real*8 xx(Na),yy(Na),zz(Na)
-   real*8 xxp(Na),yyp(Na),zzp(Na)
-   real*8 xxm(Na),yym(Na),zzm(Na)
+   integer j,win,iimdqt
+   integer Na
+   _REAL_ xx(Na),yy(Na),zz(Na)
 
    if(ensemble.eq.'energy'.or.ensemble.eq.'temper') then
       do j=1,natom

@@ -11,22 +11,17 @@ use naesmd_space_module
 implicit none
 contains
    subroutine evalhop(sim, lprint,ido,neq,tini,tend,toldivprk, &
-      param,Na,Nm,atm2,mdflag, &
-      d,E0,Omega,fosc,yg,cross,idocontrol,ibo)
+      param,Na,yg,cross,idocontrol)
    use naesmd_module
    use md_module
    implicit none
    type(simulation_t), pointer :: sim
-   integer Na,Nm,lprint,ibo
-   integer mdflag
+   integer Na,lprint
    integer k,i,j,icheck,itest,ini,ihopavant
-   integer atm2(Na)
    integer ido,neq,idocontrol
    _REAL_ tini,tend,toldivprk,param(50)
    _REAL_ g(sim%excN),gacum(sim%excN)
    _REAL_ iseedhop,eavant, eapres 
-   _REAL_ E0,d
-   _REAL_ Omega(sim%excN),fosc(sim%excN)
    _REAL_ xx(Na),yy(Na),zz(Na)
    _REAL_ yg(sim%excN),ytemp,ytemp2
    _REAL_ t_start,t_finish 
@@ -88,8 +83,7 @@ contains
          if(ihopprev.ne.icheck) conthop2=0
       end if
       if(conthop2.eq.0) then
-         call veladjustment(sim, lprint,Na,Nm,atm2,mdflag, &
-            icheck,ini,d,E0,Omega,fosc)
+         call veladjustment(sim, lprint,Na,icheck,ini)
       if(lprint.ge.2) then
          write(33,*) tfemto,icheck,ini
          call flush(33)
@@ -207,30 +201,22 @@ contains
 !***********************************
 ! end analyze the hopping 
 !**********************************
-889   FORMAT(I3,10000(1X,F18.10))
-888   FORMAT(10000(1X,F18.10))
 887   FORMAT(F18.10,1X,I2,1X,I3,1X,I3,10000(1X,F18.10))
    return
    end subroutine
 ! At the point of hop, in general, the value of the potential energy in the new
 ! surface is different to the one in the older.
 ! In order to conserve the energy, we adjust the velocities
-   subroutine veladjustment(sim, lprint,Na,Nm,atm2,mdflag,icheck,ini,d, &
-      E0,Omega,fosc) 
+   subroutine veladjustment(sim, lprint,Na,icheck,ini) 
    use naesmd_module
    use md_module
    implicit none
    type(simulation_t),pointer::sim
-   integer Na,Nm,lprint
-   integer mdflag
-   integer atm2(Na)
+   integer Na,lprint
    integer i,j,icheck,ini,ihoptemp 
-   double precision dij(Na*3),vicheck
-   double precision alpha,racine,ctehop1,dctehop1 
-   double precision vtemp(sim%excN),vgstemp
-   real*8 xx(Na),yy(Na),zz(Na)
-   real*8 E0,d
-   real*8 Omega(sim%excN),fosc(sim%excN)
+   _REAL_ dij(Na*3),vicheck
+   _REAL_ alpha,racine,ctehop1,dctehop1 
+   _REAL_ vtemp(sim%excN),vgstemp
 !********************************************************
 ! adjustment of velocities
 !********************************************************
@@ -278,8 +264,7 @@ contains
    ctehop1=0.0d0
    j=1
    do i=1,natom
-      ctehop1=ctehop1+ &
-         +vx(i)*dij(j)+vy(i)*dij(j+1)+vz(i)*dij(j+2)
+      ctehop1=ctehop1+vx(i)*dij(j)+vy(i)*dij(j+1)+vz(i)*dij(j+2)
       j=j+3
    end do
    ctehop1=ctehop1+dsqrt(racine)
@@ -305,7 +290,6 @@ contains
 !********************************************************
 ! end of adjustment of velocities
 !********************************************************
-889   format(10000(1x,f18.10))
    return
    end subroutine
 end module

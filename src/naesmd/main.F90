@@ -8,8 +8,7 @@
 
 program MD_Geometry
 
-    use qmmm_module,only:qmmm_nml,qmmm_struct,qmmm_mpi,qm2_struct, &
-        qm_gb,qmmm_vsolv,qm2_params,deallocate_qmmm
+    use qmmm_module,only:qmmm_struct,deallocate_qmmm
     use qm2_davidson_module
     use naesmd_constants
     use fewest_switches
@@ -39,20 +38,17 @@ program MD_Geometry
     !--------------------------------------------------------------------
 
     integer ido,neq,idocontrol,lprint
-    integer icheck
-    integer Na,Nm,N1,N2,N3,ic0,natoms
-    integer MM,i,j,k,n,m,im,im1,ia
-    integer ii,jjj,l,ibo
+    integer Na,Nm,N1,N2,N3,natoms
+    integer i,j,k
+    integer ii,jjj,ibo
     integer imdqt,iimdqt
-    real(8) h,d,t,Ek,Etot,f
-    real(8),allocatable::fosc(:)!Mx_M)
-    real(8),target,allocatable::Omega(:)!Mx_M)
-    real(8),target::E0
-    real(8),pointer::pOmega(:),pE0
-    real(8) xi,nu,c0,c1,c2,kT
+    _REAL_ h,d,t,Ek,Etot
+    _REAL_,allocatable::fosc(:)!Mx_M)
+    _REAL_,target,allocatable::Omega(:)!Mx_M)
+    _REAL_,target::E0
+    _REAL_,pointer::pOmega(:),pE0
     integer ither,win
-    real(8) tini,tend,toldivprk,norm,normdiff,param(50)
-    integer jj,jx
+    _REAL_ tini,tend,toldivprk,param(50)
     integer slen
     integer ifind
     logical moldyn_found
@@ -61,18 +57,17 @@ program MD_Geometry
     ! variables of the moldyn namelist
     integer bo_dynamics_flag,exc_state_init,n_exc_states_propagate
     integer out_count_init
-    real(8) time_init,rk_tolerance,time_step
+    _REAL_ time_init,rk_tolerance,time_step
     integer n_class_steps,n_quant_steps,quant_coeffs_reinit
-    real(8) num_deriv_step,therm_temperature
+    _REAL_ num_deriv_step,therm_temperature
     integer therm_type
-    real(8) berendsen_relax_const
+    _REAL_ berendsen_relax_const
     integer heating,heating_steps_per_degree,out_data_steps
     integer out_coords_steps
-    real(8) therm_friction
+    _REAL_ therm_friction
     integer rnd_seed,out_data_cube,verbosity,moldyn_deriv_flag
-    real(8) quant_step_reduction_factor
-    real(8) decoher_e0,decoher_c
-    real(8) qmdipole(3);
+    _REAL_ quant_step_reduction_factor
+    _REAL_ decoher_e0,decoher_c
     integer decoher_type
     namelist /moldyn/ natoms,bo_dynamics_flag,exc_state_init, &
         n_exc_states_propagate,out_count_init,time_init, &
@@ -84,23 +79,16 @@ program MD_Geometry
         therm_friction,rnd_seed,out_data_cube,verbosity,moldyn_deriv_flag, &
         quant_step_reduction_factor,decoher_e0,decoher_c,decoher_type
     integer cohertype
-    real(8),allocatable :: yg(:)
+    _REAL_,allocatable :: yg(:)
     integer,allocatable :: cross(:)
     integer crosstot
-    real(8)ctest,ctemp
-    real(8) tempa,tempb
-    real(8) ntotcoher
-    real(8) constcoherE0,constcoherC,icoher
-    real(8) mu(3);
+    _REAL_ ntotcoher
+    _REAL_ constcoherE0,constcoherC
     character*(150) txt
-    character*80 line
-    character*4 ext,ext1
-    character*3 symm
     external diff
-    integer mdflag     ! 0,1,2 - standard molecular dynamics
     integer itime1,itime11,itime2,itime3,get_time
-    _REAL_ time11,time12,time13,time23
-    character*30 datetime, keywr*6, machname*36
+    _REAL_ time11,time12
+    character*30 datetime, machname*36
     external fcn ! function call for interpolation
     _REAL_ t_start,t_finish
     integer inputfdes
@@ -213,16 +201,16 @@ program MD_Geometry
             ! calculation of the energies(=vmdqtold) and nacT(=cadiabold) values at the beginning
             ! of the classical step
             !*******************************************************
-            call cadiaboldcalc(sim,imdqt,Na,Nm)
+            call cadiaboldcalc(sim,imdqt)
             !**************************************************************
             ! calculation of the energies(=vmdqtnew) and nacT(=cadiabnew) values at the end
             ! of the classical step
             !*******************************************************
-            call cadiabnewcalc(sim,Na,Nm)
+            call cadiabnewcalc(sim)
             !**************************************************************
             ! check crossing, if crossing takes place, nquantumstep=nstepcross*nquantumreal
             !***************************************************************
-            call checkcrossing(sim,Na,Nm,cross,lprint)
+            call checkcrossing(sim,cross,lprint)
             nquantumstep=nquantumreal
             dtquantum=dtmdqt/dfloat(nquantumstep)
             !*******************************************
@@ -246,8 +234,8 @@ program MD_Geometry
                 do iimdqt=1,nquantumstep
                     tfemtoquantum=tfemto-dtmdqt*convtf &
                         +iimdqt*dtquantum*convtf
-                    call vmdqtmiddlecalc(sim,iimdqt,Na,Nm)
-                    call checkcrossingmiddle(sim,Na,Nm,cross)
+                    call vmdqtmiddlecalc(sim,iimdqt,Na)
+                    call checkcrossingmiddle(sim,cross)
                     if(lprint.ge.2) then
                         do j=1,sim%excN
                             if(cross(j).eq.1) then
@@ -265,8 +253,8 @@ program MD_Geometry
                         if(cross(j).eq.1) then
                             if(j.lt.iordenhop(j).or.j.eq.ihop) then
                                 if(j.ne.iordenhop(j)) then
-                                    call vmdqtlowvalue(sim,win,lowvaluestep(j),Na,Nm)
-                                    call checkcrossingmiddle(sim,Na,Nm,cross)
+                                    call vmdqtlowvalue(sim,win,lowvaluestep(j),Na)
+                                    call checkcrossingmiddle(sim,cross)
                                     if(lprint.ge.2) then
                                         write(101,888) tfemto,tfemto-dtmdqt*convtf &
                                             +lowvaluestep(j)*dtquantum*convtf, &
@@ -348,7 +336,7 @@ program MD_Geometry
                 ! and calculation of the energies(=vmdqtmiddle) and nacT(=cadiabmiddle) values
                 ! at intermediate times of the classical step
                 !--------------------------------------------------------------------
-                call cadiabmiddlecalc(sim,iimdqt,Na,Nm,cross)
+                call cadiabmiddlecalc(sim,iimdqt,Na,cross)
 
                 if(lprint.ge.3) then
                     if(iimdqt.ne.nquantumstep) then
@@ -402,8 +390,7 @@ program MD_Geometry
             ! analyze the hopping
             !--------------------------------------------------------------------
             call evalhop(sim,lprint,ido,neq,tini,tend,toldivprk, &
-                param,Na,Nm,atoms,mdflag,d,E0,Omega,fosc,yg,cross, &
-                idocontrol,ibo)
+                param,Na,yg,cross,idocontrol)
             !--------------------------------------------------------------------
             if(icontw.eq.nstepw) then
                 if(state.eq.'exct') then
@@ -423,8 +410,7 @@ program MD_Geometry
 
             if(constcoherE0.ne.0.d0.and.constcoherC.ne.0.d0) then
                 if(conthop.ne.1.and.conthop2.ne.1) then
-                    call coherence(sim,Na,Nm,mdflag,d,E0,Omega,fosc, &
-                        ido,neq,tini,tend,toldivprk, &
+                    call coherence(sim,Na,ido,neq,tini,tend,toldivprk, &
                         param,yg,constcoherE0,constcoherC,cohertype,idocontrol)
                 end if
             end if
@@ -444,7 +430,7 @@ program MD_Geometry
             icontw=icontw+1
         else
             icontw=1
-            call writeoutput(sim,imdqt,ibo,yg,lprint,cross)
+            call writeoutput(sim,ibo,yg,lprint,cross)
         end if
     end do
 
@@ -597,7 +583,7 @@ contains
         write (6,*)
         write (6,*) '|^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|'
         write (6,8) '| MD execution started at  ',datetime,' |'
-        write (6,7) '| Computer: ',		     		   machname,'|'
+        write (6,7) '| Computer: ',   machname,'|'
         write (6,*) '|________________________________________________|'
         write (6,*)
 
@@ -1055,7 +1041,7 @@ contains
         pOmega=>Omega
         pE0=>E0
 
-        call init_naesmd_space_globs(sim%naesmd, Na, Nm, pOmega, pE0)
+        call init_naesmd_space_globs(sim%naesmd, pOmega, pE0)
 
         return
 

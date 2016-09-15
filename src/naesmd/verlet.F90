@@ -23,9 +23,8 @@ module verlet_module
 
    type(simulation_t),pointer::sim
 
-   integer Na,Nm,temp
-   integer k,i,j
-   _REAL_ E0,d
+   integer Na,Nm
+   integer i
    _REAL_ dt_2,dt2_2
    _REAL_ t_start,t_finish 
 
@@ -131,7 +130,6 @@ module verlet_module
       kin=kin+massmdqt(i)*(vx(i)**2+vy(i)**2+vz(i)**2)/2
    end do
 
-889   format(10000(1x,f18.10))
 
    return
    end subroutine
@@ -146,10 +144,9 @@ module verlet_module
 
    type(simulation_t),pointer :: sim
 
-   integer Na,Nm,temp
-   integer k,i,j
-   real(8) E0,d
-   real(8) dt_2,dt2_2 
+   integer Na,Nm
+   integer i
+   _REAL_ dt_2,dt2_2 
 
    Na=sim%naesmd%Na
    Nm=sim%naesmd%Nm
@@ -182,9 +179,6 @@ module verlet_module
    ayold=ay
    azold=az
 
-   !write(130,889) (ry(i),rz(i),i=1,natom)
-   !write(132,889) (vx(i),vy(i),vz(i),i=1,natom)
-
    do i=1,natom
       if(ensemble.eq.'langev') then
          rx(i)=rx(i)+vx(i)*vfric(i)+ax(i)*afric(i)  &
@@ -212,12 +206,9 @@ module verlet_module
       end if
    end do
 
-   !write(131,889) (ry(i),rz(i),i=1,natom)
    call flush(130)
    call flush(131)
    call flush(132)
-
-889   format(10000(1x,f18.10))
 
    return
    end subroutine
@@ -231,9 +222,8 @@ module verlet_module
 
    type(simulation_t),pointer :: sim
 
-   integer Na,Nm,temp
-   integer k,i,j
-   _REAL_ E0,d
+   integer Na,Nm
+   integer i
    _REAL_ dt_2,dt2_2
    _REAL_ t_start,t_finish 
 
@@ -283,7 +273,6 @@ module verlet_module
    !remove translation/rotation
    call rescaleveloc(rx,ry,rz,vx,vy,vz,massmdqt,natom)
 
-   !write(133,889) (vx(i),vy(i),vz(i),i=1,natom)
    call flush(133)
 !
 !     kinetic energy calculation
@@ -294,7 +283,6 @@ module verlet_module
       kin=kin+massmdqt(i)*(vx(i)**2+vy(i)**2+vz(i)**2)/2
    end do
 
-889   format(10000(1x,f18.10))
 
    return
    end subroutine

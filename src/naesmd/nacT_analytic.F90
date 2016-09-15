@@ -90,8 +90,7 @@ module nacT_analytic_module
    type(simulation_t),pointer::sim
    type(xstep_t)::xs
    _REAL_,target,intent(in)::xxx(sim%Na),yyy(sim%Na),zzz(sim%Na)
-   integer k,j,i,ii,iii,iimdqt
-   _REAL_ x 
+   integer k,j
    type(realp_t),pointer::vv(:),aa(:)
    type(realp_t)::r(3)
 
@@ -174,11 +173,10 @@ module nacT_analytic_module
 
    ! NEW OR MODIFIED VARIABLES
    integer M4_M,M2_M,Np,Nh,Nb,Mx_M,Mx
-   integer ideriv ! This will come from a module later
 
    ! OLD VARIABLES (MAY BE DEPRECATED)
-   _REAL_ fPi,fbar,f,t,d,d1,ff,ff0,ff1,ff11,ddot
-   integer i,ii,j,k,im,one,istate,mdflag,ip,ih,Nm,N3
+   _REAL_ fPi,fbar,ff0,ff1,ff11
+   integer one,N3
 
    parameter(fPi=3.1415926535898d0)
    parameter(fbar=0.05d0)  ! maximum dE in numerical derivative, eV.
@@ -262,7 +260,6 @@ module nacT_analytic_module
    _REAL_,intent(inout)::nact(:,:)
 
    integer i,j
-   _REAL_ s
    type(xstep_t),intent(inout)::xs
 
    nact=0.d0
@@ -282,81 +279,19 @@ module nacT_analytic_module
    
    return
    end subroutine nacT_direct
-!
-!********************************************************************
-!
-!********************************************************************
-!
-   subroutine nacT_analytic(sim,nact,xstep,v_version)
-   implicit none
 
-   type(simulation_t),pointer::sim
-   type(xstep_t),intent(inout)::xstep
-   _REAL_,intent(inout)::nact(:,:)
-
-   integer,optional::v_version
-   _REAL_ t_start,t_finish   
-
-   call cpu_time(t_start)
-   if(present(v_version)) then
-      if(v_version.ne.0) then
-         call nacT_v(sim,nact)
-         return
-      end if
-   end if
-
-   call nacT_direct(sim,nact,xstep)
-
-   call cpu_time(t_finish)
-   sim%time_nact_took=sim%time_nact_took+t_finish-t_start 
-
-   return
-   end subroutine
-!
-!********************************************************************
-!
-!  KGB this version calculates nacR and multiplies it by nuclear velocities 
-!  hovewer the result is diffirent from 'direct' version. They should
-!  coincide when dt -> 0. For the direct version the +/- coordinates are
-!  calculated with accelerations and thermostat.
-! 
-!  JAKB This is not currently used or tested
-!********************************************************************
-!
-   subroutine nacT_v(sim,nact)
-   use qmmm_module,only:qmmm_nml
-
-   implicit none
-
-   type(simulation_t),pointer :: sim
-   _REAL_,intent(inout)::nact(:,:)
-   integer::i,j,k
-   _REAL_::s
-
-   call qmmm2coords_r(sim)
-   nact = 0.d0
-
-   do i=2,sim%excN
-      do j=1,i-1
-         call nacR_analytic(sim%coords,j,i) ! notice j corresponds to 
-                                                   ! ihop, i - icheck
-         do k=1,sim%Na
-            s=sim%naesmd%v%xold(k)*sim%dav%dij(k*3-2) &
-               +sim%naesmd%v%yold(k)*sim%dav%dij(k*3-1) &
-               +sim%naesmd%v%zold(k)*sim%dav%dij(k*3)
-
-               s=s*convl !FIXME unit conversion for dij?
-               nact(i,j) = nact(i,j) + s
-         end do
-
-         nact(j,i)=-nact(i,j)
-      end do
-   end do
-
-   k=1
-
-   return
+  ! Kind of a useless wrapper for nact_direct isn't it?
+   subroutine nacT_analytic(sim,nact,xstep)
+        implicit none
+        type(simulation_t),pointer::sim
+        type(xstep_t),intent(inout)::xstep
+        _REAL_,intent(inout)::nact(:,:)
+        _REAL_ t_start,t_finish
+        call cpu_time(t_start)
+        call nacT_direct(sim,nact,xstep)
+        call cpu_time(t_finish)
+        sim%time_nact_took=sim%time_nact_took+t_finish-t_start
+        return
    end subroutine
 
-end module
-!
+end module!

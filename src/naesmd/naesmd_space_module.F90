@@ -78,11 +78,10 @@ implicit none
     end subroutine
 
 
-    subroutine init_naesmd_space_globs(nsp,Na,Nm,pOmega, E0)
+    subroutine init_naesmd_space_globs(nsp,pOmega, E0)
         use naesmd_module
         use md_module
         type(naesmd_data_t), pointer :: nsp
-        integer,intent(in)           :: Na, Nm
         _REAL_,              pointer :: pOmega(:), E0
 
         nsp%r%x    => rx

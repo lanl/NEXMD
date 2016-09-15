@@ -6,19 +6,14 @@ module cadiab_module
     use communism
     use nacT_analytic_module
 contains
-
-
-    subroutine cadiaboldcalc(sim,imdqt,Na,Nm)
+    subroutine cadiaboldcalc(sim,imdqt)
         use naesmd_module
         use md_module
         use qm2_davidson_module
         implicit none
  
         type(simulation_t), pointer :: sim
-
-        integer k,j,i,ii,iii,imdqt
-        integer mdflag,Na,Nm
-        _REAL_ E0
+        integer k,j,i,imdqt
         type(xstep_t)::xstep
       
         if(imdqt.eq.1) then
@@ -64,19 +59,16 @@ contains
     !
     !********************************************************************
     !
-    subroutine cadiabmiddlecalc(sim,iimdqt,Na,Nm,cross)
+    subroutine cadiabmiddlecalc(sim,iimdqt,Na,cross)
         use qm2_davidson_module
         use naesmd_module
         use md_module
         implicit none
         type(simulation_t),pointer::sim
-        integer k,j,i,ii,iii,iimdqt
-        integer mdflag,Na,Nm
-        real(8) E0
-        real*8 Omega(qm2ds%Mx),fosc(qm2ds%Mx)
-        real*8 xx(Na),yy(Na),zz(Na)
-        real*8 xxp(Na),yyp(Na),zzp(Na)
-        real*8 xxm(Na),yym(Na),zzm(Na)
+        integer j,i,iimdqt,Na
+        _REAL_ xx(Na),yy(Na),zz(Na)
+        _REAL_ xxp(Na),yyp(Na),zzp(Na)
+        _REAL_ xxm(Na),yym(Na),zzm(Na)
         integer cross(sim%excN)
         type(xstep_t)::xstep
 
@@ -232,7 +224,6 @@ contains
             end do
         end if
 
-889     FORMAT(10000(1X,F18.10))
 
         return
     end subroutine
@@ -240,17 +231,14 @@ contains
     !********************************************************************
     !
 
-    subroutine cadiabnewcalc(sim,Na,Nm)
+    subroutine cadiabnewcalc(sim)
         use naesmd_module
         use md_module
         use qm2_davidson_module
         implicit none
 
         type(simulation_t), pointer :: sim
-        integer k,j,i,ii,iii,iimdqt
-        integer mdflag,Na,Nm
-        double precision E0
-
+        integer k,j,i
         type(xstep_t) :: xstep
         call do_sqm_davidson_update(sim,cmdqt=cmdqtnew, &
             vmdqt=vmdqtnew,vgs=vgs)
@@ -274,8 +262,6 @@ contains
                 cadiabnew(i,j)=cadiab(i,j)
             end do
         end do
-
-889     format(1000(1x,f18.10))
 
         return
     end subroutine

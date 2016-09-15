@@ -1,7 +1,9 @@
+#include "dprec.fh"
+#include "assert.fh"
+
 ! Subroutine to loose coherence
 
-subroutine coherence(sim,Na,Nm,mdflag,d,E0,Omega,fosc, &
-    ido,neq,tini,tend,toldivprk, &
+subroutine coherence(sim,Na,ido,neq,tini,tend,toldivprk, &
     param,yg,constcoherE0,constcoherC,cohertype,idocontrol)
     use qm2_davidson_module
     use communism
@@ -11,23 +13,20 @@ subroutine coherence(sim,Na,Nm,mdflag,d,E0,Omega,fosc, &
 
     type(simulation_t),pointer::sim
     integer cohertype,idocontrol
-    integer mdflag,Na,Nm,kk
-    double precision E0,d
-    real*8 Omega(sim%excN),fosc(sim%excN)
-    real*8 xx(Na),yy(Na),zz(Na)
-    integer k,i,j,icheck,itest,ini,ihopavant
+    integer Na,kk
+    _REAL_ xx(Na),yy(Na),zz(Na)
+    integer k,i,j
     integer ido,neq
-    double precision tini,tend,toldivprk,param(50)
-    double precision iseedhop,eavant, eapres
-    double precision constcoherE0,constcoherC
-    double precision yg(sim%excN),ytemp,ytemp2
-    double precision taocoher(sim%excN)
-    double precision norm,norm1,norm2,normdij
-    double precision vect1(Na*3) &
+    _REAL_ tini,tend,toldivprk,param(50)
+    _REAL_ constcoherE0,constcoherC
+    _REAL_ yg(sim%excN)
+    _REAL_ taocoher(sim%excN)
+    _REAL_ norm,norm1,norm2,normdij
+    _REAL_ vect1(Na*3) &
         ,vect2(Na*3) &
         ,vecs(Na*3)
-    double precision kinec(sim%excN)
-    double precision dij(Na*3)
+    _REAL_ kinec(sim%excN)
+    _REAL_ dij(Na*3)
 
     external fcn
 
@@ -84,8 +83,6 @@ subroutine coherence(sim,Na,Nm,mdflag,d,E0,Omega,fosc, &
                     do k=1,natom*3
                         normdij=normdij+dij(k)**2
                     end do
-                    !                    write(107,*) tfemto,j,normdij
-                    !                    call flush(107)
                     if(normdij.ne.0.0d0) then
                         normdij=dsqrt(normdij)
                         ! inner product of normalized nacR and P
@@ -99,8 +96,6 @@ subroutine coherence(sim,Na,Nm,mdflag,d,E0,Omega,fosc, &
 
                             kk=kk+3
                         end do
-                        !                    write(108,*) tfemto,j,norm
-                        !                    call flush(108)
                         ! vector projection of P on nacR
                         do k=1,natom*3
                             dij(k)=dij(k)*norm
@@ -130,8 +125,6 @@ subroutine coherence(sim,Na,Nm,mdflag,d,E0,Omega,fosc, &
                             norm2=norm2+vect2(kk)**2
                         end do
 
-                        !                    write(109,*) tfemto,j,norm1,norm2
-                        !                    call flush(109)
                         ! final decoherence direction versor s
                         if(norm1.gt.norm2) then
                             do kk=1,natom*3
@@ -151,8 +144,6 @@ subroutine coherence(sim,Na,Nm,mdflag,d,E0,Omega,fosc, &
                                 +massmdqt(k)*vz(k)*vecs(kk+2)
                             kk=kk+3
                         end do
-                        !                    write(110,*) tfemto,j,norm
-                        !                    call flush(110)
                         ! vector projection of P on s
                         do k=1,natom*3
                             vecs(k)=vecs(k)*norm
@@ -176,9 +167,6 @@ subroutine coherence(sim,Na,Nm,mdflag,d,E0,Omega,fosc, &
                         end do
                         kinec(j)=kin*feVmdqt
                     end if
-
-                    !                    write(110,*) tfemto,j,kin
-                    !                    call flush(110)
 
                     ! caclulate decoherence time ofr state j
 
@@ -214,10 +202,7 @@ subroutine coherence(sim,Na,Nm,mdflag,d,E0,Omega,fosc, &
     ! end modified by Seba
 
 
-889 FORMAT(I3,10000(1X,F18.10))
 888 FORMAT(10000(1X,F18.10))
-887 FORMAT(F18.10,1X,I2,1X,I3,1X,I3,10000(1X,F18.10))
-
     return
 end
 !

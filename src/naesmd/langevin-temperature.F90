@@ -12,12 +12,9 @@
 !     "sdterm" gets frictional and random force terms needed to
 !     update positions and velocities via stochastic dynamics
 !
-!
-!      subroutine sdterm (pfric,vfric,afric,prand,vrand)
 module langevin_temperature
    use naesmd_constants
    use random
-!implicit none
 
 contains
 
@@ -27,14 +24,14 @@ contains
         implicit none
 
         integer i,j
-        double precision  xgamma(natom) 
-        double precision  gdt,egdt 
-        double precision  pterm,vterm 
-        double precision  rho,rhoc 
-        double precision  gdt2,gdt3,gdt4,gdt5,gdt6,gdt7,gdt8,gdt9 
-        double precision  ktm 
-        double precision  psig,vsig 
-        double precision  pnorm,vnorm 
+        _REAL_  xgamma(natom) 
+        _REAL_  gdt,egdt 
+        _REAL_  pterm,vterm 
+        _REAL_  rho,rhoc 
+        _REAL_  gdt2,gdt3,gdt4,gdt5,gdt6,gdt7,gdt8,gdt9 
+        _REAL_  ktm 
+        _REAL_  psig,vsig 
+        _REAL_  pnorm,vnorm 
 !
 !     set the atomic friction coefficients to the global value
 !
@@ -133,15 +130,14 @@ contains
 !     "normal" generates a random number from a normal Gaussian
 !     distribution with a mean of zero and a variance of one
 !
-!
       function normal ()
         use naesmd_module
         use md_module
 
       implicit none
 
-      double precision v1,v2,rsq,iseedhop
-      double precision factor,store,normal
+      _REAL_ v1,v2,rsq
+      _REAL_ factor,store,normal
       logical compute
       save compute,store
       data compute  / .true. /
@@ -151,14 +147,8 @@ contains
 !
       if (compute) then
    10    continue
-!         call random(iseedmdqt,iseedhop)
-!         v1 = 2.0d0 * iseedhop - 1.0d0
-!         call random(iseedmdqt,iseedhop)
-!         v2 = 2.0d0 * iseedhop - 1.0d0
          v1 = 2.0d0 * rranf1(iseedmdqt) - 1.0d0
          v2 = 2.0d0 * rranf1(iseedmdqt) - 1.0d0
-!         write(66,*) rranf1(iseedmdqt)
-!         call flush(66)
          rsq = v1**2 + v2**2
          if (rsq .ge. 1.0d0)  goto 10
          factor = sqrt(-2.0d0*log(rsq)/rsq)
@@ -184,7 +174,7 @@ contains
         IMPLICIT NONE
 
         integer i,j
-        double precision scltmp
+        _REAL_ scltmp
 
        call temper
 
@@ -270,8 +260,6 @@ contains
       function rranf1(iseed)
       implicit real*8 (a-h,o-z)
       real*8 :: rranf1
-      real*8 rrang
-      logical flag
 
 ! rranf() generates uniform in [0..1)
 ! NB: Seed = 0 is forbidden.

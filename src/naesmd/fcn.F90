@@ -6,7 +6,7 @@
 !   
    subroutine fcn(n,x,yg,yprime)
    implicit none
-   integer n,k,j
+   integer n
    _REAL_ x,yg(n),yprime(n)
  
    call interpolate(n,x)
@@ -40,8 +40,6 @@
       vmdqt(k)=vmdqtmiddleold(k)+bcoeffvmdqt(k)*(x-tini0) 
    end do
         
-889   FORMAT(10000(1X,F18.10))
-
    return
    end subroutine
 !
@@ -59,16 +57,13 @@
    use md_module
    implicit none
    integer n,k,j
-   _REAL_ x,yg(n),yprime(n)
-   _REAL_ norm 
+   _REAL_ yg(n),yprime(n)
 
    do k=1,n/2
       yprime(k)=0.d0
       yprime(k+n/2)=-1.0d0*vmdqt(k)
 
       do j=1,n/2
-!                vnqcorrhop(k,j) = -2.0d0*dsqrt(yg(j)*yg(k))*
-!     $dcos(yg(j+n)-yg(k+n))*cadiab(k,j)
          vnqcorrhop(k,j)=-1.0d0*yg(j)* &
             dcos(yg(j+n/2)-yg(k+n/2))*cadiab(k,j)
 
@@ -80,23 +75,10 @@
          yprime(k+n/2)=0.0d0
       else
          do j=1,n/2
-!                vqqcorr(k) = vqqcorr(k) - dsqrt(yg(j)/yg(k))*
-!     $dsin(yg(j+n)-yg(k+n))*cadiab(k,j) 
             yprime(k+n/2)=yprime(k+n/2)-yg(j)/yg(k)* &
                dsin(yg(j+n/2)-yg(k+n/2))*cadiab(k,j) 
          end do
       end if
    end do
-
-!        norm=0.0d0
-!        do k = 1,n
-!            norm=norm+yg(k)*yprime(k)
-!        enddo
-!        write(10,*) norm
-!        call flush(10)
-
-889   FORMAT(10000(1X,F18.10))
-
    return
    end subroutine
-!

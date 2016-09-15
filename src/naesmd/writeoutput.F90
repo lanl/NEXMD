@@ -1,3 +1,5 @@
+#include "dprec.fh"
+#include "assert.fh"
 module writeoutput_module
 use naesmd_constants
 !***********************************************
@@ -18,14 +20,13 @@ contains
    implicit none      
 
    type(simulation_t) sim
-   integer  i,j,k,kk,slen,readstring,ibo,kki,lprint
-   double precision ntot
-   double precision xcm,ycm,zcm 
+   integer  i,j,k,ibo,kki,lprint
+   _REAL_ ntot
+   _REAL_ xcm,ycm,zcm 
    character*1000 card
-   character*1000 cardmopac
 
-   double precision yg(2*sim%excN) 
-   double precision energy !!JAB VE model
+   _REAL_ yg(2*sim%excN) 
+   _REAL_ energy !!JAB VE model
 
    if(solvent_model.eq.2) then
         call calc_excsolven(energy) !JAB Test
@@ -190,29 +191,29 @@ contains
 
    call flush(98)
 
-111   FORMAT(A2,14x,3(1x,F16.12,1x,I1))
+!111   FORMAT(A2,14x,3(1x,F16.12,1x,I1))
 222   FORMAT(A2,3(1x,F12.6))
 223   FORMAT(3(1x,F16.10))
-333   format(a5,I3,1X,a80)
+!333   format(a5,I3,1X,a80)
 440   format(a17)
 441   format(a20)
 442   format(a32)
 443   format(a41)
-444   format(a80)
+!444   format(a80)
 445   format(a29)
 889   FORMAT(10000(1X,F18.10))
-887   FORMAT(F18.10,10000(1X,I1))
+!887   FORMAT(F18.10,10000(1X,I1))
 999   FORMAT(I3,1X,1000(1X,F18.10))
-998   FORMAT(I4)
+!998   FORMAT(I4)
 99    FORMAT(I5)
-777   FORMAT(A7,I4,2X,A2,2X,A5,I4,4X,3(1X,F7.3))
-778   format(1000000(f10.6,1x))
-779   format(F18.10,10000(1X,I3,3(1X,F18.10)))
+!777   FORMAT(A7,I4,2X,A2,2X,A5,I4,4X,3(1X,F7.3))
+!778   format(1000000(f10.6,1x))
+!779   format(F18.10,10000(1X,I3,3(1X,F18.10)))
 555   format(a90)
 556   format(a9)
 557   format(a6)
-558   format(a7)
-88    format(a1)
+!558   format(a7)
+!88    format(a1)
 
    return
    end subroutine
@@ -222,7 +223,7 @@ contains
 ! in the classical loop
 !***********************************************
 
-   subroutine writeoutput(sim,i,ibo,yg,lprint,cross)
+   subroutine writeoutput(sim,ibo,yg,lprint,cross)
    use naesmd_constants
    use naesmd_module
    use md_module
@@ -232,16 +233,13 @@ contains
    implicit none      
  
    type(simulation_t),pointer::sim
-   INTEGER l,i,j,jj,k,kk,slen,readstring,Nb,ibo,kki,lprint
-   double precision ntot
-   double precision xcm,ycm,zcm 
+   INTEGER j,k,ibo,kki,lprint
+   _REAL_ ntot
+   _REAL_ xcm,ycm,zcm 
    integer cross(sim%excN)
    character*1000 card
-   character*1000 cardmopac
-   double precision yg(2*sim%excN) 
-   double precision poblacring1,poblacring4
-   double precision energy !JAB Test
-   integer nring,indx(sim%excN)
+   _REAL_ yg(2*sim%excN) 
+   _REAL_ energy !JAB Test
    logical first
    data first /.true./
    save first
@@ -327,9 +325,6 @@ contains
 !******************************************************
 !
    if(lprint.ge.3) then
-      !write(85,889) tfemto,(fxmdqt(j)/convl*feVmdqt,j=1,natom)
-      !write(84,889) tfemto,(fymdqt(j)/convl*feVmdqt,j=1,natom)
-      !write(83,889) tfemto,(fzmdqt(j)/convl*feVmdqt,j=1,natom)
       write(85,889) tfemto,(sim%deriv_forces(1+3*(j-1)),j=1,natom)
       write(84,889) tfemto,(sim%deriv_forces(2+3*(j-1)),j=1,natom)
       write(83,889) tfemto,(sim%deriv_forces(3+3*(j-1)),j=1,natom)
@@ -455,34 +450,53 @@ contains
    end if
    endif
    call flush(98)
-
-111   FORMAT(A2,14x,3(1x,F16.12,1x,I1))
+!111   FORMAT(A2,14x,3(1x,F16.12,1x,I1))
 222   FORMAT(A2,3(1x,F12.6))
 223   FORMAT(3(1x,F16.10))
-302   format(A3,3f12.6)
-333   format(a5,I3,1X,a80)
+!333   format(a5,I3,1X,a80)
 440   format(a17)
 441   format(a20)
 442   format(a32)
 443   format(a41)
-444   format(a80)
+!444   format(a80)
 445   format(a29)
-449   format(a28,F18.10,a9,F18.10)
-688   FORMAT(F18.10,10000(1X,I4))
-889   FORMAT(20000(1X,F18.10))
-888   FORMAT(30000(1X,F18.10))
-887   FORMAT(F18.10,10000(1X,I1))
+889   FORMAT(10000(1X,F18.10))
+!887   FORMAT(F18.10,10000(1X,I1))
 999   FORMAT(I3,1X,1000(1X,F18.10))
-998   FORMAT(I4)
+!998   FORMAT(I4)
 99    FORMAT(I5)
-777   FORMAT(A7,I4,2X,A2,2X,A5,I4,4X,3(1X,F7.3))
-778   format(1000000(f10.6,1x))
-779   format(F18.10,10000(1X,I3,3(1X,F18.10)))
+!777   FORMAT(A7,I4,2X,A2,2X,A5,I4,4X,3(1X,F7.3))
+!778   format(1000000(f10.6,1x))
+!779   format(F18.10,10000(1X,I3,3(1X,F18.10)))
 555   format(a90)
 556   format(a9)
 557   format(a6)
-558   format(a7)
-88    format(a1)
+!558   format(a7)
+!88    format(a1)
+302   format(A3,3f12.6)
+!333   format(a5,I3,1X,a80)
+!440   format(a17)
+!441   format(a20)
+!442   format(a32)
+!443   format(a41)
+!444   format(a80)
+!445   format(a29)
+449   format(a28,F18.10,a9,F18.10)
+688   FORMAT(F18.10,10000(1X,I4))
+!889   FORMAT(20000(1X,F18.10))
+888   FORMAT(30000(1X,F18.10))
+!887   FORMAT(F18.10,10000(1X,I1))
+!999   FORMAT(I3,1X,1000(1X,F18.10))
+!998   FORMAT(I4)
+!99    FORMAT(I5)
+!777   FORMAT(A7,I4,2X,A2,2X,A5,I4,4X,3(1X,F7.3))
+!778   format(1000000(f10.6,1x))
+!779   format(F18.10,10000(1X,I3,3(1X,F18.10)))
+!555   format(a90)
+!556   format(a9)
+!557   format(a6)
+!558   format(a7)
+!88    format(a1)
 
    return
    end subroutine

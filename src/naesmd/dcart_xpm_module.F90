@@ -37,7 +37,7 @@ module dcart_xpm_module
           !_REAL_, intent(inout) :: dxyzqm(3,qmmm_struct%nquant_nlink)                                  
           _REAL_, intent(in) :: xyz_in_p(3,qmmm_struct%nquant_nlink), xyz_in_m(3,qmmm_struct%nquant_nlink) !, xyz_in(3,qmmm_struct%nquant_nlink)
           !_REAL_, pointer    :: xyz_in(:,:)
-	! CML Just in case we don't update coords in qmmm_struct 7/13/12
+          ! CML Just in case we don't update coords in qmmm_struct 7/13/12
           _REAL_, intent(in) :: gs_dm(qm2ds%Nb*(qm2ds%Nb+1)/2) ! CML 7/13/12
           _REAL_, intent(in) :: ex_dm(qm2ds%Nb*(qm2ds%Nb+1)/2) ! CML 7/13/12
     !Local
