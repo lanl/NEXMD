@@ -19,8 +19,7 @@ module naesmd_module
       integer iview,jend,decorhop
       integer iseedmdqt,conthop,conthop2
       double precision temp0,tempf,tempi,tao
-      integer,allocatable :: iordenhop(:)
-      integer iorden(260)
+      integer,allocatable :: iordenhop(:),iorden(:)
       integer,target,allocatable:: atomtype(:) !atom types currently max 1000
       integer,allocatable:: lowvaluestep(:)
       double precision,allocatable:: lowvalue(:)
@@ -96,7 +95,7 @@ module naesmd_module
         implicit none
         integer Na,Nexc
         write(6,*)'Allocating naesmd_module variables',Na,Nexc
-        allocate(iordenhop(Nexc))
+        allocate(iordenhop(Nexc),iorden(Nexc))
         allocate(lowvaluestep(Nexc))
         allocate(lowvalue(Nexc))
         allocate(rx(Na),ry(Na),rz(Na))

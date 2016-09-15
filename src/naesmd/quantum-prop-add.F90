@@ -75,6 +75,8 @@ contains
    call apc(sim%excN,ascpr,iorden,z)
 
    do i=1,sim%excN
+      write(6,*)'iorden iordenhop i',iordenhop(i),iorden(i),i
+
       if(iorden(i).ne.i) then
          if(i.lt.iorden(i).or.i.eq.ihop) then
             if(dabs(scpr(i,iorden(i))).lt.0.9d0) then
@@ -82,8 +84,8 @@ contains
             else
                cross(i)=2
             end if
-
             iordenhop(i)=iorden(i)
+            write(6,*)'crossing: iorden iordenhop i',iorden(i),iordenhop(i),i
             if(lprint.ge.2) then
             endif
          else
@@ -127,10 +129,9 @@ contains
    !include 'md.cmn'
    !include 'common'
    integer cross(sim%excN)
-   integer ascpr(260,260),z
-   double precision scprold
-   double precision normcheck(sim%excN),normcheckhop 
-
+   !integer ascpr(260,260),z
+   !double precision scprold
+   !double precision normcheck(sim%excN),normcheckhop 
 
 !***************************************************
 ! following the nonavoiding crossing of states
@@ -152,10 +153,6 @@ contains
          end if
       end if
    end do
-
-
-
-
 !***********************************
 
 687   format(F18.10,1X,I4,1X,I4,1X,I4,1000(1x,f18.10))
@@ -173,6 +170,7 @@ contains
    implicit none
 
    type(simulation_t), pointer :: sim
+   integer iordenhoptest(sim%excN)
    integer k,j,i,ii,iii,iimdqt
    integer mdflag,Na,Nm
    double precision E0 
@@ -185,6 +183,7 @@ contains
    !include 'sizes'
    !include 'md.cmn'
    !include 'common'
+   iordenhoptest=iordenhop
 
    if(iimdqt.eq.1) then
       do i=1,sim%excN

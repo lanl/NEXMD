@@ -78,16 +78,13 @@ contains
 !
    subroutine cadiabmiddlecalc(sim,iimdqt,Na,Nm,cross)
    use qm2_davidson_module
-        use naesmd_module
-        use md_module
+   use naesmd_module
+   use md_module
 
    implicit none
 
    type(simulation_t),pointer::sim
-! modified by Seba
-!   integer k,j,i,ii,iii,iimdqt,cross
    integer k,j,i,ii,iii,iimdqt
-! end modified by Seba
 
    integer mdflag,Na,Nm
    real(8) E0
@@ -233,13 +230,6 @@ contains
       end do
 
    end if
-
-!      if(cross.eq.2) then
-!         if(conthop.eq.0) then
-!            cadiabmiddle(ihop,iorden(ihop))=0.0d0
-!            cadiabmiddle(iorden(ihop),ihop)=0.0d0
-!         endif
-!      endif
 
    do i=1,qm2ds%Mx
       if(i.eq.ihop) then

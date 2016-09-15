@@ -159,7 +159,7 @@ program MD_Geometry
     !  uumdqtflag =1 means that the quirality of m.o. must be checked
     uumdqtflag=0
     !
-    do i=1,sim%excN!npot
+    do i=1,sim%excN
         iorden(i)=i
     end do
      
@@ -224,6 +224,8 @@ program MD_Geometry
         if(state.eq.'exct'.and.ibo.ne.1) then
             !write(6,*)'Begin nonadiabatic couplings and crossings calculations'
             call initialize(sim,yg)
+                write(6,*)'iordenhop',iordenhop
+
             !*******************************************************
             ! The analytic NAC for t.
             ! are calculated inside of cadiaboldcalc,cadiabmiddlecalc, and cadiabnewcalc
@@ -260,6 +262,7 @@ program MD_Geometry
             if(crosstot.eq.1) then
                 write(6,*)'there is crossing'
                 write(6,*)'cross(:)=',cross(1:sim%excN)
+                write(6,*)'iordenhop',iordenhop
                 cadiabhop=cadiabnew(qmmm_struct%state_of_interest,iorden(qmmm_struct%state_of_interest))
                 nquantumstep=nquantumreal*nstepcross
                 dtquantum=dtmdqt/dfloat(nquantumstep)
@@ -305,6 +308,8 @@ program MD_Geometry
                 nquantumstep=nquantumreal
                 dtquantum=dtmdqt/dfloat(nquantumstep)
             end if
+                write(6,*)'iordenhop',iordenhop
+
             !
             !  remove the couplings if cross=2
             !
