@@ -127,7 +127,6 @@ OBJSQM = \
 	$(OBJDIR)/$(SQMDIR)/qm2_dftb_dispersion_params.o \
 	$(OBJDIR)/$(SQMDIR)/qm2_smallest_number.o \
 	$(OBJDIR)/$(SQMDIR)/dipole.o \
-	$(OBJDIR)/$(SQMDIR)/nacr.o \
 	$(OBJDIR)/$(SQMDIR)/dcart2.o \
 	$(OBJDIR)/$(SQMDIR)/qm2_get_exc_forces.o \
 	$(OBJDIR)/$(SQMDIR)/calc_rhotz.o \
@@ -155,6 +154,7 @@ OBJNAESMD = \
 	$(OBJDIR)/$(NAESMDDIR)/random.o \
 	$(OBJDIR)/$(NAESMDDIR)/langevin-temperature.o \
         $(OBJDIR)/$(NAESMDDIR)/statespecific.o \
+        $(OBJDIR)/$(NAESMDDIR)/nacr.o \
 	$(OBJDIR)/$(NAESMDDIR)/nacT_analytic.o \
 	$(OBJDIR)/$(NAESMDDIR)/fewest-switches.o \
 	$(OBJDIR)/$(NAESMDDIR)/coherence.o \

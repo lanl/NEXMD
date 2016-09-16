@@ -211,10 +211,10 @@ end subroutine
 subroutine commutator(A,B,matrix_size,res,flag);
   integer matrix_size;
         logical flag;
-        real(8), dimension(matrix_size,matrix_size) :: A,B,Res;
-        real(8), dimension(:,:), allocatable :: tmp
-        real(8) ALPHA;
-        real(8) BETA;
+        _REAL_, dimension(matrix_size,matrix_size) :: A,B,Res;
+        _REAL_, dimension(:,:), allocatable :: tmp
+        _REAL_ ALPHA;
+        _REAL_ BETA;
 
         ALPHA=1.0D+0;
         BETA=0.0D+0;
@@ -287,7 +287,6 @@ subroutine rcnfld(f,p,n)
         
         !!CALCULATE REACTION FIELD POTENTIAL
         f=f-2.d0*(scaled(1)*dipx+scaled(2)*dipy+scaled(3)*dipz); !in eV
-        !f=f-(scaled(1)*dipx+scaled(2)*dipy+scaled(3)*dipz); !in eV test
 return
 end
 
@@ -342,18 +341,11 @@ subroutine rcnfldgrad2(dxyz,p1,p2,n,calc_nuc)
         scaled2=(fepsi/onsager_radius**3)*elec_dip2*BOHRS_TO_A*AU_TO_EV*EV_TO_KCAL
         scaled_nuc=(fepsi/onsager_radius**3)*nuc_dip*BOHRS_TO_A*AU_TO_EV*EV_TO_KCAL
 
-        !call unpacking(n,p,p_full,'s') !Surely this can be done without unpacking
         !!CALCULATE DERIVATIVES
         i3=1
         do k=1,numat
                 i1=qm2_params%orb_loc(1,k)
                 i2=qm2_params%orb_loc(2,k)
-        !        p_full(i1,i1)=p_full(i1,i1)-qm2_params%core_chg(k)
-        !        do i=i1,i2;
-        !               do j=1,3 
-        !               dxyz(j,k)=dxyz(j,k)+2*p_full(i,i)*scaled(j)
-        !               enddo
-        !        enddo
         do i=i1,i2
            do j=1,3
               dxyz(j,k)=dxyz(j,k)+2*(p1(i3)*scaled2(j)+scaled1(j)*p2(i3)) !E-E parts
@@ -364,17 +356,12 @@ subroutine rcnfldgrad2(dxyz,p1,p2,n,calc_nuc)
            i3=i3+i+1 !diagonal indices
         enddo
               if(calc_nuc) dxyz(:,k)=dxyz(:,k)-2*qm2_params%core_chg(k)*scaled2 !N-E part
-              !dxyz(:,k)=dxyz(:,k)-2*qm2_params%core_chg(k)*scaled_nuc !N-N part
         enddo
            do j=1,3 !Translation
               dxyz(j,:)=dxyz(j,:)-2*(q_elec1*scaled2(j)+scaled1(j)*q_elec2)/numat !E-E
               if (calc_nuc) dxyz(j,:)=dxyz(j,:)+2*sum(qm2_params%core_chg)*scaled2(j)/numat&
                            -2*scaled_nuc(j)*q_elec2/numat !N-E
-              !dxyz(j,:)=dxyz(j,:)-2*sum(qm2_params%core_chg)*scaled_nuc(j)/numat !N-N
            enddo
-        !write(6,*)'nuc_dip',nuc_dip
-        !write(6,*)'elec_dip 2',elec_dip2/BOHRS_TO_A
-        !write(6,*)'sum_dip',nuc_dip+elec_dip1+elec_dip2/BOHRS_TO_A
 end subroutine
 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -419,20 +406,11 @@ subroutine rcnfldgrad(dxyz,p,n)
 
         !! CALCULATE SCALING FACTOR
         scaled=(fepsi/onsager_radius**3)*(elec_dip+nuc_dip)*BOHRS_TO_A*AU_TO_EV*EV_TO_KCAL;
-        !scaled=(fepsi/onsager_radius**3)*elec_dip*BOHRS_TO_A*AU_TO_EV*EV_TO_KCAL; ! Testing
-
-        !call unpacking(n,p,p_full,'s') !Surely this can be done without unpacking
         !!CALCULATE DERIVATIVES
         i3=1
         do k=1,numat 
                 i1=qm2_params%orb_loc(1,k)
                 i2=qm2_params%orb_loc(2,k)
-        !        p_full(i1,i1)=p_full(i1,i1)-qm2_params%core_chg(k)
-        !        do i=i1,i2;
-        !               do j=1,3 
-        !               dxyz(j,k)=dxyz(j,k)+2*p_full(i,i)*scaled(j)
-        !               enddo
-        !        enddo
         do i=i1,i2
            do j=1,3
               dxyz(j,k)=dxyz(j,k)+2*p(i3)*scaled(j) !E-E,E-N parts
@@ -442,14 +420,6 @@ subroutine rcnfldgrad(dxyz,p,n)
         enddo
         dxyz(:,k)=dxyz(:,k)-2*qm2_params%core_chg(k)*scaled !N-N,N-E parts
         enddo
-           do j=1,3 !Translation
-              !dxyz(j,:)=dxyz(j,:)-2*q_elec/numat*scaled(j) !E-E
-              !dxyz(j,:)=dxyz(j,:)-(sum(qm2_params%core_chg)+q_elec)*scaled(j)/numat !E-N + N-E
-              !dxyz(j,:)=dxyz(j,:)+2*sum(qm2_params%core_chg)/numat*scaled(j) !N-N
-           enddo
-        !write(6,*)'nuc_dip',nuc_dip
-        !write(6,*)'elec_dip',elec_dip
-        !write(6,*)'sum_dip',nuc_dip+elec_dip
 end subroutine
 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -487,7 +457,6 @@ subroutine rcnfldgrad_full(dxyz,p,n)
 
         !! CALCULATE SCALING FACTOR
         scaled=(fepsi/onsager_radius**3)*elec_dip*BOHRS_TO_A*AU_TO_EV*EV_TO_KCAL;
-        !write(6,*)'Dipole:',elec_dip/BOHRS_TO_A*sqrt(2.d0)
         !!CALCULATE DERIVATIVES
         do k=1,numat
                 i1=qm2_params%orb_loc(1,k)
@@ -545,30 +514,11 @@ subroutine rcnfld_fock(f,p,n)
         scaled=(fepsi/onsager_radius**3)*elec_dip*BOHRS_TO_A*AU_TO_EV
 
         !!CALCULATE REACTION FIELD POTENTIAL OPERATOR AND ADD TO FOCK MATRIX
-        !f=qm2_struct%hmatrix !test
         do i=1,(n+1)*n/2
            f0(i)=2.d0*(scaled(1)*dip(1,i)+scaled(2)*dip(2,i)+scaled(3)*dip(3,i));
-           !f0(i)=(scaled(1)*dip(1,i)+scaled(2)*dip(2,i)+scaled(3)*dip(3,i)); !test
-
-           !Etest=Etest+f0(i)*P(i)
         enddo
            f=f-f0
-        !onsagE=sum((elec_dip+nuc_dip)**2)*fepsi/onsager_radius**3*BOHRS_TO_A*AU_TO_EV/2
         onsagE=-sum((elec_dip+nuc_dip)**2)*fepsi/onsager_radius**3*BOHRS_TO_A*AU_TO_EV
-        !WRITE RESUTLS FOR TESTING
-        !write(6,*)'fs',scaled(1)*dipx+scaled(2)*dipy+scaled(3)*dipz
-        !write(6,*)'N-N,E-E,N-E,total',(fepsi/onsager_radius**3)*BOHRS_TO_A*AU_TO_EV*sum(nuc_dip**2),&
-        !                        (fepsi/onsager_radius**3)*BOHRS_TO_A*AU_TO_EV*sum(elec_dip**2),&
-        !                        (fepsi/onsager_radius**3)*BOHRS_TO_A*AU_TO_EV*sum(elec_dip*nuc_dip),&
-        !                        onsagE
-        !write(6,*)'totale',sum(scaled*elec_dip)+(fepsi/onsager_radius**3)*sum(nuc_dip**2)*BOHRS_TO_A*AU_TO_EV
-        !write(6,*)'totale',sum((elec_dip+nuc_dip)**2)*(fepsi/onsager_radius**3)*BOHRS_TO_A*AU_TO_EV
-        !write(6,*)'E-E=',Etest,'E-E2=',sum(scaled*elec_dip)
-        !write(6,*)'E-N+N-N',sum(scaled*nuc_dip),OnsagE
-        !write(6,*)'nuc:',nuc_dip
-        !write(6,*)'elec:',elec_dip
-        !write(6,*)'sum:',(nuc_dip+elec_dip)
-        !write(6,*)'den_matrix=',qm2_struct%den_matrix
 return
 end
 
@@ -687,7 +637,7 @@ end
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 subroutine efield_nuc(enuclr)
         use qmmm_module,only:qm2_struct,qmmm_struct;
-        use cosmo_C, only: fepsi,Ex,Ey,Ez
+        use cosmo_C, only: Ex,Ey,Ez
         use constants, only : BOHRS_TO_A, AU_TO_EV
         implicit none;
         _REAL_ dip(3,qm2_struct%norbs*(qm2_struct%norbs+1)/2)

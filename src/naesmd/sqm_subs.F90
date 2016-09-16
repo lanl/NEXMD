@@ -38,7 +38,7 @@ subroutine sqm_energy(natom,coords,escf,born_radii,one_born_radii, &
         qm_gb, qmmm_mpi, qmmm_scratch, qm2_params
     use constants,only:EV_TO_KCAL,KCAL_TO_EV,zero,one,alpb_alpha
     use qm2_davidson_module
-    use cosmo_C,only:EF,nps,cosurf,lm61,tri_2D,ceps,potential_type,solvent_model,onsagE;
+    use cosmo_C,only:EF,nps,tri_2D,potential_type,solvent_model,onsagE;
     use xlbomd_module,only:init_xlbomd
     implicit none
 
@@ -67,7 +67,6 @@ subroutine sqm_energy(natom,coords,escf,born_radii,one_born_radii, &
     _REAL_ ctest
     integer quir_ev,quir_cmdqt,l
     _REAL_ t_start,t_finish ! to monitor execution time
-    _REAL_, dimension (:), allocatable :: ground_state_forces;
 
     !=============================================================================
     !                   START OF QMMM SETUP: allocate list memory
@@ -122,15 +121,10 @@ subroutine sqm_energy(natom,coords,escf,born_radii,one_born_radii, &
             call allocate_davidson() ! Davidson allocation
             if(qm2ds%dav_guess.gt.1) call init_xlbomd(qm2ds%Nb**2*qm2ds%Mx)
         endif
-        ! Initialization of COSMO\
-        !! JAB: this contains variables for Onsager model as well so
-        ! is called for all solvent models, but this should probably be changed
-        ! later
 
         !ceps-Dielectric Permittivity from COSMO module
         if((solvent_model.gt.0).or.(EF.gt.0)) then !
             call cosini
-           !call cosini_testing
         end if
 
     end if !if (qmmm_struct%qm_mm_first_call)
@@ -152,14 +146,6 @@ subroutine sqm_energy(natom,coords,escf,born_radii,one_born_radii, &
     if((solvent_model.gt.0).and.(potential_type.eq.3)) then ! non-default non-vacuum permittivity
         call coscav ! constructing COSMO cavity
         call mkbmat ! constructing B matrix
-       !This part is for calculating the COSMO potential operator with matrix inversion
-       !init indices array;
-       !size of triangular = i(i-1)/2+j (i==j)
-       !T2DS=qm2_struct%norbs*(qm2_struct%norbs-1)/2.0+qm2_struct%norbs;
-       !call init_tri_2D(tri_2D,T2DS);
-
-       !build M-matrix
-       !call buildM_testing();
     end if
 
     !============================
@@ -244,17 +230,6 @@ subroutine sqm_energy(natom,coords,escf,born_radii,one_born_radii, &
             call qm2_calc_dipole(coords)
         end if
     end if
-    !	   select case(qmmm_nml%printdipole)
-    !   case(1)
-    !     if(qm2ds%Mx>0) then
-    !	  call qm2_calc_molecular_dipole_in_excited_state()
-    !     else
-    !       call qm2_calc_dipole(coords)
-    !     end if
-    !   case(2)
-    !      write (6,'("QMMM: Not MM part; please check your selection")')
-    !   case default
-    !   end select
 
     ! Print some extra informatiom about energy contributions
     ! (This is really only required in sander since we print the energies anyways

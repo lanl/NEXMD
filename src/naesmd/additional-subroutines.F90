@@ -1,3 +1,6 @@
+#include "dprec.fh"
+#include "assert.fh"
+
 module additional_subroutines
     use naesmd_constants
 
@@ -28,7 +31,7 @@ contains
     subroutine open_output(ibo,tfemto,imdtype,lprint)
         implicit none
 
-        real(8) tfemto
+        _REAL_ tfemto
         integer imdtype,ibo,lprint
         character*10 file_status
         character*10 file_access

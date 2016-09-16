@@ -20,7 +20,7 @@
 
    _REAL_ random,rranset,rranf
    _REAL_ ferr1,ferr2,fn
-   _REAL_ f,f1,f2,fo1,fo2,ddot,f0,f11
+   _REAL_ f,f1,f2,ddot,f0,f11
 
    integer i,j,lprint
    integer iseed,ip,ih,j0,Mx0,imin,one,iloops
@@ -361,12 +361,12 @@
   use cosmo_C,only:solvent_model 
    implicit none
 
-   logical check_symmetry; !!JAB Testing
+   !logical check_symmetry; !!JAB Testing
 
    integer Np,Nh,M4,lprint,kflag,nd,nd1,nd1_old,j0,j1
    integer one,i,j,k,n,m,icount,idav,istore,iloop,itarget
    integer info,iee2(qm2ds%Ncis)
-   integer l,u,c !!JAB
+   !integer l,u,c
    _REAL_ ftol0,ftol1,ferr(j1+j0),ddot,fn,f2m
    _REAL_ f0,f1,f2,f3,f4,tresh2
    _REAL_ e0(M4),v0(qm2ds%Nrpa,qm2ds%Mx),ee2(qm2ds%Ncis)
@@ -378,7 +378,7 @@
    _REAL_ ray1(nd,nd),ray2(nd,nd),ray1a(nd,nd)
    _REAL_ ray(nd,nd),raye(nd),raye1(nd)
    _REAL_ rayv(nd,nd),rayvL(nd,nd),rayvR(nd,nd)
-   _REAL_ f11;
+   !_REAL_ f11;
 
    if (lprint.gt.4) write(6,*)' Entering davidson0'
 
