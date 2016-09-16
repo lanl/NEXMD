@@ -668,7 +668,6 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
     integer :: ier=0
     character(len=80) :: parameter_file
     logical :: qxd
-    logical :: test
     logical :: calcxdens
 
     namelist /qmmm/ qmcut, iqmatoms,qmmask,qmgb,qm_theory, qmtheory, &

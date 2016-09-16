@@ -15,7 +15,7 @@ subroutine dav_wrap(sim_target)
    use communism !for sim hack
    use qmmm_module,only:qmmm_struct
    use qm2_davidson_module
-   use cosmo_C, only: solvent_model,ceps
+   use cosmo_C, only: solvent_model
 
    implicit none
 
@@ -90,7 +90,7 @@ subroutine outDavidson()
    implicit none
 
    integer i
-   _REAL_ mu(3, qm2ds%Mx), alpha(3), ft,mu_ground_state(3)
+   _REAL_ mu(3, qm2ds%Mx), alpha(3), ft
 
    ! Evaluation of transition dipole moments
 
