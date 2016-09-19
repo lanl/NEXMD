@@ -4,16 +4,16 @@
 !********************************************************************      
 !********************************************************************      
 !   
-   subroutine fcn(n,x,yg,yprime)
-   implicit none
-   integer n
-   _REAL_ x,yg(n),yprime(n)
+subroutine fcn(n,x,yg,yprime)
+    implicit none
+    integer n
+    _REAL_ x,yg(n),yprime(n)
  
-   call interpolate(n,x)
-   call vqcalc(n,yg,yprime)
+    call interpolate(n,x)
+    call vqcalc(n,yg,yprime)
 
-   return
-   end subroutine
+    return
+end subroutine
 !
 !********************************************************************
 !
@@ -22,26 +22,26 @@
 !
 !********************************************************************
 !
-   subroutine interpolate(n,x)
-   use naesmd_module
-   use md_module
-   implicit none
-   integer n,k,j
-   _REAL_ x
+subroutine interpolate(n,x)
+    use naesmd_module
+    use md_module
+    implicit none
+    integer n,k,j
+    _REAL_ x
  
-   do k=1,n/2
-      do j=1,n/2
-         cadiab(k,j)=cadiabmiddleold(k,j) &
-            +bcoeffcadiab(k,j)*(x-tini0) 
-      end do
-   end do
+    do k=1,n/2
+        do j=1,n/2
+            cadiab(k,j)=cadiabmiddleold(k,j) &
+                +bcoeffcadiab(k,j)*(x-tini0)
+        end do
+    end do
 
-   do k=1,n/2
-      vmdqt(k)=vmdqtmiddleold(k)+bcoeffvmdqt(k)*(x-tini0) 
-   end do
+    do k=1,n/2
+        vmdqt(k)=vmdqtmiddleold(k)+bcoeffvmdqt(k)*(x-tini0)
+    end do
         
-   return
-   end subroutine
+    return
+end subroutine
 !
 !********************************************************************
 !
@@ -52,33 +52,33 @@
 !********************************************************************
 !
 
-   subroutine vqcalc(n,yg,yprime)
-   use naesmd_module
-   use md_module
-   implicit none
-   integer n,k,j
-   _REAL_ yg(n),yprime(n)
+subroutine vqcalc(n,yg,yprime)
+    use naesmd_module
+    use md_module
+    implicit none
+    integer n,k,j
+    _REAL_ yg(n),yprime(n)
 
-   do k=1,n/2
-      yprime(k)=0.d0
-      yprime(k+n/2)=-1.0d0*vmdqt(k)
+    do k=1,n/2
+        yprime(k)=0.d0
+        yprime(k+n/2)=-1.0d0*vmdqt(k)
 
-      do j=1,n/2
-         vnqcorrhop(k,j)=-1.0d0*yg(j)* &
-            dcos(yg(j+n/2)-yg(k+n/2))*cadiab(k,j)
+        do j=1,n/2
+            vnqcorrhop(k,j)=-1.0d0*yg(j)* &
+                dcos(yg(j+n/2)-yg(k+n/2))*cadiab(k,j)
 
-         yprime(k)=yprime(k)+vnqcorrhop(k,j) 
-         vnqcorrhop(k,j)=vnqcorrhop(k,j)*2.0d0*yg(k)
-      end do
+            yprime(k)=yprime(k)+vnqcorrhop(k,j)
+            vnqcorrhop(k,j)=vnqcorrhop(k,j)*2.0d0*yg(k)
+        end do
 
-      if(dabs(yg(k)).lt.1.0d-7) then
-         yprime(k+n/2)=0.0d0
-      else
-         do j=1,n/2
-            yprime(k+n/2)=yprime(k+n/2)-yg(j)/yg(k)* &
-               dsin(yg(j+n/2)-yg(k+n/2))*cadiab(k,j) 
-         end do
-      end if
-   end do
-   return
-   end subroutine
+        if(dabs(yg(k)).lt.1.0d-7) then
+            yprime(k+n/2)=0.0d0
+        else
+            do j=1,n/2
+                yprime(k+n/2)=yprime(k+n/2)-yg(j)/yg(k)* &
+                    dsin(yg(j+n/2)-yg(k+n/2))*cadiab(k,j)
+            end do
+        end if
+    end do
+    return
+end subroutine

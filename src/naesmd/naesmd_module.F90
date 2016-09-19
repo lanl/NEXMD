@@ -1,97 +1,92 @@
+#include "dprec.fh"
+#include "assert.fh"
+
 module naesmd_module
-      !parvar.var variables
-      !real*8 intf(6)
-      !integer Nb,Np,Nh,Lt,Mb,M4,M2,Nc,Mx,Mj,Ni,Nat,Ntot
-      !integer Charg,inttyp,irflag
-      !real*8 ftol,ftol0,ftol1
-      !integer lprint!,Nrestart, idav
-      !real*8 Eelec,Enucl,Esol,Atheat,Escf,Energy,rtol
+    !sizes variables
+    integer natom,npot,ihop,nquantumstep,nstep,nquantumreal
+    integer nstepcross
+    integer icontw,nstepw,icontini
+    integer istepheat,iconttemperature,icontpdb,icont,nstepcoord
+    integer txtinicoord,txtendcoord
+    integer nbasis,nmaxbasis,nao
+    integer ihopprev
+    integer uumdqtflag
+    integer iview,jend,decorhop
+    integer iseedmdqt,conthop,conthop2
+    _REAL_ temp0,tempf,tempi,tao
+    integer,allocatable :: iordenhop(:),iorden(:)
+    integer,target,allocatable:: atomtype(:) !atom types currently max 1000
+    integer,allocatable:: lowvaluestep(:)
+    _REAL_,allocatable:: lowvalue(:)
+    _REAL_ tini0
+    _REAL_,target,allocatable:: rx(:),ry(:),rz(:)
+    _REAL_,target,allocatable:: rxold(:),ryold(:),rzold(:)
+    _REAL_,target,allocatable:: deltaxxpold(:),deltayypold(:)
+    _REAL_,target,allocatable:: deltazzpold(:),deltaxxmold(:)
+    _REAL_,target,allocatable:: deltayymold(:),deltazzmold(:)
+    _REAL_,target,allocatable:: deltaxxpnew(:),deltayypnew(:)
+    _REAL_,target,allocatable:: deltazzpnew(:),deltaxxmnew(:)
+    _REAL_,target,allocatable:: deltayymnew(:),deltazzmnew(:)
+    _REAL_,target,allocatable:: vx(:),vy(:),vz(:)
+    _REAL_,target,allocatable:: vxold(:),vyold(:),vzold(:)
+    _REAL_,target,allocatable:: ax(:),ay(:),az(:)
+    _REAL_,target,allocatable:: axold(:),ayold(:),azold(:)
+    _REAL_,allocatable:: fxmdqt(:),fymdqt(:),fzmdqt(:)
+    _REAL_,target,allocatable::massmdqt(:)
+    _REAL_ dtquantum,kin
+    _REAL_,target,allocatable::dtnact, dtmdqt
+    _REAL_,allocatable:: vmdqt(:)
+    _REAL_,allocatable:: bcoeffvmdqt(:)
+    _REAL_,allocatable:: vmdqtnew(:)
+    _REAL_,allocatable:: vmdqtmiddle(:)
+    _REAL_,allocatable:: vmdqtmiddleold(:)
+    _REAL_,allocatable:: vmdqtold(:)
+    _REAL_,allocatable:: vnqcorrhoptot(:,:)
+    _REAL_,allocatable:: vnqcorrhop(:,:)
+    _REAL_,allocatable:: cadiab(:,:)
+    _REAL_,allocatable:: cadiab_analt(:,:)
+    _REAL_,allocatable:: cadiabnew(:,:)
+    _REAL_,allocatable:: cadiabold(:,:)
+    _REAL_,allocatable:: cadiabmiddle(:,:)
+    _REAL_,allocatable:: cadiabmiddleold(:,:)
+    _REAL_,allocatable:: bcoeffcadiab(:,:)
+    _REAL_,allocatable:: cmdqt(:,:)
+    _REAL_,allocatable:: cmdqtold(:,:)
+    _REAL_,allocatable:: cmdqtmiddleold(:,:)
+    _REAL_,allocatable:: cmdqtmiddle(:,:)
+    _REAL_,allocatable:: cmdqtnew(:,:)
+    _REAL_,allocatable:: scpr(:,:)
+    _REAL_,allocatable:: cicoeffao2(:,:)
+    _REAL_,allocatable:: uuold(:,:)
+    _REAL_ xcmini,ycmini,zcmini,masstot
+    _REAL_ tfemto
+    _REAL_ tfemtoquantum
+    _REAL_ nqold
+    _REAL_ kinini,vini,etotini
+    _REAL_ vgs
+    _REAL_ friction
+    _REAL_,allocatable:: pfric(:),vfric(:),afric(:)
+    _REAL_,allocatable:: prand(:,:),vrand(:,:)
+    _REAL_ deltax
+    parameter(deltax=1.0d-4)
+    character*2,allocatable:: atomtype2(:)
+    character*4 state,prep
+    character*6 ensemble
+    character*200 cardini
+    character*4 ktbig(0:9999)
+    character*200 txtinput(1000)
+    _REAL_ cadiabhop
+    _REAL_,allocatable:: scprreal(:,:)
 
-      !sizes variables
-      integer natom,npot,ihop,nquantumstep,nstep,nquantumreal
-      integer nstepcross
-      integer icontw,nstepw,icontini
-      integer istepheat,iconttemperature,icontpdb,icont,nstepcoord
-      integer txtinicoord,txtendcoord
-      integer nbasis,nmaxbasis,nao
-      integer ihopprev
-      integer uumdqtflag
-      integer iview,jend,decorhop
-      integer iseedmdqt,conthop,conthop2
-      double precision temp0,tempf,tempi,tao
-      integer,allocatable :: iordenhop(:),iorden(:)
-      integer,target,allocatable:: atomtype(:) !atom types currently max 1000
-      integer,allocatable:: lowvaluestep(:)
-      double precision,allocatable:: lowvalue(:)
-      double precision tini0
-      double precision,target,allocatable:: rx(:),ry(:),rz(:)
-      double precision,target,allocatable:: rxold(:),ryold(:),rzold(:)
-      double precision,target,allocatable:: deltaxxpold(:),deltayypold(:)
-      double precision,target,allocatable:: deltazzpold(:),deltaxxmold(:)
-      double precision,target,allocatable:: deltayymold(:),deltazzmold(:)
-      double precision,target,allocatable:: deltaxxpnew(:),deltayypnew(:)
-      double precision,target,allocatable:: deltazzpnew(:),deltaxxmnew(:)
-      double precision,target,allocatable:: deltayymnew(:),deltazzmnew(:)
-      double precision,target,allocatable:: vx(:),vy(:),vz(:)
-      double precision,target,allocatable:: vxold(:),vyold(:),vzold(:)
-      double precision,target,allocatable:: ax(:),ay(:),az(:)
-      double precision,target,allocatable:: axold(:),ayold(:),azold(:)
-      double precision,allocatable:: fxmdqt(:),fymdqt(:),fzmdqt(:)
-      double precision,target,allocatable::massmdqt(:)
-      double precision dtquantum,kin
-      double precision,target,allocatable::dtnact, dtmdqt
-      double precision,allocatable:: vmdqt(:)
-      double precision,allocatable:: bcoeffvmdqt(:)
-      double precision,allocatable:: vmdqtnew(:)
-      double precision,allocatable:: vmdqtmiddle(:)
-      double precision,allocatable:: vmdqtmiddleold(:)
-      double precision,allocatable:: vmdqtold(:)
-      double precision,allocatable:: vnqcorrhoptot(:,:)
-      double precision,allocatable:: vnqcorrhop(:,:)
-      double precision,allocatable:: cadiab(:,:)
-      double precision,allocatable:: cadiab_analt(:,:)
-      double precision,allocatable:: cadiabnew(:,:)
-      double precision,allocatable:: cadiabold(:,:)
-      double precision,allocatable:: cadiabmiddle(:,:)
-      double precision,allocatable:: cadiabmiddleold(:,:)
-      double precision,allocatable:: bcoeffcadiab(:,:)
-      double precision,allocatable:: cmdqt(:,:)
-      double precision,allocatable:: cmdqtold(:,:)
-      double precision,allocatable:: cmdqtmiddleold(:,:)
-      double precision,allocatable:: cmdqtmiddle(:,:)
-      double precision,allocatable:: cmdqtnew(:,:)
-      double precision,allocatable:: scpr(:,:)
-      double precision,allocatable:: cicoeffao2(:,:)
-      double precision,allocatable:: uuold(:,:)
-      double precision xcmini,ycmini,zcmini,masstot
-      double precision tfemto
-      double precision tfemtoquantum
-      double precision nqold
-      double precision kinini,vini,etotini
-      double precision vgs
-      double precision friction
-      double precision,allocatable:: pfric(:),vfric(:),afric(:)
-      double precision,allocatable:: prand(:,:),vrand(:,:)
-      double precision deltax
-      parameter(deltax=1.0d-4)
-      character*2,allocatable:: atomtype2(:)
-      character*4 state,prep
-      character*6 ensemble
-      character*200 cardini
-      character*4 ktbig(0:9999)
-      character*200 txtinput(1000)
-      double precision cadiabhop
-      double precision,allocatable:: scprreal(:,:)
-
-      contains
-      subroutine allocate_naesmd_module_init(natoms)
-      implicit none
+contains
+    subroutine allocate_naesmd_module_init(natoms)
+        implicit none
         integer natoms
         write(6,*)'Allocating initial naesmd_module variables'
         allocate(atomtype(natoms),atomtype2(natoms))
         allocate(massmdqt(natoms))
-      end 
-      subroutine allocate_naesmd_module(Na,Nexc)
+    end
+    subroutine allocate_naesmd_module(Na,Nexc)
         implicit none
         integer Na,Nexc
         write(6,*)'Allocating naesmd_module variables',Na,Nexc
@@ -130,9 +125,9 @@ module naesmd_module
         allocate(pfric(Na),vfric(Na),afric(Na))
         allocate(prand(3,Na),vrand(3,Na))
         allocate(scprreal(Nexc,Nexc))
-      end
-      subroutine allocate_naesmd_module2(Ncis,Nmo,Nexc)
-      implicit none
+    end
+    subroutine allocate_naesmd_module2(Ncis,Nmo,Nexc)
+        implicit none
         integer Ncis,Nmo,Nexc
         allocate(cmdqt(Ncis,Nexc))
         allocate(cmdqtold(Ncis,Nexc))
@@ -141,5 +136,5 @@ module naesmd_module
         allocate(cmdqtnew(Ncis,Nexc))
         allocate(cicoeffao2(Ncis,Nexc))
         allocate(uuold(Nmo,Nmo))
-      end
+    end
 end module
