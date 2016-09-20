@@ -43,8 +43,8 @@ program MD_Geometry
     integer ii,jjj,ibo
     integer imdqt,iimdqt
     _REAL_ h,d,t,Ek,Etot
-    _REAL_,allocatable::fosc(:)!Mx_M)
-    _REAL_,target,allocatable::Omega(:)!Mx_M)
+    _REAL_,allocatable::fosc(:)
+    _REAL_,target,allocatable::Omega(:)
     _REAL_,target::E0
     _REAL_,pointer::pOmega(:),pE0
     integer ither,win
@@ -317,7 +317,7 @@ program MD_Geometry
             write(6,*)"End classical propagation step #",imdqt
          
             do iimdqt=1,nquantumstep
-                write(6,*)'Begin quantum step #',imdqt,'.',iimdqt
+                write(6,*)'Begin quantum step #',iimdqt
                 tfemtoquantum=tfemto-dtmdqt*convtf &
                     +iimdqt*dtquantum*convtf
                 ! Definition of initial and final time for the quantum propagator
@@ -378,7 +378,7 @@ program MD_Geometry
                             +vnqcorrhop(k,j)*dtquantum
                     end do
                 end do
-                write(6,*)'End quantum step #',imdqt,'.',iimdqt
+                write(6,*)'End quantum step #',iimdqt
             end do
 
             !write(6,*)'Now doing some other things'
