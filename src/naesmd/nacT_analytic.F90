@@ -11,17 +11,23 @@ module nacT_analytic_module
    implicit none
 
    type xstep_t
-      _REAL_,pointer::R(:,:) ! coordinates before any increment 
-      _REAL_,pointer:: Rp(:,:) ! coordinates at + step in (3,:) shape
-      _REAL_,pointer::Rm(:,:) ! coordinates at - step 
+      _REAL_,allocatable::R(:,:) ! coordinates before any increment 
+      _REAL_,allocatable:: Rp(:,:) ! coordinates at + step in (3,:) shape
+      _REAL_,allocatable::Rm(:,:) ! coordinates at - step 
    end type xstep_t
+   
+   !type xstep_t_pointer
+   !   _REAL_,allocatable::R(:,:)
+   !   _REAL_,all::Rp(:,:)
+   !   _REAL_,pointer::Rm(:,:)
+   !end type xstep_t_pointer
 
    contains
 !
    subroutine xstep_A2au(xs) ! conversion from Angstrom to atomic units
    implicit none
 
-   type(xstep_t), intent(inout) :: xs
+   type(xstep_t),pointer :: xs
 
    xs%Rp(:,:)=xs%Rp(:,:)/convl
    xs%Rm(:,:)=xs%Rm(:,:)/convl
@@ -33,7 +39,7 @@ module nacT_analytic_module
    subroutine xstep_au2A(xs) ! conversion from atomic units to Angstrom
    implicit none
 
-   type(xstep_t),intent(inout)::xs
+   type(xstep_t),pointer::xs
 
    xs%Rp(:,:)=xs%Rp(:,:)*convl
    xs%Rm(:,:)=xs%Rm(:,:)*convl
@@ -46,19 +52,19 @@ module nacT_analytic_module
 !
 !********************************************************************
 !
-   function new_xstep(sim, xx, yy, zz, xxp, yyp, zzp, xxm, yym, zzm) result(xs)
+   subroutine new_xstep(sim, xx, yy, zz, xxp, yyp, zzp, xxm, yym, zzm, xs)
    implicit none
 
-   type(xstep_t)::xs
+   type(xstep_t),pointer::xs
 
    type(simulation_t),pointer::sim
    _REAL_,intent(in)::xx(sim%Na), yy(sim%Na), zz(sim%Na)
    _REAL_,intent(in)::xxp(sim%Na),yyp(sim%Na),zzp(sim%Na)
    _REAL_,intent(in)::xxm(sim%Na),yym(sim%Na),zzm(sim%Na)
 
-   allocate(xs%Rp(3,sim%Na))
-   allocate(xs%Rm(3,sim%Na))
-   allocate(xs%R(3,sim%Na))
+   !allocate(xs%Rp(3,sim%Na))
+   !allocate(xs%Rm(3,sim%Na))
+   !allocate(xs%R(3,sim%Na))
 
    xs%R(1,:)=xx(:)
    xs%R(2,:)=yy(:)
@@ -72,8 +78,12 @@ module nacT_analytic_module
    xs%Rm(2,:)=yym(:)
    xs%Rm(3,:)=zzm(:)
 
+   !deallocate(xs%Rp)
+   !deallocate(xs%Rm)
+   !deallocate(xs%R)
+
    return
-   end function
+   end subroutine
 !
 !********************************************************************
 !
@@ -82,13 +92,13 @@ module nacT_analytic_module
 !  JAKB, there are many pointers in here making it confusing
 !********************************************************************
 !
-   function new_xstep_dtnact(sim,xxx,yyy,zzz) result(xs)
+   subroutine new_xstep_dtnact(sim,xxx,yyy,zzz,xs)
    use naesmd_module
    use md_module
    implicit none
 
    type(simulation_t),pointer::sim
-   type(xstep_t)::xs
+   type(xstep_t),pointer::xs
    _REAL_,target,intent(in)::xxx(sim%Na),yyy(sim%Na),zzz(sim%Na)
    integer k,j
    type(realp_t),pointer::vv(:),aa(:)
@@ -100,9 +110,9 @@ module nacT_analytic_module
    r(2)%p=>yyy
    r(3)%p=>zzz
 
-   allocate(xs%Rp(3,sim%Na))
-   allocate(xs%Rm(3,sim%Na))
-   allocate(xs%R(3,sim%Na))
+   !allocate(xs%Rp(3,sim%Na))
+   !allocate(xs%Rm(3,sim%Na))
+   !allocate(xs%R(3,sim%Na))
 
    do j=1,natom
       if(ensemble.eq.'energy'.or.ensemble.eq.'temper') then
@@ -131,25 +141,29 @@ module nacT_analytic_module
    xs%R(2,:)=yyy(:)
    xs%R(3,:)=zzz(:)
 
+   !deallocate(xs%Rp)
+   !deallocate(xs%Rm)
+   !deallocate(xs%R)
+
    return
-   end function
+   end subroutine
 !
 !********************************************************************
 !
 !********************************************************************
 !
-   function new_xstep_dtnact_r3(sim, r) result(xs)
+   subroutine new_xstep_dtnact_r3(sim, r, xs)
    implicit none
 
-   type(xstep_t)::xs
+   type(xstep_t),pointer::xs
 
    type(simulation_t), pointer::sim
    type(realp_t), intent(in)::r(3)
 
-   xs=new_xstep_dtnact(sim,r(1)%p,r(2)%p,r(3)%p)
+   call new_xstep_dtnact(sim,r(1)%p,r(2)%p,r(3)%p, xs)
 
    return
-   end function
+   end subroutine
 
 !********************************************************************
 !
@@ -169,7 +183,7 @@ module nacT_analytic_module
    _REAL_ nacT_direct_ihc ! function result
    type(simulation_t),pointer::sim
    integer,intent(in)::ihop,icheck
-   type(xstep_t),intent(inout)::xstep
+   type(xstep_t),pointer::xstep
 
    ! NEW OR MODIFIED VARIABLES
    integer M4_M,M2_M,Np,Nh,Nb,Mx_M,Mx
@@ -260,7 +274,7 @@ module nacT_analytic_module
    _REAL_,intent(inout)::nact(:,:)
 
    integer i,j
-   type(xstep_t),intent(inout)::xs
+   type(xstep_t),pointer::xs
 
    nact=0.d0
 
@@ -284,7 +298,7 @@ module nacT_analytic_module
    subroutine nacT_analytic(sim,nact,xstep)
         implicit none
         type(simulation_t),pointer::sim
-        type(xstep_t),intent(inout)::xstep
+        type(xstep_t),pointer::xstep
         _REAL_,intent(inout)::nact(:,:)
         _REAL_ t_start,t_finish
         call cpu_time(t_start)

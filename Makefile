@@ -518,6 +518,13 @@ debug: FFLAG = -O0 -DDEBUG -C -g -Wall
 debug: LDFLAGS = -O0 -DDEBUG -C -g -Wall
 debug: sqmceonaesmd.exe
 
+debug2: FFLAG = -O0 -DDEBUG -C -g
+debug2: LDFLAGS = -O0 -DDEBUG -C -g
+debug2: sqmceonaesmd.exe
+
+all:  FFLAG = -O3 -mcmodel=medium
+all:  LDFLAGS = $(FFLAG)
+all: LINK =  -llapack -lblas
 all: sqmceonaesmd.exe
 
 sqmceonaesmd.exe: $(OBJSQM) $(OBJLIB) $(OBJNAESMD) $(OBJSFF)

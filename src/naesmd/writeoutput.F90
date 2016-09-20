@@ -150,10 +150,7 @@ contains
 
         write(10,556) '$ENDCOEFF'
 
-        !do i=txtendcoord+7,jend
-        !   write(10,555) txtinput(i)
-        !end do
-        !close(10)
+        close(10)
 
         if(iview.eq.1) then
 
@@ -397,20 +394,7 @@ contains
 
             write(10,556) '$ENDCOEFF'
 
-            !do k=txtendcoord+8,txtendcoord+9
-            !   write(10,555) txtinput(k)
-            !end do
-
-            !write(10,*)int(nstep-(icontpdb-icontini)*nstepcoord*nstepw)
-            !do k=txtendcoord+11,txtendcoord+21
-            !   write(10,555) txtinput(k)
-            !end do
-
-            !write(10,*) iseedmdqt
-            !do k=txtendcoord+23,jend
-            !   write(10,555) txtinput(k)
-            !end do
-            !close(10)
+            close(10)
 
             open (9,file='coords.xyz',access='append')
             write (9,*) natom

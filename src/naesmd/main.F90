@@ -116,7 +116,7 @@ program MD_Geometry
     nbasis=sim%dav%Nb  ! this is number of atomic orbitals
     sim%nbasis=nbasis  ! not to confuse with Ncis or Nrpa !!!
 
-    call allocate_naesmd_module2(sim%dav%Ncis,sim%nbasis,sim%excN)
+    if(sim%excN.ne.0) call allocate_naesmd_module2(sim%dav%Ncis,sim%nbasis,sim%excN)
 
     ! calling the first time to check the quirality in what follows
     !  uumdqtflag =0 means that ceo is called by the first time,
@@ -317,7 +317,7 @@ program MD_Geometry
             write(6,*)"End classical propagation step #",imdqt
          
             do iimdqt=1,nquantumstep
-                write(6,*)'Begin quantum step ',tfemto
+                write(6,*)'Begin quantum step #',imdqt,'.',iimdqt
                 tfemtoquantum=tfemto-dtmdqt*convtf &
                     +iimdqt*dtquantum*convtf
                 ! Definition of initial and final time for the quantum propagator
@@ -378,7 +378,7 @@ program MD_Geometry
                             +vnqcorrhop(k,j)*dtquantum
                     end do
                 end do
-                write(6,*)'End quantum step ',tfemto
+                write(6,*)'End quantum step #',imdqt,'.',iimdqt
             end do
 
             !write(6,*)'Now doing some other things'
@@ -871,13 +871,14 @@ contains
         sim%Na=Na
         allocate(sim%coords(Na*3))
         sim%excN=npot
-        write(6,*)'FixMe! if npot=0 then don not allocate these variables here'
         call allocate_naesmd_module(Na,npot)
         call allocate_md_module(Na)
-        allocate(yg(2*sim%excN))
-        allocate(cross(sim%excN))
-        allocate(fosc(sim%excN))
-        allocate(Omega(sim%excN))
+        if(npot.ne.0) then
+                allocate(yg(2*sim%excN))
+                allocate(cross(sim%excN))
+                allocate(fosc(sim%excN))
+                allocate(Omega(sim%excN))
+        endif
 
         !--------------------------------------------------------------------
         !

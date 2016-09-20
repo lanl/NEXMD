@@ -14,12 +14,19 @@ contains
  
         type(simulation_t), pointer :: sim
         integer k,j,i,imdqt
-        type(xstep_t)::xstep
-      
+        type(xstep_t),target::xs
+        type(xstep_t),pointer::xstep
+
+        allocate(xs%Rp(3,sim%Na))
+        allocate(xs%Rm(3,sim%Na))
+        allocate(xs%R(3,sim%Na))
+
+        xstep=>xs
+
         if(imdqt.eq.1) then
             call do_sqm_davidson_update(sim,cmdqt=cmdqtnew, &
                 vmdqt=vmdqtnew,vgs=vgs,r=sim%naesmd%r%vold)!, cmdqt=cmdqtnew) !JAKB, not necessary bc updated already in
-            xstep=new_xstep_dtnact_r3(sim,sim%naesmd%r%vold)
+            call new_xstep_dtnact_r3(sim,sim%naesmd%r%vold, xstep)
             do k=1,3
                 sim%naesmd%deltaRp%v(k)%p(1:natom)=xstep%Rp(k,1:natom) &
                     -xstep%R(k,1:natom)
@@ -50,6 +57,10 @@ contains
             end do
         end do
 
+        deallocate(xs%Rp)
+        deallocate(xs%Rm)
+        deallocate(xs%R)
+
         return
     end subroutine
     !
@@ -70,7 +81,14 @@ contains
         _REAL_ xxp(Na),yyp(Na),zzp(Na)
         _REAL_ xxm(Na),yym(Na),zzm(Na)
         integer cross(sim%excN)
-        type(xstep_t)::xstep
+        type(xstep_t),target::xs
+        type(xstep_t),pointer::xstep
+
+        allocate(xs%Rp(3,sim%Na))
+        allocate(xs%Rm(3,sim%Na))
+        allocate(xs%R(3,sim%Na))
+
+        xstep=>xs
 
         if(iimdqt.eq.1) then
             do i=1,qm2ds%Mx
@@ -177,7 +195,7 @@ contains
                     *dtquantum*dfloat(iimdqt)
             end do
 
-            xstep=new_xstep(sim,xx,yy,zz,xxp,yyp,zzp,xxm,yym,zzm)
+            call new_xstep(sim,xx,yy,zz,xxp,yyp,zzp,xxm,yym,zzm, xstep)
             call nacT_analytic(sim,cadiab,xstep)
 
             do i=1,qm2ds%Mx
@@ -224,6 +242,9 @@ contains
             end do
         end if
 
+        deallocate(xs%Rp)
+        deallocate(xs%Rm)
+        deallocate(xs%R)
 
         return
     end subroutine
@@ -239,14 +260,22 @@ contains
 
         type(simulation_t), pointer :: sim
         integer k,j,i
-        type(xstep_t) :: xstep
+        type(xstep_t),target :: xs
+        type(xstep_t),pointer::xstep
+
+        allocate(xs%Rp(3,sim%Na))
+        allocate(xs%Rm(3,sim%Na))
+        allocate(xs%R(3,sim%Na))
+
+        xstep=>xs
+
         call do_sqm_davidson_update(sim,cmdqt=cmdqtnew, &
             vmdqt=vmdqtnew,vgs=vgs)
 
         !  xxp,yyp, and zzp are xyz at t + dtnact
         !  xxm,yym, and zzm are xyz at t - dtnact
 
-        xstep=new_xstep_dtnact_r3(sim, sim%naesmd%r%v)
+        call new_xstep_dtnact_r3(sim, sim%naesmd%r%v, xstep)
 
         do k=1,3
             sim%naesmd%deltaRp%v(k)%p(:natom)=xstep%Rp(k,:natom) &
@@ -262,6 +291,10 @@ contains
                 cadiabnew(i,j)=cadiab(i,j)
             end do
         end do
+
+        deallocate(xs%Rp)
+        deallocate(xs%Rm)
+        deallocate(xs%R)
 
         return
     end subroutine
