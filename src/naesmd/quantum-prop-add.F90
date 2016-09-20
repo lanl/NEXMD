@@ -14,7 +14,10 @@ contains
         type(simulation_t),pointer::sim
         integer k,j,i,lprint
         integer cross(sim%excN)
-        integer ascpr(sim%excN,sim%excN),z
+        !TODO ascpr and z are for use with apc subroutine min-cost algorithm written
+        !in F77. Should be updated to have an allocatable option.
+        integer ascpr(260,260),z
+        integer iordenapc(260)
 
         !--------------------------------------------------------------------
         !
@@ -66,10 +69,16 @@ contains
                 ascpr(i,j)=-1*ascpr(i,j)
             enddo
         end do
-
+        !write(6,*)'iorden:',iorden
+        
+        !Translate to old APC min-cost algorithm routine in F77
+        !Requires static matrix sizes
+        iordenapc(1:sim%excN)=iorden
         call apc(sim%excN,ascpr,iorden,z)
+        iorden=iordenapc(1:sim%excN)
 
         do i=1,sim%excN
+            !write(6,*)'i,iorden(i),ihop,scpr(i,iorden(i))',i,iorden(i),ihop,scpr(i,iorden(i))
             if(iorden(i).ne.i) then
                 if(i.lt.iorden(i).or.i.eq.ihop) then
                     if(dabs(scpr(i,iorden(i))).lt.0.9d0) then
@@ -225,18 +234,26 @@ contains
             call do_sqm_davidson_update(sim,cmdqt=cmdqtmiddle, &
                 vmdqt=vmdqtmiddle,vgs=vgs,rx=xx,ry=yy,rz=zz)
         end if
-
-        do j=1,sim%excN
-            if(lowvalue(j).gt.dabs(vmdqtmiddle(j)- &
-                vmdqtmiddle(iordenhop(j)))) then
-
-                lowvalue(j)=dabs(vmdqtmiddle(j)- &
-                    vmdqtmiddle(iordenhop(j)))
-                lowvaluestep(j)=iimdqt
-            end if
-        end do
-
-
+        write(6,*)'iordenhop:',iordenhop
+        write(6,*)'sizevmdqtmiddle',shape(vmdqtmiddle)
+! option 1: check trivial unavoided crossingfor all the states
+! Note: Currently broken due to iordenhop initialized as 0
+!        do j=1,sim%excN
+!            if(lowvalue(j).gt.dabs(vmdqtmiddle(j)- &
+!                vmdqtmiddle(iordenhop(j)))) then
+!
+!                lowvalue(j)=dabs(vmdqtmiddle(j)- &
+!                    vmdqtmiddle(iordenhop(j)))
+!                lowvaluestep(j)=iimdqt
+!            end if
+!        end do
+! option 2: check trivial unavoided crossingfor for the current state
+        if(lowvalue(ihop).gt.dabs(vmdqtmiddle(ihop)- &
+                vmdqtmiddle(iordenhop(ihop)))) then
+                lowvalue(ihop)=dabs(vmdqtmiddle(ihop)- &
+                        vmdqtmiddle(iordenhop(ihop)))
+                lowvaluestep(ihop)=iimdqt
+        end if
         return
     end subroutine
 

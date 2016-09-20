@@ -1,8 +1,8 @@
 &qmmm
    !***** Ground state and output parameters
    qm_theory='AM1', !Integral type [AM1]
-   scfconv=1.0d-4, !Ground state scf convergence criteria [1.0d-8]
-   verbosity=0, ![0]
+   scfconv=1.0d-5, !Ground state scf convergence criteria [1.0d-8]
+   verbosity=5, ![0]
    printcharges=0, ! Mulliken charges for ground state [0]
    printdipole=0, ! (0) None, (1) Transition, Relaxed, and Unrelaxed [0]
    printbondorders=0, ! (0) No, (1) Yes [0]
@@ -10,11 +10,11 @@
    itrmax=300, ! Maximum number of scf iterations for ground state, negative to ignore convergence [300]
 
    !***** Excited state parameters
-   exst_method=2, ! CIS (1) or RPA (2), [1]
+   exst_method=1, ! CIS (1) or RPA (2), [1]
    dav_guess=1, ! restart Davidson from previous (1) or from scratch (0) or XL-BOXMD (2)
    ftol=0.d0, !   Min tolerance (|emin-eold|) [0.d0]
-   ftol0=1.d-3, !  Acceptance tol.(|emin-eold|) [1.d-4]
-   ftol1=1.d-4, ! Accept.tol.for residual norm [1.d-5]
+   ftol0=1.d-4, !  Acceptance tol.(|emin-eold|) [1.d-4]
+   ftol1=1.d-5, ! Accept.tol.for residual norm [1.d-5]
    dav_maxcyc=200, !Max cycles for davidson diagonalization, negative for fixed number, [100]
    calcxdens=.false.,
 
@@ -46,15 +46,15 @@
 
    !***** Dynamics parameters
    time_init=0.d0, ! initial time, fs [0.0]
-   time_step=1, !time step, fs [0.1]
+   time_step=0.1, !time step, fs [0.1]
    n_class_steps=4, !number of classical steps [1]
-   n_quant_steps=1, ! number of quantum steps for each classical step [4]
+   n_quant_steps=2, ! number of quantum steps for each classical step [4]
    moldyn_deriv_flag=1, ! 0-none, 1-analyt, 2-numeric [1]
    num_deriv_step=1.d-5, ! displacement for numerical derivatives, A [1.d-3]
    rk_tolerance=1.d-7, ! tolerance for the Runge-Kutta propagator [1.d-7]
 
    !***** Non-adiabatic parameters
-   quant_coeffs_reinit=1, ! reinit (1) or not (0) quantum coeffs after a hop [0]
+   quant_coeffs_reinit=0, ! reinit (1) or not (0) quantum coeffs after a hop [0]
    quant_step_reduction_factor=1d0, ! quantum step reduction factor [0.1]
    decoher_type=0, ! type of decoherence: Persico/Granucci (0), Truhlar(1) [0]
    decoher_e0=0.d0, ! decoherence parameter E0 [0.1]
@@ -69,7 +69,7 @@
    heating_steps_per_degree=100, ! number of steps per degree during heating [100]
 
    !***** Output & Log parameters
-   verbosity=0, ! output verbosity (0-minimal, 3-highest) [2]
+   verbosity=5, ! output verbosity (0-minimal, 3-highest) [2]
    out_count_init=0, ! the initial count for output files [0]
    out_data_steps=1, ! number of steps to write data [1]
    out_coords_steps=1, ! number of steps to write the restart file [10]
@@ -109,5 +109,10 @@
   0.00	0.00
   0.00	0.00
   1.00  0.00
+  0.00  0.00
+  0.00  0.00
+  0.00  0.00
+  0.00  0.00
+  0.00  0.00
 &endcoeff
 
