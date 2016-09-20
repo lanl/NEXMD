@@ -352,6 +352,13 @@ all:  FFLAG = -O3 -mcmodel=medium
 all:  LDFLAGS = $(FFLAG)
 all:  sqmceonaesmd.exe
 
+all_ic: FC = ifort
+all_ic: CC = icc
+all_ic: LIB_BLAS_LAPAC =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_ilp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
+all_ic: FFLAG= -O3 -I${MKLROOT}/include -i8
+all_ic: CFLAG= -O3 -I${MKLROOT}/include -DMKL_LP64
+
+
 LINK =  $(LINALG)
 
 sqmceonaesmd.exe: $(OBJSQM) $(OBJLIB) $(OBJNAESMD) $(OBJSFF)
