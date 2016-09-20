@@ -36,12 +36,12 @@ LIBDIR = lib
 OBJDIR = obj
 SRCDIR = src
 MODDIR = mod
-LIB = -L$(LIBDIR) $(LIB_BLAS_LAPAC)
+LIB = lib
 
 SQMINC = -I$(MODDIR)/$(SQMDIR)/
 AMOEBAINC = -I$(MODDIR)/$(AMOEBADIR)/
 
-INC= -Iinc/ -Iinc/$(SANDERDIR) -Iinc/$(PBSADIR)/ -Imod/$(PBSADIR)/ -Iinc/$(LIBDIR)/ -Iinc/$(PMEMDDIR)/ -Iinc/$(NAESMDDIR)/old/ -Imod/$(SQMDIR)/
+INC= -Iinc/ -Iinc/$(SANDERDIR) -Iinc/$(PBSADIR)/ -Imod/$(PBSADIR)/ -Iinc/$(LIBDIR)/ -Iinc/$(PMEMDDIR)/ -Iinc/$(NAESMDDIR)/old/ -Iinc/$(SQMDIR)/ -Imod/$(SQMDIR)/ -Imod/$(NAESMDDIR)
 
 DIRECTORIES= $(MODDIR)/$(SQMDIR) $(MODDIR)/$(NAESMDDIR) $(MODDIR)/$(AMEOBADIR) $(MODDIR)/$(PBSADIR) inc/$(SQMDIR) inc/$(SANDERDIR) inc/$(PBSADIR) inc/$(LIBDIR) inc/$(PMEMDDIR) inc/$(NAESMDDIR) inc/$(NAESMDDIR)/old $(OBJDIR)/$(SQMDIR) $(OBJDIR)/$(NAESMDDIR) $(OBJDIR)/$(SANDERDIR) $(OBJDIR)/$(PMEMDIR) $(OBJDIR)/$(PBSADIR) $(OBJDIR)/$(AMOEBADIR) $(OBJDIR)/$(DIRSFF) $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME) $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC) $(OBJDIR)/$(LIBDIR)
 
@@ -156,30 +156,32 @@ OBJSQM = \
 	$(OBJDIR)/$(SQMDIR)/printNM.o \
         $(OBJDIR)/$(SQMDIR)/polarizab0ab_new.o
 OBJNAESMD = \
-	$(OBJDIR)/$(NAESMDDIR)/apc.o \
+        $(OBJDIR)/$(NAESMDDIR)/apc.o \
         $(OBJDIR)/$(NAESMDDIR)/naesmd_constants.o\
+        $(OBJDIR)/$(NAESMDDIR)/naesmd_module.o\
+        $(OBJDIR)/$(NAESMDDIR)/md_module.o\
         $(OBJDIR)/$(NAESMDDIR)/naesmd_space_module.o \
         $(OBJDIR)/$(NAESMDDIR)/communism.o \
         $(OBJDIR)/$(NAESMDDIR)/additional-subroutines.o \
         $(OBJDIR)/$(NAESMDDIR)/dcart_xpm_module.o \
         $(OBJDIR)/$(NAESMDDIR)/fcn.o \
         $(OBJDIR)/$(NAESMDDIR)/quantum-prop.o \
-	$(OBJDIR)/$(NAESMDDIR)/random.o \
-	$(OBJDIR)/$(NAESMDDIR)/langevin-temperature.o \
+        $(OBJDIR)/$(NAESMDDIR)/random.o \
+        $(OBJDIR)/$(NAESMDDIR)/langevin-temperature.o \
         $(OBJDIR)/$(NAESMDDIR)/statespecific.o \
         $(OBJDIR)/$(NAESMDDIR)/nacr.o \
-	$(OBJDIR)/$(NAESMDDIR)/nacT_analytic.o \
-	$(OBJDIR)/$(NAESMDDIR)/fewest-switches.o \
-	$(OBJDIR)/$(NAESMDDIR)/coherence.o \
-	$(OBJDIR)/$(NAESMDDIR)/quantum-prop-add.o \
-	$(OBJDIR)/$(NAESMDDIR)/writeoutput.o \
-	$(OBJDIR)/$(NAESMDDIR)/verlet.o \
-	$(OBJDIR)/$(NAESMDDIR)/cadiab.o \
-	$(OBJDIR)/$(NAESMDDIR)/main.o \
+        $(OBJDIR)/$(NAESMDDIR)/nacT_analytic.o \
+        $(OBJDIR)/$(NAESMDDIR)/fewest-switches.o \
+        $(OBJDIR)/$(NAESMDDIR)/coherence.o \
+        $(OBJDIR)/$(NAESMDDIR)/quantum-prop-add.o \
+        $(OBJDIR)/$(NAESMDDIR)/writeoutput.o \
+        $(OBJDIR)/$(NAESMDDIR)/verlet.o \
+        $(OBJDIR)/$(NAESMDDIR)/cadiab.o \
+        $(OBJDIR)/$(NAESMDDIR)/main.o \
         $(OBJDIR)/$(NAESMDDIR)/sqm_subs.o \
-	$(OBJDIR)/$(NAESMDDIR)/deriv.o \
-	$(OBJDIR)/$(NAESMDDIR)/buildM.o \
-	$(OBJDIR)/$(NAESMDDIR)/liouv_new.o \
+        $(OBJDIR)/$(NAESMDDIR)/deriv.o \
+        $(OBJDIR)/$(NAESMDDIR)/buildM.o \
+        $(OBJDIR)/$(NAESMDDIR)/liouv_new.o \
         $(OBJDIR)/$(NAESMDDIR)/rescaleveloc.o
 OBJPBSA = \
 	$(OBJDIR)/$(PBSADIR)/timer.o \

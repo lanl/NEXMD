@@ -1,19 +1,12 @@
-
-FFLAG = -O3 -mcmodel=medium
-LDFLAGS = $(FFLAG)
-LINK =  -llapack -lblas
-
 FC = gfortran
 CC = gcc
+LINALG = -llapack -lblas
 
+MODCMD = -module
 NAESMDDIR = naesmd
 SQMDIR = sqm
-PMEMDDIR = pmemd
-PBSADIR = pbsa
 SANDERDIR = sander
 DIRSFF = sff
-DIRPUBPME = pubpme
-AMOEBADIR = amoeba
 DIRDRIVERSRC = driver_src
 LIBDIR = lib
 
@@ -25,9 +18,9 @@ LIB = lib
 SQMINC = -I$(MODDIR)/$(SQMDIR)/
 AMOEBAINC = -I$(MODDIR)/$(AMOEBADIR)/
 
-INC= -Iinc/ -Iinc/$(SANDERDIR) -Iinc/$(PBSADIR)/ -Imod/$(PBSADIR)/ -Iinc/$(LIBDIR)/ -Iinc/$(PMEMDDIR)/ -Iinc/$(NAESMDDIR)/old/ -Iinc/$(SQMDIR) -Imod/$(SQMDIR)/ -Imod/$(NAESMDDIR)
+INC= -Iinc/ -Iinc/$(SANDERDIR) -Iinc/$(LIBDIR)/ -Iinc/$(SQMDIR) -Imod/$(SQMDIR)/ -Imod/$(NAESMDDIR)
 
-DIRECTORIES= $(MODDIR)/$(SQMDIR) $(MODDIR)/$(NAESMDDIR) $(MODDIR)/$(AMEOBADIR) $(MODDIR)/$(PBSADIR) inc/$(SQMDIR) inc/$(SANDERDIR) inc/$(PBSADIR) inc/$(LIBDIR) inc/$(PMEMDDIR) inc/$(NAESMDDIR) inc/$(NAESMDDIR)/old $(OBJDIR)/$(SQMDIR) $(OBJDIR)/$(NAESMDDIR) $(OBJDIR)/$(SANDERDIR) $(OBJDIR)/$(PMEMDIR) $(OBJDIR)/$(PBSADIR) $(OBJDIR)/$(AMOEBADIR) $(OBJDIR)/$(DIRSFF) $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME) $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC) $(OBJDIR)/$(LIBDIR)
+DIRECTORIES= $(MODDIR)/$(SQMDIR) $(MODDIR)/$(NAESMDDIR) inc/$(SQMDIR) inc/$(SANDERDIR) inc/$(LIBDIR) $(OBJDIR)/$(SQMDIR) $(OBJDIR)/$(NAESMDDIR) $(OBJDIR)/$(SANDERDIR) $(OBJDIR)/$(DIRSFF) $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME) $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC) $(OBJDIR)/$(LIBDIR)
 
 $(shell   mkdir -p $(DIRECTORIES)) 
 
@@ -139,7 +132,6 @@ OBJSQM = \
 	$(OBJDIR)/$(SQMDIR)/qm2_print_bondorders.o \
 	$(OBJDIR)/$(SQMDIR)/printNM.o \
         $(OBJDIR)/$(SQMDIR)/polarizab0ab_new.o
-
 OBJNAESMD = \
 	$(OBJDIR)/$(NAESMDDIR)/apc.o \
         $(OBJDIR)/$(NAESMDDIR)/naesmd_constants.o\
@@ -168,87 +160,6 @@ OBJNAESMD = \
 	$(OBJDIR)/$(NAESMDDIR)/buildM.o \
 	$(OBJDIR)/$(NAESMDDIR)/liouv_new.o \
         $(OBJDIR)/$(NAESMDDIR)/rescaleveloc.o
-
-OBJPBSA = \
-	$(OBJDIR)/$(PBSADIR)/timer.o \
-	$(OBJDIR)/$(PBSADIR)/sa_driver.o \
-	$(OBJDIR)/$(PBSADIR)/decomp.o \
-	$(OBJDIR)/$(PBSADIR)/pb_force.o \
-        $(OBJDIR)/$(PBSADIR)/pb_write.o \
-	$(OBJDIR)/$(PBSADIR)/svbksb.o \
-	$(OBJDIR)/$(PBSADIR)/svdcmp.o \
-	$(OBJDIR)/$(PBSADIR)/pythag.o \
-	$(OBJDIR)/$(PBSADIR)/gen_dx_file.o \
-	$(OBJDIR)/$(PBSADIR)/pb_augdrv.o \
-	$(OBJDIR)/$(PBSADIR)/gmresX.o \
-	$(OBJDIR)/$(PBSADIR)/aug_iccg.o \
-	$(OBJDIR)/$(PBSADIR)/matvec3.o \
-	$(OBJDIR)/$(PBSADIR)/iimod.o \
-	$(OBJDIR)/$(PBSADIR)/interpX.o \
-	$(OBJDIR)/$(PBSADIR)/dsvdc.o \
-	$(OBJDIR)/$(PBSADIR)/pb_fftsolv.o \
-	$(OBJDIR)/$(PBSADIR)/irre32.o \
-	$(OBJDIR)/$(PBSADIR)/problem.o \
-	$(OBJDIR)/$(PBSADIR)/regular.o \
-	$(OBJDIR)/$(PBSADIR)/qld.o \
-	$(OBJDIR)/$(PBSADIR)/miniop.o \
-	$(OBJDIR)/$(PBSADIR)/jumps.o \
-	$(OBJDIR)/$(PBSADIR)/irre31.o \
-	$(OBJDIR)/$(PBSADIR)/wint.o \
-	$(OBJDIR)/$(PBSADIR)/coed6.o \
-	$(OBJDIR)/$(PBSADIR)/qint.o \
-	$(OBJDIR)/$(PBSADIR)/coed20.o \
-	$(OBJDIR)/$(PBSADIR)/prodis.o \
-	$(OBJDIR)/$(PBSADIR)/indexg.o \
-	$(OBJDIR)/$(PBSADIR)/pb_iimdrv.o \
-	$(OBJDIR)/$(PBSADIR)/IIM.o \
-	$(OBJDIR)/$(PBSADIR)/bicg.o \
-	$(OBJDIR)/$(PBSADIR)/dslubc.o \
-	$(OBJDIR)/$(PBSADIR)/dbcg.o \
-	$(OBJDIR)/$(PBSADIR)/isdbcg.o \
-	$(OBJDIR)/$(PBSADIR)/d1mach.o \
-	$(OBJDIR)/$(PBSADIR)/xermsg.o \
-	$(OBJDIR)/$(PBSADIR)/xerhlt.o \
-	$(OBJDIR)/$(PBSADIR)/xersve.o \
-	$(OBJDIR)/$(PBSADIR)/i1mach.o \
-	$(OBJDIR)/$(PBSADIR)/xgetua.o \
-	$(OBJDIR)/$(PBSADIR)/j4save.o \
-	$(OBJDIR)/$(PBSADIR)/xerprn.o \
-	$(OBJDIR)/$(PBSADIR)/fdump.o \
-	$(OBJDIR)/$(PBSADIR)/xercnt.o \
-	$(OBJDIR)/$(PBSADIR)/dsluti.o \
-	$(OBJDIR)/$(PBSADIR)/dslui4.o \
-	$(OBJDIR)/$(PBSADIR)/dslui.o \
-	$(OBJDIR)/$(PBSADIR)/dslui2.o \
-	$(OBJDIR)/$(PBSADIR)/dsmtv.o \
-	$(OBJDIR)/$(PBSADIR)/dsmv.o \
-	$(OBJDIR)/$(PBSADIR)/dsilus.o \
-	$(OBJDIR)/$(PBSADIR)/dchkw.o \
-	$(OBJDIR)/$(PBSADIR)/ds2y.o \
-	$(OBJDIR)/$(PBSADIR)/qs2i1d.o \
-	$(OBJDIR)/$(PBSADIR)/gmres.o \
-	$(OBJDIR)/$(PBSADIR)/dslugm.o \
-	$(OBJDIR)/$(PBSADIR)/dgmres.o \
-	$(OBJDIR)/$(PBSADIR)/dpigmr.o \
-	$(OBJDIR)/$(PBSADIR)/dhels.o \
-	$(OBJDIR)/$(PBSADIR)/drlcal.o \
-	$(OBJDIR)/$(PBSADIR)/isdgmr.o \
-	$(OBJDIR)/$(PBSADIR)/dheqr.o \
-	$(OBJDIR)/$(PBSADIR)/dxlcal.o \
-	$(OBJDIR)/$(PBSADIR)/dorth.o \
-	$(OBJDIR)/$(PBSADIR)/curv.o \
-	$(OBJDIR)/$(PBSADIR)/GrToPr.o \
-	$(OBJDIR)/$(PBSADIR)/transf.o \
-	$(OBJDIR)/$(PBSADIR)/pb_lsolver.o \
-	$(OBJDIR)/$(PBSADIR)/pb_nlsolver.o \
-	$(OBJDIR)/$(PBSADIR)/pb_fddrv.o \
-	$(OBJDIR)/$(PBSADIR)/pb_exmol.o \
-	$(OBJDIR)/$(PBSADIR)/membrane.o \
-	$(OBJDIR)/$(PBSADIR)/pb_direct.o \
-	$(OBJDIR)/$(PBSADIR)/pb_mpfrc.o \
-	$(OBJDIR)/$(PBSADIR)/pb_list.o \
-	$(OBJDIR)/$(PBSADIR)/periodic_cg/random.o \
-	$(OBJDIR)/$(PBSADIR)/np_force.o
 
 OBJSANDER = \
 	$(OBJDIR)/$(SANDERDIR)/amoeba_mdin.o \
@@ -384,71 +295,9 @@ OBJSANDER = \
 	$(OBJDIR)/$(SANDERDIR)/lsc_init.o \
 	$(OBJDIR)/$(SANDERDIR)/nose_hoover_init.o \
 	$(OBJDIR)/$(SANDERDIR)/degcnt.o 
-OBJPMEMD = \
-	$(OBJDIR)/$(PMEMDDIR)/veclib.o \
-	$(OBJDIR)/$(PMEMDDIR)/file_io_dat.o \
-	$(OBJDIR)/$(PMEMDDIR)/gbl_constants.o \
-	$(OBJDIR)/$(PMEMDDIR)/parallel_dat.o \
-	$(OBJDIR)/$(PMEMDDIR)/pmemd_lib.o \
-	$(OBJDIR)/$(PMEMDDIR)/gbl_datatypes.o \
-	$(OBJDIR)/$(PMEMDDIR)/mol_list.o \
-	$(OBJDIR)/$(PMEMDDIR)/dynamics_dat.o \
-	$(OBJDIR)/$(PMEMDDIR)/prfs.o \
-	$(OBJDIR)/$(PMEMDDIR)/random.o \
-	$(OBJDIR)/$(PMEMDDIR)/file_io.o \
-	$(OBJDIR)/$(PMEMDDIR)/mdin_ctrl_dat.o \
-	$(OBJDIR)/$(PMEMDDIR)/dynamics.o \
-	$(OBJDIR)/$(PMEMDDIR)/nextprmtop_section.o \
-	$(OBJDIR)/$(PMEMDDIR)/charmm.o \
-	$(OBJDIR)/$(PMEMDDIR)/prmtop_dat.o \
-	$(OBJDIR)/$(PMEMDDIR)/pbc.o \
-	$(OBJDIR)/$(PMEMDDIR)/axis_optimize.o \
-	$(OBJDIR)/$(PMEMDDIR)/binrestart.o \
-	$(OBJDIR)/$(PMEMDDIR)/inpcrd_dat.o \
-	$(OBJDIR)/$(PMEMDDIR)/bintraj.o \
-	$(OBJDIR)/$(PMEMDDIR)/remd.o \
-	$(OBJDIR)/$(PMEMDDIR)/timers.o \
-	$(OBJDIR)/$(PMEMDDIR)/state_info.o \
-	$(OBJDIR)/$(PMEMDDIR)/fft1d.o \
-	$(OBJDIR)/$(PMEMDDIR)/mdin_ewald_dat.o \
-	$(OBJDIR)/$(PMEMDDIR)/nmr_lib.o \
-	$(OBJDIR)/$(PMEMDDIR)/nmr_calls.o \
-	$(OBJDIR)/$(PMEMDDIR)/runfiles.o \
-	$(OBJDIR)/$(PMEMDDIR)/pmemd_clib.o \
-	$(OBJDIR)/$(PMEMDDIR)/erfcfun.o 
 
 OBJSFF = \
-	$(OBJDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC)/utility.o \
 	$(OBJDIR)/$(DIRSFF)/xminC.o
-OBJSFF = \
-	$(OBJDIR)/$(DIRSFF)/xminC.o 
-
-OBJAMOEBA = \
-	$(OBJDIR)/$(AMOEBADIR)/nextprmtop_section.o \
-	$(OBJDIR)/$(AMOEBADIR)/state_info.o \
-	$(OBJDIR)/$(AMOEBADIR)/file_io_dat.o \
-	$(OBJDIR)/$(AMOEBADIR)/parallel_dat.o \
-	$(OBJDIR)/$(AMOEBADIR)/pmemd_lib.o \
-	$(OBJDIR)/$(AMOEBADIR)/gbl_constants.o \
-	$(OBJDIR)/$(AMOEBADIR)/fft1d.o \
-	$(OBJDIR)/$(AMOEBADIR)/axis_optimize.o \
-	$(OBJDIR)/$(AMOEBADIR)/file_io.o \
-	$(OBJDIR)/$(AMOEBADIR)/mdin_ctrl_dat.o \
-	$(OBJDIR)/$(AMOEBADIR)/mdin_ewald_dat.o \
-	$(OBJDIR)/$(AMOEBADIR)/gbl_datatypes.o \
-	$(OBJDIR)/$(AMOEBADIR)/prmtop_dat.o \
-	$(OBJDIR)/$(AMOEBADIR)/nmr_lib.o \
-	$(OBJDIR)/$(AMOEBADIR)/nmr_calls.o \
-	$(OBJDIR)/$(AMOEBADIR)/dynamics_dat.o \
-	$(OBJDIR)/$(AMOEBADIR)/random.o \
-	$(OBJDIR)/$(AMOEBADIR)/dynamics.o \
-	$(OBJDIR)/$(AMOEBADIR)/pbc.o \
-	$(OBJDIR)/$(AMOEBADIR)/inpcrd_dat.o \
-	$(OBJDIR)/$(AMOEBADIR)/bintraj.o \
-	$(OBJDIR)/$(AMOEBADIR)/loadbal.o \
-	$(OBJDIR)/$(AMOEBADIR)/runfiles.o \
-	$(OBJDIR)/$(AMOEBADIR)/erfcfun.o \
-	$(OBJDIR)/$(AMOEBADIR)/pmemd_clib.o
 
 OBJLIB = \
 	$(OBJDIR)/$(LIBDIR)/rfree.o \
@@ -464,15 +313,8 @@ $(OBJDIR)/$(LIBDIR)/%.o: $(SRCDIR)/$(LIBDIR)/%.F90
 $(OBJDIR)/$(LIBDIR)/%.o: $(SRCDIR)/$(LIBDIR)/%.F
 	$(FC) $(INC) $(FFLAG) -o $@ -c $<
 
-$(OBJDIR)/$(AMOEBADIR)/%.o: $(SRCDIR)/$(AMOEBADIR)/%.F90
-	$(FC) $(INC) $(FFLAG) -J$(MODDIR)/$(AMOEBADIR)/  -o $@ -c $<
-
-$(OBJDIR)/$(AMOEBADIR)/%.o: $(SRCDIR)/$(AMOEBADIR)/%.c
-	$(CC) $(INC) -o $@ -c $<
-
 $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC)/%.o: $(SRCDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC)/%.f
 	$(FC) $(INC) $(FFLAG) -o $@ -c $<
-
 
 $(OBJDIR)/$(DIRSFF)/%.o: $(SRCDIR)/$(DIRSFF)/%.c
 	$(CC) $(INC) -DSQM -o $@ -c $<
@@ -489,14 +331,6 @@ $(OBJDIR)/$(SANDERDIR)/%.o: $(SRCDIR)/$(SANDERDIR)/%.c
 $(OBJDIR)/$(SQMDIR)/%.o: $(SRCDIR)/$(SQMDIR)/%.F90
 	$(FC) $(INC) $(FFLAG) -DSQM -J$(MODDIR)/$(SQMDIR)/ -o $@ -c $< 
 
-$(OBJDIR)/$(PBSADIR)/%.o: $(SRCDIR)/$(PBSADIR)/%.F90
-	$(FC) $(INC) $(FFLAG) -J$(MODDIR)/$(PBSADIR)/ -o $@ -c $<
-
-
-$(OBJDIR)/$(PBSADIR)/periodic_cg/%.o: $(SRCDIR)/$(PBSADIR)/periodic_cg/%.F90
-	$(FC) $(INC) $(FFLAG) -o $@ -c $<
-
-
 $(OBJDIR)/$(NAESMDDIR)/%.o: $(SRCDIR)/$(NAESMDDIR)/%.F90
 	$(FC) $(INC) $(FFLAG) $(SQMINC) -J$(MODDIR)/$(NAESMDDIR)/  -o $@ -c $<  
 
@@ -506,26 +340,19 @@ $(OBJDIR)/$(NAESMDDIR)/old/%.o: $(SRCDIR)/$(NAESMDDIR)/old/%.F90
 $(OBJDIR)/$(NAESMDDIR)/old/%.o: $(SRCDIR)/$(NAESMDDIR)/old/%.f
 	$(FC) $(INC) $(FFLAG) -o $@ -c $<
 
-
-$(OBJDIR)/$(PMEMDDIR)/%.o: $(SRCDIR)/$(PMEMDDIR)/%.F90
-	$(FC) $(INC) $(FFLAG) -J$(MODDIR)/$(PMEMDDIR) -o $@ -c $<
-
-$(OBJDIR)/$(PMEMDDIR)/%.o: $(SRCDIR)/$(PMEMDDIR)/%.c
-	$(CC) $(INC) $(FFLAG) -o $@ -c $<
-
-
 debug: FFLAG = -O0 -DDEBUG -C -g -Wall
-debug: LDFLAGS = -O0 -DDEBUG -C -g -Wall
+debug: LDFLAGS = $(FFLAG)
 debug: sqmceonaesmd.exe
 
 debug2: FFLAG = -O0 -DDEBUG -C -g
-debug2: LDFLAGS = -O0 -DDEBUG -C -g
+debug2: LDFLAGS = $(FFLAG)
 debug2: sqmceonaesmd.exe
 
 all:  FFLAG = -O3 -mcmodel=medium
 all:  LDFLAGS = $(FFLAG)
-all: LINK =  -llapack -lblas
-all: sqmceonaesmd.exe
+all:  sqmceonaesmd.exe
+
+LINK =  $(LINALG)
 
 sqmceonaesmd.exe: $(OBJSQM) $(OBJLIB) $(OBJNAESMD) $(OBJSFF)
 	$(FC) $(LDFLAGS) -o sqmceonaesmd.exe $(OBJNAESMD) $(OBJSQM) $(OBJLIB) $(OBJSFF) -L$(LIB) $(LINK) 
