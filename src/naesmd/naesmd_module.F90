@@ -34,7 +34,7 @@ module naesmd_module
     _REAL_,allocatable:: fxmdqt(:),fymdqt(:),fzmdqt(:)
     _REAL_,target,allocatable::massmdqt(:)
     _REAL_ dtquantum,kin
-    _REAL_,target,allocatable::dtnact, dtmdqt
+    _REAL_,target::dtnact, dtmdqt
     _REAL_,allocatable:: vmdqt(:)
     _REAL_,allocatable:: bcoeffvmdqt(:)
     _REAL_,allocatable:: vmdqtnew(:)
@@ -85,7 +85,7 @@ contains
         write(6,*)'Allocating initial naesmd_module variables'
         allocate(atomtype(natoms),atomtype2(natoms))
         allocate(massmdqt(natoms))
-    end
+    end subroutine
     subroutine allocate_naesmd_module(Na,Nexc)
         implicit none
         integer Na,Nexc
@@ -127,7 +127,7 @@ contains
         allocate(ax(Na),ay(Na),az(Na))
         allocate(axold(Na),ayold(Na),azold(Na))
         allocate(fxmdqt(Na),fymdqt(Na),fzmdqt(Na))
-    end
+    end subroutine
     subroutine allocate_naesmd_module2(Ncis,Nmo,Nexc)
         implicit none
         integer Ncis,Nmo,Nexc
@@ -138,5 +138,5 @@ contains
         allocate(cmdqtnew(Ncis,Nexc))
         allocate(cicoeffao2(Ncis,Nexc))
         allocate(uuold(Nmo,Nmo))
-    end
+    end subroutine
 end module

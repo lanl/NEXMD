@@ -22,7 +22,7 @@ contains
         integer natoms
         write(6,*)'Allocating md_module initial variables'
         allocate(atoms(natoms),atmass(natoms),r0(3*natoms))
-    end
+    end subroutine
     subroutine allocate_md_module(Na)
         implicit none
         integer Na,Nm
@@ -31,5 +31,5 @@ contains
         if(.not.allocated(v)) allocate(v(Nm,Nm))
         if(.not.allocated(fm)) allocate(fm(Nm)) ! mode masses
         if(.not.allocated(fo)) allocate(fo(Nm))            ! mode frequencies (used to determine friction)
-    end
+    end subroutine
 end module
