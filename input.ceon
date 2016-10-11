@@ -41,8 +41,8 @@
    natoms=100,
    rnd_seed=1, ! seed for the random number generator
    bo_dynamics_flag=0, ! 0-non-BO, 1-BO [1]
-   exc_state_init=6, ! initial excited state (0 - ground state) [0]
-   n_exc_states_propagate=8, ! number of excited states [0]
+   exc_state_init=0, ! initial excited state (0 - ground state) [0]
+   n_exc_states_propagate=0, ! number of excited states [0]
 
    !***** Dynamics parameters
    time_init=0.d0, ! initial time, fs [0.0]
@@ -59,6 +59,7 @@
    decoher_type=0, ! type of decoherence: Persico/Granucci (0), Truhlar(1) [0]
    decoher_e0=0.d0, ! decoherence parameter E0 [0.1]
    decoher_c=0.d0, ! decoherence parameter C [0.1]
+   dotrivial=0, !do trivial unavoided crossing routine (1) or not (0)
 
    !***** Thermostat parameters
    therm_type=1, ! Thermostat type (0-no thermostat,1-Langevin,2-Berendsen) [0] 

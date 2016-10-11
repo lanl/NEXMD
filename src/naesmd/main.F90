@@ -68,7 +68,7 @@ program MD_Geometry
     integer rnd_seed,out_data_cube,verbosity,moldyn_deriv_flag
     _REAL_ quant_step_reduction_factor
     _REAL_ decoher_e0,decoher_c
-    integer decoher_type
+    integer decoher_type,dotrivial
     namelist /moldyn/ natoms,bo_dynamics_flag,exc_state_init, &
         n_exc_states_propagate,out_count_init,time_init, &
         rk_tolerance,time_step,n_class_steps,n_quant_steps, &
@@ -77,7 +77,7 @@ program MD_Geometry
         berendsen_relax_const,heating, &
         heating_steps_per_degree,out_data_steps,out_coords_steps, &
         therm_friction,rnd_seed,out_data_cube,verbosity,moldyn_deriv_flag, &
-        quant_step_reduction_factor,decoher_e0,decoher_c,decoher_type
+        quant_step_reduction_factor,decoher_e0,decoher_c,decoher_type,dotrivial
     integer cohertype
     _REAL_,allocatable :: yg(:)
     integer,allocatable :: cross(:)
@@ -210,7 +210,16 @@ program MD_Geometry
             !**************************************************************
             ! check crossing, if crossing takes place, nquantumstep=nstepcross*nquantumreal
             !***************************************************************
+            
+            if(dotrivial.eq.1) then
             call checkcrossing(sim,cross,lprint)
+            else
+               write(6,*)'WARNING:TRIVIAL UNAVOIDED CROSSING DETECTION IS OFF'
+               do i=1,npot
+                  cross(i)=0
+               enddo
+            endif
+
             nquantumstep=nquantumreal
             dtquantum=dtmdqt/dfloat(nquantumstep)
             !*******************************************
@@ -644,7 +653,8 @@ contains
         decoher_e0=0.1d0 ! decoherence parameter E0
         decoher_c=0.1d0 ! decoherecne parameter C
         decoher_type=0 ! decoherence type, Persico/Granucci(0), or Truhlar (1)
-   
+        dotrivial=1 !do trivial unavoided crossing routine (1) or not (0)  
+ 
         inputfdes=12
         open (inputfdes,file='input.ceon',status='old')
 
@@ -873,7 +883,7 @@ contains
         sim%excN=npot
         call allocate_naesmd_module(Na,npot)
         call allocate_md_module(Na)
-        if(npot.ne.0) then
+        if(npot.gt.0) then
                 allocate(yg(2*sim%excN))
                 allocate(cross(sim%excN))
                 allocate(fosc(sim%excN))
@@ -929,7 +939,9 @@ contains
         end do
 
         i=1
-        do
+
+        if(sim%excN.gt.0) then
+          do
             read(12,'(a)',err=29) txt
             if( &
                 txt(1:9).eq.'$ENDCOEFF' &
@@ -944,8 +956,9 @@ contains
 
             i=i+1
             if(i.gt.sim%excN) exit ! too many coefficients - leaving the loop
-        end do
-      
+          end do
+        endif
+
         close (12)
         !
         !--------------------------------------------------------------------

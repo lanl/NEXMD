@@ -25,7 +25,7 @@ contains
         _REAL_ xcm,ycm,zcm
         character*1000 card
 
-        _REAL_ yg(2*sim%excN)
+        _REAL_ yg(:)
         _REAL_ energy !!JAB VE model
 
         if(solvent_model.eq.2) then
