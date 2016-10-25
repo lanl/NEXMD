@@ -2,7 +2,7 @@
    !***** Ground state and output parameters
    qm_theory='AM1', !Integral type [AM1]
    scfconv=1.0d-5, !Ground state scf convergence criteria [1.0d-8]
-   verbosity=0, ![0]
+   verbosity=5, ![0]
    printcharges=0, ! Mulliken charges for ground state [0]
    printdipole=0, ! (0) None, (1) Transition, Relaxed, and Unrelaxed [0]
    printbondorders=0, ! (0) No, (1) Yes [0]
