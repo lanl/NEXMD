@@ -3,7 +3,7 @@
    qm_theory='AM1', !Integral type [AM1]
    scfconv=1.0d-8, !Ground state scf convergence criteria [1.0d-8]
    verbosity=3, ![0]
-   printcharges=1, ! Mulliken charges for ground state [0]
+   printcharges=0, ! Mulliken charges for ground state [0]
    printdipole=2, ! (0) None, (1) Transition, Relaxed, and Unrelaxed [0]
    printbondorders=0, ! (0) No, (1) Yes [0]
    density_predict=0, !(0) None, (1) Reversible MD, (2) XL-BOMD [0]
