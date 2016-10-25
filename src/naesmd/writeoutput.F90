@@ -281,17 +281,8 @@ contains
 
             if(lprint.ge.1) then
                 if(ibo.eq.1) then
-                    write(6,*)tfemto,shape(tfemto)
-                    write(6,*)vgs,shape(vgs)
-                    write(6,*)feVmdqt,shape(feVmdqt)
-                    write(6,*)vmdqt,shape(vmdqt)
-                    write(6,*)sim%excN,shape(sim%excN)
-                    write(6,*) tfemto,vgs*feVmdqt, &
-                        (vmdqt(j)*feVmdqt,j=1,sim%excN)
-                    write(6,*)'done0'
                     write(96,889) tfemto,vgs*feVmdqt, &
                         (vmdqt(j)*feVmdqt,j=1,sim%excN)
-                    write(6,*)'done'
                 else
                     write(96,889) tfemto,vgs*feVmdqt, &
                         (vmdqt(j)*feVmdqt,j=1,sim%excN)

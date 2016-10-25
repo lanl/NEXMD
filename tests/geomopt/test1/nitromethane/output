@@ -1,0 +1,1758 @@
+
+ |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|
+ | MD execution started at    Tue Oct 25 13:40:06 MDT 2016   |
+ | Computer:  Linux t1248924 x86_64               |
+ |________________________________________________|
+
+ rnd_seed=           1
+ !!!!!!-----MD INPUT-----!!!!!!
+
+ Ground state MD,      imdtype=           0
+ Initial count for out files              0
+ MD using Langevin 
+ with friction coefficient [1/ps]=   4.8377600000000000E-002
+ Starting time, fs           0.0000000000000000     
+ Time step, fs		        0.10000000000000001     
+ Number of classical steps (CS)            0
+ Quantum steps/per CS                    0
+ Displacement for deriv. [A]      1.0000000000000001E-005
+ Langevin thermostat dynamics, ither=           1
+ Temperature, K                  300.00000000000000     
+ Bath relaxation constant       0.40000000000000002     
+ Equilibrated dynamics
+ Number of steps per degree K           100
+ Number of steps to write data            1
+ Number of steps to write coords           1
+ Friction coefficient [1/ps]      4.8377600000000002E-005
+ Seed for random generator               1
+ NAESMD verbosity,            0
+ MD will use analytic deriv,  ideriv=           1
+ Cartesian coordinates are used
+ Allocating initial naesmd_module variables
+ Allocating md_module initial variables
+ Allocating variables
+ Allocating naesmd_module variables           7           0
+ Allocating md_module variables           7
+  Finish reading coordinates 
+ Rescaling velocity
+
+ Initial Geometry
+    7        -3.652440    3.218510    0.000470
+    6        -4.009990    1.820210   -0.001090
+    1        -5.067930    1.683010   -0.314830
+    1        -3.884340    1.400090    1.019380
+    1        -3.355060    1.266680   -0.707010
+    8        -4.455900    4.045100   -0.309720
+    8        -2.549710    3.551380    0.312810
+
+--------------------------------------------------------------------------------
+  QM CALCULATION INFO
+--------------------------------------------------------------------------------
+
+| QMMM: Citation for AMBER QMMM Run:
+| QMMM: R.C. Walker, M.F. Crowley and D.A. Case, J. COMP. CHEM. 29:1019, 2008
+
+QMMM: SINGLET STATE CALCULATION
+QMMM: RHF CALCULATION, NO. OF DOUBLY OCCUPIED LEVELS = 12
+
+| QMMM: *** Selected Hamiltonian *** 
+| QMMM: AM1         
+
+| QMMM: *** Parameter sets in use ***
+| QMMM: N : M.J.S.DEWAR et al. JACS, 107, 3902, (1985)
+| QMMM: C : M.J.S.DEWAR et al. JACS, 107, 3902, (1985)
+| QMMM: H : M.J.S.DEWAR et al. JACS, 107, 3902, (1985)
+| QMMM: O : M.J.S.DEWAR et al. JACS, 107, 3902, (1985)
+
+| QMMM: *** SCF convergence criteria ***
+| QMMM: Energy change                :  0.1D-07 kcal/mol
+| QMMM: Error matrix |FP-PF|         :  0.1D+00 au
+| QMMM: Density matrix change        :  0.5D-05
+| QMMM: Maximum number of SCF cycles :      300
+
+| QMMM: *** Diagonalization Routine Information ***
+| QMMM: Pseudo diagonalizations are allowed.
+| QMMM: Auto diagonalization routine selection is disabled.
+| QMMM: Using internal diagonalization routine (diag_routine=1).
+
+  QMMM: QM Region Cartesian Coordinates (*=link atom) 
+  QMMM: QM_NO.   MM_NO.  ATOM         X         Y         Z
+  QMMM:     1        1      N       -3.6524    3.2185    0.0005
+  QMMM:     2        2      C       -4.0100    1.8202   -0.0011
+  QMMM:     3        3      H       -5.0679    1.6830   -0.3148
+  QMMM:     4        4      H       -3.8843    1.4001    1.0194
+  QMMM:     5        5      H       -3.3551    1.2667   -0.7070
+  QMMM:     6        6      O       -4.4559    4.0451   -0.3097
+  QMMM:     7        7      O       -2.5497    3.5514    0.3128
+
+--------------------------------------------------------------------------------
+  RESULTS
+--------------------------------------------------------------------------------
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+       iter       energy            rms gradient
+       ----    --------------     -----------------
+xmin     1    -1014.136053 eV        0.847109 eV/A
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+xmin     2    -1014.236683 eV        0.106527 eV/A
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+xmin     3    -1014.238112 eV        0.051261 eV/A
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+xmin     4    -1014.238488 eV        0.028841 eV/A
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+xmin     5    -1014.238561 eV        0.029425 eV/A
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+xmin     6    -1014.238720 eV        0.011679 eV/A
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+xmin     7    -1014.238725 eV        0.011987 eV/A
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+xmin     8    -1014.238751 eV        0.009153 eV/A
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+xmin     9    -1014.238761 eV        0.003698 eV/A
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+xmin    10    -1014.238763 eV        0.004105 eV/A
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+xmin    11    -1014.238764 eV        0.002228 eV/A
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+xmin    12    -1014.238765 eV        0.000773 eV/A
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+xmin    13    -1014.238765 eV        0.000128 eV/A
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+xmin    14    -1014.238765 eV        0.000217 eV/A
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+xmin    14    -1014.238765 eV        0.000098 eV/A
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+  ... geometry converged!
+
+ Final Structure
+    7        -3.647365    3.242752    0.000009
+    6        -4.020611    1.789900   -0.001909
+    1        -5.088392    1.693274   -0.321664
+    1        -3.874668    1.394739    1.034930
+    1        -3.338836    1.259342   -0.713370
+    8        -4.474712    4.053652   -0.315861
+    8        -2.530786    3.551321    0.317874
+
+ |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|
+ | MD normal termination at   Tue Oct 25 13:40:07 MDT 2016   |
+ | MD total CPU time	         0.60000E-01 seconds |
+ |      0 days  0 hours  0 minutes  0 seconds     |
+
+  SQM (ground state) took overall [s]:
+       0.267E-01
+  Davidson (excited states) took overall [s]:
+        0.00    
+  deriv (adiabatic forces) took overall [s]:
+        0.00    
+  nacT (NA derivatives) took overall [s]:
+        0.00    
+ |________________________________________________|
+

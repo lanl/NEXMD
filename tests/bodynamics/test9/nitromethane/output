@@ -1,0 +1,2502 @@
+
+ |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|
+ | MD execution started at    Tue Oct 25 14:07:19 MDT 2016   |
+ | Computer:  Linux t1248924 x86_64               |
+ |________________________________________________|
+
+ rnd_seed=           1
+ !!!!!!-----MD INPUT-----!!!!!!
+
+ Excited state MD,      state=           1
+ Number of states to propagate           1
+ Initial count for out files              0
+ MD using Langevin 
+ with friction coefficient [1/ps]=   4.8377600000000000E-002
+ Starting time, fs           0.0000000000000000     
+ Time step, fs		        0.10000000000000001     
+ Number of classical steps (CS)           10
+ Quantum steps/per CS                    0
+ Displacement for deriv. [A]      1.0000000000000001E-005
+ Langevin thermostat dynamics, ither=           1
+ Temperature, K                  300.00000000000000     
+ Bath relaxation constant       0.40000000000000002     
+ Equilibrated dynamics
+ Number of steps per degree K           100
+ Number of steps to write data            1
+ Number of steps to write coords           1
+ Friction coefficient [1/ps]      4.8377600000000002E-005
+ Seed for random generator               1
+ NAESMD verbosity,            3
+ MD will use analytic deriv,  ideriv=           1
+ Cartesian coordinates are used
+ Allocating initial naesmd_module variables
+ Allocating md_module initial variables
+ Allocating variables
+ Allocating naesmd_module variables           7           1
+ Allocating md_module variables           7
+  Finish reading coordinates 
+ Rescaling velocity
+
+ Initial Geometry
+    7        -3.652440    3.218510    0.000470
+    6        -4.009990    1.820210   -0.001090
+    1        -5.067930    1.683010   -0.314830
+    1        -3.884340    1.400090    1.019380
+    1        -3.355060    1.266680   -0.707010
+    8        -4.455900    4.045100   -0.309720
+    8        -2.549710    3.551380    0.312810
+
+--------------------------------------------------------------------------------
+  QM CALCULATION INFO
+--------------------------------------------------------------------------------
+
+| QMMM: Citation for AMBER QMMM Run:
+| QMMM: R.C. Walker, M.F. Crowley and D.A. Case, J. COMP. CHEM. 29:1019, 2008
+
+QMMM: SINGLET STATE CALCULATION
+QMMM: RHF CALCULATION, NO. OF DOUBLY OCCUPIED LEVELS = 12
+
+| QMMM: *** Selected Hamiltonian *** 
+| QMMM: AM1         
+
+| QMMM: *** Parameter sets in use ***
+| QMMM: N : M.J.S.DEWAR et al. JACS, 107, 3902, (1985)
+| QMMM: C : M.J.S.DEWAR et al. JACS, 107, 3902, (1985)
+| QMMM: H : M.J.S.DEWAR et al. JACS, 107, 3902, (1985)
+| QMMM: O : M.J.S.DEWAR et al. JACS, 107, 3902, (1985)
+
+| QMMM: *** SCF convergence criteria ***
+| QMMM: Energy change                :  0.1D-07 kcal/mol
+| QMMM: Error matrix |FP-PF|         :  0.1D+00 au
+| QMMM: Density matrix change        :  0.5D-05
+| QMMM: Maximum number of SCF cycles :      300
+
+| QMMM: *** Diagonalization Routine Information ***
+| QMMM: Pseudo diagonalizations are allowed.
+| QMMM: Auto diagonalization routine selection is disabled.
+| QMMM: Using internal diagonalization routine (diag_routine=1).
+
+  QMMM: QM Region Cartesian Coordinates (*=link atom) 
+  QMMM: QM_NO.   MM_NO.  ATOM         X         Y         Z
+  QMMM:     1        1      N       -3.6524    3.2185    0.0005
+  QMMM:     2        2      C       -4.0100    1.8202   -0.0011
+  QMMM:     3        3      H       -5.0679    1.6830   -0.3148
+  QMMM:     4        4      H       -3.8843    1.4001    1.0194
+  QMMM:     5        5      H       -3.3551    1.2667   -0.7070
+  QMMM:     6        6      O       -4.4559    4.0451   -0.3097
+  QMMM:     7        7      O       -2.5497    3.5514    0.3128
+
+--------------------------------------------------------------------------------
+  RESULTS
+--------------------------------------------------------------------------------
+
+QMMM: Allocating qmmmrijdata array as     11 x      0
+QMMM: to hold min npairs of          0 and nquant per thread of        7
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -57843.91      -57843.91      0.1797693+309  -1.000000    
+QMMM:     2     -61583.25      -3739.338      0.5190842      -1.000000    
+QMMM:     3     -61660.96      -77.71725      0.2143047      -1.000000    
+QMMM:     4     -61668.07      -7.104232      0.4957920E-01  -1.000000    
+QMMM:     5 *   -61667.28      0.7889670      0.1143536E-01  -1.000000    
+QMMM:     6 *   -61667.38     -0.1025902      0.7363937E-02  -1.000000    
+QMMM:     7 *   -61667.49     -0.1076223      0.4562082E-02  -1.000000    
+QMMM:     8 *   -61667.43      0.6175606E-01  0.5244893E-03  -1.000000    
+QMMM:     9 *   -61667.43     -0.1671167E-03  0.2402461E-03  -1.000000    
+QMMM:    10 *   -61667.43     -0.7574755E-04  0.1012104E-03  -1.000000    
+QMMM:    11 *   -61667.43      0.3153355E-04  0.2995899E-04  -1.000000    
+QMMM:    12 *   -61667.43     -0.3447203E-06  0.1540141E-04  -1.000000    
+QMMM:    13 *   -61667.43     -0.4800895E-06  0.9609881E-05  -1.000000    
+QMMM:    14 *   -61667.43      0.2893648E-06  0.7494165E-06  -1.000000    
+QMMM:    15 *   -61667.43     -0.2182787E-09  0.3759700E-06  -1.000000    
+QMMM:    16     -61667.43     -0.5093170E-10  0.1641132E-06  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:    16 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           0
+ istore_M=           0
+ ++ START            1          78
+ ++ START            2          71
+ ++ START            3          64
+ info           0
+    3.73    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.62    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.62    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.62    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.614931511343975     0.49E-07 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.61493151134398        0.209246727840107E-05    0.258599267294253E-06    0.169616141188027E-04    0.193126806644980E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.61493151134398        0.486071707720430E-02   -0.170877409161703E-02   -0.138389963555442E-01    0.218064299529573E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.1956854855805       -37.270990361221543     
+ Total energies of excited states (eV,AU)
+           1  -1010.5807539742365       -37.138144127063811     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4092291      -1.624033      0.4026582E-04   1.674799    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.184751
+QMMM:     2      C              -0.080404
+QMMM:     3      H               0.132650
+QMMM:     4      H               0.120224
+QMMM:     5      H               0.119777
+QMMM:     6      O              -0.273706
+QMMM:     7      O              -0.203292
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.614932     -0.6992382      -3.898393      0.8510261E-01   3.961521    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.614932     -0.2751015      -1.533746      0.3348195E-01   1.558583    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.614932      0.2841033      0.1526059      0.7417733E-01  0.3309161    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.614932      0.1341276      0.9028664E-01  0.3344168E-01  0.1651067    
+QMMM:
+QMMM: SCF Energy =       -7.61364564 KCal/mol,       -31.85549338 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2674.10037908 eV (   -61667.42884206 KCal/mol)
+QMMM: QM core - QM core energy =      1659.90469360 eV (    38279.06213908 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.90469360 eV (    38279.06213908 KCal/mol)
+QMMM:             Total energy =     -1014.19568549 eV (   -23388.36670298 KCal/mol)
+  Restoring quirality in cmdqt
+ LPRINT:           3           1
+ Begin classical propagation step #           1
+ Begin nonadiabatic couplings and crossings calculations
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61667.43      -61667.43      0.1797693+309  -1.000000    
+QMMM:     2     -61667.43      0.7275958E-11  0.1960557E-07  -1.000000    
+QMMM:     3     -61667.43       0.000000      0.1013900E-07  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     3 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+  Restoring quirality in HF orbitals
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           1
+ istore_M=           1
+ Currently have            1  states
+ With            1  initial guesses
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.614931314586611     0.49E-07 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.61493131458661        0.209246168041780E-05    0.258600107919908E-06    0.169616600791698E-04    0.193127218675075E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.61493131458661        0.486071070753728E-02   -0.170877691546445E-02   -0.138390154817065E-01    0.218064776632103E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.1956854855800       -37.270990361221529     
+ Total energies of excited states (eV,AU)
+           1  -1010.5807541709935       -37.138144134294492     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4092291      -1.624033      0.4027602E-04   1.674799    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.184751
+QMMM:     2      C              -0.080404
+QMMM:     3      H               0.132650
+QMMM:     4      H               0.120224
+QMMM:     5      H               0.119777
+QMMM:     6      O              -0.273706
+QMMM:     7      O              -0.203292
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.614931     -0.6992381      -3.898393      0.8510263E-01   3.961521    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.614931     -0.2751015      -1.533746      0.3348196E-01   1.558582    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.614931      0.2841033      0.1526060      0.7417733E-01  0.3309162    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.614931      0.1341276      0.9028678E-01  0.3344168E-01  0.1651068    
+QMMM:
+QMMM: SCF Energy =       -7.61364564 KCal/mol,       -31.85549338 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2674.10037908 eV (   -61667.42884206 KCal/mol)
+QMMM: QM core - QM core energy =      1659.90469360 eV (    38279.06213908 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.90469360 eV (    38279.06213908 KCal/mol)
+QMMM:             Total energy =     -1014.19568549 eV (   -23388.36670298 KCal/mol)
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61667.11      -61667.11      0.1797693+309  -1.000000    
+QMMM:     2     -61667.11     -0.4789617E-06  0.1081974E-04  -1.000000    
+QMMM:     3     -61667.11     -0.4989852E-07  0.2643276E-05  -1.000000    
+QMMM:     4 *   -61667.11     -0.1590524E-07  0.1186313E-05  -1.000000    
+QMMM:     5 *   -61667.11      0.5842594E-08  0.1933411E-06  -1.000000    
+QMMM:     6     -61667.11     -0.5820766E-10  0.1143108E-06  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     6 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+  Restoring quirality in HF orbitals
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           1
+ istore_M=           1
+ Currently have            1  states
+ With            1  initial guesses
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.614780320915811     0.27E-07 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.61478032091581        0.208973875393431E-05    0.260245397803374E-06    0.169425509733614E-04    0.192925351250991E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.61478032091581        0.485764850117513E-02   -0.171423996896195E-02   -0.138315065969869E-01    0.217845942374647E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.1957873314416       -37.270994103986538     
+ Total energies of excited states (eV,AU)
+           1  -1010.5810070105258       -37.138153425972526     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4092544      -1.624082      0.5414020E-04   1.674853    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.184736
+QMMM:     2      C              -0.080409
+QMMM:     3      H               0.132654
+QMMM:     4      H               0.120227
+QMMM:     5      H               0.119781
+QMMM:     6      O              -0.273701
+QMMM:     7      O              -0.203288
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.614780     -0.6992415      -3.898410      0.8512231E-01   3.961539    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.614780     -0.2751028      -1.533753      0.3348970E-01   1.558590    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.614780      0.2841543      0.1526658      0.7417695E-01  0.3309875    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.614780      0.1341516      0.9032915E-01  0.3343556E-01  0.1651482    
+QMMM:
+QMMM: SCF Energy =       -7.61599431 KCal/mol,       -31.86532020 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2674.08645289 eV (   -61667.10769020 KCal/mol)
+QMMM: QM core - QM core energy =      1659.89066556 eV (    38278.73863855 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.89066556 eV (    38278.73863855 KCal/mol)
+QMMM:             Total energy =     -1014.19578733 eV (   -23388.36905165 KCal/mol)
+ WARNING:TRIVIAL UNAVOIDED CROSSING DETECTION IS OFF
+ End nonadiabatic couplings calculation
+ End classical propagation step #           1
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61667.11      -61667.11      0.1797693+309  -1.000000    
+QMMM:     2     -61667.11     -0.3637979E-10  0.7073723E-07  -1.000000    
+QMMM:     3     -61667.11      0.2910383E-10  0.4390736E-07  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     3 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+  Restoring quirality in HF orbitals
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           1
+ istore_M=           1
+ Currently have            1  states
+ With            1  initial guesses
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.614780497165589     0.27E-07 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.61478049716559        0.208964495785100E-05    0.260246279357334E-06    0.169426837274307E-04    0.192925749646390E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.61478049716559        0.485753936589251E-02   -0.171424283057184E-02   -0.138315604483557E-01    0.217846381609881E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.1957873314420       -37.270994103986553     
+ Total energies of excited states (eV,AU)
+           1  -1010.5810068342764       -37.138153419495488     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4092544      -1.624082      0.5408425E-04   1.674853    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.184735
+QMMM:     2      C              -0.080409
+QMMM:     3      H               0.132654
+QMMM:     4      H               0.120227
+QMMM:     5      H               0.119781
+QMMM:     6      O              -0.273701
+QMMM:     7      O              -0.203288
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.614780     -0.6992414      -3.898411      0.8512218E-01   3.961539    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.614780     -0.2751028      -1.533753      0.3348965E-01   1.558590    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.614780      0.2841543      0.1526659      0.7417696E-01  0.3309876    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.614780      0.1341516      0.9032924E-01  0.3343557E-01  0.1651483    
+QMMM:
+QMMM: SCF Energy =       -7.61599431 KCal/mol,       -31.86532020 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2674.08645289 eV (   -61667.10769020 KCal/mol)
+QMMM: QM core - QM core energy =      1659.89066556 eV (    38278.73863855 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.89066556 eV (    38278.73863855 KCal/mol)
+QMMM:             Total energy =     -1014.19578733 eV (   -23388.36905165 KCal/mol)
+  Restoring quirality in cmdqt
+ Begin classical propagation step #           2
+ Begin nonadiabatic couplings and crossings calculations
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61666.13      -61666.13      0.1797693+309  -1.000000    
+QMMM:     2     -61666.13     -0.2870904E-05  0.3645895E-04  -1.000000    
+QMMM:     3     -61666.13     -0.2966044E-06  0.9084805E-05  -1.000000    
+QMMM:     4 *   -61666.13     -0.1128574E-06  0.4491421E-05  -1.000000    
+QMMM:     5 *   -61666.13      0.4327740E-07  0.9170409E-06  -1.000000    
+QMMM:     6 *   -61666.13     -0.7858034E-09  0.5669105E-06  -1.000000    
+QMMM:     7     -61666.13     -0.1018634E-08  0.3522957E-06  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+  Restoring quirality in HF orbitals
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           1
+ istore_M=           1
+ Currently have            1  states
+ With            1  initial guesses
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.614384655086515     0.16E-07 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.61438465508651        0.209043545269781E-05    0.260471743456166E-06    0.169457804421602E-04    0.192966876383142E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.61438465508651        0.485872410015043E-02   -0.171507914483178E-02   -0.138335818832769E-01    0.217916684075747E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.1961701652283       -37.271008172863553     
+ Total energies of excited states (eV,AU)
+           1  -1010.5817855101418       -37.138182035295266     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4093165      -1.624152      0.4631912E-04   1.674936    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.184685
+QMMM:     2      C              -0.080402
+QMMM:     3      H               0.132668
+QMMM:     4      H               0.120235
+QMMM:     5      H               0.119794
+QMMM:     6      O              -0.273689
+QMMM:     7      O              -0.203291
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.614385     -0.6992917      -3.898560      0.8513409E-01   3.961695    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.614385     -0.2751226      -1.533812      0.3349433E-01   1.558651    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.614385      0.2842656      0.1526850      0.7421429E-01  0.3311003    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.614385      0.1341939      0.9034005E-01  0.3344801E-01  0.1651911    
+QMMM:
+QMMM: SCF Energy =       -7.62482284 KCal/mol,       -31.90225877 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2674.04421871 eV (   -61666.13372756 KCal/mol)
+QMMM: QM core - QM core energy =      1659.84804854 eV (    38277.75584738 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.84804854 eV (    38277.75584738 KCal/mol)
+QMMM:             Total energy =     -1014.19617017 eV (   -23388.37788018 KCal/mol)
+  Restoring quirality in cmdqt
+ WARNING:TRIVIAL UNAVOIDED CROSSING DETECTION IS OFF
+ End nonadiabatic couplings calculation
+ End classical propagation step #           2
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61666.13      -61666.13      0.1797693+309  -1.000000    
+QMMM:     2     -61666.13      0.5820766E-09  0.2943986E-07  -1.000000    
+QMMM:     3     -61666.13       0.000000      0.1729000E-07  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     3 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           1
+ istore_M=           1
+ Currently have            1  states
+ With            1  initial guesses
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.614385455360249     0.16E-07 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.61438545536025        0.209052306940902E-05    0.260500399784001E-06    0.169462578841492E-04    0.192972813533423E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.61438545536025        0.485882538336740E-02   -0.171517329631336E-02   -0.138337752288026E-01    0.217923340623474E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.1961701652033       -37.271008172862636     
+ Total energies of excited states (eV,AU)
+           1  -1010.5817847098431       -37.138182005884836     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4093165      -1.624152      0.4632773E-04   1.674936    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.184685
+QMMM:     2      C              -0.080402
+QMMM:     3      H               0.132668
+QMMM:     4      H               0.120235
+QMMM:     5      H               0.119794
+QMMM:     6      O              -0.273689
+QMMM:     7      O              -0.203291
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.614385     -0.6992911      -3.898559      0.8513420E-01   3.961694    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.614385     -0.2751224      -1.533812      0.3349438E-01   1.558651    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.614385      0.2842660      0.1526854      0.7421437E-01  0.3311009    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.614385      0.1341942      0.9034057E-01  0.3344805E-01  0.1651916    
+QMMM:
+QMMM: SCF Energy =       -7.62482284 KCal/mol,       -31.90225877 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2674.04421871 eV (   -61666.13372756 KCal/mol)
+QMMM: QM core - QM core energy =      1659.84804854 eV (    38277.75584738 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.84804854 eV (    38277.75584738 KCal/mol)
+QMMM:             Total energy =     -1014.19617017 eV (   -23388.37788018 KCal/mol)
+ Begin classical propagation step #           3
+ Begin nonadiabatic couplings and crossings calculations
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61664.39      -61664.39      0.1797693+309  -1.000000    
+QMMM:     2     -61664.39     -0.9266136E-05  0.6795049E-04  -1.000000    
+QMMM:     3     -61664.39     -0.1001987E-05  0.1624432E-04  -1.000000    
+QMMM:     4 *   -61664.39     -0.4735048E-06  0.7841368E-05  -1.000000    
+QMMM:     5 *   -61664.39      0.1945518E-06  0.2049170E-05  -1.000000    
+QMMM:     6 *   -61664.39     -0.3426976E-08  0.1253226E-05  -1.000000    
+QMMM:     7     -61664.39     -0.4751200E-08  0.7647572E-06  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+  Restoring quirality in HF orbitals
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           1
+ istore_M=           1
+ Currently have            1  states
+ With            1  initial guesses
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.613617236959612     0.45E-07 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.61361723695961        0.209264934925926E-05    0.258264568848425E-06    0.169426563764696E-04    0.192935702945772E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.61361723695961        0.486181242493732E-02   -0.170797843379007E-02   -0.138337753632331E-01    0.217927751185962E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.1968547298379       -37.271033330139744     
+ Total energies of excited states (eV,AU)
+           1  -1010.5832374928783       -37.138235394657123     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4094422      -1.624222      0.5218366E-05   1.675035    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.184593
+QMMM:     2      C              -0.080378
+QMMM:     3      H               0.132685
+QMMM:     4      H               0.120246
+QMMM:     5      H               0.119811
+QMMM:     6      O              -0.273662
+QMMM:     7      O              -0.203294
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.613617     -0.6994100      -3.898739      0.8511758E-01   3.961891    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.613617     -0.2751691      -1.533882      0.3348784E-01   1.558728    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.613617      0.2844740      0.1526942      0.7429505E-01  0.3313016    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.613617      0.1342730      0.9034025E-01  0.3348262E-01  0.1652625    
+QMMM:
+QMMM: SCF Energy =       -7.64060959 KCal/mol,       -31.96831051 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.96850112 eV (   -61664.38760426 KCal/mol)
+QMMM: QM core - QM core energy =      1659.77164639 eV (    38275.99393733 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.77164639 eV (    38275.99393733 KCal/mol)
+QMMM:             Total energy =     -1014.19685473 eV (   -23388.39366692 KCal/mol)
+  Restoring quirality in cmdqt
+ WARNING:TRIVIAL UNAVOIDED CROSSING DETECTION IS OFF
+ End nonadiabatic couplings calculation
+ End classical propagation step #           3
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61664.39      -61664.39      0.1797693+309  -1.000000    
+QMMM:     2     -61664.39      0.2764864E-08  0.5328425E-07  -1.000000    
+QMMM:     3     -61664.39       0.000000      0.2732499E-07  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     3 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+  Restoring quirality in HF orbitals
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           1
+ istore_M=           1
+ Currently have            1  states
+ With            1  initial guesses
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.613618905825571     0.45E-07 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.61361890582557        0.209286850283216E-05    0.258305902232160E-06    0.169437462035883E-04    0.192949206086527E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.61361890582557        0.486206587321949E-02   -0.170811470871749E-02   -0.138342170865941E-01    0.217942902812676E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.1968547297179       -37.271033330135332     
+ Total energies of excited states (eV,AU)
+           1  -1010.5832358238923       -37.138235333323038     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4094422      -1.624223      0.5236867E-05   1.675035    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.184593
+QMMM:     2      C              -0.080379
+QMMM:     3      H               0.132685
+QMMM:     4      H               0.120246
+QMMM:     5      H               0.119811
+QMMM:     6      O              -0.273662
+QMMM:     7      O              -0.203294
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.613619     -0.6994086      -3.898737      0.8511783E-01   3.961889    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.613619     -0.2751686      -1.533881      0.3348794E-01   1.558727    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.613619      0.2844749      0.1526951      0.7429521E-01  0.3313028    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.613619      0.1342736      0.9034137E-01  0.3348270E-01  0.1652636    
+QMMM:
+QMMM: SCF Energy =       -7.64060958 KCal/mol,       -31.96831050 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.96850112 eV (   -61664.38760425 KCal/mol)
+QMMM: QM core - QM core energy =      1659.77164639 eV (    38275.99393733 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.77164639 eV (    38275.99393733 KCal/mol)
+QMMM:             Total energy =     -1014.19685473 eV (   -23388.39366692 KCal/mol)
+ Begin classical propagation step #           4
+ Begin nonadiabatic couplings and crossings calculations
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61661.80      -61661.80      0.1797693+309  -1.000000    
+QMMM:     2     -61661.80     -0.1901020E-04  0.9773402E-04  -1.000000    
+QMMM:     3     -61661.80     -0.1978500E-05  0.2453587E-04  -1.000000    
+QMMM:     4 *   -61661.80     -0.9194046E-06  0.1115185E-04  -1.000000    
+QMMM:     5 *   -61661.80      0.3736859E-06  0.2925986E-05  -1.000000    
+QMMM:     6 *   -61661.80     -0.6781192E-08  0.1781081E-05  -1.000000    
+QMMM:     7     -61661.80     -0.9458745E-08  0.1091984E-05  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+  Restoring quirality in HF orbitals
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           1
+ istore_M=           1
+ Currently have            1  states
+ With            1  initial guesses
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.612456294862840     0.38E-07 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.61245629486284        0.209819576411115E-05    0.249053198004731E-06    0.169299533109477E-04    0.192772022730635E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.61245629486284        0.486903329832547E-02   -0.167751264679429E-02   -0.138308102097806E-01    0.217812844999329E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.1978136983798       -37.271068571570751     
+ Total energies of excited states (eV,AU)
+           1  -1010.5853574035170       -37.138313299907672     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4096306      -1.624351     -0.4216528E-04   1.675205    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.184459
+QMMM:     2      C              -0.080356
+QMMM:     3      H               0.132703
+QMMM:     4      H               0.120271
+QMMM:     5      H               0.119838
+QMMM:     6      O              -0.273642
+QMMM:     7      O              -0.203273
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.612456     -0.6993756      -3.899014      0.8519201E-01   3.962158    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.612456     -0.2751556      -1.533990      0.3351712E-01   1.558833    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.612456      0.2849510      0.1527206      0.7446657E-01  0.3317618    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.612456      0.1344750      0.9036052E-01  0.3355929E-01  0.1654532    
+QMMM:
+QMMM: SCF Energy =       -7.66272436 KCal/mol,       -32.06083872 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.85630910 eV (   -61661.80034405 KCal/mol)
+QMMM: QM core - QM core energy =      1659.65849540 eV (    38273.38456235 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.65849540 eV (    38273.38456235 KCal/mol)
+QMMM:             Total energy =     -1014.19781370 eV (   -23388.41578170 KCal/mol)
+  Restoring quirality in cmdqt
+ WARNING:TRIVIAL UNAVOIDED CROSSING DETECTION IS OFF
+ End nonadiabatic couplings calculation
+ End classical propagation step #           4
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61661.80      -61661.80      0.1797693+309  -1.000000    
+QMMM:     2     -61661.80      0.5515176E-08  0.7408598E-07  -1.000000    
+QMMM:     3     -61661.80     -0.7275958E-11  0.3859148E-07  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     3 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+  Restoring quirality in HF orbitals
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           1
+ istore_M=           1
+ Currently have            1  states
+ With            1  initial guesses
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.612458642752685     0.39E-07 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.61245864275268        0.209839956436027E-05    0.249104996202916E-06    0.169315667449491E-04    0.192790713055122E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.61245864275268        0.486926817770763E-02   -0.167768653744921E-02   -0.138314647412170E-01    0.217833821591903E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.1978136981411       -37.271068571561983     
+ Total energies of excited states (eV,AU)
+           1  -1010.5853550553884       -37.138313213615568     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4096306      -1.624351     -0.4214919E-04   1.675206    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.184459
+QMMM:     2      C              -0.080357
+QMMM:     3      H               0.132703
+QMMM:     4      H               0.120271
+QMMM:     5      H               0.119838
+QMMM:     6      O              -0.273642
+QMMM:     7      O              -0.203273
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.612459     -0.6993735      -3.899011      0.8519239E-01   3.962154    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.612459     -0.2751548      -1.533989      0.3351727E-01   1.558832    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.612459      0.2849522      0.1527219      0.7446684E-01  0.3317636    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.612459      0.1344759      0.9036209E-01  0.3355942E-01  0.1654548    
+QMMM:
+QMMM: SCF Energy =       -7.66272435 KCal/mol,       -32.06083870 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.85630910 eV (   -61661.80034404 KCal/mol)
+QMMM: QM core - QM core energy =      1659.65849540 eV (    38273.38456235 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.65849540 eV (    38273.38456235 KCal/mol)
+QMMM:             Total energy =     -1014.19781370 eV (   -23388.41578169 KCal/mol)
+ Begin classical propagation step #           5
+ Begin nonadiabatic couplings and crossings calculations
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61658.62      -61658.62      0.1797693+309  -1.000000    
+QMMM:     2     -61658.62     -0.3032435E-04  0.1207350E-03  -1.000000    
+QMMM:     3     -61658.62     -0.3133231E-05  0.3164169E-04  -1.000000    
+QMMM:     4 *   -61658.62     -0.1418841E-05  0.1396830E-04  -1.000000    
+QMMM:     5 *   -61658.62      0.5758629E-06  0.3597698E-05  -1.000000    
+QMMM:     6 *   -61658.62     -0.1014268E-07  0.2185254E-05  -1.000000    
+QMMM:     7 *   -61658.62     -0.1423905E-07  0.1341509E-05  -1.000000    
+QMMM:     8 *   -61658.62      0.8301868E-08  0.9406385E-07  -1.000000    
+QMMM:     9     -61658.62     -0.7275958E-11  0.4835123E-07  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     9 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+  Restoring quirality in HF orbitals
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           1
+ istore_M=           1
+ Currently have            1  states
+ With            1  initial guesses
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.611007942957467     0.86E-07 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.61100794295747        0.210325753185982E-05    0.229112111390695E-06    0.168505472974736E-04    0.191829169407241E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.61100794295747        0.487588042955584E-02   -0.160927714821080E-02   -0.138011039210729E-01    0.216834452343332E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.1989739001388       -37.271111208183385     
+ Total energies of excited states (eV,AU)
+           1  -1010.5879659571813       -37.138409162451623     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4098899      -1.624522     -0.1106429E-03   1.675434    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.184302
+QMMM:     2      C              -0.080362
+QMMM:     3      H               0.132815
+QMMM:     4      H               0.120247
+QMMM:     5      H               0.119824
+QMMM:     6      O              -0.274521
+QMMM:     7      O              -0.202306
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.611008     -0.6911573      -3.901112      0.8795001E-01   3.962841    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.611008     -0.2719223      -1.534816      0.3460220E-01   1.559102    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.611008      0.2922030      0.1512669      0.7685041E-01  0.3378909    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.611008      0.1379677      0.8970569E-01  0.3471285E-01  0.1681879    
+QMMM:
+QMMM: SCF Energy =       -7.68947977 KCal/mol,       -32.17278337 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.71857714 eV (   -61658.62410732 KCal/mol)
+QMMM: QM core - QM core energy =      1659.51960324 eV (    38270.18157021 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.51960324 eV (    38270.18157021 KCal/mol)
+QMMM:             Total energy =     -1014.19897390 eV (   -23388.44253711 KCal/mol)
+  Restoring quirality in cmdqt
+ WARNING:TRIVIAL UNAVOIDED CROSSING DETECTION IS OFF
+ End nonadiabatic couplings calculation
+ End classical propagation step #           5
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61658.62      -61658.62      0.1797693+309  -1.000000    
+QMMM:     2     -61658.62     -0.2182787E-10  0.2962202E-07  -1.000000    
+QMMM:     3     -61658.62      0.2910383E-10  0.1843709E-07  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     3 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+  Restoring quirality in HF orbitals
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           1
+ istore_M=           1
+ Currently have            1  states
+ With            1  initial guesses
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.611007970874405     0.86E-07 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.61100797087440        0.210323879328609E-05    0.229114435897386E-06    0.168506042300463E-04    0.191829574592298E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.61100797087440        0.487585869029411E-02   -0.160928530560477E-02   -0.138011271824473E-01    0.216834908668637E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.1989739001383       -37.271111208183370     
+ Total energies of excited states (eV,AU)
+           1  -1010.5879659292639       -37.138409161425677     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4098899      -1.624522     -0.1106342E-03   1.675434    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.184302
+QMMM:     2      C              -0.080362
+QMMM:     3      H               0.132815
+QMMM:     4      H               0.120247
+QMMM:     5      H               0.119824
+QMMM:     6      O              -0.274521
+QMMM:     7      O              -0.202306
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.611008     -0.6911573      -3.901112      0.8795004E-01   3.962841    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.611008     -0.2719223      -1.534816      0.3460222E-01   1.559102    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.611008      0.2922030      0.1512670      0.7685041E-01  0.3378909    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.611008      0.1379677      0.8970573E-01  0.3471285E-01  0.1681879    
+QMMM:
+QMMM: SCF Energy =       -7.68947977 KCal/mol,       -32.17278337 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.71857714 eV (   -61658.62410732 KCal/mol)
+QMMM: QM core - QM core energy =      1659.51960324 eV (    38270.18157021 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.51960324 eV (    38270.18157021 KCal/mol)
+QMMM:             Total energy =     -1014.19897390 eV (   -23388.44253711 KCal/mol)
+ Begin classical propagation step #           6
+ Begin nonadiabatic couplings and crossings calculations
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61654.87      -61654.87      0.1797693+309  -1.000000    
+QMMM:     2     -61654.87     -0.4161330E-04  0.1404263E-03  -1.000000    
+QMMM:     3     -61654.87     -0.4352289E-05  0.3728966E-04  -1.000000    
+QMMM:     4 *   -61654.87     -0.1979308E-05  0.1677192E-04  -1.000000    
+QMMM:     5 *   -61654.87      0.8023489E-06  0.4309856E-05  -1.000000    
+QMMM:     6 *   -61654.87     -0.1428998E-07  0.2618043E-05  -1.000000    
+QMMM:     7 *   -61654.87     -0.1995795E-07  0.1605953E-05  -1.000000    
+QMMM:     8 *   -61654.87      0.1159060E-07  0.1102817E-06  -1.000000    
+QMMM:     9 *   -61654.87     -0.2182787E-10  0.5446710E-07  -1.000000    
+QMMM:    10     -61654.87       0.000000      0.3762020E-07  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:    10 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+  Restoring quirality in HF orbitals
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           1
+ istore_M=           1
+ Currently have            1  states
+ With            1  initial guesses
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.609314559196368     0.91E-08 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.60931455919637        0.210501031614668E-05    0.225464311550608E-06    0.168225553240795E-04    0.191530299517768E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.60931455919637        0.487905585590181E-02   -0.159678917432228E-02   -0.137928704889607E-01    0.216598198037487E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.2003326769998       -37.271161142293749     
+ Total energies of excited states (eV,AU)
+           1  -1010.5910181178034       -37.138521327244625     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4101664      -1.624729     -0.2088713E-03   1.675703    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.184110
+QMMM:     2      C              -0.080336
+QMMM:     3      H               0.132842
+QMMM:     4      H               0.120287
+QMMM:     5      H               0.119870
+QMMM:     6      O              -0.274464
+QMMM:     7      O              -0.202309
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.609315     -0.6913436      -3.901467      0.8787902E-01   3.963221    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.609315     -0.2719955      -1.534956      0.3457428E-01   1.559252    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.609315      0.2927112      0.1513756      0.7701575E-01  0.3384167    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.609315      0.1381709      0.8977352E-01  0.3478315E-01  0.1684053    
+QMMM:
+QMMM: SCF Energy =       -7.72081453 KCal/mol,       -32.30388798 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.55583838 eV (   -61654.87118897 KCal/mol)
+QMMM: QM core - QM core energy =      1659.35550571 eV (    38266.39731711 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.35550571 eV (    38266.39731711 KCal/mol)
+QMMM:             Total energy =     -1014.20033268 eV (   -23388.47387186 KCal/mol)
+  Restoring quirality in cmdqt
+ WARNING:TRIVIAL UNAVOIDED CROSSING DETECTION IS OFF
+ End nonadiabatic couplings calculation
+ End classical propagation step #           6
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61654.87      -61654.87      0.1797693+309  -1.000000    
+QMMM:     2     -61654.87      0.7275958E-11  0.1884228E-07  -1.000000    
+QMMM:     3     -61654.87       0.000000      0.5014633E-08  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     3 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+  Restoring quirality in HF orbitals
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           1
+ istore_M=           1
+ Currently have            1  states
+ With            1  initial guesses
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.609314620855345     0.91E-08 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.60931462085534        0.210497375000242E-05    0.225465415273987E-06    0.168226446862325E-04    0.191530838515089E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.60931462085534        0.487901343699168E-02   -0.159679306908738E-02   -0.137929070052650E-01    0.216598803879719E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.2003326769993       -37.271161142293735     
+ Total energies of excited states (eV,AU)
+           1  -1010.5910180561440       -37.138521324978690     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4101664      -1.624729     -0.2088704E-03   1.675703    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.184110
+QMMM:     2      C              -0.080336
+QMMM:     3      H               0.132842
+QMMM:     4      H               0.120287
+QMMM:     5      H               0.119870
+QMMM:     6      O              -0.274464
+QMMM:     7      O              -0.202309
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.609315     -0.6913436      -3.901467      0.8787904E-01   3.963221    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.609315     -0.2719955      -1.534955      0.3457428E-01   1.559252    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.609315      0.2927112      0.1513756      0.7701576E-01  0.3384167    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.609315      0.1381709      0.8977357E-01  0.3478315E-01  0.1684053    
+QMMM:
+QMMM: SCF Energy =       -7.72081453 KCal/mol,       -32.30388798 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.55583838 eV (   -61654.87118897 KCal/mol)
+QMMM: QM core - QM core energy =      1659.35550571 eV (    38266.39731711 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.35550571 eV (    38266.39731711 KCal/mol)
+QMMM:             Total energy =     -1014.20033268 eV (   -23388.47387186 KCal/mol)
+ Begin classical propagation step #           7
+ Begin nonadiabatic couplings and crossings calculations
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61650.21      -61650.21      0.1797693+309  -1.000000    
+QMMM:     2     -61650.21     -0.6016581E-04  0.1724028E-03  -1.000000    
+QMMM:     3     -61650.21     -0.6191382E-05  0.4163894E-04  -1.000000    
+QMMM:     4 *   -61650.21     -0.2624482E-05  0.2081650E-04  -1.000000    
+QMMM:     5 *   -61650.21      0.1039349E-05  0.4851223E-05  -1.000000    
+QMMM:     6 *   -61650.21     -0.1820445E-07  0.2952789E-05  -1.000000    
+QMMM:     7 *   -61650.21     -0.2524757E-07  0.1821434E-05  -1.000000    
+QMMM:     8 *   -61650.21      0.1461012E-07  0.1485048E-06  -1.000000    
+QMMM:     9 *   -61650.21     -0.2910383E-10  0.6636232E-07  -1.000000    
+QMMM:    10     -61650.21     -0.4365575E-10  0.4124580E-07  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:    10 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+  Restoring quirality in HF orbitals
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           1
+ istore_M=           1
+ Currently have            1  states
+ With            1  initial guesses
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.607265987469813     0.32E-07 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.60726598746981        0.211105606991444E-05    0.219940325312775E-06    0.168153985139090E-04    0.191463949091362E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.60726598746981        0.488744454943381E-02   -0.157755456786124E-02   -0.137938513372042E-01    0.216646127351260E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.2019525098785       -37.271220670032307     
+ Total energies of excited states (eV,AU)
+           1  -1010.5946865224088       -37.138656138578028     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4105112      -1.625033     -0.3053465E-03   1.676083    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.183872
+QMMM:     2      C              -0.080311
+QMMM:     3      H               0.132879
+QMMM:     4      H               0.120336
+QMMM:     5      H               0.119928
+QMMM:     6      O              -0.274410
+QMMM:     7      O              -0.202294
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.607266     -0.6915160      -3.901995      0.8785901E-01   3.963771    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.607266     -0.2720634      -1.535163      0.3456640E-01   1.559468    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.607266      0.2933716      0.1515309      0.7722343E-01  0.3391047    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.607266      0.1384478      0.8986990E-01  0.3487175E-01  0.1687022    
+QMMM:
+QMMM: SCF Energy =       -7.75816949 KCal/mol,       -32.46018116 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.35391646 eV (   -61650.21466746 KCal/mol)
+QMMM: QM core - QM core energy =      1659.15196395 eV (    38261.70344063 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.15196395 eV (    38261.70344063 KCal/mol)
+QMMM:             Total energy =     -1014.20195251 eV (   -23388.51122683 KCal/mol)
+  Restoring quirality in cmdqt
+ WARNING:TRIVIAL UNAVOIDED CROSSING DETECTION IS OFF
+ End nonadiabatic couplings calculation
+ End classical propagation step #           7
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61650.21      -61650.21      0.1797693+309  -1.000000    
+QMMM:     2     -61650.21      0.2910383E-10  0.1637427E-07  -1.000000    
+QMMM:     3     -61650.21     -0.7275958E-11  0.4180608E-08  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     3 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+  Restoring quirality in HF orbitals
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           1
+ istore_M=           1
+ Currently have            1  states
+ With            1  initial guesses
+ info           0
+    3.61    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.607266040591910     0.32E-07 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.60726604059191        0.211105561223492E-05    0.219945951014394E-06    0.168154631776419E-04    0.191464647408912E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.60726604059191        0.488744398364457E-02   -0.157757473170537E-02   -0.137938777577875E-01    0.216646914324164E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.2019525098776       -37.271220670032271     
+ Total energies of excited states (eV,AU)
+           1  -1010.5946864692858       -37.138656136625791     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4105112      -1.625033     -0.3053537E-03   1.676083    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.183872
+QMMM:     2      C              -0.080311
+QMMM:     3      H               0.132879
+QMMM:     4      H               0.120336
+QMMM:     5      H               0.119928
+QMMM:     6      O              -0.274410
+QMMM:     7      O              -0.202294
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.607266     -0.6915160      -3.901995      0.8785901E-01   3.963771    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.607266     -0.2720634      -1.535163      0.3456640E-01   1.559468    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.607266      0.2933717      0.1515309      0.7722344E-01  0.3391047    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.607266      0.1384478      0.8986996E-01  0.3487175E-01  0.1687022    
+QMMM:
+QMMM: SCF Energy =       -7.75816949 KCal/mol,       -32.46018116 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.35391646 eV (   -61650.21466746 KCal/mol)
+QMMM: QM core - QM core energy =      1659.15196395 eV (    38261.70344063 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.15196395 eV (    38261.70344063 KCal/mol)
+QMMM:             Total energy =     -1014.20195251 eV (   -23388.51122683 KCal/mol)
+ Begin classical propagation step #           8
+ Begin nonadiabatic couplings and crossings calculations
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61644.72      -61644.72      0.1797693+309  -1.000000    
+QMMM:     2     -61644.72     -0.7841641E-04  0.1989892E-03  -1.000000    
+QMMM:     3     -61644.72     -0.8054754E-05  0.4962327E-04  -1.000000    
+QMMM:     4 *   -61644.72     -0.3466965E-05  0.2417882E-04  -1.000000    
+QMMM:     5 *   -61644.72      0.1378954E-05  0.5921767E-05  -1.000000    
+QMMM:     6 *   -61644.72     -0.2433080E-07  0.3605089E-05  -1.000000    
+QMMM:     7 *   -61644.72     -0.3352761E-07  0.2223542E-05  -1.000000    
+QMMM:     8 *   -61644.72      0.1935405E-07  0.1628241E-06  -1.000000    
+QMMM:     9 *   -61644.72     -0.1455192E-10  0.7757530E-07  -1.000000    
+QMMM:    10     -61644.72     -0.4365575E-10  0.4725435E-07  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:    10 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+  Restoring quirality in HF orbitals
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           1
+ istore_M=           1
+ Currently have            1  states
+ With            1  initial guesses
+ info           0
+    3.60    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.60    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.60    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.604910059148632     0.88E-07 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.60491005914863        0.211379858340346E-05    0.217072724025034E-06    0.168113074665921E-04    0.191421787740206E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.60491005914863        0.489221603518330E-02   -0.156774871553111E-02   -0.137966793554913E-01    0.216739975008193E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.2038195773182       -37.271289283470068     
+ Total energies of excited states (eV,AU)
+           1  -1010.5989095181695       -37.138811330753015     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4109237      -1.625378     -0.4016291E-03   1.676518    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.183600
+QMMM:     2      C              -0.080291
+QMMM:     3      H               0.132927
+QMMM:     4      H               0.120391
+QMMM:     5      H               0.119997
+QMMM:     6      O              -0.274361
+QMMM:     7      O              -0.202263
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.604910     -0.6916409      -3.902655      0.8787626E-01   3.964443    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.604910     -0.2721125      -1.535423      0.3457319E-01   1.559732    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.604910      0.2942172      0.1516673      0.7747251E-01  0.3399540    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.604910      0.1388111      0.8995491E-01  0.3497482E-01  0.1690670    
+QMMM:
+QMMM: SCF Energy =       -7.80122593 KCal/mol,       -32.64032931 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.11573724 eV (   -61644.72201638 KCal/mol)
+QMMM: QM core - QM core energy =      1658.91191766 eV (    38256.16773311 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1658.91191766 eV (    38256.16773311 KCal/mol)
+QMMM:             Total energy =     -1014.20381958 eV (   -23388.55428327 KCal/mol)
+  Restoring quirality in cmdqt
+ WARNING:TRIVIAL UNAVOIDED CROSSING DETECTION IS OFF
+ End nonadiabatic couplings calculation
+ End classical propagation step #           8
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61644.72      -61644.72      0.1797693+309  -1.000000    
+QMMM:     2     -61644.72      0.2910383E-10  0.2881381E-07  -1.000000    
+QMMM:     3     -61644.72       0.000000      0.7221554E-08  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     3 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+  Restoring quirality in HF orbitals
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           1
+ istore_M=           1
+ Currently have            1  states
+ With            1  initial guesses
+ info           0
+    3.60    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.604910130336898     0.88E-07 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.60491013033690        0.211376355475899E-05    0.217074729413180E-06    0.168114199455989E-04    0.191422582297710E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.60491013033690        0.489217545122732E-02   -0.156775594171994E-02   -0.137967253737419E-01    0.216740870376842E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.2038195773168       -37.271289283470018     
+ Total energies of excited states (eV,AU)
+           1  -1010.5989094469800       -37.138811328136846     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4109237      -1.625378     -0.4016319E-03   1.676518    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.183600
+QMMM:     2      C              -0.080291
+QMMM:     3      H               0.132927
+QMMM:     4      H               0.120391
+QMMM:     5      H               0.119997
+QMMM:     6      O              -0.274361
+QMMM:     7      O              -0.202263
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.604910     -0.6916408      -3.902655      0.8787628E-01   3.964442    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.604910     -0.2721125      -1.535423      0.3457319E-01   1.559732    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.604910      0.2942172      0.1516674      0.7747252E-01  0.3399541    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.604910      0.1388112      0.8995498E-01  0.3497483E-01  0.1690671    
+QMMM:
+QMMM: SCF Energy =       -7.80122593 KCal/mol,       -32.64032931 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.11573724 eV (   -61644.72201638 KCal/mol)
+QMMM: QM core - QM core energy =      1658.91191766 eV (    38256.16773311 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1658.91191766 eV (    38256.16773311 KCal/mol)
+QMMM:             Total energy =     -1014.20381958 eV (   -23388.55428327 KCal/mol)
+ Begin classical propagation step #           9
+ Begin nonadiabatic couplings and crossings calculations
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61638.61      -61638.61      0.1797693+309  -1.000000    
+QMMM:     2     -61638.61     -0.9784968E-04  0.2247556E-03  -1.000000    
+QMMM:     3     -61638.61     -0.1008349E-04  0.5566736E-04  -1.000000    
+QMMM:     4 *   -61638.61     -0.4385067E-05  0.2711459E-04  -1.000000    
+QMMM:     5 *   -61638.61      0.1760985E-05  0.6797571E-05  -1.000000    
+QMMM:     6 *   -61638.61     -0.2999877E-07  0.4132438E-05  -1.000000    
+QMMM:     7 *   -61638.61     -0.4103640E-07  0.2535393E-05  -1.000000    
+QMMM:     8 *   -61638.61      0.2364686E-07  0.1743854E-06  -1.000000    
+QMMM:     9 *   -61638.61     -0.4365575E-10  0.8155757E-07  -1.000000    
+QMMM:    10     -61638.61     -0.7275958E-11  0.5164212E-07  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:    10 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+  Restoring quirality in HF orbitals
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           1
+ istore_M=           1
+ Currently have            1  states
+ With            1  initial guesses
+ info           0
+    3.60    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.60    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.60    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.60    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.60    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.60    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.602244530165392     0.45E-07 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.60224453016539        0.209917989074528E-05    0.220304599443280E-06    0.166320287760248E-04    0.189515132662133E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.60224453016539        0.487707322042659E-02   -0.157996049926530E-02   -0.137279933765675E-01    0.214739920523723E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.2058597751334       -37.271364259329459     
+ Total energies of excited states (eV,AU)
+           1  -1010.6036152449680       -37.138984262959944     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4113485      -1.625765     -0.4965259E-03   1.676997    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.183306
+QMMM:     2      C              -0.080307
+QMMM:     3      H               0.133111
+QMMM:     4      H               0.120374
+QMMM:     5      H               0.119996
+QMMM:     6      O              -0.275625
+QMMM:     7      O              -0.200856
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.602245     -0.6798246      -3.905951      0.9173184E-01   3.965732    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.602245     -0.2674636      -1.536720      0.3609009E-01   1.560239    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.602245      0.3047558      0.1496421      0.8083968E-01  0.3490042    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.602245      0.1438849      0.8904540E-01  0.3658661E-01  0.1731200    
+QMMM:
+QMMM: SCF Energy =       -7.84827494 KCal/mol,       -32.83718233 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2672.85055848 eV (   -61638.60672917 KCal/mol)
+QMMM: QM core - QM core energy =      1658.64469871 eV (    38250.00539690 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1658.64469871 eV (    38250.00539690 KCal/mol)
+QMMM:             Total energy =     -1014.20585978 eV (   -23388.60133227 KCal/mol)
+  Restoring quirality in cmdqt
+ WARNING:TRIVIAL UNAVOIDED CROSSING DETECTION IS OFF
+ End nonadiabatic couplings calculation
+ End classical propagation step #           9
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61638.61      -61638.61      0.1797693+309  -1.000000    
+QMMM:     2     -61638.61      0.7275958E-11  0.1106040E-07  -1.000000    
+QMMM:     3     -61638.61       0.000000      0.6344343E-08  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     3 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+  Restoring quirality in HF orbitals
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           1
+ istore_M=           1
+ Currently have            1  states
+ With            1  initial guesses
+ info           0
+    3.60    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.602244618389303     0.45E-07 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.60224461838930        0.209918959563649E-05    0.220307036293440E-06    0.166321033323211E-04    0.189515999642511E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.60224461838930        0.487708443448949E-02   -0.157996921808355E-02   -0.137280239776211E-01    0.214740897641370E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.2058597751329       -37.271364259329438     
+ Total energies of excited states (eV,AU)
+           1  -1010.6036151567437       -37.138984259717759     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4113486      -1.625765     -0.4965267E-03   1.676997    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.183306
+QMMM:     2      C              -0.080307
+QMMM:     3      H               0.133111
+QMMM:     4      H               0.120374
+QMMM:     5      H               0.119996
+QMMM:     6      O              -0.275625
+QMMM:     7      O              -0.200856
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.602245     -0.6798246      -3.905951      0.9173185E-01   3.965732    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.602245     -0.2674636      -1.536720      0.3609009E-01   1.560239    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.602245      0.3047559      0.1496422      0.8083970E-01  0.3490043    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.602245      0.1438849      0.8904547E-01  0.3658662E-01  0.1731200    
+QMMM:
+QMMM: SCF Energy =       -7.84827494 KCal/mol,       -32.83718233 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2672.85055848 eV (   -61638.60672917 KCal/mol)
+QMMM: QM core - QM core energy =      1658.64469871 eV (    38250.00539690 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1658.64469871 eV (    38250.00539690 KCal/mol)
+QMMM:             Total energy =     -1014.20585978 eV (   -23388.60133227 KCal/mol)
+ Begin classical propagation step #          10
+ Begin nonadiabatic couplings and crossings calculations
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61631.90      -61631.90      0.1797693+309  -1.000000    
+QMMM:     2     -61631.90     -0.1176771E-03  0.2486400E-03  -1.000000    
+QMMM:     3     -61631.90     -0.1198997E-04  0.6310749E-04  -1.000000    
+QMMM:     4 *   -61631.90     -0.5180329E-05  0.2974394E-04  -1.000000    
+QMMM:     5 *   -61631.90      0.2074943E-05  0.7000099E-05  -1.000000    
+QMMM:     6 *   -61631.90     -0.3584864E-07  0.4248982E-05  -1.000000    
+QMMM:     7 *   -61631.90     -0.4887988E-07  0.2598014E-05  -1.000000    
+QMMM:     8 *   -61631.90      0.2805609E-07  0.1884138E-06  -1.000000    
+QMMM:     9 *   -61631.90     -0.5093170E-10  0.9199270E-07  -1.000000    
+QMMM:    10     -61631.90     -0.2182787E-10  0.5593677E-07  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:    10 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+  Restoring quirality in HF orbitals
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           1
+ istore_M=           1
+ Currently have            1  states
+ With            1  initial guesses
+ info           0
+    3.60    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.60    
+ eigenvalues and residual norm
+ Perturbed left m=           1
+ info           0
+    3.60    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.599298133514347     0.13E-07 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.59929813351435        0.209327971117890E-05    0.224398752858753E-06    0.166486272902034E-04    0.189663057542410E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.59929813351435        0.487220736416933E-02   -0.159522648420286E-02   -0.137404623757441E-01    0.215083458434606E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.2080283361083       -37.271443952446234     
+ Total energies of excited states (eV,AU)
+           1  -1010.6087302025940       -37.139172234116892     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4118337      -1.626190     -0.6044831E-03   1.677529    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.182966
+QMMM:     2      C              -0.080266
+QMMM:     3      H               0.133165
+QMMM:     4      H               0.120438
+QMMM:     5      H               0.120078
+QMMM:     6      O              -0.275531
+QMMM:     7      O              -0.200849
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.599298     -0.6802527      -3.906667      0.9163123E-01   3.966508    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.599298     -0.2676321      -1.537001      0.3605051E-01   1.560545    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.599298      0.3055260      0.1498902      0.8102999E-01  0.3498272    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.599298      0.1442016      0.8918928E-01  0.3665499E-01  0.1734716    
+QMMM:
+QMMM: SCF Energy =       -7.89828412 KCal/mol,       -33.04642076 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2672.55993543 eV (   -61631.90467085 KCal/mol)
+QMMM: QM core - QM core energy =      1658.35190709 eV (    38243.25332939 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1658.35190709 eV (    38243.25332939 KCal/mol)
+QMMM:             Total energy =     -1014.20802834 eV (   -23388.65134146 KCal/mol)
+  Restoring quirality in cmdqt
+ WARNING:TRIVIAL UNAVOIDED CROSSING DETECTION IS OFF
+ End nonadiabatic couplings calculation
+ End classical propagation step #          10
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61631.90      -61631.90      0.1797693+309  -1.000000    
+QMMM:     2     -61631.90      0.7275958E-11  0.9481963E-08  -1.000000    
+QMMM:     3     -61631.90       0.000000      0.6325598E-08  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     3 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+  Restoring quirality in HF orbitals
+ Davidson parameters
+ mdflag=           2
+ irflag=           0
+ M4=          84
+ Mx=           1
+ Mj=           0
+ nd=         500
+ nd1=           3
+ j1=           1
+ istore=           1
+ istore_M=           1
+ Currently have            1  states
+ With            1  initial guesses
+ info           0
+    3.60    
+ eigenvalues and residual norm
+ @@@@ Davidson subroutine Found vectors           1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.599298229027553     0.13E-07 0.10E-06
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.59929822902755        0.209327607029110E-05    0.224396082929177E-06    0.166487314183121E-04    0.189664035715324E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.59929822902755        0.487220306235246E-02   -0.159521697288839E-02   -0.137405051629230E-01    0.215084562003703E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -1014.2080283361079       -37.271443952446212     
+ Total energies of excited states (eV,AU)
+           1  -1010.6087301070803       -37.139172230606832     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.4118336      -1.626191     -0.6044817E-03   1.677529    
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       1 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.182966
+QMMM:     2      C              -0.080266
+QMMM:     3      H               0.133165
+QMMM:     4      H               0.120438
+QMMM:     5      H               0.120078
+QMMM:     6      O              -0.275531
+QMMM:     7      O              -0.200849
+QMMM: Total Mulliken Charge =   -0.000000
+
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.599298     -0.6802526      -3.906666      0.9163124E-01   3.966508    
+
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.599298     -0.2676320      -1.537001      0.3605051E-01   1.560544    
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.599298      0.3055261      0.1498903      0.8103000E-01  0.3498273    
+
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.599298      0.1442016      0.8918937E-01  0.3665499E-01  0.1734717    
+QMMM:
+QMMM: SCF Energy =       -7.89828412 KCal/mol,       -33.04642076 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2672.55993543 eV (   -61631.90467085 KCal/mol)
+QMMM: QM core - QM core energy =      1658.35190709 eV (    38243.25332939 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1658.35190709 eV (    38243.25332939 KCal/mol)
+QMMM:             Total energy =     -1014.20802834 eV (   -23388.65134146 KCal/mol)
+
+ |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|
+ | MD normal termination at   Tue Oct 25 14:07:19 MDT 2016   |
+ | MD total CPU time	         0.11000     seconds |
+ |      0 days  0 hours  0 minutes  0 seconds     |
+
+  SQM (ground state) took overall [s]:
+       0.665E-02
+  Davidson (excited states) took overall [s]:
+       0.591E-01
+  deriv (adiabatic forces) took overall [s]:
+       0.283E-01
+  nacT (NA derivatives) took overall [s]:
+        0.00    
+ |________________________________________________|
+

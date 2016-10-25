@@ -1,0 +1,519 @@
+
+ |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|
+ | MD execution started at    Tue Oct 25 13:58:05 MDT 2016   |
+ | Computer:  Linux t1248924 x86_64               |
+ |________________________________________________|
+
+ rnd_seed=           1
+ !!!!!!-----MD INPUT-----!!!!!!
+
+ Ground state MD,      imdtype=           0
+ Initial count for out files              0
+ MD using Langevin 
+ with friction coefficient [1/ps]=   4.8377600000000000E-002
+ Starting time, fs           0.0000000000000000     
+ Time step, fs		        0.10000000000000001     
+ Number of classical steps (CS)           10
+ Quantum steps/per CS                    0
+ Displacement for deriv. [A]      1.0000000000000001E-005
+ Langevin thermostat dynamics, ither=           1
+ Temperature, K                  300.00000000000000     
+ Bath relaxation constant       0.40000000000000002     
+ Equilibrated dynamics
+ Number of steps per degree K           100
+ Number of steps to write data            1
+ Number of steps to write coords           1
+ Friction coefficient [1/ps]      4.8377600000000002E-005
+ Seed for random generator               1
+ NAESMD verbosity,            3
+ MD will use analytic deriv,  ideriv=           1
+ Cartesian coordinates are used
+ Allocating initial naesmd_module variables
+ Allocating md_module initial variables
+ Allocating variables
+ Allocating naesmd_module variables           7           0
+ Allocating md_module variables           7
+  Finish reading coordinates 
+ Rescaling velocity
+
+ Initial Geometry
+    7        -3.652440    3.218510    0.000470
+    6        -4.009990    1.820210   -0.001090
+    1        -5.067930    1.683010   -0.314830
+    1        -3.884340    1.400090    1.019380
+    1        -3.355060    1.266680   -0.707010
+    8        -4.455900    4.045100   -0.309720
+    8        -2.549710    3.551380    0.312810
+
+--------------------------------------------------------------------------------
+  QM CALCULATION INFO
+--------------------------------------------------------------------------------
+
+| QMMM: Citation for AMBER QMMM Run:
+| QMMM: R.C. Walker, M.F. Crowley and D.A. Case, J. COMP. CHEM. 29:1019, 2008
+
+QMMM: SINGLET STATE CALCULATION
+QMMM: RHF CALCULATION, NO. OF DOUBLY OCCUPIED LEVELS = 12
+
+| QMMM: *** Selected Hamiltonian *** 
+| QMMM: AM1         
+
+| QMMM: *** Parameter sets in use ***
+| QMMM: N : M.J.S.DEWAR et al. JACS, 107, 3902, (1985)
+| QMMM: C : M.J.S.DEWAR et al. JACS, 107, 3902, (1985)
+| QMMM: H : M.J.S.DEWAR et al. JACS, 107, 3902, (1985)
+| QMMM: O : M.J.S.DEWAR et al. JACS, 107, 3902, (1985)
+
+| QMMM: *** SCF convergence criteria ***
+| QMMM: Energy change                :  0.1D-07 kcal/mol
+| QMMM: Error matrix |FP-PF|         :  0.1D+00 au
+| QMMM: Density matrix change        :  0.5D-05
+| QMMM: Maximum number of SCF cycles :      300
+
+| QMMM: *** Diagonalization Routine Information ***
+| QMMM: Pseudo diagonalizations are allowed.
+| QMMM: Auto diagonalization routine selection is disabled.
+| QMMM: Using internal diagonalization routine (diag_routine=1).
+
+  QMMM: QM Region Cartesian Coordinates (*=link atom) 
+  QMMM: QM_NO.   MM_NO.  ATOM         X         Y         Z
+  QMMM:     1        1      N       -3.6524    3.2185    0.0005
+  QMMM:     2        2      C       -4.0100    1.8202   -0.0011
+  QMMM:     3        3      H       -5.0679    1.6830   -0.3148
+  QMMM:     4        4      H       -3.8843    1.4001    1.0194
+  QMMM:     5        5      H       -3.3551    1.2667   -0.7070
+  QMMM:     6        6      O       -4.4559    4.0451   -0.3097
+  QMMM:     7        7      O       -2.5497    3.5514    0.3128
+
+--------------------------------------------------------------------------------
+  RESULTS
+--------------------------------------------------------------------------------
+
+QMMM: Allocating qmmmrijdata array as     11 x      0
+QMMM: to hold min npairs of          0 and nquant per thread of        7
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -57843.91      -57843.91      0.1797693+309  -1.000000    
+QMMM:     2     -61583.25      -3739.338      0.5190842      -1.000000    
+QMMM:     3     -61660.96      -77.71725      0.2143047      -1.000000    
+QMMM:     4     -61668.07      -7.104232      0.4957920E-01  -1.000000    
+QMMM:     5 *   -61667.28      0.7889670      0.1143536E-01  -1.000000    
+QMMM:     6 *   -61667.38     -0.1025902      0.7363937E-02  -1.000000    
+QMMM:     7 *   -61667.49     -0.1076223      0.4562082E-02  -1.000000    
+QMMM:     8 *   -61667.43      0.6175606E-01  0.5244893E-03  -1.000000    
+QMMM:     9 *   -61667.43     -0.1671167E-03  0.2402461E-03  -1.000000    
+QMMM:    10 *   -61667.43     -0.7574755E-04  0.1012104E-03  -1.000000    
+QMMM:    11 *   -61667.43      0.3153355E-04  0.2995899E-04  -1.000000    
+QMMM:    12 *   -61667.43     -0.3447203E-06  0.1540141E-04  -1.000000    
+QMMM:    13 *   -61667.43     -0.4800895E-06  0.9609881E-05  -1.000000    
+QMMM:    14 *   -61667.43      0.2893648E-06  0.7494165E-06  -1.000000    
+QMMM:    15 *   -61667.43     -0.2182787E-09  0.3759700E-06  -1.000000    
+QMMM:    16     -61667.43     -0.5093170E-10  0.1641132E-06  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:    16 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+QMMM:
+QMMM: SCF Energy =       -7.61364564 KCal/mol,       -31.85549338 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2674.10037908 eV (   -61667.42884206 KCal/mol)
+QMMM: QM core - QM core energy =      1659.90469360 eV (    38279.06213908 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.90469360 eV (    38279.06213908 KCal/mol)
+QMMM:             Total energy =     -1014.19568549 eV (   -23388.36670298 KCal/mol)
+ LPRINT:           3           0
+ Begin classical propagation step #           1
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61667.30      -61667.30      0.1797693+309  -1.000000    
+QMMM:     2     -61667.30     -0.2011075E-06  0.1144163E-04  -1.000000    
+QMMM:     3     -61667.30     -0.2436718E-07  0.2894962E-05  -1.000000    
+QMMM:     4 *   -61667.30     -0.7101335E-08  0.7799595E-06  -1.000000    
+QMMM:     5     -61667.30      0.2146407E-08  0.1214651E-06  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     5 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+QMMM:
+QMMM: SCF Energy =       -7.61505227 KCal/mol,       -31.86137870 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2674.09497267 eV (   -61667.30416481 KCal/mol)
+QMMM: QM core - QM core energy =      1659.89922619 eV (    38278.93605520 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.89922619 eV (    38278.93605520 KCal/mol)
+QMMM:             Total energy =     -1014.19574648 eV (   -23388.36810961 KCal/mol)
+ Begin classical propagation step #           2
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61666.88      -61666.88      0.1797693+309  -1.000000    
+QMMM:     2     -61666.88     -0.1610657E-05  0.4018447E-04  -1.000000    
+QMMM:     3     -61666.88     -0.1697117E-06  0.1022463E-04  -1.000000    
+QMMM:     4 *   -61666.88     -0.4520552E-07  0.2770394E-05  -1.000000    
+QMMM:     5 *   -61666.88      0.1431181E-07  0.5077122E-06  -1.000000    
+QMMM:     6 *   -61666.88     -0.2837623E-09  0.2627323E-06  -1.000000    
+QMMM:     7     -61666.88     -0.3346941E-09  0.1628392E-06  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+QMMM:
+QMMM: SCF Energy =       -7.62060805 KCal/mol,       -31.88462407 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2674.07641364 eV (   -61666.87617504 KCal/mol)
+QMMM: QM core - QM core energy =      1659.88042625 eV (    38278.50250965 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.88042625 eV (    38278.50250965 KCal/mol)
+QMMM:             Total energy =     -1014.19598740 eV (   -23388.37366539 KCal/mol)
+ Begin classical propagation step #           3
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61665.93      -61665.93      0.1797693+309  -1.000000    
+QMMM:     2     -61665.93     -0.4673784E-05  0.7474632E-04  -1.000000    
+QMMM:     3     -61665.93     -0.4535468E-06  0.1848204E-04  -1.000000    
+QMMM:     4 *   -61665.93     -0.1251246E-06  0.4857120E-05  -1.000000    
+QMMM:     5 *   -61665.93      0.3960304E-07  0.1166882E-05  -1.000000    
+QMMM:     6 *   -61665.93     -0.1040462E-08  0.7255535E-06  -1.000000    
+QMMM:     7     -61665.93     -0.1426088E-08  0.4515884E-06  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+QMMM:
+QMMM: SCF Energy =       -7.63141169 KCal/mol,       -31.92982653 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2674.03523958 eV (   -61665.92666001 KCal/mol)
+QMMM: QM core - QM core energy =      1659.83878370 eV (    38277.54219098 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.83878370 eV (    38277.54219098 KCal/mol)
+QMMM:             Total energy =     -1014.19645588 eV (   -23388.38446903 KCal/mol)
+ Begin classical propagation step #           4
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61664.61      -61664.61      0.1797693+309  -1.000000    
+QMMM:     2     -61664.61     -0.9380885E-05  0.1011965E-03  -1.000000    
+QMMM:     3     -61664.61     -0.9326395E-06  0.2496008E-04  -1.000000    
+QMMM:     4 *   -61664.61     -0.2991437E-06  0.7021062E-05  -1.000000    
+QMMM:     5 *   -61664.61      0.1045264E-06  0.2452182E-05  -1.000000    
+QMMM:     6 *   -61664.61     -0.2619345E-08  0.1533752E-05  -1.000000    
+QMMM:     7     -61664.61     -0.3754394E-08  0.9553714E-06  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+QMMM:
+QMMM: SCF Energy =       -7.64638677 KCal/mol,       -31.99248223 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.97831487 eV (   -61664.61391931 KCal/mol)
+QMMM: QM core - QM core energy =      1659.78120963 eV (    38276.21447520 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.78120963 eV (    38276.21447520 KCal/mol)
+QMMM:             Total energy =     -1014.19710525 eV (   -23388.39944410 KCal/mol)
+ Begin classical propagation step #           5
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61662.97      -61662.97      0.1797693+309  -1.000000    
+QMMM:     2     -61662.97     -0.1360500E-04  0.1164934E-03  -1.000000    
+QMMM:     3     -61662.97     -0.1404733E-05  0.2898219E-04  -1.000000    
+QMMM:     4 *   -61662.97     -0.4654794E-06  0.8885211E-05  -1.000000    
+QMMM:     5 *   -61662.97      0.1695735E-06  0.3039201E-05  -1.000000    
+QMMM:     6 *   -61662.97     -0.3652531E-08  0.1902115E-05  -1.000000    
+QMMM:     7     -61662.97     -0.5173206E-08  0.1187825E-05  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+QMMM:
+QMMM: SCF Energy =       -7.66465455 KCal/mol,       -32.06891466 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.90723230 eV (   -61662.97468412 KCal/mol)
+QMMM: QM core - QM core energy =      1659.70933490 eV (    38274.55697222 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.70933490 eV (    38274.55697222 KCal/mol)
+QMMM:             Total energy =     -1014.19789740 eV (   -23388.41771189 KCal/mol)
+ Begin classical propagation step #           6
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61661.00      -61661.00      0.1797693+309  -1.000000    
+QMMM:     2     -61661.00     -0.1845720E-04  0.1315162E-03  -1.000000    
+QMMM:     3     -61661.00     -0.1955574E-05  0.3282744E-04  -1.000000    
+QMMM:     4 *   -61661.00     -0.6665068E-06  0.1023610E-04  -1.000000    
+QMMM:     5 *   -61661.00      0.2453307E-06  0.3445729E-05  -1.000000    
+QMMM:     6 *   -61661.00     -0.5158654E-08  0.2148375E-05  -1.000000    
+QMMM:     7     -61661.00     -0.7174094E-08  0.1339496E-05  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+QMMM:
+QMMM: SCF Energy =       -7.68627965 KCal/mol,       -32.15939407 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.82159773 eV (   -61660.99986530 KCal/mol)
+QMMM: QM core - QM core energy =      1659.62276260 eV (    38272.56052831 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.62276260 eV (    38272.56052831 KCal/mol)
+QMMM:             Total energy =     -1014.19883513 eV (   -23388.43933699 KCal/mol)
+ Begin classical propagation step #           7
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61658.62      -61658.62      0.1797693+309  -1.000000    
+QMMM:     2     -61658.62     -0.2274360E-04  0.1390652E-03  -1.000000    
+QMMM:     3     -61658.62     -0.2393012E-05  0.3461173E-04  -1.000000    
+QMMM:     4 *   -61658.62     -0.8508796E-06  0.1239507E-04  -1.000000    
+QMMM:     5 *   -61658.62      0.3242021E-06  0.4044429E-05  -1.000000    
+QMMM:     6 *   -61658.62     -0.6410119E-08  0.2525256E-05  -1.000000    
+QMMM:     7     -61658.62     -0.9102223E-08  0.1567898E-05  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+QMMM:
+QMMM: SCF Energy =       -7.71069201 KCal/mol,       -32.26153539 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.71830047 eV (   -61658.61772721 KCal/mol)
+QMMM: QM core - QM core energy =      1659.51840674 eV (    38270.15397786 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.51840674 eV (    38270.15397786 KCal/mol)
+QMMM:             Total energy =     -1014.19989373 eV (   -23388.46374935 KCal/mol)
+ Begin classical propagation step #           8
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61655.87      -61655.87      0.1797693+309  -1.000000    
+QMMM:     2     -61655.87     -0.3001871E-04  0.1559354E-03  -1.000000    
+QMMM:     3     -61655.87     -0.3196721E-05  0.3860296E-04  -1.000000    
+QMMM:     4 *   -61655.87     -0.1180175E-05  0.1420781E-04  -1.000000    
+QMMM:     5 *   -61655.87      0.4497706E-06  0.4607094E-05  -1.000000    
+QMMM:     6 *   -61655.87     -0.9313226E-08  0.2866487E-05  -1.000000    
+QMMM:     7     -61655.87     -0.1322041E-07  0.1777493E-05  -1.000000    
+QMMM:     8     -61655.87      0.7654307E-08  0.1301131E-06  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:     8 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+QMMM:
+QMMM: SCF Energy =       -7.73825947 KCal/mol,       -32.37687764 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.59893848 eV (   -61655.86512034 KCal/mol)
+QMMM: QM core - QM core energy =      1659.39784934 eV (    38267.37380352 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.39784934 eV (    38267.37380352 KCal/mol)
+QMMM:             Total energy =     -1014.20108915 eV (   -23388.49131681 KCal/mol)
+ Begin classical propagation step #           9
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61652.82      -61652.82      0.1797693+309  -1.000000    
+QMMM:     2     -61652.82     -0.3676808E-04  0.1729294E-03  -1.000000    
+QMMM:     3     -61652.82     -0.3956819E-05  0.4293770E-04  -1.000000    
+QMMM:     4 *   -61652.82     -0.1518230E-05  0.1686182E-04  -1.000000    
+QMMM:     5 *   -61652.82      0.5858819E-06  0.5410212E-05  -1.000000    
+QMMM:     6 *   -61652.82     -0.1242734E-07  0.3370594E-05  -1.000000    
+QMMM:     7 *   -61652.82     -0.1784792E-07  0.2087656E-05  -1.000000    
+QMMM:     8 *   -61652.82      0.1038279E-07  0.1556340E-06  -1.000000    
+QMMM:     9 *   -61652.82     -0.7275958E-11  0.6737985E-07  -1.000000    
+QMMM:    10     -61652.82     -0.1455192E-10  0.4009065E-07  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:    10 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+QMMM:
+QMMM: SCF Energy =       -7.76846132 KCal/mol,       -32.50324214 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.46702224 eV (   -61652.82299979 KCal/mol)
+QMMM: QM core - QM core energy =      1659.26462344 eV (    38264.30148113 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.26462344 eV (    38264.30148113 KCal/mol)
+QMMM:             Total energy =     -1014.20239880 eV (   -23388.52151865 KCal/mol)
+ Begin classical propagation step #          10
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61649.51      -61649.51      0.1797693+309  -1.000000    
+QMMM:     2     -61649.51     -0.4360906E-04  0.1869376E-03  -1.000000    
+QMMM:     3     -61649.51     -0.4670605E-05  0.4636965E-04  -1.000000    
+QMMM:     4 *   -61649.51     -0.1822817E-05  0.1805688E-04  -1.000000    
+QMMM:     5 *   -61649.51      0.7067356E-06  0.5839936E-05  -1.000000    
+QMMM:     6 *   -61649.51     -0.1536682E-07  0.3639691E-05  -1.000000    
+QMMM:     7 *   -61649.51     -0.2207526E-07  0.2262527E-05  -1.000000    
+QMMM:     8 *   -61649.51      0.1277658E-07  0.1692851E-06  -1.000000    
+QMMM:     9 *   -61649.51     -0.3637979E-10  0.7475300E-07  -1.000000    
+QMMM:    10     -61649.51     -0.5093170E-10  0.4998459E-07  -1.000000    
+QMMM: SCF Converged to 0.1000E-07 in:    10 Cycles 
+
+QMMM: Mulliken Charges
+QMMM: Atomic Charges for Step       1 :
+QMMM: Atomic Charges for State (0 - ground)       0 :
+QMMM:  Atom    Element       Mulliken Charge
+QMMM:     1      N               0.000000
+QMMM:     2      C               0.000000
+QMMM:     3      H               0.000000
+QMMM:     4      H               0.000000
+QMMM:     5      H               0.000000
+QMMM:     6      O               0.000000
+QMMM:     7      O               0.000000
+QMMM: Total Mulliken Charge =    0.000000
+
+QMMM:
+QMMM: SCF Energy =       -7.80080823 KCal/mol,       -32.63858162 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.32316041 eV (   -61649.50540214 KCal/mol)
+QMMM: QM core - QM core energy =      1659.11935894 eV (    38260.95153657 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.11935894 eV (    38260.95153657 KCal/mol)
+QMMM:             Total energy =     -1014.20380146 eV (   -23388.55386556 KCal/mol)
+
+ |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|
+ | MD normal termination at   Tue Oct 25 13:58:05 MDT 2016   |
+ | MD total CPU time	         0.10000E-01 seconds |
+ |      0 days  0 hours  0 minutes  0 seconds     |
+
+  SQM (ground state) took overall [s]:
+       0.472E-02
+  Davidson (excited states) took overall [s]:
+        0.00    
+  deriv (adiabatic forces) took overall [s]:
+       0.647E-02
+  nacT (NA derivatives) took overall [s]:
+        0.00    
+ |________________________________________________|
+
