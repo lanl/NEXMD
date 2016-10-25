@@ -11,13 +11,18 @@ This is the master version of SQM-NAESMD beta 1.0. See the manual for descriptio
 
 Bug list: Nonesofar
 
-Several development branches of this program exist. These include:
+Urgent development needs from the old version:
+1.) State chopping
+2.) Normal Mode analysis
+3.) Frozen atoms
+
+Several development branches of this program exist at the moment. These include:
 
 amber_integration - working towards an integration with Amber, currently bootstrapping to Amber for NAESMD-QM/MM MD
 correlation - attempting to develop a self-consistent TD-SCF method
 eigensolvers - reorganizing the code to accept alternatives to the build in Lancsoz algorithm and Liouville operator sparsity
 esxlbomd - development of excited state extended Lagrangian molecular dynamics
-planning - a junk branch for testing random ideas
+planning - a junk branch for testing
 release0 - historical branch 1
 release1 - historical branch 2
 ssdynamics - nonequilibrium solvation models for molecular dynamics as published
