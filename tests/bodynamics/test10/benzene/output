@@ -1,55 +1,54 @@
-
+ 
  |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|
- | MD execution started at    Tue Oct 25 14:10:18 MDT 2016   |
- | Computer:  Linux t1248924 x86_64               |
+ | MD execution started at    Tue Nov  8 10:01:24 MST 2016   |
+ | Computer:  Linux wc-fe1.lanl.gov x86_64        |
  |________________________________________________|
-
- rnd_seed=          11
+ 
+ rnd_seed=                    11
  !!!!!!-----MD INPUT-----!!!!!!
-
- Excited state MD,      state=           1
- Number of states to propagate           1
- Initial count for out files              0
- MD using Langevin 
- with friction coefficient [1/ps]=   4.8377600000000000E-002
- Starting time, fs           0.0000000000000000     
- Time step, fs		        0.10000000000000001     
- Number of classical steps (CS)           10
- Quantum steps/per CS                    0
- Displacement for deriv. [A]      1.0000000000000001E-005
- Langevin thermostat dynamics, ither=           1
- Temperature, K                  300.00000000000000     
- Bath relaxation constant       0.40000000000000002     
+ 
+ Excited state MD,      state=                     1
+ Number of states to propagate                     1
+ Initial count for out files                        0
+ MD at constant energy
+ Starting time, fs          0.000000000000000E+000
+ Time step, fs		        0.100000000000000     
+ Number of classical steps (CS)                     10
+ Quantum steps/per CS                              0
+ Displacement for deriv. [A]     1.000000000000000E-005
+ Newtonian dynamics,           ither=                     0
+ Temperature, K                  300.000000000000     
+ Bath relaxation constant       0.400000000000000     
  Equilibrated dynamics
- Number of steps per degree K           100
- Number of steps to write data            1
- Number of steps to write coords           1
- Friction coefficient [1/ps]      4.8377600000000002E-005
- Seed for random generator              11
- NAESMD verbosity,            3
- MD will use analytic deriv,  ideriv=           1
+ Number of steps per degree K                     100
+ Number of steps to write data                      1
+ Number of steps to write coords                     1
+ Friction coefficient [1/ps]     4.837760000000000E-005
+ Seed for random generator                        11
+ NAESMD verbosity,                      3
+ MD will use analytic deriv,  ideriv=                     1
  Cartesian coordinates are used
  Allocating initial naesmd_module variables
  Allocating md_module initial variables
  Allocating variables
- Allocating naesmd_module variables          12           1
- Allocating md_module variables          12
+ Allocating naesmd_module variables                    12                     1
+ Allocating md_module variables                    12
   Finish reading coordinates 
  Rescaling velocity
-
+ 
  Initial Geometry
-    6        -7.989370    0.682970   -0.000000
-    6        -7.099350    1.762410   -0.000000
+    6        -7.989370    0.682970    0.000000
+    6        -7.099350    1.762410    0.000000
     6        -5.719520    1.531350    0.000000
-    6        -5.229710    0.220850   -0.000000
-    6        -6.119720   -0.858590   -0.000000
-    6        -7.499550   -0.627530   -0.000000
-    1        -9.056850    0.861720   -0.000000
-    1        -7.478290    2.776240   -0.000000
+    6        -5.229710    0.220850    0.000000
+    6        -6.119720   -0.858590    0.000000
+    6        -7.499550   -0.627530    0.000000
+    1        -9.056850    0.861720    0.000000
+    1        -7.478290    2.776240    0.000000
     1        -5.030980    2.366440    0.000000
-    1        -4.162230    0.042100   -0.000000
-    1        -5.740790   -1.872420   -0.000000
-    1        -8.188100   -1.462620   -0.000000
+    1        -4.162230    0.042100    0.000000
+    1        -5.740790   -1.872420    0.000000
+    1        -8.188100   -1.462620    0.000000
 
 --------------------------------------------------------------------------------
   QM CALCULATION INFO
@@ -73,7 +72,7 @@ QMMM: RHF CALCULATION, NO. OF DOUBLY OCCUPIED LEVELS = 15
 | QMMM: Error matrix |FP-PF|         :  0.1D+00 au
 | QMMM: Density matrix change        :  0.5D-05
 | QMMM: Maximum number of SCF cycles :      300
-
+ 
 | QMMM: *** Diagonalization Routine Information ***
 | QMMM: Pseudo diagonalizations are allowed.
 | QMMM: Auto diagonalization routine selection is disabled.
@@ -81,18 +80,18 @@ QMMM: RHF CALCULATION, NO. OF DOUBLY OCCUPIED LEVELS = 15
 
   QMMM: QM Region Cartesian Coordinates (*=link atom) 
   QMMM: QM_NO.   MM_NO.  ATOM         X         Y         Z
-  QMMM:     1        1      C       -7.9894    0.6830   -0.0000
-  QMMM:     2        2      C       -7.0994    1.7624   -0.0000
+  QMMM:     1        1      C       -7.9894    0.6830    0.0000
+  QMMM:     2        2      C       -7.0994    1.7624    0.0000
   QMMM:     3        3      C       -5.7195    1.5313    0.0000
-  QMMM:     4        4      C       -5.2297    0.2208   -0.0000
-  QMMM:     5        5      C       -6.1197   -0.8586   -0.0000
-  QMMM:     6        6      C       -7.4996   -0.6275   -0.0000
-  QMMM:     7        7      H       -9.0569    0.8617   -0.0000
-  QMMM:     8        8      H       -7.4783    2.7762   -0.0000
+  QMMM:     4        4      C       -5.2297    0.2208    0.0000
+  QMMM:     5        5      C       -6.1197   -0.8586    0.0000
+  QMMM:     6        6      C       -7.4996   -0.6275    0.0000
+  QMMM:     7        7      H       -9.0569    0.8617    0.0000
+  QMMM:     8        8      H       -7.4783    2.7762    0.0000
   QMMM:     9        9      H       -5.0310    2.3664    0.0000
-  QMMM:    10       10      H       -4.1622    0.0421   -0.0000
-  QMMM:    11       11      H       -5.7408   -1.8724   -0.0000
-  QMMM:    12       12      H       -8.1881   -1.4626   -0.0000
+  QMMM:    10       10      H       -4.1622    0.0421    0.0000
+  QMMM:    11       11      H       -5.7408   -1.8724    0.0000
+  QMMM:    12       12      H       -8.1881   -1.4626    0.0000
 
 --------------------------------------------------------------------------------
   RESULTS
@@ -104,1332 +103,1884 @@ QMMM:
 QMMM: SCF Convergence Information
 QMMM: (*) = Pseudo Diagonalisation
 QMMM: Cycle      Energy          dE             dP              |FP-PF|
-QMMM:     1     -68957.32      -68957.32      0.1797693+309  -1.000000    
-QMMM:     2     -75039.31      -6081.989      0.3014466      -1.000000    
-QMMM:     3     -75057.54      -18.22854      0.5890037E-01  -1.000000    
-QMMM:     4     -75059.79      -2.252848      0.1719636E-01  -1.000000    
-QMMM:     5 *   -75059.18      0.6080633      0.1363146E-02  -1.000000    
-QMMM:     6 *   -75059.18     -0.9752084E-03  0.3847170E-03  -1.000000    
-QMMM:     7 *   -75059.18     -0.2121245E-03  0.1209325E-03  -1.000000    
-QMMM:     8 *   -75059.18      0.6689475E-04  0.1043922E-04  -1.000000    
-QMMM:     9 *   -75059.18     -0.1001463E-06  0.4352233E-05  -1.000000    
-QMMM:    10 *   -75059.18     -0.3680179E-07  0.1891942E-05  -1.000000    
-QMMM:    11 *   -75059.18      0.1616718E-07  0.7134139E-07  -1.000000    
-QMMM:    12 *   -75059.18       0.000000      0.3094147E-07  -1.000000    
-QMMM:    13     -75059.18     -0.1455192E-10  0.1987897E-07  -1.000000    
+QMMM:     1     -24854.29      -24854.29      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -103990.4      -103990.4           Infinity
+QMMM:     2     -30939.14      -6084.848      0.3014466      -1.000000    
+QMMM: KJ/mol    -129449.4      -25459.00       1.261253    
+QMMM:     3     -30956.01      -16.86657      0.5574074E-01  -1.000000    
+QMMM: KJ/mol    -129519.9      -70.56971      0.2332193    
+QMMM:     4     -30958.36      -2.358142      0.1711190E-01  -1.000000    
+QMMM: KJ/mol    -129529.8      -9.866467      0.7159621E-01
+QMMM:     5 *   -30957.66      0.7070923      0.9819845E-03  -1.000000    
+QMMM: KJ/mol    -129526.8       2.958474      0.4108623E-02
+QMMM:     6 *   -30957.66     -0.6082045E-03  0.2750308E-03  -1.000000    
+QMMM: KJ/mol    -129526.8     -0.2544727E-02  0.1150729E-02
+QMMM:     7 *   -30957.66     -0.1281447E-03  0.8493723E-04  -1.000000    
+QMMM: KJ/mol    -129526.8     -0.5361573E-03  0.3553774E-03
+QMMM:     8 *   -30957.66      0.3999261E-04  0.1152830E-04  -1.000000    
+QMMM: KJ/mol    -129526.8      0.1673291E-03  0.4823440E-04
+QMMM:     9 *   -30957.66     -0.1022199E-06  0.5220978E-05  -1.000000    
+QMMM: KJ/mol    -129526.8     -0.4276882E-06  0.2184457E-04
+QMMM:    10 *   -30957.66     -0.4827234E-07  0.2429341E-05  -1.000000    
+QMMM: KJ/mol    -129526.8     -0.2019715E-06  0.1016436E-04
+QMMM:    11 *   -30957.66      0.2310117E-07  0.2838220E-06  -1.000000    
+QMMM: KJ/mol    -129526.8      0.9665528E-07  0.1187511E-05
+QMMM:    12 *   -30957.66     -0.2910383E-10  0.1862668E-06  -1.000000    
+QMMM: KJ/mol    -129526.8     -0.1217704E-09  0.7793401E-06
+QMMM:    13     -30957.66     -0.9094947E-10  0.1265230E-06  -1.000000    
+QMMM: KJ/mol    -129526.8     -0.3805326E-09  0.5293722E-06
 QMMM: SCF Converged to 0.1000E-07 in:    13 Cycles 
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       0 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C               0.000000
-QMMM:     2      C               0.000000
-QMMM:     3      C               0.000000
-QMMM:     4      C               0.000000
-QMMM:     5      C               0.000000
-QMMM:     6      C               0.000000
-QMMM:     7      H               0.000000
-QMMM:     8      H               0.000000
-QMMM:     9      H               0.000000
-QMMM:    10      H               0.000000
-QMMM:    11      H               0.000000
-QMMM:    12      H               0.000000
-QMMM: Total Mulliken Charge =    0.000000
-
  Davidson parameters
- mdflag=           2
- irflag=           0
- M4=         225
- Mx=           1
- Mj=           0
- nd=         500
- nd1=           3
- j1=           1
- istore=           0
- istore_M=           0
- ++ START            1         211
- ++ START            2         212
- ++ START            3         196
- info           0
-    3.97    
+ mdflag=                     2
+ irflag=                     0
+ M4=                   225
+ Mx=                     1
+ Mj=                     0
+ nd=                   500
+ nd1=                     3
+ j1=                     1
+ istore=                     0
+ istore_M=                     0
+ 
+ Davidson batch                      1
+ So far found                      0  states
+ out of requested                      1  states
+ This batch will seek                     1  vectors
+  Entering davidson0
+ ++ START                      1                   211
+ ++ START                      2                   212
+ ++ START                      3                   196
+ Check expansion to expansion
+ COUNT=                     1 Exp=                     3
+ nd1,nd1_old,j0,j1                     3                     0
+                     0                     1
+ info                     0
+    4.30    
  eigenvalues and residual norm
- Perturbed left m=           1
- info           0
-    3.96    
+    1    0    2    4.300502993   4.300502993  1.47     0.360    
+ New perturbed m=                     2
+ Perturbed left m=                     2
+ COUNT=                     2 Exp=                     5
+ nd1,nd1_old,j0,j1                     5                     3
+                     0                     1
+ info                     0
+    4.11    
  eigenvalues and residual norm
- Perturbed left m=           1
- info           0
-    3.96    
+    1    0    2    4.109961050   4.109961050 0.112E-01 0.471E-02
+ New perturbed m=                     2
+ Perturbed left m=                     2
+ COUNT=                     3 Exp=                     7
+ nd1,nd1_old,j0,j1                     7                     5
+                     0                     1
+ info                     0
+    4.11    
  eigenvalues and residual norm
- Perturbed left m=           1
- info           0
-    3.96    
+    1    0    2    4.106319198   4.106319198 0.705E-01 0.574E-02
+ New perturbed m=                     2
+ Perturbed left m=                     2
+ COUNT=                     4 Exp=                     9
+ nd1,nd1_old,j0,j1                     9                     7
+                     0                     1
+ info                     0
+    3.85    
  eigenvalues and residual norm
- Perturbed left m=           1
- info           0
-    3.96    
+    1    0    2    3.852154367   3.852154367 0.356     0.260E-01
+ New perturbed m=                     2
+ Perturbed left m=                     2
+ COUNT=                     5 Exp=                    11
+ nd1,nd1_old,j0,j1                    11                     9
+                     0                     1
+ info                     0
+    3.82    
  eigenvalues and residual norm
- Perturbed left m=           1
- info           0
-    3.96    
+    1    0    2    3.819410269   3.819410269 0.256E-01 0.951E-03
+ New perturbed m=                     2
+ exp removed #                    13                    12
+  0.914529969103993                         12
+ Perturbed left m=                     1
+ COUNT=                     6 Exp=                    12
+ nd1,nd1_old,j0,j1                    12                    11
+                     0                     1
+ info                     0
+    3.82    
  eigenvalues and residual norm
- Perturbed left m=           1
- info           0
-    3.96    
+    1    0    2    3.817482362   3.817482362 0.172E-02 0.660E-03
+ New perturbed m=                     2
+ Perturbed left m=                     2
+ COUNT=                     7 Exp=                    14
+ nd1,nd1_old,j0,j1                    14                    12
+                     0                     1
+ info                     0
+    3.82    
  eigenvalues and residual norm
- @@@@ Davidson subroutine Found vectors           1
+    1    0    2    3.817378698   3.817378698 0.283E-04 0.622E-05
+ New perturbed m=                     2
+ Perturbed left m=                     2
+ COUNT=                     8 Exp=                    16
+ nd1,nd1_old,j0,j1                    16                    14
+                     0                     1
+ info                     0
+    3.82    
+ eigenvalues and residual norm
+    1    0    2    3.817376726   3.817376726 0.203E-05 0.881E-07
+ New perturbed m=                     2
+ Perturbed left m=                     2
+ COUNT=                     9 Exp=                    18
+ nd1,nd1_old,j0,j1                    18                    16
+                     0                     1
+ info                     0
+    3.82    
+ eigenvalues and residual norm
+    1    0    2    3.817376570   3.817376570 0.162E-06 0.512E-08
+ New perturbed m=                     2
+ Perturbed left m=                     2
+ COUNT=                    10 Exp=                    20
+ nd1,nd1_old,j0,j1                    20                    18
+                     0                     1
+ info                     0
+    3.82    
+ eigenvalues and residual norm
+    1    1    0    3.817376559   3.817376559 0.734E-08 0.319E-09   Converged!
+ All vectors found after loop                     0 , Expansion 
+                    20
+ @@@@ Davidson subroutine Found vectors                     1
   i, e0(i), ferr(i), ftol0
-  1 +++    3.964783387402427     0.91E-07 0.10E-06
+  1 +++    3.817376559080186     0.77E-08 0.10E-06
  -------------------------------------------------
-
+ 
  Frequencies (eV) and Oscillator strengths (unitless)
         Omega            fx              fy              fz          ftotal
-   1     3.96478338740243        0.181980818136072E-09    0.116896734271644E-08    0.829366375120013E-33    0.135094816085252E-08
-
+   1     3.81737655908019        0.212355973096215E-08    0.124347147114580E-07    0.575280182744704E-12    0.145588497226029E-07
+ 
  Frequencies (eV) and Transition Dipole Moments (AU)
         Omega            fx              fy              fz          ftotal
-   1     3.96478338740243       -0.432836739088575E-04   -0.109701483132993E-03   -0.924026702907951E-16    0.139078918286266E-07
-
+   1     3.81737655908019        0.150685263480632E-03    0.364633405937474E-03    0.248015171451873E-05    0.155669720508317E-06
+ 
  Total energy of the ground state (eV,AU)
-           0  -850.30578184039223       -31.248149694001818     
+                     0  -850.370953685223       -31.2505447142482     
  Total energies of excited states (eV,AU)
-           1  -846.34099845298977       -31.102446645240121     
+                     1  -846.553577126143       -31.1102587645298     
  Ground State Molecular Dipole Moment (A.U.)
                          dx              dy              dz          ftotal
-                    -0.4815844E-05  0.2294108E-06  0.6140443E-14  0.4821305E-05
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       1 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C              -0.129708
-QMMM:     2      C              -0.129742
-QMMM:     3      C              -0.129726
-QMMM:     4      C              -0.129707
-QMMM:     5      C              -0.129740
-QMMM:     6      C              -0.129728
-QMMM:     7      H               0.129726
-QMMM:     8      H               0.129725
-QMMM:     9      H               0.129726
-QMMM:    10      H               0.129724
-QMMM:    11      H               0.129726
-QMMM:    12      H               0.129725
-QMMM: Total Mulliken Charge =   -0.000000
-
+                    -0.1909383E-03  0.1087158E-02 -0.6202544E-05  0.1103815E-02
+ 
  Frequencies (eV) and Total Molecular Dipole Moments (Debye)
         Omega            dx              dy              dz          ftotal
-   1   3.964783     -0.1455092E-04  0.1250928E-05  0.1614049E-13  0.1460459E-04
-
+   1   3.817377     -0.5423773E-03  0.2935607E-02  0.2257900E-04  0.2985376E-02
+ 
  Frequencies (eV) and Total Molecular Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964783     -0.5724772E-05  0.4921530E-06  0.6350160E-14  0.5745888E-05
-
+   1   3.817377     -0.2133877E-03  0.1154957E-02  0.8883265E-05  0.1174538E-02
+ 
  Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964783     -0.2547744E-05  0.6462317E-06  0.2472286E-15  0.2628424E-05
-
+   1   3.817377     -0.1127003E-03  0.2786896E-03  0.1635932E-04  0.3010596E-03
+ 
  Frequencies (eV) Relaxed Difference Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964783     -0.9089284E-06  0.2627423E-06  0.2097166E-15  0.9461418E-06
+   1   3.817377     -0.2244946E-04  0.6779918E-04  0.1508581E-04  0.7299512E-04
+QMMM: Occupied MO Energies (eV):
+      -39.21235786      -31.51576174      -31.51542655      -23.21305215      -23.21286829
+      -17.96429554      -16.30332012      -15.48922887      -14.26515643      -14.26496147
+      -13.48826379      -11.98971535      -11.98957720       -9.78835916       -9.78800235
+QMMM: Virtual MO Energies (eV):
+        0.38281264        0.38315924        2.79793959        4.06503117        4.06520624
+        4.07869036        4.32040821        4.53944770        4.53962145        5.10863933
+        5.10886372        5.54734013        5.54762442        5.60000917        6.04123296
 QMMM:
-QMMM: SCF Energy =       22.72653586 KCal/mol,        95.08782606 KJ/mol
+QMMM: SCF Energy =       21.22360795 KCal/mol,        88.79957567 KJ/mol
 QMMM: SCF Energy = Heat of formation
 QMMM:
-QMMM:        Electronic energy =     -3254.81044265 eV (   -75059.18361798 KCal/mol)
-QMMM: QM core - QM core energy =      2404.50466081 eV (    55450.28198295 KCal/mol)
+QMMM:        Electronic energy =     -1342.42478847 eV (   -30957.65804687 KCal/mol)
+QMMM: Dielectric(COSMO) energy =        -0.07115857 eV (       -1.64098780 KCal/mol)
+QMMM: QM core - QM core energy =       492.05383478 eV (    11347.25348393 KCal/mol)
 QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
-QMMM: Total core - core energy =      2404.50466081 eV (    55450.28198295 KCal/mol)
-QMMM:             Total energy =      -850.30578184 eV (   -19608.90163502 KCal/mol)
+QMMM: Total core - core energy =       492.05383478 eV (    11347.25348393 KCal/mol)
+QMMM:             Total energy =      -850.37095369 eV (   -19610.40456293 KCal/mol)
   Restoring quirality in cmdqt
- LPRINT:           3           1
- Begin classical propagation step #           1
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:    -0.84100923604882    0.14076930385504   -0.00034330049551
+QMMM: Atm      2:    -0.29764175447755    0.79930903024939    0.00018339482790
+QMMM: Atm      3:     0.54195089814271    0.65724144043427    0.00017093532633
+QMMM: Atm      4:     0.84085257797911   -0.14099846579420   -0.00005575356928
+QMMM: Atm      5:     0.29820545227219   -0.79839983347337   -0.00011661721131
+QMMM: Atm      6:    -0.54146145193824   -0.65777882933553    0.00001522272131
+QMMM: Atm      7:     0.64019760821021   -0.10691069289688   -0.00001119724063
+QMMM: Atm      8:     0.22689729268389   -0.60844611772078    0.00000090205250
+QMMM: Atm      9:    -0.41301131556005   -0.50044990124901    0.00004584793134
+QMMM: Atm     10:    -0.64037057983141    0.10699672126601    0.00005036365119
+QMMM: Atm     11:    -0.22741171935009    0.60847595612920    0.00006965918024
+QMMM: Atm     12:     0.41280222791806    0.50019138853585   -0.00000945717408
+QMMM: Forces on QM atoms excited state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:     1.05202228281209   -0.17622777835224   -0.00004759354810
+QMMM: Atm      2:     0.37329775355303   -0.99930774044326    0.00003764928130
+QMMM: Atm      3:    -0.67849705873531   -0.82322528880298    0.00005487280963
+QMMM: Atm      4:    -1.05182378734476    0.17620601027283    0.00002554136143
+QMMM: Atm      5:    -0.37324647768208    0.99937196203948   -0.00000458927155
+QMMM: Atm      6:     0.67824456082420    0.82320393680510   -0.00003313853763
+QMMM: Atm      7:    -0.00391460929892    0.00065574609236    0.00000990663802
+QMMM: Atm      8:    -0.00140902825085    0.00375153425836   -0.00001128991334
+QMMM: Atm      9:     0.00256411822452    0.00310473202001   -0.00003556085579
+QMMM: Atm     10:     0.00388445303355   -0.00064979126386   -0.00001802345961
+QMMM: Atm     11:     0.00142352537174   -0.00380053160969   -0.00000157273393
+QMMM: Atm     12:    -0.00254573250721   -0.00308279101611    0.00002379822956
+QMMM: Excited State Forces on QM atoms from SCF calculation (KJ/mol)
+QMMM: Atm      1:   101.50670965468186  -17.00372912489513   -0.00459216933657
+QMMM: Atm      2:    36.01846396576822  -96.42042979708275    0.00363267463819
+QMMM: Atm      3:   -65.46629768953522  -79.43072284319766    0.00529452507421
+QMMM: Atm      4:  -101.48755737806196   17.00162878334125    0.00246441506187
+QMMM: Atm      5:   -36.01351649932181   96.42662636062249   -0.00044280607156
+QMMM: Atm      6:    65.44193486702657   79.42866264819544   -0.00319744550337
+QMMM: Atm      7:    -0.37770978429778    0.06327112010097    0.00095586400145
+QMMM: Atm      8:    -0.13595322446248    0.36197512633018   -0.00108933239714
+QMMM: Atm      9:     0.24740464949148    0.29956697387470   -0.00343116825798
+QMMM: Atm     10:     0.37480008996588   -0.06269655522889   -0.00173903358509
+QMMM: Atm     11:     0.13735201141252   -0.36670274474366   -0.00015174873075
+QMMM: Atm     12:    -0.24563066266727   -0.29744994731692    0.00229622510674
+
+  QMMM: QM Region Cartesian Coordinates (*=link atom) 
+  QMMM: QM_NO. MM_NO.  ATOM         X         Y         Z
+  QMMM:     1        1       1      -7.9894    0.6830    0.0000
+  QMMM:     2        2       2      -7.0994    1.7624    0.0000
+  QMMM:     3        3       3      -5.7195    1.5313    0.0000
+  QMMM:     4        4       4      -5.2297    0.2208    0.0000
+  QMMM:     5        5       5      -6.1197   -0.8586    0.0000
+  QMMM:     6        6       6      -7.4996   -0.6275    0.0000
+  QMMM:     7        7       7      -9.0569    0.8617    0.0000
+  QMMM:     8        8       8      -7.4783    2.7762    0.0000
+  QMMM:     9        9       9      -5.0310    2.3664    0.0000
+  QMMM:    10       10      10      -4.1622    0.0421    0.0000
+  QMMM:    11       11      11      -5.7408   -1.8724    0.0000
+  QMMM:    12       12      12      -8.1881   -1.4626    0.0000
+ LPRINT:                     3                     1
+ Begin classical propagation step #                     1
 QMMM: 
 QMMM: SCF Convergence Information
 QMMM: (*) = Pseudo Diagonalisation
 QMMM: Cycle      Energy          dE             dP              |FP-PF|
-QMMM:     1     -75058.86      -75058.86      0.1797693+309  -1.000000    
-QMMM:     2     -75058.86     -0.5828333E-06  0.9364479E-05  -1.000000    
-QMMM:     3     -75058.86     -0.7530616E-07  0.2456453E-05  -1.000000    
-QMMM:     4 *   -75058.86     -0.2451998E-07  0.6918990E-06  -1.000000    
-QMMM:     5 *   -75058.86      0.5864422E-08  0.1286152E-06  -1.000000    
-QMMM:     6     -75058.86     -0.3346941E-09  0.6168454E-07  -1.000000    
+QMMM:     1     -30957.48      -30957.48      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -129526.1      -129526.1           Infinity
+QMMM:     2     -30957.48     -0.1794797E-06  0.3915990E-05  -1.000000    
+QMMM: KJ/mol    -129526.1     -0.7509430E-06  0.1638450E-04
+QMMM:     3     -30957.48     -0.1074295E-07  0.1032417E-05  -1.000000    
+QMMM: KJ/mol    -129526.1     -0.4494851E-07  0.4319634E-05
+QMMM:     4 *   -30957.48     -0.1280569E-08  0.2749805E-06  -1.000000    
+QMMM: KJ/mol    -129526.1     -0.5357899E-08  0.1150519E-05
+QMMM:     5     -30957.48      0.3892637E-09  0.3184293E-07  -1.000000    
+QMMM: KJ/mol    -129526.1      0.1628679E-08  0.1332308E-06
+QMMM: SCF Converged to 0.1000E-07 in:     5 Cycles 
+ Davidson parameters
+ mdflag=                     2
+ irflag=                     0
+ M4=                   225
+ Mx=                     1
+ Mj=                     0
+ nd=                   500
+ nd1=                     3
+ j1=                     1
+ istore=                     1
+ istore_M=                     1
+ 
+ Davidson batch                      1
+ So far found                      0  states
+ out of requested                      1  states
+ This batch will seek                     1  vectors
+  Entering davidson0
+ Restart Davidson with guesses from the previous step
+ Restart loop =                      0
+ Currently have                      1  states
+ With                      2  initial guesses
+ COUNT=                     1 Exp=                     2
+ nd1,nd1_old,j0,j1                     2                     0
+                     0                     1
+ info  -4624406938464026624
+    3.82    
+ eigenvalues and residual norm
+    1    1    0    3.817371779   3.817371779 0.739E-08 0.302E-09   Converged!
+ All vectors found after loop                     0 , Expansion 
+                     2
+ @@@@ Davidson subroutine Found vectors                     1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.817371779245954     0.77E-08 0.10E-06
+ -------------------------------------------------
+ 
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.81737177924595        0.212359855534950E-08    0.124344700014217E-07    0.574736095953345E-12    0.145586432928671E-07
+ 
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.81737177924595        0.150686735279801E-03    0.364630046283950E-03    0.247898015379484E-05    0.155667708184923E-06
+ 
+ Total energy of the ground state (eV,AU)
+                     0  -850.371071048510       -31.2505490272678     
+ Total energies of excited states (eV,AU)
+                     1  -846.553699269264       -31.1102632532051     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.1909899E-03  0.1087262E-02 -0.6169884E-05  0.1103927E-02
+ 
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.817372     -0.5424879E-03  0.2935724E-02  0.2266290E-04  0.2985512E-02
+ 
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.817372     -0.2134312E-03  0.1155003E-02  0.8916274E-05  0.1174591E-02
+ 
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.817372     -0.1126935E-03  0.2786354E-03  0.1635950E-04  0.3010069E-03
+ 
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.817372     -0.2244125E-04  0.6774098E-04  0.1508616E-04  0.7293862E-04
+QMMM: Occupied MO Energies (eV):
+      -39.21214665      -31.51554276      -31.51520763      -23.21286525      -23.21268131
+      -17.96410825      -16.30308565      -15.48918524      -14.26504114      -14.26484617
+      -13.48822131      -11.98961876      -11.98948059       -9.78832223       -9.78796541
+QMMM: Virtual MO Energies (eV):
+        0.38284265        0.38318929        2.79796855        4.06495356        4.06512856
+        4.07856246        4.32022745        4.53940514        4.53957894        5.10855874
+        5.10878303        5.54729757        5.54758189        5.60005105        6.04121843
+QMMM:
+QMMM: SCF Energy =       21.22090144 KCal/mol,        88.78825161 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -1342.41721504 eV (   -30957.48339611 KCal/mol)
+QMMM: Dielectric(COSMO) energy =        -0.07116633 eV (       -1.64116663 KCal/mol)
+QMMM: QM core - QM core energy =       492.04614399 eV (    11347.07612666 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =       492.04614399 eV (    11347.07612666 KCal/mol)
+QMMM:             Total energy =      -850.37107105 eV (   -19610.40726945 KCal/mol)
+  Restoring quirality in cmdqt
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:    -0.84007552127945    0.14061287033505   -0.00034303869623
+QMMM: Atm      2:    -0.29731043146332    0.79842165668425    0.00018320978386
+QMMM: Atm      3:     0.54134923659312    0.65651194834908    0.00017096729385
+QMMM: Atm      4:     0.83991892023535   -0.14084192426710   -0.00005554699946
+QMMM: Atm      5:     0.29787361496925   -0.79751266403557   -0.00011680922365
+QMMM: Atm      6:    -0.54086016284045   -0.65704930029130    0.00001510714074
+QMMM: Atm      7:     0.63905845016264   -0.10671993780032   -0.00001120211871
+QMMM: Atm      8:     0.22649280837527   -0.60736370381372    0.00000088338906
+QMMM: Atm      9:    -0.41227692652302   -0.49955937418452    0.00004584468773
+QMMM: Atm     10:    -0.63923114768182    0.10680588482002    0.00005031292738
+QMMM: Atm     11:    -0.22700709774126    0.60739334373166    0.00006965717400
+QMMM: Atm     12:     0.41206825719370    0.49930120047247   -0.00000938535858
+QMMM: Forces on QM atoms excited state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:     1.05202156079937   -0.17622781491581   -0.00004754349117
+QMMM: Atm      2:     0.37329757859911   -0.99930686846180    0.00003758520182
+QMMM: Atm      3:    -0.67849671970723   -0.82322464643285    0.00005487535876
+QMMM: Atm      4:    -1.05182295313416    0.17620568892440    0.00002556286670
+QMMM: Atm      5:    -0.37324607172410    0.99937136161200   -0.00000462193222
+QMMM: Atm      6:     0.67824388165380    0.82320336100240   -0.00003314402652
+QMMM: Atm      7:    -0.00391426833138    0.00065569080439    0.00000989021812
+QMMM: Atm      8:    -0.00140888981987    0.00375116497242   -0.00001127158713
+QMMM: Atm      9:     0.00256389929781    0.00310446863707   -0.00003554783606
+QMMM: Atm     10:     0.00388405666179   -0.00064972351452   -0.00001803664703
+QMMM: Atm     11:     0.00142340150552   -0.00380020184016   -0.00000155948929
+QMMM: Atm     12:    -0.00254547580067   -0.00308248078754    0.00002381136403
+QMMM: Excited State Forces on QM atoms from SCF calculation (KJ/mol)
+QMMM: Atm      1:   101.50663998967846  -17.00373265281222   -0.00458733948186
+QMMM: Atm      2:    36.01844708495025  -96.42034566201204    0.00362649178711
+QMMM: Atm      3:   -65.46626497765673  -79.43066086268725    0.00529477103273
+QMMM: Atm      4:  -101.48747688739729   17.00159777732311    0.00246649004522
+QMMM: Atm      5:   -36.01347732956359   96.42656842704180   -0.00044595740939
+QMMM: Atm      6:    65.44186933575968   79.42860709059151   -0.00319797511142
+QMMM: Atm      7:    -0.37767688528566    0.06326578551837    0.00095427969139
+QMMM: Atm      8:    -0.13593986764077    0.36193949495527   -0.00108756415273
+QMMM: Atm      9:     0.24738352586156    0.29954156078551   -0.00342991202107
+QMMM: Atm     10:     0.37476184515487   -0.06269001828381   -0.00174030600188
+QMMM: Atm     11:     0.13734005990498   -0.36667092619720   -0.00015047079267
+QMMM: Atm     12:    -0.24560589376570   -0.29742001422303    0.00229749241457
+
+  QMMM: QM Region Cartesian Coordinates (*=link atom) 
+  QMMM: QM_NO. MM_NO.  ATOM         X         Y         Z
+  QMMM:     1        1       1      -7.9894    0.6830    0.0000
+  QMMM:     2        2       2      -7.0994    1.7624   -0.0000
+  QMMM:     3        3       3      -5.7195    1.5314   -0.0000
+  QMMM:     4        4       4      -5.2297    0.2208    0.0000
+  QMMM:     5        5       5      -6.1197   -0.8586    0.0000
+  QMMM:     6        6       6      -7.4996   -0.6275    0.0000
+  QMMM:     7        7       7      -9.0569    0.8617    0.0000
+  QMMM:     8        8       8      -7.4783    2.7763    0.0000
+  QMMM:     9        9       9      -5.0310    2.3665   -0.0000
+  QMMM:    10       10      10      -4.1622    0.0421   -0.0000
+  QMMM:    11       11      11      -5.7408   -1.8724   -0.0000
+  QMMM:    12       12      12      -8.1881   -1.4626   -0.0000
+ Begin classical propagation step #                     2
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -30956.96      -30956.96      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -129523.9      -129523.9           Infinity
+QMMM:     2     -30956.96     -0.1609154E-05  0.1172468E-04  -1.000000    
+QMMM: KJ/mol    -129523.9     -0.6732702E-05  0.4905604E-04
+QMMM:     3     -30956.96     -0.9626820E-07  0.3094958E-05  -1.000000    
+QMMM: KJ/mol    -129523.9     -0.4027861E-06  0.1294930E-04
+QMMM:     4 *   -30956.96     -0.1139415E-07  0.8275532E-06  -1.000000    
+QMMM: KJ/mol    -129523.9     -0.4767312E-07  0.3462483E-05
+QMMM:     5 *   -30956.96      0.3412424E-08  0.9682996E-07  -1.000000    
+QMMM: KJ/mol    -129523.9      0.1427758E-07  0.4051366E-06
+QMMM:     6     -30956.96      0.7275958E-11  0.2874121E-07  -1.000000    
+QMMM: KJ/mol    -129523.9      0.3044261E-10  0.1202532E-06
 QMMM: SCF Converged to 0.1000E-07 in:     6 Cycles 
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       0 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C               0.000000
-QMMM:     2      C               0.000000
-QMMM:     3      C               0.000000
-QMMM:     4      C               0.000000
-QMMM:     5      C               0.000000
-QMMM:     6      C               0.000000
-QMMM:     7      H               0.000000
-QMMM:     8      H               0.000000
-QMMM:     9      H               0.000000
-QMMM:    10      H               0.000000
-QMMM:    11      H               0.000000
-QMMM:    12      H               0.000000
-QMMM: Total Mulliken Charge =    0.000000
-
   Restoring quirality in HF orbitals
  Davidson parameters
- mdflag=           2
- irflag=           0
- M4=         225
- Mx=           1
- Mj=           0
- nd=         500
- nd1=           3
- j1=           1
- istore=           1
- istore_M=           1
- Currently have            1  states
- With            1  initial guesses
- info           0
-    3.96    
+ mdflag=                     2
+ irflag=                     0
+ M4=                   225
+ Mx=                     1
+ Mj=                     0
+ nd=                   500
+ nd1=                     3
+ j1=                     1
+ istore=                     1
+ istore_M=                     1
+ 
+ Davidson batch                      1
+ So far found                      0  states
+ out of requested                      1  states
+ This batch will seek                     1  vectors
+  Entering davidson0
+ Restart Davidson with guesses from the previous step
+ Restart loop =                      0
+ Currently have                      1  states
+ With                      2  initial guesses
+ COUNT=                     1 Exp=                     2
+ nd1,nd1_old,j0,j1                     2                     0
+                     0                     1
+ info  -4624406010751090688
+    3.82    
  eigenvalues and residual norm
- Perturbed left m=           1
- info           0
-    3.96    
- eigenvalues and residual norm
- @@@@ Davidson subroutine Found vectors           1
+    1    1    0    3.817357419   3.817357419 0.758E-08 0.281E-09   Converged!
+ All vectors found after loop                     0 , Expansion 
+                     2
+ @@@@ Davidson subroutine Found vectors                     1
   i, e0(i), ferr(i), ftol0
-  1 +++    3.964763024132145     0.16E-07 0.10E-06
+  1 +++    3.817357419306777     0.79E-08 0.10E-06
  -------------------------------------------------
-
+ 
  Frequencies (eV) and Oscillator strengths (unitless)
         Omega            fx              fy              fz          ftotal
-   1     3.96476302413215        0.326776232734005E-10    0.871764150101534E-09    0.960560478113327E-19    0.904441773470991E-09
-
+   1     3.81735741930678        0.212325136532543E-08    0.124344203249924E-07    0.574766909607631E-12    0.145582464572274E-07
+ 
  Frequencies (eV) and Transition Dipole Moments (AU)
         Omega            fx              fy              fz          ftotal
-   1     3.96476302413215       -0.183416185000231E-04   -0.947353203147854E-04    0.994431292417342E-09    0.931119588533427E-08
-
+   1     3.81735741930678        0.150674700185733E-03    0.364630003745404E-03    0.247905126916372E-05    0.155664050602629E-06
+ 
  Total energy of the ground state (eV,AU)
-           0  -850.30588861431943       -31.248153617869836     
+                     0  -850.371421402241       -31.2505619025253     
  Total energies of excited states (eV,AU)
-           1  -846.34112559018729       -31.102451317444245     
+                     1  -846.554063982934       -31.1102766561803     
  Ground State Molecular Dipole Moment (A.U.)
                          dx              dy              dz          ftotal
-                     0.1838267E-05 -0.1044652E-05 -0.2591138E-04  0.2599750E-04
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       1 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C              -0.129709
-QMMM:     2      C              -0.129742
-QMMM:     3      C              -0.129730
-QMMM:     4      C              -0.129711
-QMMM:     5      C              -0.129742
-QMMM:     6      C              -0.129731
-QMMM:     7      H               0.129726
-QMMM:     8      H               0.129728
-QMMM:     9      H               0.129729
-QMMM:    10      H               0.129727
-QMMM:    11      H               0.129726
-QMMM:    12      H               0.129729
-QMMM: Total Mulliken Charge =   -0.000000
-
+                    -0.1908905E-03  0.1087579E-02 -0.6150707E-05  0.1104222E-02
+ 
  Frequencies (eV) and Total Molecular Dipole Moments (Debye)
         Omega            dx              dy              dz          ftotal
-   1   3.964763      0.2613325E-05  0.6381883E-06 -0.7024923E-04  0.7030072E-04
-
+   1   3.817357     -0.5422717E-03  0.2936323E-02  0.2270156E-04  0.2986062E-02
+ 
  Frequencies (eV) and Total Molecular Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964763      0.1028161E-05  0.2510826E-06 -0.2763818E-04  0.2765844E-04
-
+   1   3.817357     -0.2133462E-03  0.1155239E-02  0.8931484E-05  0.1174808E-02
+ 
  Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964763     -0.1495129E-05  0.3163458E-05 -0.1729874E-05  0.3903247E-05
-
+   1   3.817357     -0.1127072E-03  0.2785585E-03  0.1635556E-04  0.3009406E-03
+ 
  Frequencies (eV) Relaxed Difference Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964763     -0.8101055E-06  0.1295735E-05 -0.1726798E-05  0.2305869E-05
+   1   3.817357     -0.2245561E-04  0.6765956E-04  0.1508219E-04  0.7286661E-04
+QMMM: Occupied MO Energies (eV):
+      -39.21151286      -31.51488617      -31.51455132      -23.21230512      -23.21212097
+      -17.96354681      -16.30238308      -15.48905428      -14.26469538      -14.26450044
+      -13.48809363      -11.98932926      -11.98919103       -9.78821122       -9.78785445
+QMMM: Virtual MO Energies (eV):
+        0.38293283        0.38327954        2.79805557        4.06472126        4.06489599
+        4.07817953        4.31968594        4.53927800        4.53945186        5.10831763
+        5.10854159        5.54717033        5.54745473        5.60017677        6.04117552
 QMMM:
-QMMM: SCF Energy =       22.72407355 KCal/mol,        95.07752374 KJ/mol
+QMMM: SCF Energy =       21.21282193 KCal/mol,        88.75444695 KJ/mol
 QMMM: SCF Energy = Heat of formation
 QMMM:
-QMMM:        Electronic energy =     -3254.79634205 eV (   -75058.85844408 KCal/mol)
-QMMM: QM core - QM core energy =      2404.49045344 eV (    55449.95434675 KCal/mol)
+QMMM:        Electronic energy =     -1342.39451816 eV (   -30956.95998329 KCal/mol)
+QMMM: Dielectric(COSMO) energy =        -0.07118961 eV (       -1.64170358 KCal/mol)
+QMMM: QM core - QM core energy =       492.02309676 eV (    11346.54463433 KCal/mol)
 QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
-QMMM: Total core - core energy =      2404.49045344 eV (    55449.95434675 KCal/mol)
-QMMM:             Total energy =      -850.30588861 eV (   -19608.90409733 KCal/mol)
- Begin classical propagation step #           2
+QMMM: Total core - core energy =       492.02309676 eV (    11346.54463433 KCal/mol)
+QMMM:             Total energy =      -850.37142140 eV (   -19610.41534896 KCal/mol)
+  Restoring quirality in cmdqt
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:    -0.83727914523923    0.14014466576077   -0.00034314579831
+QMMM: Atm      2:    -0.29631814562318    0.79576391681474    0.00018332153543
+QMMM: Atm      3:     0.53954691051101    0.65432634273198    0.00017105971637
+QMMM: Atm      4:     0.83712183605405   -0.14037323916864   -0.00005541317205
+QMMM: Atm      5:     0.29688020268212   -0.79485528893306   -0.00011672908707
+QMMM: Atm      6:    -0.53905890098979   -0.65486405644545    0.00001501813981
+QMMM: Atm      7:     0.63564620225642   -0.10614871544255   -0.00001111791681
+QMMM: Atm      8:     0.22528127829504   -0.60412141465677    0.00000078789580
+QMMM: Atm      9:    -0.41007694020778   -0.49689147977526    0.00004575835947
+QMMM: Atm     10:    -0.63581765073864    0.10623439174353    0.00005019347045
+QMMM: Atm     11:    -0.22579500662834    0.60415037868830    0.00006955195183
+QMMM: Atm     12:     0.40986935962833    0.49663449868242   -0.00000928509492
+QMMM: Forces on QM atoms excited state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:     1.05201923487215   -0.17622732306109   -0.00004752045200
+QMMM: Atm      2:     0.37329660723068   -0.99930466305510    0.00003757209085
+QMMM: Atm      3:    -0.67849511516527   -0.82322288868883    0.00005486488181
+QMMM: Atm      4:    -1.05182057368449    0.17620535615645    0.00002556019595
+QMMM: Atm      5:    -0.37324530806200    0.99936910514742   -0.00000462012014
+QMMM: Atm      6:     0.67824242792807    0.82320146690897   -0.00003312947776
+QMMM: Atm      7:    -0.00391316874477    0.00065550911801    0.00000987916680
+QMMM: Atm      8:    -0.00140849869524    0.00375012448724   -0.00001126544201
+QMMM: Atm      9:     0.00256319190488    0.00310361762227   -0.00003554047645
+QMMM: Atm     10:     0.00388295173671   -0.00064953797187   -0.00001803484718
+QMMM: Atm     11:     0.00142300873686   -0.00379915325953   -0.00000156708845
+QMMM: Atm     12:    -0.00254475805758   -0.00308161340394    0.00002380156857
+QMMM: Excited State Forces on QM atoms from SCF calculation (KJ/mol)
+QMMM: Atm      1:   101.50641556741817  -17.00368519511608   -0.00458511649660
+QMMM: Atm      2:    36.01835336030647  -96.42013286844200    0.00362522674632
+QMMM: Atm      3:   -65.46611015985680  -79.43049126284620    0.00529376014103
+QMMM: Atm      4:  -101.48724730090412   17.00156566946719    0.00246623235218
+QMMM: Atm      5:   -36.01340364592726   96.42635070703867   -0.00044578256693
+QMMM: Atm      6:    65.44172906979941   79.42842433477446   -0.00319657134169
+QMMM: Atm      7:    -0.37757078922682    0.06324825510309    0.00095321338012
+QMMM: Atm      8:    -0.13590212911085    0.36183910142843   -0.00108697122691
+QMMM: Atm      9:     0.24731527148106    0.29945944873058   -0.00342920191243
+QMMM: Atm     10:     0.37465523400113   -0.06267211578829   -0.00174013233944
+QMMM: Atm     11:     0.13730216274700   -0.36656975156262   -0.00015120401420
+QMMM: Atm     12:    -0.24553664072744   -0.29733632278724    0.00229654727855
+
+  QMMM: QM Region Cartesian Coordinates (*=link atom) 
+  QMMM: QM_NO. MM_NO.  ATOM         X         Y         Z
+  QMMM:     1        1       1      -7.9894    0.6830    0.0000
+  QMMM:     2        2       2      -7.0994    1.7624   -0.0000
+  QMMM:     3        3       3      -5.7195    1.5314   -0.0000
+  QMMM:     4        4       4      -5.2297    0.2208    0.0000
+  QMMM:     5        5       5      -6.1197   -0.8586    0.0000
+  QMMM:     6        6       6      -7.4996   -0.6275   -0.0000
+  QMMM:     7        7       7      -9.0570    0.8617   -0.0000
+  QMMM:     8        8       8      -7.4783    2.7764    0.0000
+  QMMM:     9        9       9      -5.0309    2.3665    0.0000
+  QMMM:    10       10      10      -4.1621    0.0421   -0.0000
+  QMMM:    11       11      11      -5.7407   -1.8725   -0.0000
+  QMMM:    12       12      12      -8.1882   -1.4627   -0.0000
+ Begin classical propagation step #                     3
 QMMM: 
 QMMM: SCF Convergence Information
 QMMM: (*) = Pseudo Diagonalisation
 QMMM: Cycle      Energy          dE             dP              |FP-PF|
-QMMM:     1     -75058.17      -75058.17      0.1797693+309  -1.000000    
-QMMM:     2     -75058.17     -0.2632383E-05  0.1843999E-04  -1.000000    
-QMMM:     3     -75058.17     -0.2867018E-06  0.4679161E-05  -1.000000    
-QMMM:     4 *   -75058.17     -0.8275674E-07  0.1617523E-05  -1.000000    
-QMMM:     5 *   -75058.17      0.2126035E-07  0.4177608E-06  -1.000000    
-QMMM:     6 *   -75058.17     -0.9604264E-09  0.2008521E-06  -1.000000    
-QMMM:     7     -75058.17     -0.1091394E-08  0.1079689E-06  -1.000000    
+QMMM:     1     -30956.09      -30956.09      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -129520.3      -129520.3           Infinity
+QMMM:     2     -30956.09     -0.4446356E-05  0.1950301E-04  -1.000000    
+QMMM: KJ/mol    -129520.3     -0.1860355E-04  0.8160060E-04
+QMMM:     3     -30956.09     -0.2660090E-06  0.5148896E-05  -1.000000    
+QMMM: KJ/mol    -129520.3     -0.1112982E-05  0.2154298E-04
+QMMM:     4 *   -30956.09     -0.3145760E-07  0.1372599E-05  -1.000000    
+QMMM: KJ/mol    -129520.3     -0.1316186E-06  0.5742953E-05
+QMMM:     5 *   -30956.09      0.9433279E-08  0.1604858E-06  -1.000000    
+QMMM: KJ/mol    -129520.3      0.3946884E-07  0.6714725E-06
+QMMM:     6     -30956.09     -0.2182787E-10  0.4778253E-07  -1.000000    
+QMMM: KJ/mol    -129520.3     -0.9132782E-10  0.1999221E-06
+QMMM: SCF Converged to 0.1000E-07 in:     6 Cycles 
+  Restoring quirality in HF orbitals
+ Davidson parameters
+ mdflag=                     2
+ irflag=                     0
+ M4=                   225
+ Mx=                     1
+ Mj=                     0
+ nd=                   500
+ nd1=                     3
+ j1=                     1
+ istore=                     1
+ istore_M=                     1
+ 
+ Davidson batch                      1
+ So far found                      0  states
+ out of requested                      1  states
+ This batch will seek                     1  vectors
+  Entering davidson0
+ Restart Davidson with guesses from the previous step
+ Restart loop =                      0
+ Currently have                      1  states
+ With                      2  initial guesses
+                     2                     1  4.986391569725601E-014
+ COUNT=                     1 Exp=                     2
+ nd1,nd1_old,j0,j1                     2                     0
+                     0                     1
+ info  -4624404464562864128
+    3.82    
+ eigenvalues and residual norm
+    1    1    0    3.817333316   3.817333316 0.810E-08 0.348E-09   Converged!
+ All vectors found after loop                     0 , Expansion 
+                     2
+ @@@@ Davidson subroutine Found vectors                     1
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.817333315928154     0.84E-08 0.10E-06
+ -------------------------------------------------
+ 
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.81733331592815        0.212268937962885E-08    0.124344046363812E-07    0.574734413626355E-12    0.145576687504237E-07
+ 
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.81733331592815        0.150655234082035E-03    0.364630924886515E-03    0.247898901465339E-05    0.155658856326443E-06
+ 
+ Total energy of the ground state (eV,AU)
+                     0  -850.371999566105       -31.2505831496476     
+ Total energies of excited states (eV,AU)
+                     1  -846.554666250177       -31.1102987890852     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                    -0.1907178E-03  0.1088134E-02 -0.6119332E-05  0.1104738E-02
+ 
+ Frequencies (eV) and Total Molecular Dipole Moments (Debye)
+        Omega            dx              dy              dz          ftotal
+   1   3.817333     -0.5418950E-03  0.2937371E-02  0.2276475E-04  0.2987025E-02
+ 
+ Frequencies (eV) and Total Molecular Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.817333     -0.2131979E-03  0.1155651E-02  0.8956342E-05  0.1175186E-02
+ 
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.817333     -0.1127305E-03  0.2784241E-03  0.1634909E-04  0.3008246E-03
+ 
+ Frequencies (eV) Relaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.817333     -0.2248016E-04  0.6751708E-04  0.1507567E-04  0.7274056E-04
+QMMM: Occupied MO Energies (eV):
+      -39.21045844      -31.51379453      -31.51346014      -23.21137402      -23.21118952
+      -17.96261316      -16.30121547      -15.48883646      -14.26412052      -14.26392562
+      -13.48788104      -11.98884805      -11.98870972       -9.78802659       -9.78766988
+QMMM: Virtual MO Energies (eV):
+        0.38308253        0.38342935        2.79819995        4.06433473        4.06450902
+        4.07754255        4.31878570        4.53906579        4.53923974        5.10791719
+        5.10814059        5.54695887        5.54724340        5.60038560        6.04110397
+QMMM:
+QMMM: SCF Energy =       21.19948889 KCal/mol,        88.69866152 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -1342.35676787 eV (   -30956.08942374 KCal/mol)
+QMMM: Dielectric(COSMO) energy =        -0.07122833 eV (       -1.64259643 KCal/mol)
+QMMM: QM core - QM core energy =       491.98476830 eV (    11345.66074175 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =       491.98476830 eV (    11345.66074175 KCal/mol)
+QMMM:             Total energy =      -850.37199957 eV (   -19610.42868199 KCal/mol)
+  Restoring quirality in cmdqt
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:    -0.83263604716826    0.13936706937660   -0.00034339467559
+QMMM: Atm      2:    -0.29467043775356    0.79135116615515    0.00018344773509
+QMMM: Atm      3:     0.53655441282511    0.65069747242163    0.00017128719655
+QMMM: Atm      4:     0.83247757408373   -0.13959525468549   -0.00005512737618
+QMMM: Atm      5:     0.29523079145757   -0.79044300562114   -0.00011646683754
+QMMM: Atm      6:    -0.53606834658572   -0.65123560416678    0.00001472945423
+QMMM: Atm      7:     0.62997682206070   -0.10519964204390   -0.00001095384203
+QMMM: Atm      8:     0.22326838747061   -0.59873440522350    0.00000064211572
+QMMM: Atm      9:    -0.40642173652646   -0.49245883323447    0.00004560491517
+QMMM: Atm     10:    -0.63014619256504    0.10528490626272    0.00005001606330
+QMMM: Atm     11:    -0.22378114594628    0.59876224730080    0.00006936326083
+QMMM: Atm     12:     0.40621591864760    0.49220388345838   -0.00000914800956
+QMMM: Forces on QM atoms excited state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:     1.05201533960768   -0.17622645218723   -0.00004747324380
+QMMM: Atm      2:     0.37329493618381   -0.99930098474204    0.00003754481282
+QMMM: Atm      3:    -0.67849238694196   -0.82321996592463    0.00005484803599
+QMMM: Atm      4:    -1.05181658009260    0.17620484003992    0.00002555737158
+QMMM: Atm      5:    -0.37324406883105    0.99936530186820   -0.00000461965278
+QMMM: Atm      6:     0.67824002733894    0.82319826470556   -0.00003310803934
+QMMM: Atm      7:    -0.00391133978598    0.00065520693949    0.00000985892361
+QMMM: Atm      8:    -0.00140784874583    0.00374839598200   -0.00001125428215
+QMMM: Atm      9:     0.00256201539621    0.00310220257057   -0.00003552741027
+QMMM: Atm     10:     0.00388111540575   -0.00064922956633   -0.00001803304041
+QMMM: Atm     11:     0.00142235542853   -0.00379740844023   -0.00000157933301
+QMMM: Atm     12:    -0.00254356496351   -0.00308017124527    0.00002378585777
+QMMM: Excited State Forces on QM atoms from SCF calculation (KJ/mol)
+QMMM: Atm      1:   101.50603972416218  -17.00360116691491   -0.00458056150867
+QMMM: Atm      2:    36.01819212563301  -96.41977795822547    0.00362259476421
+QMMM: Atm      3:   -65.46584692116326  -79.43020925344257    0.00529213473431
+QMMM: Atm      4:  -101.48686197030818   17.00151587081558    0.00246595983636
+QMMM: Atm      5:   -36.01328407597298   96.42598373918509   -0.00044573747218
+QMMM: Atm      6:    65.44149744361850   79.42811536305659   -0.00319450280809
+QMMM: Atm      7:    -0.37739431806964    0.06321909873692    0.00095126017076
+QMMM: Atm      8:    -0.13583941729681    0.36167232275551   -0.00108589444299
+QMMM: Atm      9:     0.24720175342526    0.29932291431994   -0.00342794119303
+QMMM: Atm     10:     0.37447805152399   -0.06264235859432   -0.00173995800929
+QMMM: Atm     11:     0.13723912684023   -0.36640139879160   -0.00015238545774
+QMMM: Atm     12:    -0.24542152239234   -0.29719717290071    0.00229503138634
+
+  QMMM: QM Region Cartesian Coordinates (*=link atom) 
+  QMMM: QM_NO. MM_NO.  ATOM         X         Y         Z
+  QMMM:     1        1       1      -7.9894    0.6830    0.0000
+  QMMM:     2        2       2      -7.0994    1.7624   -0.0000
+  QMMM:     3        3       3      -5.7195    1.5314   -0.0000
+  QMMM:     4        4       4      -5.2297    0.2208    0.0000
+  QMMM:     5        5       5      -6.1197   -0.8586    0.0000
+  QMMM:     6        6       6      -7.4996   -0.6275   -0.0000
+  QMMM:     7        7       7      -9.0571    0.8618   -0.0000
+  QMMM:     8        8       8      -7.4784    2.7765    0.0000
+  QMMM:     9        9       9      -5.0308    2.3667    0.0000
+  QMMM:    10       10      10      -4.1620    0.0421   -0.0000
+  QMMM:    11       11      11      -5.7407   -1.8727   -0.0000
+  QMMM:    12       12      12      -8.1883   -1.4628   -0.0000
+ Begin classical propagation step #                     4
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -30954.94      -30954.94      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -129515.5      -129515.5           Infinity
+QMMM:     2     -30954.94     -0.8630370E-05  0.2733966E-04  -1.000000    
+QMMM: KJ/mol    -129515.5     -0.3610947E-04  0.1143891E-03
+QMMM:     3     -30954.94     -0.5159818E-06  0.7251945E-05  -1.000000    
+QMMM: KJ/mol    -129515.5     -0.2158868E-05  0.3034214E-04
+QMMM:     4 *   -30954.94     -0.6132177E-07  0.1947712E-05  -1.000000    
+QMMM: KJ/mol    -129515.5     -0.2565703E-06  0.8149229E-05
+QMMM:     5 *   -30954.94      0.1839362E-07  0.2689867E-06  -1.000000    
+QMMM: KJ/mol    -129515.5      0.7695891E-07  0.1125440E-05
+QMMM:     6 *   -30954.94     -0.1818989E-10  0.8508932E-07  -1.000000    
+QMMM: KJ/mol    -129515.5     -0.7610652E-10  0.3560137E-06
+QMMM:     7     -30954.94     -0.1455192E-10  0.4683844E-07  -1.000000    
+QMMM: KJ/mol    -129515.5     -0.6088521E-10  0.1959720E-06
 QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       0 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C               0.000000
-QMMM:     2      C               0.000000
-QMMM:     3      C               0.000000
-QMMM:     4      C               0.000000
-QMMM:     5      C               0.000000
-QMMM:     6      C               0.000000
-QMMM:     7      H               0.000000
-QMMM:     8      H               0.000000
-QMMM:     9      H               0.000000
-QMMM:    10      H               0.000000
-QMMM:    11      H               0.000000
-QMMM:    12      H               0.000000
-QMMM: Total Mulliken Charge =    0.000000
-
   Restoring quirality in HF orbitals
  Davidson parameters
- mdflag=           2
- irflag=           0
- M4=         225
- Mx=           1
- Mj=           0
- nd=         500
- nd1=           3
- j1=           1
- istore=           1
- istore_M=           1
- Currently have            1  states
- With            1  initial guesses
- info           0
-    3.96    
+ mdflag=                     2
+ irflag=                     0
+ M4=                   225
+ Mx=                     1
+ Mj=                     0
+ nd=                   500
+ nd1=                     3
+ j1=                     1
+ istore=                     1
+ istore_M=                     1
+ 
+ Davidson batch                      1
+ So far found                      0  states
+ out of requested                      1  states
+ This batch will seek                     1  vectors
+  Entering davidson0
+ Restart Davidson with guesses from the previous step
+ Restart loop =                      0
+ Currently have                      1  states
+ With                      2  initial guesses
+ COUNT=                     1 Exp=                     2
+ nd1,nd1_old,j0,j1                     2                     0
+                     0                     1
+ info  -4624398967004725248
+    3.82    
  eigenvalues and residual norm
- @@@@ Davidson subroutine Found vectors           1
+    1    1    0    3.817299239   3.817299239 0.936E-08 0.667E-09   Converged!
+ All vectors found after loop                     0 , Expansion 
+                     2
+ @@@@ Davidson subroutine Found vectors                     1
   i, e0(i), ferr(i), ftol0
-  1 +++    3.964742965383282     0.69E-07 0.10E-06
+  1 +++    3.817299239017666     0.10E-07 0.10E-06
  -------------------------------------------------
-
+ 
  Frequencies (eV) and Oscillator strengths (unitless)
         Omega            fx              fy              fz          ftotal
-   1     3.96474296538328        0.244146602168805E-10    0.982330895026415E-09    0.100075828970181E-18    0.100674555534337E-08
-
+   1     3.81729923901767        0.212957154126980E-08    0.124837072013826E-07    0.587147585949990E-12    0.146138658902384E-07
+ 
  Frequencies (eV) and Transition Dipole Moments (AU)
         Omega            fx              fy              fz          ftotal
-   1     3.96474296538328       -0.158540004447391E-04   -0.100563973598492E-03   -0.101502823204087E-08    0.103644621170502E-07
-
+   1     3.81729923901767        0.150899936404208E-03    0.365354723504744E-03    0.250562791785916E-05    0.156261142965285E-06
+ 
  Total energy of the ground state (eV,AU)
-           0  -850.30616505714261       -31.248163776952488     
+                     0  -850.372794175996       -31.2506123510118     
  Total energies of excited states (eV,AU)
-           1  -846.34142209175934       -31.102462213672055     
+                     1  -846.555494936979       -31.1103292427523     
  Ground State Molecular Dipole Moment (A.U.)
                          dx              dy              dz          ftotal
-                     0.2285095E-04  0.3945055E-05 -0.5833852E-04  0.6277828E-04
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       1 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C              -0.129701
-QMMM:     2      C              -0.129749
-QMMM:     3      C              -0.129739
-QMMM:     4      C              -0.129712
-QMMM:     5      C              -0.129755
-QMMM:     6      C              -0.129743
-QMMM:     7      H               0.129727
-QMMM:     8      H               0.129737
-QMMM:     9      H               0.129737
-QMMM:    10      H               0.129733
-QMMM:    11      H               0.129730
-QMMM:    12      H               0.129735
-QMMM: Total Mulliken Charge =   -0.000000
-
+                    -0.1900002E-03  0.1113705E-02 -0.6287373E-05  0.1129813E-02
+ 
  Frequencies (eV) and Total Molecular Dipole Moments (Debye)
         Omega            dx              dy              dz          ftotal
-   1   3.964743      0.4156387E-04  0.9789194E-05 -0.1514774E-03  0.1573810E-03
-
+   1   3.817299     -0.5407323E-03  0.2992053E-02  0.2240725E-04  0.3040604E-02
+ 
  Frequencies (eV) and Total Molecular Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964743      0.1635249E-04  0.3851366E-05 -0.5959579E-04  0.6191846E-04
-
+   1   3.817299     -0.2127405E-03  0.1177165E-02  0.8815694E-05  0.1196266E-02
+ 
  Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964743     -0.9356386E-05  0.1113071E-05 -0.9535185E-06  0.9470484E-05
-
+   1   3.817299     -0.1129693E-03  0.2745546E-03  0.1637754E-04  0.2973391E-03
+ 
  Frequencies (eV) Relaxed Difference Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964743     -0.6498461E-05 -0.9368885E-07 -0.1257279E-05  0.6619631E-05
+   1   3.817299     -0.2274024E-04  0.6345986E-04  0.1510307E-04  0.6908238E-04
+QMMM: Occupied MO Energies (eV):
+      -39.20899305      -31.51228039      -31.51194395      -23.21008210      -23.20989971
+      -17.96131870      -16.29959683      -15.48853986      -14.26333085      -14.26312825
+      -13.48758928      -11.98818891      -11.98804424       -9.78777537       -9.78741669
+QMMM: Virtual MO Energies (eV):
+        0.38328435        0.38363344        2.79839529        4.06378224        4.06396325
+        4.07664421        4.31751990        4.53875862        4.53893624        5.10734773
+        5.10757692        5.54665778        5.54693918        5.60066923        6.04099673
 QMMM:
-QMMM: SCF Energy =       22.71769850 KCal/mol,        95.05085054 KJ/mol
+QMMM: SCF Energy =       21.18116439 KCal/mol,        88.62199182 KJ/mol
 QMMM: SCF Energy = Heat of formation
 QMMM:
-QMMM:        Electronic energy =     -3254.76635624 eV (   -75058.16694129 KCal/mol)
-QMMM: QM core - QM core energy =      2404.46019118 eV (    55449.25646891 KCal/mol)
+QMMM:        Electronic energy =     -1342.30681394 eV (   -30954.93743623 KCal/mol)
+QMMM: Dielectric(COSMO) energy =        -0.07127906 eV (       -1.64376647 KCal/mol)
+QMMM: QM core - QM core energy =       491.93401976 eV (    11344.49042973 KCal/mol)
 QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
-QMMM: Total core - core energy =      2404.46019118 eV (    55449.25646891 KCal/mol)
-QMMM:             Total energy =      -850.30616506 eV (   -19608.91047238 KCal/mol)
- Begin classical propagation step #           3
+QMMM: Total core - core energy =       491.93401976 eV (    11344.49042973 KCal/mol)
+QMMM:             Total energy =      -850.37279418 eV (   -19610.44700649 KCal/mol)
+  Restoring quirality in cmdqt
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:    -0.82617268223538    0.13828575503481   -0.00034181905682
+QMMM: Atm      2:    -0.29237376471557    0.78521551577732    0.00018204467360
+QMMM: Atm      3:     0.53239337298119    0.64564763693388    0.00016876018755
+QMMM: Atm      4:     0.82601483946554   -0.13851528604188   -0.00005619141963
+QMMM: Atm      5:     0.29293348902222   -0.78430059929963   -0.00011536196077
+QMMM: Atm      6:    -0.53190669957146   -0.64618523380269    0.00001370242888
+QMMM: Atm      7:     0.62208401635598   -0.10387536686035   -0.00001243414873
+QMMM: Atm      8:     0.22046047210138   -0.59123505730288    0.00000220897365
+QMMM: Atm      9:    -0.40133641499991   -0.48628451368118    0.00004785939752
+QMMM: Atm     10:    -0.62224599109691    0.10396981452943    0.00005092516245
+QMMM: Atm     11:    -0.22096761463305    0.59124978610240    0.00006901253276
+QMMM: Atm     12:     0.40111697732598    0.48602754861076   -0.00000870677047
+QMMM: Forces on QM atoms excited state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:     1.05200974057808   -0.17622575853754   -0.00004741957907
+QMMM: Atm      2:     0.37329219441901   -0.99929563893401    0.00003743927837
+QMMM: Atm      3:    -0.67848804545705   -0.82321609134221    0.00005490182754
+QMMM: Atm      4:    -1.05181091451638    0.17620345041438    0.00002554695689
+QMMM: Atm      5:    -0.37324290467864    0.99936003313951   -0.00000477081473
+QMMM: Atm      6:     0.67823720613746    0.82319338906339   -0.00003293360099
+QMMM: Atm      7:    -0.00390883217603    0.00065493208545    0.00000980978315
+QMMM: Atm      8:    -0.00140705739386    0.00374621986118   -0.00001120832515
+QMMM: Atm      9:     0.00256044780409    0.00310051814942   -0.00003551972921
+QMMM: Atm     10:     0.00387853238315   -0.00064860591826   -0.00001801874938
+QMMM: Atm     11:     0.00142140157938   -0.00379461182872   -0.00000154248043
+QMMM: Atm     12:    -0.00254176867920   -0.00307783615259    0.00002371543300
+QMMM: Excited State Forces on QM atoms from SCF calculation (KJ/mol)
+QMMM: Atm      1:   101.50549948933870  -17.00353423858157   -0.00457538354781
+QMMM: Atm      2:    36.01792758035889  -96.41926215604903    0.00361241203843
+QMMM: Atm      3:   -65.46542802333700  -79.42983540573987    0.00529732493215
+QMMM: Atm      4:  -101.48631531458690   17.00138178970519    0.00246495495243
+QMMM: Atm      5:   -36.01317175013872   96.42547537417953   -0.00046032266942
+QMMM: Atm      6:    65.44122523371936   79.42764492587845   -0.00317767173542
+QMMM: Atm      7:    -0.37715236574705    0.06319257883367    0.00094651874401
+QMMM: Atm      8:    -0.13576306194222    0.36146235489867   -0.00108146017983
+QMMM: Atm      9:     0.24705050081385    0.29916038919942   -0.00342720006877
+QMMM: Atm     10:     0.37422882284434   -0.06258218452313   -0.00173857910771
+QMMM: Atm     11:     0.13714709258324   -0.36613156151064   -0.00014882965450
+QMMM: Atm     12:    -0.24524820390653   -0.29697186629063    0.00228823629643
+
+  QMMM: QM Region Cartesian Coordinates (*=link atom) 
+  QMMM: QM_NO. MM_NO.  ATOM         X         Y         Z
+  QMMM:     1        1       1      -7.9894    0.6830    0.0000
+  QMMM:     2        2       2      -7.0994    1.7624   -0.0000
+  QMMM:     3        3       3      -5.7195    1.5314   -0.0000
+  QMMM:     4        4       4      -5.2297    0.2208    0.0000
+  QMMM:     5        5       5      -6.1197   -0.8586    0.0000
+  QMMM:     6        6       6      -7.4996   -0.6275   -0.0000
+  QMMM:     7        7       7      -9.0573    0.8618   -0.0000
+  QMMM:     8        8       8      -7.4785    2.7767    0.0000
+  QMMM:     9        9       9      -5.0307    2.3668    0.0000
+  QMMM:    10       10      10      -4.1617    0.0420   -0.0000
+  QMMM:    11       11      11      -5.7406   -1.8729   -0.0000
+  QMMM:    12       12      12      -8.1884   -1.4630   -0.0000
+ Begin classical propagation step #                     5
 QMMM: 
 QMMM: SCF Convergence Information
 QMMM: (*) = Pseudo Diagonalisation
 QMMM: Cycle      Energy          dE             dP              |FP-PF|
-QMMM:     1     -75056.99      -75056.99      0.1797693+309  -1.000000    
-QMMM:     2     -75056.99     -0.6806440E-05  0.2842832E-04  -1.000000    
-QMMM:     3     -75056.99     -0.7684430E-06  0.7329033E-05  -1.000000    
-QMMM:     4 *   -75056.99     -0.2287852E-06  0.1976896E-05  -1.000000    
-QMMM:     5 *   -75056.99      0.4710455E-07  0.5172800E-06  -1.000000    
-QMMM:     6 *   -75056.99     -0.3885361E-08  0.2614396E-06  -1.000000    
-QMMM:     7     -75056.99     -0.5355105E-08  0.1513610E-06  -1.000000    
+QMMM:     1     -30953.38      -30953.38      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -129508.9      -129508.9           Infinity
+QMMM:     2     -30953.38     -0.1413491E-04  0.3486233E-04  -1.000000    
+QMMM: KJ/mol    -129508.9     -0.5914047E-04  0.1458640E-03
+QMMM:     3     -30953.38     -0.8454990E-06  0.9206581E-05  -1.000000    
+QMMM: KJ/mol    -129508.9     -0.3537568E-05  0.3852034E-04
+QMMM:     4 *   -30953.38     -0.9992800E-07  0.2451937E-05  -1.000000    
+QMMM: KJ/mol    -129508.9     -0.4180988E-06  0.1025890E-04
+QMMM:     5 *   -30953.38      0.2992965E-07  0.2856035E-06  -1.000000    
+QMMM: KJ/mol    -129508.9      0.1252257E-06  0.1194965E-05
+QMMM:     6 *   -30953.38     -0.7275958E-11  0.8180175E-07  -1.000000    
+QMMM: KJ/mol    -129508.9     -0.3044261E-10  0.3422585E-06
+QMMM:     7     -30953.38     -0.1091394E-10  0.3472030E-07  -1.000000    
+QMMM: KJ/mol    -129508.9     -0.4566391E-10  0.1452697E-06
 QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       0 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C               0.000000
-QMMM:     2      C               0.000000
-QMMM:     3      C               0.000000
-QMMM:     4      C               0.000000
-QMMM:     5      C               0.000000
-QMMM:     6      C               0.000000
-QMMM:     7      H               0.000000
-QMMM:     8      H               0.000000
-QMMM:     9      H               0.000000
-QMMM:    10      H               0.000000
-QMMM:    11      H               0.000000
-QMMM:    12      H               0.000000
-QMMM: Total Mulliken Charge =    0.000000
-
   Restoring quirality in HF orbitals
  Davidson parameters
- mdflag=           2
- irflag=           0
- M4=         225
- Mx=           1
- Mj=           0
- nd=         500
- nd1=           3
- j1=           1
- istore=           1
- istore_M=           1
- Currently have            1  states
- With            1  initial guesses
- info           0
-    3.96    
+ mdflag=                     2
+ irflag=                     0
+ M4=                   225
+ Mx=                     1
+ Mj=                     0
+ nd=                   500
+ nd1=                     3
+ j1=                     1
+ istore=                     1
+ istore_M=                     1
+ 
+ Davidson batch                      1
+ So far found                      0  states
+ out of requested                      1  states
+ This batch will seek                     1  vectors
+  Entering davidson0
+ Restart Davidson with guesses from the previous step
+ Restart loop =                      0
+ Currently have                      1  states
+ With                      2  initial guesses
+ COUNT=                     1 Exp=                     2
+ nd1,nd1_old,j0,j1                     2                     0
+                     0                     1
+ info  -4624396188160884736
+    3.82    
  eigenvalues and residual norm
- Perturbed left m=           1
- info           0
-    3.96    
- eigenvalues and residual norm
- @@@@ Davidson subroutine Found vectors           1
+    1    1    0    3.817254779   3.817254779 0.115E-07 0.142E-08   Converged!
+ All vectors found after loop                     0 , Expansion 
+                     2
+ @@@@ Davidson subroutine Found vectors                     1
   i, e0(i), ferr(i), ftol0
-  1 +++    3.964721150653315     0.69E-07 0.10E-06
+  1 +++    3.817254778783821     0.13E-07 0.10E-06
  -------------------------------------------------
-
+ 
  Frequencies (eV) and Oscillator strengths (unitless)
         Omega            fx              fy              fz          ftotal
-   1     3.96472115065331        0.944934132974425E-11    0.470874183826744E-08    0.658111618644582E-20    0.471819117960377E-08
-
+   1     3.81725477878382        0.212924892881144E-08    0.124840918876884E-07    0.587960090980178E-12    0.146139287765908E-07
+ 
  Frequencies (eV) and Transition Dipole Moments (AU)
         Omega            fx              fy              fz          ftotal
-   1     3.96472115065331       -0.986314657153948E-05   -0.220174570989947E-03   -0.260294203941735E-09    0.485741233709667E-07
-
+   1     3.81725477878382        0.150889384635580E-03    0.365362480378747E-03    0.250737558601998E-05    0.156263635396544E-06
+ 
  Total energy of the ground state (eV,AU)
-           0  -850.30665775340867       -31.248181883199681     
+                     0  -850.373799118133       -31.2506492819407     
  Total energies of excited states (eV,AU)
-           1  -846.34193660275537       -31.102481121595495     
+                     1  -846.556544339349       -31.1103678075640     
  Ground State Molecular Dipole Moment (A.U.)
                          dx              dy              dz          ftotal
-                     0.3273626E-04  0.5835719E-04 -0.1338180E-03  0.1496145E-03
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       1 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C              -0.129721
-QMMM:     2      C              -0.129761
-QMMM:     3      C              -0.129737
-QMMM:     4      C              -0.129732
-QMMM:     5      C              -0.129761
-QMMM:     6      C              -0.129744
-QMMM:     7      H               0.129733
-QMMM:     8      H               0.129750
-QMMM:     9      H               0.129753
-QMMM:    10      H               0.129742
-QMMM:    11      H               0.129737
-QMMM:    12      H               0.129741
-QMMM: Total Mulliken Charge =   -0.000000
-
+                    -0.1896556E-03  0.1114740E-02 -0.6224289E-05  0.1130776E-02
+ 
  Frequencies (eV) and Total Molecular Dipole Moments (Debye)
         Omega            dx              dy              dz          ftotal
-   1   3.964721      0.9449968E-04  0.1511908E-03 -0.3716804E-03  0.4122319E-03
-
+   1   3.817255     -0.5399983E-03  0.2993895E-02  0.2254111E-04  0.3042288E-02
+ 
  Frequencies (eV) and Total Molecular Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964721      0.3717904E-04  0.5948307E-04 -0.1462304E-03  0.1621846E-03
-
+   1   3.817255     -0.2124517E-03  0.1177889E-02  0.8868357E-05  0.1196928E-02
+ 
  Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964721      0.1431440E-04  0.8544000E-05 -0.1292246E-04  0.2109247E-04
-
+   1   3.817255     -0.1130221E-03  0.2742627E-03  0.1636706E-04  0.2970891E-03
+ 
  Frequencies (eV) Relaxed Difference Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964721      0.4442785E-05  0.1125875E-05 -0.1241230E-04  0.1323145E-04
+   1   3.817255     -0.2279610E-04  0.6314887E-04  0.1509265E-04  0.6881301E-04
+QMMM: Occupied MO Energies (eV):
+      -39.20710547      -31.51033102      -31.50999546      -23.20842093      -23.20823788
+      -17.95965063      -16.29751594      -15.48814965      -14.26230407      -14.26210159
+      -13.48720702      -11.98733026      -11.98718539       -9.78744454       -9.78708600
+QMMM: Virtual MO Energies (eV):
+        0.38355083        0.38390011        2.79865185        4.06309127        4.06327150
+        4.07550634        4.31591418        4.53837586        4.53855361        5.10663647
+        5.10686465        5.54628155        5.54656318        5.60104150        6.04086931
 QMMM:
-QMMM: SCF Energy =       22.70633643 KCal/mol,        95.00331164 KJ/mol
+QMMM: SCF Energy =       21.15798942 KCal/mol,        88.52502774 KJ/mol
 QMMM: SCF Energy = Heat of formation
 QMMM:
-QMMM:        Electronic energy =     -3254.71541165 eV (   -75056.99210799 KCal/mol)
-QMMM: QM core - QM core energy =      2404.40875389 eV (    55448.07027354 KCal/mol)
+QMMM:        Electronic energy =     -1342.23931808 eV (   -30953.38091420 KCal/mol)
+QMMM: Dielectric(COSMO) energy =        -0.07134823 eV (       -1.64536144 KCal/mol)
+QMMM: QM core - QM core energy =       491.86551896 eV (    11342.91073274 KCal/mol)
 QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
-QMMM: Total core - core energy =      2404.40875389 eV (    55448.07027354 KCal/mol)
-QMMM:             Total energy =      -850.30665775 eV (   -19608.92183445 KCal/mol)
- Begin classical propagation step #           4
+QMMM: Total core - core energy =       491.86551896 eV (    11342.91073274 KCal/mol)
+QMMM:             Total energy =      -850.37379912 eV (   -19610.47018146 KCal/mol)
+  Restoring quirality in cmdqt
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:    -0.81792498434697    0.13690456989723   -0.00034224279224
+QMMM: Atm      2:    -0.28944709499647    0.77737723447418    0.00018227206940
+QMMM: Atm      3:     0.52707779176923    0.63920174703661    0.00016920228590
+QMMM: Atm      4:     0.81776537560469   -0.13713353685902   -0.00005576983973
+QMMM: Atm      5:     0.29000395737656   -0.77646311178414   -0.00011499642067
+QMMM: Atm      6:    -0.52659494801560   -0.63974034089097    0.00001334366830
+QMMM: Atm      7:     0.61198960090443   -0.10218555353368   -0.00001215369250
+QMMM: Atm      8:     0.21687640181420   -0.58164347419038    0.00000193116497
+QMMM: Atm      9:    -0.39482825130421   -0.47839203308720    0.00004758218185
+QMMM: Atm     10:    -0.61214792540658    0.10227926379120    0.00005059214483
+QMMM: Atm     11:    -0.21738198677772    0.58165633351846    0.00006868647597
+QMMM: Atm     12:     0.39461206337843    0.47813890162773   -0.00000844724607
+QMMM: Forces on QM atoms excited state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:     1.05200259341017   -0.17622408742734   -0.00004733652710
+QMMM: Atm      2:     0.37328904468750   -0.99928890517066    0.00003738721333
+QMMM: Atm      3:    -0.67848296537438   -0.82321077427208    0.00005487719613
+QMMM: Atm      4:    -1.05180356159190    0.17620257655325    0.00002554303149
+QMMM: Atm      5:    -0.37324071464408    0.99935301646328   -0.00000478307175
+QMMM: Atm      6:     0.67823286488858    0.82318744801456   -0.00003288131490
+QMMM: Atm      7:    -0.00390556958602    0.00065439440230    0.00000977139431
+QMMM: Atm      8:    -0.00140589755993    0.00374313904196   -0.00001118946483
+QMMM: Atm      9:     0.00255835198430    0.00309799898109   -0.00003549444006
+QMMM: Atm     10:     0.00387525702786   -0.00064805467976   -0.00001801612354
+QMMM: Atm     11:     0.00142023483122   -0.00379149253580   -0.00000156404304
+QMMM: Atm     12:    -0.00253963807332   -0.00307525937080    0.00002368614997
+QMMM: Excited State Forces on QM atoms from SCF calculation (KJ/mol)
+QMMM: Atm      1:   101.50480987894771  -17.00337299779746   -0.00456737009329
+QMMM: Atm      2:    36.01762367150893  -96.41861243391611    0.00360738842735
+QMMM: Atm      3:   -65.46493786026213  -79.42932237640336    0.00529494831523
+QMMM: Atm      4:  -101.48560585131561   17.00129747327066    0.00246457620105
+QMMM: Atm      5:   -36.01296043978296   96.42479835456798   -0.00046150531572
+QMMM: Atm      6:    65.44080635866595   79.42707169056924   -0.00317262679654
+QMMM: Atm      7:    -0.37683756749404    0.06314069927911    0.00094281471203
+QMMM: Atm      8:    -0.13565115278620    0.36116509520482   -0.00107964039975
+QMMM: Atm      9:     0.24684828097975    0.29891732164016   -0.00342475998882
+QMMM: Atm     10:     0.37391279290496   -0.06252899705049   -0.00173832574801
+QMMM: Atm     11:     0.13703451629270   -0.36583058959630   -0.00015091017091
+QMMM: Atm     12:    -0.24504262765914   -0.29672323976825    0.00228541085739
+
+  QMMM: QM Region Cartesian Coordinates (*=link atom) 
+  QMMM: QM_NO. MM_NO.  ATOM         X         Y         Z
+  QMMM:     1        1       1      -7.9894    0.6830    0.0000
+  QMMM:     2        2       2      -7.0994    1.7624   -0.0000
+  QMMM:     3        3       3      -5.7195    1.5314   -0.0000
+  QMMM:     4        4       4      -5.2297    0.2208    0.0000
+  QMMM:     5        5       5      -6.1197   -0.8586    0.0000
+  QMMM:     6        6       6      -7.4996   -0.6275   -0.0000
+  QMMM:     7        7       7      -9.0576    0.8618   -0.0000
+  QMMM:     8        8       8      -7.4786    2.7770    0.0000
+  QMMM:     9        9       9      -5.0305    2.3670    0.0000
+  QMMM:    10       10      10      -4.1615    0.0420   -0.0000
+  QMMM:    11       11      11      -5.7405   -1.8731   -0.0000
+  QMMM:    12       12      12      -8.1886   -1.4632   -0.0000
+ Begin classical propagation step #                     6
 QMMM: 
 QMMM: SCF Convergence Information
 QMMM: (*) = Pseudo Diagonalisation
 QMMM: Cycle      Energy          dE             dP              |FP-PF|
-QMMM:     1     -75055.36      -75055.36      0.1797693+309  -1.000000    
-QMMM:     2     -75055.37     -0.1066348E-04  0.3864241E-04  -1.000000    
-QMMM:     3     -75055.37     -0.1167660E-05  0.1000103E-04  -1.000000    
-QMMM:     4 *   -75055.37     -0.3362657E-06  0.2753297E-05  -1.000000    
-QMMM:     5 *   -75055.37      0.6874325E-07  0.5355717E-06  -1.000000    
-QMMM:     6 *   -75055.37     -0.5209586E-08  0.2902831E-06  -1.000000    
-QMMM:     7     -75055.37     -0.5587935E-08  0.1705590E-06  -1.000000    
+QMMM:     1     -30951.49      -30951.49      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -129501.0      -129501.0           Infinity
+QMMM:     2     -30951.49     -0.2082603E-04  0.4238396E-04  -1.000000    
+QMMM: KJ/mol    -129501.0     -0.8713610E-04  0.1773345E-03
+QMMM:     3     -30951.49     -0.1245862E-05  0.1119573E-04  -1.000000    
+QMMM: KJ/mol    -129501.0     -0.5212688E-05  0.4684292E-04
+QMMM:     4 *   -30951.49     -0.1472035E-06  0.2983227E-05  -1.000000    
+QMMM: KJ/mol    -129501.0     -0.6158996E-06  0.1248182E-04
+QMMM:     5 *   -30951.49      0.4409230E-07  0.3449494E-06  -1.000000    
+QMMM: KJ/mol    -129501.0      0.1844822E-06  0.1443268E-05
+QMMM:     6 *   -30951.49     -0.3274181E-10  0.9832059E-07  -1.000000    
+QMMM: KJ/mol    -129501.0     -0.1369917E-09  0.4113734E-06
+QMMM:     7     -30951.49     -0.3637979E-11  0.4401927E-07  -1.000000    
+QMMM: KJ/mol    -129501.0     -0.1522130E-10  0.1841766E-06
 QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       0 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C               0.000000
-QMMM:     2      C               0.000000
-QMMM:     3      C               0.000000
-QMMM:     4      C               0.000000
-QMMM:     5      C               0.000000
-QMMM:     6      C               0.000000
-QMMM:     7      H               0.000000
-QMMM:     8      H               0.000000
-QMMM:     9      H               0.000000
-QMMM:    10      H               0.000000
-QMMM:    11      H               0.000000
-QMMM:    12      H               0.000000
-QMMM: Total Mulliken Charge =    0.000000
-
   Restoring quirality in HF orbitals
  Davidson parameters
- mdflag=           2
- irflag=           0
- M4=         225
- Mx=           1
- Mj=           0
- nd=         500
- nd1=           3
- j1=           1
- istore=           1
- istore_M=           1
- Currently have            1  states
- With            1  initial guesses
- info           0
-    3.96    
+ mdflag=                     2
+ irflag=                     0
+ M4=                   225
+ Mx=                     1
+ Mj=                     0
+ nd=                   500
+ nd1=                     3
+ j1=                     1
+ istore=                     1
+ istore_M=                     1
+ 
+ Davidson batch                      1
+ So far found                      0  states
+ out of requested                      1  states
+ This batch will seek                     1  vectors
+  Entering davidson0
+ Restart Davidson with guesses from the previous step
+ Restart loop =                      0
+ Currently have                      1  states
+ With                      2  initial guesses
+ COUNT=                     1 Exp=                     2
+ nd1,nd1_old,j0,j1                     2                     0
+                     0                     1
+ info  -4624392795136720896
+    3.82    
  eigenvalues and residual norm
- Perturbed left m=           1
- info           0
-    3.96    
- eigenvalues and residual norm
- @@@@ Davidson subroutine Found vectors           1
+    1    1    0    3.817199504   3.817199504 0.150E-07 0.286E-08   Converged!
+ All vectors found after loop                     0 , Expansion 
+                     2
+ @@@@ Davidson subroutine Found vectors                     1
   i, e0(i), ferr(i), ftol0
-  1 +++    3.964668010130593     0.51E-07 0.10E-06
+  1 +++    3.817199504157915     0.18E-07 0.10E-06
  -------------------------------------------------
-
+ 
  Frequencies (eV) and Oscillator strengths (unitless)
         Omega            fx              fy              fz          ftotal
-   1     3.96466801013059        0.662367550918158E-10    0.104511923508631E-07    0.102193770340903E-18    0.105174291060572E-07
-
+   1     3.81719950415791        0.212781238419075E-08    0.124842312148571E-07    0.587816901207765E-12    0.146126314159490E-07
+ 
  Frequencies (eV) and Transition Dipole Moments (AU)
         Omega            fx              fy              fz          ftotal
-   1     3.96466801013059       -0.261136244036552E-04   -0.328020170128305E-03    0.102572240093142E-08    0.108279153391549E-06
-
+   1     3.81719950415791        0.150839567724172E-03    0.365367164469540E-03    0.250708840026887E-05    0.156252025555974E-06
+ 
  Total energy of the ground state (eV,AU)
-           0  -850.30728353085033       -31.248204880088085     
+                     0  -850.374996775907       -31.2506932950360     
  Total energies of excited states (eV,AU)
-           1  -846.34261552071973       -31.102506071361372     
+                     1  -846.557797271750       -31.1104138519636     
  Ground State Molecular Dipole Moment (A.U.)
                          dx              dy              dz          ftotal
-                     0.2813842E-04  0.1344250E-03 -0.2298855E-03  0.2677857E-03
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       1 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C              -0.129745
-QMMM:     2      C              -0.129778
-QMMM:     3      C              -0.129744
-QMMM:     4      C              -0.129751
-QMMM:     5      C              -0.129765
-QMMM:     6      C              -0.129752
-QMMM:     7      H               0.129748
-QMMM:     8      H               0.129766
-QMMM:     9      H               0.129775
-QMMM:    10      H               0.129750
-QMMM:    11      H               0.129748
-QMMM:    12      H               0.129747
-QMMM: Total Mulliken Charge =   -0.000000
-
+                    -0.1892599E-03  0.1116012E-02 -0.6156288E-05  0.1131963E-02
+ 
  Frequencies (eV) and Total Molecular Dipole Moments (Debye)
         Omega            dx              dy              dz          ftotal
-   1   3.964668      0.8725907E-04  0.3533728E-03 -0.6550447E-03  0.7493798E-03
-
+   1   3.817200     -0.5391356E-03  0.2996303E-02  0.2267791E-04  0.3044505E-02
+ 
  Frequencies (eV) and Total Molecular Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964668      0.3433037E-04  0.1390276E-03 -0.2577145E-03  0.2948288E-03
-
+   1   3.817200     -0.2121123E-03  0.1178837E-02  0.8922178E-05  0.1197801E-02
+ 
  Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964668      0.1670412E-04  0.2258378E-04 -0.3008994E-04  0.4116381E-04
-
+   1   3.817200     -0.1130757E-03  0.2739579E-03  0.1635302E-04  0.2968273E-03
+ 
  Frequencies (eV) Relaxed Difference Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964668      0.6191947E-05  0.4602642E-05 -0.2782902E-04  0.2887869E-04
+   1   3.817200     -0.2285244E-04  0.6282440E-04  0.1507847E-04  0.6853100E-04
+QMMM: Occupied MO Energies (eV):
+      -39.20480759      -31.50796216      -31.50762758      -23.20640350      -23.20621968
+      -17.95762284      -16.29499076      -15.48767446      -14.26105619      -14.26085381
+      -13.48674026      -11.98628739      -11.98614228       -9.78704162       -9.78668323
+QMMM: Virtual MO Energies (eV):
+        0.38387383        0.38422337        2.79896245        4.06225083        4.06243014
+        4.07412306        4.31396434        4.53790724        4.53808519        5.10577528
+        5.10600226        5.54582542        5.54610734        5.60149322        6.04071462
 QMMM:
-QMMM: SCF Energy =       22.69190538 KCal/mol,        94.94293211 KJ/mol
+QMMM: SCF Energy =       21.13037024 KCal/mol,        88.40946907 KJ/mol
 QMMM: SCF Energy = Heat of formation
 QMMM:
-QMMM:        Electronic energy =     -3254.64485501 eV (   -75055.36500147 KCal/mol)
-QMMM: QM core - QM core energy =      2404.33757148 eV (    55446.42873597 KCal/mol)
+QMMM:        Electronic energy =     -1342.15724656 eV (   -30951.48826282 KCal/mol)
+QMMM: Dielectric(COSMO) energy =        -0.07143230 eV (       -1.64730035 KCal/mol)
+QMMM: QM core - QM core energy =       491.78224978 eV (    11340.99046217 KCal/mol)
 QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
-QMMM: Total core - core energy =      2404.33757148 eV (    55446.42873597 KCal/mol)
-QMMM:             Total energy =      -850.30728353 eV (   -19608.93626550 KCal/mol)
- Begin classical propagation step #           5
+QMMM: Total core - core energy =       491.78224978 eV (    11340.99046217 KCal/mol)
+QMMM:             Total energy =      -850.37499678 eV (   -19610.49780065 KCal/mol)
+  Restoring quirality in cmdqt
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:    -0.80794014619841    0.13523250640665   -0.00034285486397
+QMMM: Atm      2:    -0.28590376781508    0.76788755014462    0.00018265495900
+QMMM: Atm      3:     0.52064239249862    0.63139808294275    0.00016972736430
+QMMM: Atm      4:     0.80777810758307   -0.13546041197747   -0.00005537404148
+QMMM: Atm      5:     0.28645714421800   -0.76697470990331   -0.00011441744192
+QMMM: Atm      6:    -0.52016400117474   -0.63193760119969    0.00001285745780
+QMMM: Atm      7:     0.59974768889080   -0.10013623670200   -0.00001178486974
+QMMM: Atm      8:     0.21252993208511   -0.57001130909115    0.00000159138510
+QMMM: Atm      9:    -0.38693550683196   -0.46882058433433    0.00004723996156
+QMMM: Atm     10:    -0.59990154292606    0.10022900789317    0.00005019566669
+QMMM: Atm     11:    -0.21303350168467    0.57002187050408    0.00006829020263
+QMMM: Atm     12:     0.38672320135532    0.46857183531668   -0.00000812577996
+QMMM: Forces on QM atoms excited state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:     1.05199373825884   -0.17622199655332   -0.00004722743246
+QMMM: Atm      2:     0.37328513586582   -0.99928055773414    0.00003732247950
+QMMM: Atm      3:    -0.67847666546804   -0.82320418911167    0.00005483985697
+QMMM: Atm      4:    -1.05179443969272    0.17620151517279    0.00002553960479
+QMMM: Atm      5:    -0.37323800223795    0.99934431530108   -0.00000478150282
+QMMM: Atm      6:     0.67822748065750    0.82318007380565   -0.00003283500532
+QMMM: Atm      7:    -0.00390160791892    0.00065373972618    0.00000972554278
+QMMM: Atm      8:    -0.00140448861295    0.00373939403856   -0.00001116461664
+QMMM: Atm      9:     0.00255580382926    0.00309493489486   -0.00003546544799
+QMMM: Atm     10:     0.00387127652926   -0.00064738625668   -0.00001801235470
+QMMM: Atm     11:     0.00141881983964   -0.00378771175392   -0.00000159193887
+QMMM: Atm     12:    -0.00253705104973   -0.00307213152939    0.00002365081475
+QMMM: Excited State Forces on QM atoms from SCF calculation (KJ/mol)
+QMMM: Atm      1:   101.50395546997777  -17.00317125516724   -0.00455684385460
+QMMM: Atm      2:    36.01724652015574  -96.41780701293908    0.00360114243987
+QMMM: Atm      3:   -65.46432999978781  -79.42868699255642    0.00529134556344
+QMMM: Atm      4:  -101.48472570458600   17.00119506361632    0.00246424556786
+QMMM: Atm      5:   -36.01269872724551   96.42395880358173   -0.00046135393363
+QMMM: Atm      6:    65.44028684915558   79.42636017362233   -0.00316815851345
+QMMM: Atm      7:    -0.37645531723285    0.06307753139736    0.00093839062520
+QMMM: Atm      8:    -0.13551520740323    0.36080375022288   -0.00107724286675
+QMMM: Atm      9:     0.24660241657346    0.29862167646597   -0.00342196262444
+QMMM: Atm     10:     0.37352872564436   -0.06246450276299   -0.00173796210235
+QMMM: Atm     11:     0.13689798768282   -0.36546579244749   -0.00015360176190
+QMMM: Atm     12:    -0.24479301293435   -0.29642144303334    0.00228200146075
+
+  QMMM: QM Region Cartesian Coordinates (*=link atom) 
+  QMMM: QM_NO. MM_NO.  ATOM         X         Y         Z
+  QMMM:     1        1       1      -7.9894    0.6830    0.0000
+  QMMM:     2        2       2      -7.0994    1.7624   -0.0000
+  QMMM:     3        3       3      -5.7195    1.5314   -0.0000
+  QMMM:     4        4       4      -5.2297    0.2208    0.0000
+  QMMM:     5        5       5      -6.1197   -0.8586    0.0000
+  QMMM:     6        6       6      -7.4996   -0.6276   -0.0000
+  QMMM:     7        7       7      -9.0579    0.8619   -0.0000
+  QMMM:     8        8       8      -7.4787    2.7773    0.0000
+  QMMM:     9        9       9      -5.0303    2.3673    0.0000
+  QMMM:    10       10      10      -4.1611    0.0419   -0.0000
+  QMMM:    11       11      11      -5.7404   -1.8735   -0.0000
+  QMMM:    12       12      12      -8.1888   -1.4635   -0.0000
+ Begin classical propagation step #                     7
 QMMM: 
 QMMM: SCF Convergence Information
 QMMM: (*) = Pseudo Diagonalisation
 QMMM: Cycle      Energy          dE             dP              |FP-PF|
-QMMM:     1     -75053.26      -75053.26      0.1797693+309  -1.000000    
-QMMM:     2     -75053.26     -0.1393633E-04  0.4280940E-04  -1.000000    
-QMMM:     3     -75053.26     -0.1559703E-05  0.1108927E-04  -1.000000    
-QMMM:     4 *   -75053.26     -0.4775502E-06  0.2954819E-05  -1.000000    
-QMMM:     5 *   -75053.26      0.7255585E-07  0.3321747E-06  -1.000000    
-QMMM:     6 *   -75053.26     -0.1461012E-07  0.1549523E-06  -1.000000    
-QMMM:     7 *   -75053.26     -0.1549779E-07  0.7680602E-07  -1.000000    
-QMMM:     8 *   -75053.26      0.5107722E-08  0.2114984E-07  -1.000000    
-QMMM:     9     -75053.26     -0.4947651E-09  0.1594624E-07  -1.000000    
-QMMM: SCF Converged to 0.1000E-07 in:     9 Cycles 
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       0 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C               0.000000
-QMMM:     2      C               0.000000
-QMMM:     3      C               0.000000
-QMMM:     4      C               0.000000
-QMMM:     5      C               0.000000
-QMMM:     6      C               0.000000
-QMMM:     7      H               0.000000
-QMMM:     8      H               0.000000
-QMMM:     9      H               0.000000
-QMMM:    10      H               0.000000
-QMMM:    11      H               0.000000
-QMMM:    12      H               0.000000
-QMMM: Total Mulliken Charge =    0.000000
-
+QMMM:     1     -30949.27      -30949.27      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -129491.7      -129491.7           Infinity
+QMMM:     2     -30949.27     -0.2861106E-04  0.4977894E-04  -1.000000    
+QMMM: KJ/mol    -129491.7     -0.1197087E-03  0.2082751E-03
+QMMM:     3     -30949.27     -0.1711687E-05  0.1315266E-04  -1.000000    
+QMMM: KJ/mol    -129491.7     -0.7161699E-05  0.5503072E-04
+QMMM:     4 *   -30949.27     -0.2021079E-06  0.3505982E-05  -1.000000    
+QMMM: KJ/mol    -129491.7     -0.8456195E-06  0.1466903E-04
+QMMM:     5 *   -30949.27      0.6048867E-07  0.4064577E-06  -1.000000    
+QMMM: KJ/mol    -129491.7      0.2530846E-06  0.1700619E-05
+QMMM:     6 *   -30949.27     -0.2546585E-10  0.1204635E-06  -1.000000    
+QMMM: KJ/mol    -129491.7     -0.1065491E-09  0.5040192E-06
+QMMM:     7     -30949.27     -0.2182787E-10  0.4595498E-07  -1.000000    
+QMMM: KJ/mol    -129491.7     -0.9132782E-10  0.1922756E-06
+QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
   Restoring quirality in HF orbitals
  Davidson parameters
- mdflag=           2
- irflag=           0
- M4=         225
- Mx=           1
- Mj=           0
- nd=         500
- nd1=           3
- j1=           1
- istore=           1
- istore_M=           1
- Currently have            1  states
- With            1  initial guesses
- info           0
-    3.96    
+ mdflag=                     2
+ irflag=                     0
+ M4=                   225
+ Mx=                     1
+ Mj=                     0
+ nd=                   500
+ nd1=                     3
+ j1=                     1
+ istore=                     1
+ istore_M=                     1
+ 
+ Davidson batch                      1
+ So far found                      0  states
+ out of requested                      1  states
+ This batch will seek                     1  vectors
+  Entering davidson0
+ Restart Davidson with guesses from the previous step
+ Restart loop =                      0
+ Currently have                      1  states
+ With                      2  initial guesses
+ COUNT=                     1 Exp=                     2
+ nd1,nd1_old,j0,j1                     2                     0
+                     0                     1
+ info  -4624388830881906688
+    3.82    
  eigenvalues and residual norm
- Perturbed left m=           1
- info           0
-    3.96    
- eigenvalues and residual norm
- @@@@ Davidson subroutine Found vectors           1
+    1    1    0    3.817132861   3.817132861 0.207E-07 0.531E-08   Converged!
+ All vectors found after loop                     0 , Expansion 
+                     2
+ @@@@ Davidson subroutine Found vectors                     1
   i, e0(i), ferr(i), ftol0
-  1 +++    3.964571360057456     0.64E-07 0.10E-06
+  1 +++    3.817132861460285     0.26E-07 0.10E-06
  -------------------------------------------------
-
+ 
  Frequencies (eV) and Oscillator strengths (unitless)
         Omega            fx              fy              fz          ftotal
-   1     3.96457136005746        0.333883792820795E-09    0.169366264159594E-07    0.191878786056466E-17    0.172705102106990E-07
-
+   1     3.81713286146029        0.212623109267936E-08    0.124844565302643E-07    0.587688611929046E-12    0.146112753115556E-07
+ 
  Frequencies (eV) and Transition Dipole Moments (AU)
         Omega            fx              fy              fz          ftotal
-   1     3.96457136005746       -0.586300941912811E-04   -0.417576814345674E-03    0.444463809036872E-08    0.177807883843715E-06
-
+   1     3.81713286146029        0.150784825067041E-03    0.365373650985601E-03    0.250683668601073E-05    0.156240252535216E-06
+ 
  Total energy of the ground state (eV,AU)
-           0  -850.30802206503313       -31.248232020708777     
+                     0  -850.376369562928       -31.2507437440100     
  Total energies of excited states (eV,AU)
-           1  -846.34345070497568       -31.102536763805443     
+                     1  -846.559236701468       -31.1104667500107     
  Ground State Molecular Dipole Moment (A.U.)
                          dx              dy              dz          ftotal
-                     0.4135449E-04  0.1912445E-03 -0.3494475E-03  0.4004975E-03
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       1 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C              -0.129768
-QMMM:     2      C              -0.129788
-QMMM:     3      C              -0.129758
-QMMM:     4      C              -0.129773
-QMMM:     5      C              -0.129774
-QMMM:     6      C              -0.129766
-QMMM:     7      H               0.129768
-QMMM:     8      H               0.129781
-QMMM:     9      H               0.129799
-QMMM:    10      H               0.129764
-QMMM:    11      H               0.129763
-QMMM:    12      H               0.129753
-QMMM: Total Mulliken Charge =   -0.000000
-
+                    -0.1887879E-03  0.1117521E-02 -0.6077016E-05  0.1133372E-02
+ 
  Frequencies (eV) and Total Molecular Dipole Moments (Debye)
         Omega            dx              dy              dz          ftotal
-   1   3.964571      0.1257401E-03  0.5043231E-03 -0.9744402E-03  0.1104394E-02
-
+   1   3.817133     -0.5380737E-03  0.2999161E-02  0.2283723E-04  0.3047132E-02
+ 
  Frequencies (eV) and Total Molecular Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964571      0.4946998E-04  0.1984160E-03 -0.3833743E-03  0.4345021E-03
-
+   1   3.817133     -0.2116945E-03  0.1179961E-02  0.8984861E-05  0.1198834E-02
+ 
  Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964571      0.2277081E-04  0.3313475E-04 -0.3624515E-04  0.5413069E-04
-
+   1   3.817133     -0.1131276E-03  0.2735967E-03  0.1633660E-04  0.2965129E-03
+ 
  Frequencies (eV) Relaxed Difference Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964571      0.8115484E-05  0.7171516E-05 -0.3392681E-04  0.3561348E-04
+   1   3.817133     -0.2290659E-04  0.6243969E-04  0.1506188E-04  0.6819301E-04
+QMMM: Occupied MO Energies (eV):
+      -39.20210480      -31.50518185      -31.50484841      -23.20403747      -23.20385273
+      -17.95524184      -16.29203203      -15.48711529      -14.25959138      -14.25938911
+      -13.48618926      -11.98506424      -11.98491882       -9.78656745       -9.78620923
+QMMM: Virtual MO Energies (eV):
+        0.38425177        0.38460161        2.79932531        4.06126341        4.06144161
+        4.07249877        4.31167791        4.53735237        4.53753056        5.10476895
+        5.10499452        5.54529153        5.54557380        5.60202249        6.04053324
 QMMM:
-QMMM: SCF Energy =       22.67487404 KCal/mol,        94.87167300 KJ/mol
+QMMM: SCF Energy =       21.09871240 KCal/mol,        88.27701266 KJ/mol
 QMMM: SCF Energy = Heat of formation
 QMMM:
-QMMM:        Electronic energy =     -3254.55373046 eV (   -75053.26357815 KCal/mol)
-QMMM: QM core - QM core energy =      2404.24570840 eV (    55444.31028130 KCal/mol)
+QMMM:        Electronic energy =     -1342.06084972 eV (   -30949.26525536 KCal/mol)
+QMMM: Dielectric(COSMO) energy =        -0.07153101 eV (       -1.64957667 KCal/mol)
+QMMM: QM core - QM core energy =       491.68448016 eV (    11338.73579687 KCal/mol)
 QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
-QMMM: Total core - core energy =      2404.24570840 eV (    55444.31028130 KCal/mol)
-QMMM:             Total energy =      -850.30802207 eV (   -19608.95329684 KCal/mol)
- Begin classical propagation step #           6
+QMMM: Total core - core energy =       491.68448016 eV (    11338.73579687 KCal/mol)
+QMMM:             Total energy =      -850.37636956 eV (   -19610.52945849 KCal/mol)
+  Restoring quirality in cmdqt
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:    -0.79627373863736    0.13327888077737   -0.00034338343854
+QMMM: Atm      2:    -0.28176385344668    0.75679989395824    0.00018304863394
+QMMM: Atm      3:     0.51312319981992    0.62228036469376    0.00017030402603
+QMMM: Atm      4:     0.79610899444231   -0.13350563698382   -0.00005476599185
+QMMM: Atm      5:     0.28231297594997   -0.75588839171530   -0.00011386314111
+QMMM: Atm      6:    -0.51265004032997   -0.62282106743823    0.00001222411466
+QMMM: Atm      7:     0.58541449958931   -0.09773684199191   -0.00001139211157
+QMMM: Atm      8:     0.20744102360269   -0.55639207070468    0.00000120158067
+QMMM: Atm      9:    -0.37769441869763   -0.45761409354742    0.00004685547873
+QMMM: Atm     10:    -0.58556313701950    0.09782852616623    0.00004970338063
+QMMM: Atm     11:    -0.20794218553653    0.55639997059208    0.00006781500273
+QMMM: Atm     12:     0.37748668026345    0.45737046619370   -0.00000774753434
+QMMM: Forces on QM atoms excited state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:     1.05198307890170   -0.17621953778321   -0.00004709791922
+QMMM: Atm      2:     0.37328049708131   -0.99927050997868    0.00003724538185
+QMMM: Atm      3:    -0.67846913225152   -0.82319623266579    0.00005479642496
+QMMM: Atm      4:    -1.05178349090539    0.17620018739305    0.00002553597236
+QMMM: Atm      5:    -0.37323468814155    0.99933387108731   -0.00000477872062
+QMMM: Atm      6:     0.67822097055423    0.82317124848880   -0.00003278050750
+QMMM: Atm      7:    -0.00389696051526    0.00065297199551    0.00000967122530
+QMMM: Atm      8:    -0.00140283711121    0.00373500350201   -0.00001113546784
+QMMM: Atm      9:     0.00255281356263    0.00309133927125   -0.00003543179484
+QMMM: Atm     10:     0.00386660824142   -0.00064660209862   -0.00001800803245
+QMMM: Atm     11:     0.00141715880252   -0.00378327475023   -0.00000162504737
+QMMM: Atm     12:    -0.00253401821889   -0.00306846446139    0.00002360848537
+QMMM: Excited State Forces on QM atoms from SCF calculation (KJ/mol)
+QMMM: Atm      1:   101.50292697819842  -17.00293401526534   -0.00454434748214
+QMMM: Atm      2:    36.01679893671555  -96.41683753290735    0.00359370350125
+QMMM: Atm      3:   -65.46360314063850  -79.42791929718054    0.00528715492994
+QMMM: Atm      4:  -101.48366928649010   17.00106694983555    0.00246389508490
+QMMM: Atm      5:   -36.01237895928396   96.42295107038858   -0.00046108548691
+QMMM: Atm      6:    65.43965870736314   79.42550864329831   -0.00316290016976
+QMMM: Atm      7:    -0.37600690215501    0.06300345519649    0.00093314968215
+QMMM: Atm      8:    -0.13535585858442    0.36038011953930   -0.00107443038013
+QMMM: Atm      9:     0.24631389404816    0.29827474472481   -0.00341871552577
+QMMM: Atm     10:     0.37307829550988   -0.06238884152858   -0.00173754506058
+QMMM: Atm     11:     0.13673771882262   -0.36503767827893   -0.00015679630945
+QMMM: Atm     12:    -0.24450038350573   -0.29606761782234    0.00227791721650
+
+  QMMM: QM Region Cartesian Coordinates (*=link atom) 
+  QMMM: QM_NO. MM_NO.  ATOM         X         Y         Z
+  QMMM:     1        1       1      -7.9894    0.6830    0.0000
+  QMMM:     2        2       2      -7.0994    1.7625   -0.0000
+  QMMM:     3        3       3      -5.7195    1.5314   -0.0000
+  QMMM:     4        4       4      -5.2297    0.2208    0.0000
+  QMMM:     5        5       5      -6.1197   -0.8586    0.0000
+  QMMM:     6        6       6      -7.4996   -0.6276   -0.0000
+  QMMM:     7        7       7      -9.0583    0.8620   -0.0000
+  QMMM:     8        8       8      -7.4788    2.7776    0.0000
+  QMMM:     9        9       9      -5.0300    2.3676    0.0000
+  QMMM:    10       10      10      -4.1607    0.0419   -0.0000
+  QMMM:    11       11      11      -5.7403   -1.8738   -0.0000
+  QMMM:    12       12      12      -8.1891   -1.4638   -0.0000
+ Begin classical propagation step #                     8
 QMMM: 
 QMMM: SCF Convergence Information
 QMMM: (*) = Pseudo Diagonalisation
 QMMM: Cycle      Energy          dE             dP              |FP-PF|
-QMMM:     1     -75050.83      -75050.83      0.1797693+309  -1.000000    
-QMMM:     2     -75050.83     -0.1986562E-04  0.5059289E-04  -1.000000    
-QMMM:     3     -75050.83     -0.2131390E-05  0.1295390E-04  -1.000000    
-QMMM:     4 *   -75050.83     -0.6527116E-06  0.3417351E-05  -1.000000    
-QMMM:     5 *   -75050.83      0.9093492E-07  0.4186435E-06  -1.000000    
-QMMM:     6 *   -75050.83     -0.2389424E-07  0.1784150E-06  -1.000000    
-QMMM:     7 *   -75050.83     -0.2882734E-07  0.9908550E-07  -1.000000    
-QMMM:     8 *   -75050.83      0.1036096E-07  0.2069681E-07  -1.000000    
-QMMM:     9 *   -75050.83     -0.8294592E-09  0.9012752E-08  -1.000000    
-QMMM:    10     -75050.83     -0.1280569E-08  0.1726752E-07  -1.000000    
-QMMM: SCF Converged to 0.1000E-07 in:    10 Cycles 
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       0 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C               0.000000
-QMMM:     2      C               0.000000
-QMMM:     3      C               0.000000
-QMMM:     4      C               0.000000
-QMMM:     5      C               0.000000
-QMMM:     6      C               0.000000
-QMMM:     7      H               0.000000
-QMMM:     8      H               0.000000
-QMMM:     9      H               0.000000
-QMMM:    10      H               0.000000
-QMMM:    11      H               0.000000
-QMMM:    12      H               0.000000
-QMMM: Total Mulliken Charge =    0.000000
-
+QMMM:     1     -30946.76      -30946.76      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -129481.2      -129481.2           Infinity
+QMMM:     2     -30946.76     -0.3723705E-04  0.5694034E-04  -1.000000    
+QMMM: KJ/mol    -129481.2     -0.1557998E-03  0.2382384E-03
+QMMM:     3     -30946.76     -0.2222692E-05  0.1506442E-04  -1.000000    
+QMMM: KJ/mol    -129481.2     -0.9299744E-05  0.6302955E-04
+QMMM:     4 *   -30946.76     -0.2612360E-06  0.4028797E-05  -1.000000    
+QMMM: KJ/mol    -129481.2     -0.1093011E-05  0.1685649E-04
+QMMM:     5 *   -30946.76      0.7760900E-07  0.5107164E-06  -1.000000    
+QMMM: KJ/mol    -129481.2      0.3247161E-06  0.2136837E-05
+QMMM:     6 *   -30946.76     -0.7275958E-10  0.1603495E-06  -1.000000    
+QMMM: KJ/mol    -129481.2     -0.3044261E-09  0.6709024E-06
+QMMM:     7     -30946.76     -0.2182787E-10  0.6776869E-07  -1.000000    
+QMMM: KJ/mol    -129481.2     -0.9132782E-10  0.2835442E-06
+QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
   Restoring quirality in HF orbitals
  Davidson parameters
- mdflag=           2
- irflag=           0
- M4=         225
- Mx=           1
- Mj=           0
- nd=         500
- nd1=           3
- j1=           1
- istore=           1
- istore_M=           1
- Currently have            1  states
- With            1  initial guesses
- info           0
-    3.96    
+ mdflag=                     2
+ irflag=                     0
+ M4=                   225
+ Mx=                     1
+ Mj=                     0
+ nd=                   500
+ nd1=                     3
+ j1=                     1
+ istore=                     1
+ istore_M=                     1
+ 
+ Davidson batch                      1
+ So far found                      0  states
+ out of requested                      1  states
+ This batch will seek                     1  vectors
+  Entering davidson0
+ Restart Davidson with guesses from the previous step
+ Restart loop =                      0
+ Currently have                      1  states
+ With                      2  initial guesses
+ COUNT=                     1 Exp=                     2
+ nd1,nd1_old,j0,j1                     2                     0
+                     0                     1
+ info  -4624383067035795456
+    3.82    
  eigenvalues and residual norm
- Perturbed left m=           1
- info           0
-    3.96    
- eigenvalues and residual norm
- @@@@ Davidson subroutine Found vectors           1
+    1    1    0    3.817054303   3.817054303 0.293E-07 0.913E-08   Converged!
+ All vectors found after loop                     0 , Expansion 
+                     2
+ @@@@ Davidson subroutine Found vectors                     1
   i, e0(i), ferr(i), ftol0
-  1 +++    3.964484219845025     0.64E-07 0.10E-06
+  1 +++    3.817054302658411     0.38E-07 0.10E-06
  -------------------------------------------------
-
+ 
  Frequencies (eV) and Oscillator strengths (unitless)
         Omega            fx              fy              fz          ftotal
-   1     3.96448421984502        0.908673462676110E-09    0.236013477904779E-07    0.219715929443254E-16    0.245100212751256E-07
-
+   1     3.81705430265841        0.211045293264595E-08    0.126108933584065E-07    0.595404645592584E-12    0.147219416956981E-07
+ 
  Frequencies (eV) and Transition Dipole Moments (AU)
         Omega            fx              fy              fz          ftotal
-   1     3.96448421984502       -0.967234141937850E-04   -0.492942312345359E-03    0.150403681867346E-07    0.252347542379905E-06
-
+   1     3.81705430265841        0.150225863377863E-03    0.367222937057560E-03    0.252326569110989E-05    0.157426862398553E-06
+ 
  Total energy of the ground state (eV,AU)
-           0  -850.30891585406516       -31.248264866837857     
+                     0  -850.377887145843       -31.2507995141331     
  Total energies of excited states (eV,AU)
-           1  -846.34443163422009       -31.102572812277089     
+                     1  -846.560832843185       -31.1105254071154     
  Ground State Molecular Dipole Moment (A.U.)
                          dx              dy              dz          ftotal
-                     0.5786954E-04  0.2659200E-03 -0.4825997E-03  0.5540440E-03
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       1 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C              -0.129796
-QMMM:     2      C              -0.129796
-QMMM:     3      C              -0.129782
-QMMM:     4      C              -0.129799
-QMMM:     5      C              -0.129784
-QMMM:     6      C              -0.129784
-QMMM:     7      H               0.129794
-QMMM:     8      H               0.129799
-QMMM:     9      H               0.129828
-QMMM:    10      H               0.129781
-QMMM:    11      H               0.129781
-QMMM:    12      H               0.129758
-QMMM: Total Mulliken Charge =   -0.000000
-
+                    -0.1812700E-03  0.1143711E-02 -0.5335535E-05  0.1157999E-02
+ 
  Frequencies (eV) and Total Molecular Dipole Moments (Debye)
         Omega            dx              dy              dz          ftotal
-   1   3.964484      0.1754887E-03  0.6971755E-03 -0.1357358E-02  0.1535992E-02
-
+   1   3.817054     -0.5221246E-03  0.3054051E-02  0.2438420E-04  0.3098457E-02
+ 
  Frequencies (eV) and Total Molecular Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964484      0.6904259E-04  0.2742900E-03 -0.5340258E-03  0.6043057E-03
-
+   1   3.817054     -0.2054197E-03  0.1201557E-02  0.9593483E-05  0.1219027E-02
+ 
  Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964484      0.3120819E-04  0.4207686E-04 -0.5535754E-04  0.7621595E-04
-
+   1   3.817054     -0.1143136E-03  0.2692293E-03  0.1620521E-04  0.2929413E-03
+ 
  Frequencies (eV) Relaxed Difference Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964484      0.1117304E-04  0.8370022E-05 -0.5142613E-04  0.5328734E-04
+   1   3.817054     -0.2414971E-04  0.5784581E-04  0.1492902E-04  0.6443774E-04
+QMMM: Occupied MO Energies (eV):
+      -39.19902215      -31.50202053      -31.50168376      -23.20135146      -23.20116395
+      -17.95253820      -16.28867648      -15.48648868      -14.25794613      -14.25772805
+      -13.48556857      -11.98369505      -11.98353591       -9.78603907       -9.78567734
+QMMM: Virtual MO Energies (eV):
+        0.38466658        0.38502098        2.79972435        4.06009811        4.06029306
+        4.07061253        4.30903407        4.53668717        4.53687261        5.10359003
+        5.10383195        5.54466392        5.54494597        5.60261232        6.04030546
 QMMM:
-QMMM: SCF Energy =       22.65426238 KCal/mol,        94.78543378 KJ/mol
+QMMM: SCF Energy =       21.06371542 KCal/mol,        88.13058530 KJ/mol
 QMMM: SCF Energy = Heat of formation
 QMMM:
-QMMM:        Electronic energy =     -3254.44807047 eV (   -75050.82695307 KCal/mol)
-QMMM: QM core - QM core energy =      2404.13915461 eV (    55441.85304456 KCal/mol)
+QMMM:        Electronic energy =     -1341.95215348 eV (   -30946.75861139 KCal/mol)
+QMMM: Dielectric(COSMO) energy =        -0.07163194 eV (       -1.65190411 KCal/mol)
+QMMM: QM core - QM core energy =       491.57426633 eV (    11336.19415592 KCal/mol)
 QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
-QMMM: Total core - core energy =      2404.13915461 eV (    55441.85304456 KCal/mol)
-QMMM:             Total energy =      -850.30891585 eV (   -19608.97390851 KCal/mol)
- Begin classical propagation step #           7
+QMMM: Total core - core energy =       491.57426633 eV (    11336.19415592 KCal/mol)
+QMMM:             Total energy =      -850.37788715 eV (   -19610.56445547 KCal/mol)
+  Restoring quirality in cmdqt
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:    -0.78298641203946    0.13106167542949   -0.00034795463778
+QMMM: Atm      2:    -0.27705529929387    0.74417876701466    0.00018736330988
+QMMM: Atm      3:     0.50456503594307    0.61190225195820    0.00017509447675
+QMMM: Atm      4:     0.78282303790693   -0.13127656295373   -0.00005092163229
+QMMM: Atm      5:     0.27759781815301   -0.74326069337583   -0.00011192667672
+QMMM: Atm      6:    -0.50409833711771   -0.61243804204700    0.00001084937905
+QMMM: Atm      7:     0.56906019414510   -0.09499900549406   -0.00000786134019
+QMMM: Atm      8:     0.20163523151602   -0.54084930380915   -0.00000250390608
+QMMM: Atm      9:    -0.36714688240300   -0.44482483218838    0.00004231088448
+QMMM: Atm     10:    -0.56920121171232    0.09509020022584    0.00004610672995
+QMMM: Atm     11:    -0.20212903711883    0.54084474299595    0.00006631391611
+QMMM: Atm     12:     0.36693586202105    0.44457080224401   -0.00000687050316
+QMMM: Forces on QM atoms excited state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:     1.05197044889013   -0.17621743798400   -0.00004676877299
+QMMM: Atm      2:     0.37327462842373   -0.99925849475836    0.00003700059387
+QMMM: Atm      3:    -0.67846009715474   -0.82318697965343    0.00005469499620
+QMMM: Atm      4:    -1.05177046990730    0.17619792749711    0.00002553707150
+QMMM: Atm      5:    -0.37323149648828    0.99932168473550   -0.00000489764581
+QMMM: Atm      6:     0.67821375453101    0.82316076861880   -0.00003254374649
+QMMM: Atm      7:    -0.00389169793157    0.00065219518447    0.00000958152369
+QMMM: Atm      8:    -0.00140095190108    0.00373028539393   -0.00001108033398
+QMMM: Atm      9:     0.00254956738512    0.00308748749055   -0.00003536862516
+QMMM: Atm     10:     0.00386139244931   -0.00064561623219   -0.00001798940819
+QMMM: Atm     11:     0.00141520183843   -0.00377790866881   -0.00000163589992
+QMMM: Atm     12:    -0.00253028013476   -0.00306391162357    0.00002347024727
+QMMM: Excited State Forces on QM atoms from SCF calculation (KJ/mol)
+QMMM: Atm      1:   101.50170834344291  -17.00273141146816   -0.00451258907595
+QMMM: Atm      2:    36.01623268623759  -96.41567821765302    0.00357008458927
+QMMM: Atm      3:   -65.46273136923119  -79.42702649970362    0.00527736835045
+QMMM: Atm      4:  -101.48241292653137   17.00084889874906    0.00246400113768
+QMMM: Atm      5:   -36.01207100551995   96.42177524313185   -0.00047256024812
+QMMM: Atm      6:    65.43896245331433   79.42449746973412   -0.00314005575708
+QMMM: Atm      7:    -0.37549913006397    0.06292850285571    0.00092449462269
+QMMM: Atm      8:    -0.13517395989304    0.35992488238821   -0.00106911066714
+QMMM: Atm      9:     0.24600067939152    0.29790309709819   -0.00341262045866
+QMMM: Atm     10:     0.37257503820844   -0.06229371801363   -0.00173574805727
+QMMM: Atm     11:     0.13654889678966   -0.36451991997870   -0.00015784344173
+QMMM: Atm     12:    -0.24413970614494   -0.29562832713994    0.00226457900586
+
+  QMMM: QM Region Cartesian Coordinates (*=link atom) 
+  QMMM: QM_NO. MM_NO.  ATOM         X         Y         Z
+  QMMM:     1        1       1      -7.9894    0.6830    0.0000
+  QMMM:     2        2       2      -7.0994    1.7625   -0.0000
+  QMMM:     3        3       3      -5.7195    1.5314   -0.0000
+  QMMM:     4        4       4      -5.2297    0.2208    0.0000
+  QMMM:     5        5       5      -6.1197   -0.8586    0.0000
+  QMMM:     6        6       6      -7.4996   -0.6276   -0.0000
+  QMMM:     7        7       7      -9.0588    0.8620   -0.0000
+  QMMM:     8        8       8      -7.4790    2.7781    0.0000
+  QMMM:     9        9       9      -5.0297    2.3679    0.0000
+  QMMM:    10       10      10      -4.1603    0.0418   -0.0000
+  QMMM:    11       11      11      -5.7401   -1.8743   -0.0000
+  QMMM:    12       12      12      -8.1893   -1.4641   -0.0000
+ Begin classical propagation step #                     9
 QMMM: 
 QMMM: SCF Convergence Information
 QMMM: (*) = Pseudo Diagonalisation
 QMMM: Cycle      Energy          dE             dP              |FP-PF|
-QMMM:     1     -75048.05      -75048.05      0.1797693+309  -1.000000    
-QMMM:     2     -75048.05     -0.2515124E-04  0.5698898E-04  -1.000000    
-QMMM:     3     -75048.05     -0.2310786E-05  0.1442851E-04  -1.000000    
-QMMM:     4 *   -75048.05     -0.5934126E-06  0.3778188E-05  -1.000000    
-QMMM:     5 *   -75048.05      0.9934593E-07  0.4512757E-06  -1.000000    
-QMMM:     6 *   -75048.05     -0.1526496E-07  0.2437957E-06  -1.000000    
-QMMM:     7 *   -75048.05     -0.1701119E-07  0.1328871E-06  -1.000000    
-QMMM:     8 *   -75048.05      0.6315531E-08  0.2590907E-07  -1.000000    
-QMMM:     9     -75048.05     -0.4511094E-09  0.1623955E-07  -1.000000    
-QMMM: SCF Converged to 0.1000E-07 in:     9 Cycles 
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       0 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C               0.000000
-QMMM:     2      C               0.000000
-QMMM:     3      C               0.000000
-QMMM:     4      C               0.000000
-QMMM:     5      C               0.000000
-QMMM:     6      C               0.000000
-QMMM:     7      H               0.000000
-QMMM:     8      H               0.000000
-QMMM:     9      H               0.000000
-QMMM:    10      H               0.000000
-QMMM:    11      H               0.000000
-QMMM:    12      H               0.000000
-QMMM: Total Mulliken Charge =    0.000000
-
+QMMM:     1     -30943.89      -30943.89      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -129469.3      -129469.3           Infinity
+QMMM:     2     -30943.89     -0.4694410E-04  0.6409181E-04  -1.000000    
+QMMM: KJ/mol    -129469.3     -0.1964141E-03  0.2681601E-03
+QMMM:     3     -30943.89     -0.2808931E-05  0.1694444E-04  -1.000000    
+QMMM: KJ/mol    -129469.3     -0.1175257E-04  0.7089553E-04
+QMMM:     4 *   -30943.89     -0.3312380E-06  0.4522005E-05  -1.000000    
+QMMM: KJ/mol    -129469.3     -0.1385900E-05  0.1892007E-04
+QMMM:     5 *   -30943.89      0.9905852E-07  0.5075427E-06  -1.000000    
+QMMM: KJ/mol    -129469.3      0.4144609E-06  0.2123559E-05
+QMMM:     6 *   -30943.89     -0.6184564E-10  0.1509913E-06  -1.000000    
+QMMM: KJ/mol    -129469.3     -0.2587622E-09  0.6317477E-06
+QMMM:     7     -30943.89     -0.4001777E-10  0.6066365E-07  -1.000000    
+QMMM: KJ/mol    -129469.3     -0.1674343E-09  0.2538167E-06
+QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
   Restoring quirality in HF orbitals
  Davidson parameters
- mdflag=           2
- irflag=           0
- M4=         225
- Mx=           1
- Mj=           0
- nd=         500
- nd1=           3
- j1=           1
- istore=           1
- istore_M=           1
- Currently have            1  states
- With            1  initial guesses
- info           0
-    3.96    
+ mdflag=                     2
+ irflag=                     0
+ M4=                   225
+ Mx=                     1
+ Mj=                     0
+ nd=                   500
+ nd1=                     3
+ j1=                     1
+ istore=                     1
+ istore_M=                     1
+ 
+ Davidson batch                      1
+ So far found                      0  states
+ out of requested                      1  states
+ This batch will seek                     1  vectors
+  Entering davidson0
+ Restart Davidson with guesses from the previous step
+ Restart loop =                      0
+ Currently have                      1  states
+ With                      2  initial guesses
+ COUNT=                     1 Exp=                     2
+ nd1,nd1_old,j0,j1                     2                     0
+                     0                     1
+ info  -4624377956024713216
+    3.82    
  eigenvalues and residual norm
- Perturbed left m=           1
- info           0
-    3.96    
- eigenvalues and residual norm
- @@@@ Davidson subroutine Found vectors           1
+    1    1    0    3.816962904   3.816962904 0.410E-07 0.146E-07   Converged!
+ All vectors found after loop                     0 , Expansion 
+                     2
+ @@@@ Davidson subroutine Found vectors                     1
   i, e0(i), ferr(i), ftol0
-  1 +++    3.964411260750169     0.85E-07 0.10E-06
+  1 +++    3.816962903573916     0.56E-07 0.10E-06
  -------------------------------------------------
-
+ 
  Frequencies (eV) and Oscillator strengths (unitless)
         Omega            fx              fy              fz          ftotal
-   1     3.96441126075017        0.169424102434435E-08    0.332257293609047E-07    0.561695786418254E-16    0.349199704414186E-07
-
+   1     3.81696290357392        0.210869972461538E-08    0.126097802960117E-07    0.595888522668352E-12    0.147190759091497E-07
+ 
  Frequencies (eV) and Transition Dipole Moments (AU)
         Omega            fx              fy              fz          ftotal
-   1     3.96441126075017       -0.132074595308008E-03   -0.584882939360585E-03    0.240481833739695E-07    0.359531752059166E-06
-
+   1     3.81696290357392        0.150165250010206E-03    0.367211127236551E-03    0.252432101687115E-05    0.157399986473562E-06
+ 
  Total energy of the ground state (eV,AU)
-           0  -850.30996981776570       -31.248303599275282     
+                     0  -850.379547743465       -31.2508605399478     
  Total energies of excited states (eV,AU)
-           1  -846.34555855701558       -31.102614225910820     
+                     1  -846.562584839891       -31.1105897917833     
  Ground State Molecular Dipole Moment (A.U.)
                          dx              dy              dz          ftotal
-                     0.8993763E-04  0.3473324E-03 -0.5938916E-03  0.6938557E-03
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       1 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C              -0.129827
-QMMM:     2      C              -0.129808
-QMMM:     3      C              -0.129812
-QMMM:     4      C              -0.129830
-QMMM:     5      C              -0.129794
-QMMM:     6      C              -0.129804
-QMMM:     7      H               0.129822
-QMMM:     8      H               0.129821
-QMMM:     9      H               0.129859
-QMMM:    10      H               0.129802
-QMMM:    11      H               0.129804
-QMMM:    12      H               0.129767
-QMMM: Total Mulliken Charge =   -0.000000
-
+                    -0.1807417E-03  0.1145461E-02 -0.5238550E-05  0.1159645E-02
+ 
  Frequencies (eV) and Total Molecular Dipole Moments (Debye)
         Omega            dx              dy              dz          ftotal
-   1   3.964411      0.2611652E-03  0.9055311E-03 -0.1661001E-02  0.1909743E-02
-
+   1   3.816963     -0.5209590E-03  0.3057262E-02  0.2457467E-04  0.3101428E-02
+ 
  Frequencies (eV) and Total Molecular Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964411      0.1027503E-03  0.3562634E-03 -0.6534881E-03  0.7513508E-03
-
+   1   3.816963     -0.2049611E-03  0.1202820E-02  0.9668421E-05  0.1220196E-02
+ 
  Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964411      0.3808653E-04  0.4984349E-04 -0.6416036E-04  0.8973020E-04
-
+   1   3.816963     -0.1143801E-03  0.2687747E-03  0.1618360E-04  0.2925484E-03
+ 
  Frequencies (eV) Relaxed Difference Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964411      0.1281268E-04  0.8931060E-05 -0.5959655E-04  0.6160906E-04
+   1   3.816963     -0.2421942E-04  0.5735864E-04  0.1490697E-04  0.6402196E-04
+QMMM: Occupied MO Energies (eV):
+      -39.19552939      -31.49844700      -31.49811167      -23.19831622      -23.19812758
+      -17.94947473      -16.28489003      -15.48576536      -14.25606287      -14.25584502
+      -13.48485013      -11.98212574      -11.98196623       -9.78542551       -9.78506403
+QMMM: Virtual MO Energies (eV):
+        0.38514856        0.38550331        2.80018524        4.05882600        4.05901946
+        4.06852269        4.30610235        4.53595852        4.53614423        5.10231101
+        5.10255090        5.54398243        5.54426490        5.60328956        6.04007292
 QMMM:
-QMMM: SCF Energy =       22.62995692 KCal/mol,        94.68373975 KJ/mol
+QMMM: SCF Energy =       21.02542037 KCal/mol,        87.97035884 KJ/mol
 QMMM: SCF Energy = Heat of formation
 QMMM:
-QMMM:        Electronic energy =     -3254.32746849 eV (   -75048.04575082 KCal/mol)
-QMMM: QM core - QM core energy =      2404.01749867 eV (    55439.04753685 KCal/mol)
+QMMM:        Electronic energy =     -1341.82792946 eV (   -30943.89388134 KCal/mol)
+QMMM: Dielectric(COSMO) energy =        -0.07175893 eV (       -1.65483268 KCal/mol)
+QMMM: QM core - QM core energy =       491.44838172 eV (    11333.29113083 KCal/mol)
 QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
-QMMM: Total core - core energy =      2404.01749867 eV (    55439.04753685 KCal/mol)
-QMMM:             Total energy =      -850.30996982 eV (   -19608.99821397 KCal/mol)
- Begin classical propagation step #           8
+QMMM: Total core - core energy =       491.44838172 eV (    11333.29113083 KCal/mol)
+QMMM:             Total energy =      -850.37954774 eV (   -19610.60275051 KCal/mol)
+  Restoring quirality in cmdqt
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:    -0.76816198415769    0.12857899210795   -0.00034864911193
+QMMM: Atm      2:    -0.27179479776518    0.73008950373652    0.00018774484388
+QMMM: Atm      3:     0.49501037718618    0.60031637593477    0.00017586546184
+QMMM: Atm      4:     0.76799515646097   -0.12879261331009   -0.00005017416320
+QMMM: Atm      5:     0.27233185858093   -0.72917360593296   -0.00011113508946
+QMMM: Atm      6:    -0.49455050920035   -0.60085366422996    0.00001006693117
+QMMM: Atm      7:     0.55075005524784   -0.09193390010512   -0.00000734903427
+QMMM: Atm      8:     0.19513436645271   -0.52345114532502   -0.00000297592672
+QMMM: Atm      9:    -0.35534165479752   -0.43050882909017    0.00004181673986
+QMMM: Atm     10:    -0.55088445778747    0.09202367708915    0.00004550261116
+QMMM: Atm     11:    -0.19562514089077    0.52344348762246    0.00006569410366
+QMMM: Atm     12:     0.35513673067035    0.43026172150249   -0.00000640736599
+QMMM: Forces on QM atoms excited state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:     1.05195593349870   -0.17621407800108   -0.00004660260827
+QMMM: Atm      2:     0.37326831548201   -0.99924480773524    0.00003690495107
+QMMM: Atm      3:    -0.67844983901104   -0.82317614695466    0.00005461245029
+QMMM: Atm      4:    -1.05175554949534    0.17619614374411    0.00002550147692
+QMMM: Atm      5:    -0.37322700777539    0.99930745534108   -0.00000488828820
+QMMM: Atm      6:     0.67820489933023    0.82314873083216   -0.00003244854556
+QMMM: Atm      7:    -0.00388573505960    0.00065120982934    0.00000949689855
+QMMM: Atm      8:    -0.00139883197611    0.00372464901091   -0.00001103266905
+QMMM: Atm      9:     0.00254573171457    0.00308287561849   -0.00003531466797
+QMMM: Atm     10:     0.00385539933268   -0.00064460992283   -0.00001797427926
+QMMM: Atm     11:     0.00141307167355   -0.00377221670248   -0.00000167612372
+QMMM: Atm     12:    -0.00252638771426   -0.00305920505977    0.00002342140520
+QMMM: Excited State Forces on QM atoms from SCF calculation (KJ/mol)
+QMMM: Atm      1:   101.50030779361772  -17.00240721604416   -0.00449655630330
+QMMM: Atm      2:    36.01562356801546  -96.41435759478738    0.00356085628100
+QMMM: Atm      3:   -65.46174158942259  -79.42598128267086    0.00526940372413
+QMMM: Atm      4:  -101.48097329740028   17.00067678937366    0.00246056671638
+QMMM: Atm      5:   -36.01163790207388   96.42040228836440   -0.00047165735831
+QMMM: Atm      6:    65.43810803957375   79.42333597711817   -0.00313087008392
+QMMM: Atm      7:    -0.37492378909996    0.06283342867425    0.00091632937771
+QMMM: Atm      8:    -0.13496941421706    0.35938104343657   -0.00106451161017
+QMMM: Atm      9:     0.24563058618798    0.29745811036532   -0.00340741427895
+QMMM: Atm     10:     0.37199677902182   -0.06219662201704   -0.00173428830966
+QMMM: Atm     11:     0.13634336309383   -0.36397071794894   -0.00016172452504
+QMMM: Atm     12:    -0.24376413729676   -0.29517420386397    0.00225986637014
+
+  QMMM: QM Region Cartesian Coordinates (*=link atom) 
+  QMMM: QM_NO. MM_NO.  ATOM         X         Y         Z
+  QMMM:     1        1       1      -7.9894    0.6830    0.0000
+  QMMM:     2        2       2      -7.0994    1.7625   -0.0000
+  QMMM:     3        3       3      -5.7195    1.5314   -0.0000
+  QMMM:     4        4       4      -5.2296    0.2208    0.0000
+  QMMM:     5        5       5      -6.1197   -0.8587    0.0000
+  QMMM:     6        6       6      -7.4996   -0.6276   -0.0000
+  QMMM:     7        7       7      -9.0593    0.8621   -0.0000
+  QMMM:     8        8       8      -7.4792    2.7785    0.0000
+  QMMM:     9        9       9      -5.0294    2.3683    0.0000
+  QMMM:    10       10      10      -4.1598    0.0417   -0.0000
+  QMMM:    11       11      11      -5.7399   -1.8747   -0.0000
+  QMMM:    12       12      12      -8.1897   -1.4645   -0.0000
+ Begin classical propagation step #                    10
 QMMM: 
 QMMM: SCF Convergence Information
 QMMM: (*) = Pseudo Diagonalisation
 QMMM: Cycle      Energy          dE             dP              |FP-PF|
-QMMM:     1     -75044.79      -75044.79      0.1797693+309  -1.000000    
-QMMM:     2     -75044.79     -0.3134614E-04  0.6436794E-04  -1.000000    
-QMMM:     3     -75044.79     -0.2689456E-05  0.1618429E-04  -1.000000    
-QMMM:     4 *   -75044.79     -0.6703340E-06  0.4159933E-05  -1.000000    
-QMMM:     5 *   -75044.79      0.1058797E-06  0.6053345E-06  -1.000000    
-QMMM:     6 *   -75044.79     -0.2191518E-07  0.2886073E-06  -1.000000    
-QMMM:     7 *   -75044.79     -0.2607703E-07  0.1495865E-06  -1.000000    
-QMMM:     8 *   -75044.79      0.8760253E-08  0.2103614E-07  -1.000000    
-QMMM:     9     -75044.79     -0.8876668E-09  0.1327854E-07  -1.000000    
-QMMM: SCF Converged to 0.1000E-07 in:     9 Cycles 
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       0 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C               0.000000
-QMMM:     2      C               0.000000
-QMMM:     3      C               0.000000
-QMMM:     4      C               0.000000
-QMMM:     5      C               0.000000
-QMMM:     6      C               0.000000
-QMMM:     7      H               0.000000
-QMMM:     8      H               0.000000
-QMMM:     9      H               0.000000
-QMMM:    10      H               0.000000
-QMMM:    11      H               0.000000
-QMMM:    12      H               0.000000
-QMMM: Total Mulliken Charge =    0.000000
-
+QMMM:     1     -30940.72      -30940.72      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -129456.0      -129456.0           Infinity
+QMMM:     2     -30940.72     -0.5719498E-04  0.7096417E-04  -1.000000    
+QMMM: KJ/mol    -129456.0     -0.2393038E-03  0.2969141E-03
+QMMM:     3     -30940.72     -0.3422734E-05  0.1876903E-04  -1.000000    
+QMMM: KJ/mol    -129456.0     -0.1432072E-04  0.7852961E-04
+QMMM:     4 *   -30940.72     -0.4033427E-06  0.5012646E-05  -1.000000    
+QMMM: KJ/mol    -129456.0     -0.1687586E-05  0.2097291E-04
+QMMM:     5 *   -30940.72      0.1205444E-06  0.5583937E-06  -1.000000    
+QMMM: KJ/mol    -129456.0      0.5043579E-06  0.2336319E-05
+QMMM:     6 *   -30940.72     -0.9094947E-10  0.1646900E-06  -1.000000    
+QMMM: KJ/mol    -129456.0     -0.3805326E-09  0.6890630E-06
+QMMM:     7     -30940.72     -0.2182787E-10  0.6437483E-07  -1.000000    
+QMMM: KJ/mol    -129456.0     -0.9132782E-10  0.2693443E-06
+QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
   Restoring quirality in HF orbitals
  Davidson parameters
- mdflag=           2
- irflag=           0
- M4=         225
- Mx=           1
- Mj=           0
- nd=         500
- nd1=           3
- j1=           1
- istore=           1
- istore_M=           1
- Currently have            1  states
- With            1  initial guesses
- info           0
-    3.96    
+ mdflag=                     2
+ irflag=                     0
+ M4=                   225
+ Mx=                     1
+ Mj=                     0
+ nd=                   500
+ nd1=                     3
+ j1=                     1
+ istore=                     1
+ istore_M=                     1
+ 
+ Davidson batch                      1
+ So far found                      0  states
+ out of requested                      1  states
+ This batch will seek                     1  vectors
+  Entering davidson0
+ Restart Davidson with guesses from the previous step
+ Restart loop =                      0
+ Currently have                      1  states
+ With                      2  initial guesses
+                     2                     1  7.257930913244119E-015
+ COUNT=                     1 Exp=                     2
+ nd1,nd1_old,j0,j1                     2                     0
+                     0                     1
+ info  -4624372333912522752
+    3.82    
  eigenvalues and residual norm
- Perturbed left m=           1
- info           0
-    3.96    
- eigenvalues and residual norm
- Perturbed left m=           1
- info           0
-    3.96    
- eigenvalues and residual norm
- @@@@ Davidson subroutine Found vectors           1
+    1    1    0    3.816857936   3.816857936 0.570E-07 0.223E-07   Converged!
+ All vectors found after loop                     0 , Expansion 
+                     2
+ @@@@ Davidson subroutine Found vectors                     1
   i, e0(i), ferr(i), ftol0
-  1 +++    3.964316694217844     0.25E-07 0.10E-06
+  1 +++    3.816857935749849     0.79E-07 0.10E-06
  -------------------------------------------------
-
+ 
  Frequencies (eV) and Oscillator strengths (unitless)
         Omega            fx              fy              fz          ftotal
-   1     3.96431669421784        0.271755289148595E-08    0.476354938744028E-07    0.973939149973850E-16    0.503530468632826E-07
-
+   1     3.81685793574985        0.210681590782927E-08    0.126090618131354E-07    0.595737473023761E-12    0.147164734584377E-07
+ 
  Frequencies (eV) and Transition Dipole Moments (AU)
         Omega            fx              fy              fz          ftotal
-   1     3.96431669421784       -0.167273010986350E-03   -0.700329157035014E-03    0.316666982417187E-07    0.518441189400593E-06
-
+   1     3.81685793574985        0.150100223526579E-03    0.367205714746692E-03    0.252403576222739E-05    0.157376484801887E-06
+ 
  Total energy of the ground state (eV,AU)
-           0  -850.31115563666981       -31.248347177300289     
+                     0  -850.381316955194       -31.2509255572558     
  Total energies of excited states (eV,AU)
-           1  -846.34683894245200       -31.102661279190517     
+                     1  -846.564459019444       -31.1106586665863     
  Ground State Molecular Dipole Moment (A.U.)
                          dx              dy              dz          ftotal
-                     0.1223981E-03  0.4008283E-03 -0.6797652E-03  0.7985770E-03
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       1 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C              -0.129870
-QMMM:     2      C              -0.129819
-QMMM:     3      C              -0.129839
-QMMM:     4      C              -0.129867
-QMMM:     5      C              -0.129806
-QMMM:     6      C              -0.129827
-QMMM:     7      H               0.129853
-QMMM:     8      H               0.129842
-QMMM:     9      H               0.129896
-QMMM:    10      H               0.129824
-QMMM:    11      H               0.129837
-QMMM:    12      H               0.129778
-QMMM: Total Mulliken Charge =   -0.000000
-
+                    -0.1802073E-03  0.1147331E-02 -0.5126460E-05  0.1161409E-02
+ 
  Frequencies (eV) and Total Molecular Dipole Moments (Debye)
         Omega            dx              dy              dz          ftotal
-   1   3.964317      0.3568927E-03  0.1053169E-02 -0.1900847E-02  0.2202216E-02
-
+   1   3.816858     -0.5198168E-03  0.3060788E-02  0.2479953E-04  0.3104714E-02
+ 
  Frequencies (eV) and Total Molecular Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964317      0.1404124E-03  0.4143485E-03 -0.7478509E-03  0.8664187E-03
-
+   1   3.816858     -0.2045117E-03  0.1204207E-02  0.9756889E-05  0.1221489E-02
+ 
  Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964317      0.5169676E-04  0.6256324E-04 -0.7381157E-04  0.1097035E-03
-
+   1   3.816858     -0.1144606E-03  0.2683241E-03  0.1616048E-04  0.2921647E-03
+ 
  Frequencies (eV) Relaxed Difference Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.964317      0.1801431E-04  0.1352025E-04 -0.6808575E-04  0.7171458E-04
+   1   3.816858     -0.2430443E-04  0.5687559E-04  0.1488335E-04  0.6361644E-04
+QMMM: Occupied MO Energies (eV):
+      -39.19165317      -31.49449419      -31.49416042      -23.19496284      -23.19477294
+      -17.94608423      -16.28071299      -15.48496213      -14.25397959      -14.25376196
+      -13.48404852      -11.98039191      -11.98023194       -9.78474405       -9.78438285
+QMMM: Virtual MO Energies (eV):
+        0.38567913        0.38603429        2.80069134        4.05741709        4.05760891
+        4.06620979        4.30286434        4.53514244        4.53532845        5.10090566
+        5.10114335        5.54323163        5.54351458        5.60403663        6.03981609
 QMMM:
-QMMM: SCF Energy =       22.60261075 KCal/mol,        94.56932337 KJ/mol
+QMMM: SCF Energy =       20.98462058 KCal/mol,        87.79965252 KJ/mol
 QMMM: SCF Energy = Heat of formation
 QMMM:
-QMMM:        Electronic energy =     -3254.18640922 eV (   -75044.79278299 KCal/mol)
-QMMM: QM core - QM core energy =      2403.87525358 eV (    55435.76722285 KCal/mol)
+QMMM:        Electronic energy =     -1341.69036940 eV (   -30940.72160871 KCal/mol)
+QMMM: Dielectric(COSMO) energy =        -0.07189945 eV (       -1.65807332 KCal/mol)
+QMMM: QM core - QM core energy =       491.30905244 eV (    11330.07805840 KCal/mol)
 QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
-QMMM: Total core - core energy =      2403.87525358 eV (    55435.76722285 KCal/mol)
-QMMM:             Total energy =      -850.31115564 eV (   -19609.02556014 KCal/mol)
- Begin classical propagation step #           9
-QMMM: 
-QMMM: SCF Convergence Information
-QMMM: (*) = Pseudo Diagonalisation
-QMMM: Cycle      Energy          dE             dP              |FP-PF|
-QMMM:     1     -75040.97      -75040.97      0.1797693+309  -1.000000    
-QMMM:     2     -75040.97     -0.4164511E-04  0.7661643E-04  -1.000000    
-QMMM:     3     -75040.97     -0.3463399E-05  0.1937988E-04  -1.000000    
-QMMM:     4 *   -75040.97     -0.8343632E-06  0.5005918E-05  -1.000000    
-QMMM:     5 *   -75040.97      0.1302251E-06  0.7198863E-06  -1.000000    
-QMMM:     6 *   -75040.97     -0.2764864E-07  0.3590501E-06  -1.000000    
-QMMM:     7 *   -75040.97     -0.3483729E-07  0.1894710E-06  -1.000000    
-QMMM:     8 *   -75040.97      0.1263106E-07  0.3249108E-07  -1.000000    
-QMMM:     9 *   -75040.97     -0.1004082E-08  0.1860401E-07  -1.000000    
-QMMM:    10     -75040.97     -0.1527951E-08  0.1715697E-07  -1.000000    
-QMMM: SCF Converged to 0.1000E-07 in:    10 Cycles 
+QMMM: Total core - core energy =       491.30905244 eV (    11330.07805840 KCal/mol)
+QMMM:             Total energy =      -850.38131696 eV (   -19610.64355030 KCal/mol)
+  Restoring quirality in cmdqt
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:    -0.75187771503730    0.12585198465546   -0.00034961961325
+QMMM: Atm      2:    -0.26601655522294    0.71461280913681    0.00018832683083
+QMMM: Atm      3:     0.48451496253317    0.58758994837211    0.00017666074088
+QMMM: Atm      4:     0.75170727074127   -0.12606407578506   -0.00004944877940
+QMMM: Atm      5:     0.26654762951346   -0.71369954565688   -0.00011024400296
+QMMM: Atm      6:    -0.48406277032259   -0.58812864919937    0.00000930570568
+QMMM: Atm      7:     0.53057129672215   -0.08855601404920   -0.00000677674479
+QMMM: Atm      8:     0.18797009180952   -0.50427753681756   -0.00000350490653
+QMMM: Atm      9:    -0.34233166757028   -0.41473189997081    0.00004130636179
+QMMM: Atm     10:    -0.53069840557348    0.08864424408946    0.00004483207399
+QMMM: Atm     11:    -0.18845753304374    0.50426639388077    0.00006501481165
+QMMM: Atm     12:     0.34213339545078    0.41449234134428   -0.00000585247788
+QMMM: Forces on QM atoms excited state calculation (eV/A)
+QMMM: state=  1  0
+QMMM: Atm      1:     1.05193931669872   -0.17621028142692   -0.00004640935592
+QMMM: Atm      2:     0.37326115785744   -0.99922913903388    0.00003679340015
+QMMM: Atm      3:    -0.67843815253283   -0.82316370606190    0.00005455241361
+QMMM: Atm      4:    -1.05173849700555    0.17619405665218    0.00002550690017
+QMMM: Atm      5:    -0.37322180454893    0.99929119458768   -0.00000488337280
+QMMM: Atm      6:     0.67819471153715    0.82313500372678   -0.00003237430808
+QMMM: Atm      7:    -0.00387914359608    0.00065011934261    0.00000941949996
+QMMM: Atm      8:    -0.00139648873659    0.00371841646753   -0.00001099413913
+QMMM: Atm      9:     0.00254149076332    0.00307777501635   -0.00003527141324
+QMMM: Atm     10:     0.00384877975419   -0.00064349980400   -0.00001796966636
+QMMM: Atm     11:     0.00141071846954   -0.00376593084636   -0.00000172853002
+QMMM: Atm     12:    -0.00252208866036   -0.00305400862008    0.00002335857167
+QMMM: Excited State Forces on QM atoms from SCF calculation (KJ/mol)
+QMMM: Atm      1:   101.49870448471641  -17.00204089514212   -0.00447790992028
+QMMM: Atm      2:    36.01493294868976  -96.41284576528916    0.00355009304156
+QMMM: Atm      3:   -65.46061399358175  -79.42478089546451    0.00526361095149
+QMMM: Atm      4:  -101.47932794999808   17.00047541166728    0.00246108999026
+QMMM: Atm      5:   -36.01113585719705   96.41883333340947   -0.00047118308511
+QMMM: Atm      6:    65.43712504769994   79.42201148682699   -0.00312370711540
+QMMM: Atm      7:    -0.37428779708272    0.06272821063679    0.00090886140234
+QMMM: Atm      8:    -0.13474332154077    0.35877968262784   -0.00106079396499
+QMMM: Atm      9:     0.24522138857425    0.29696596742403   -0.00340324075013
+QMMM: Atm     10:     0.37135807426886   -0.06208950973230   -0.00173384322322
+QMMM: Atm     11:     0.13611630897137   -0.36336421314112   -0.00016678106361
+QMMM: Atm     12:    -0.24334933352030   -0.29467281382316    0.00225380373707
 
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       0 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C               0.000000
-QMMM:     2      C               0.000000
-QMMM:     3      C               0.000000
-QMMM:     4      C               0.000000
-QMMM:     5      C               0.000000
-QMMM:     6      C               0.000000
-QMMM:     7      H               0.000000
-QMMM:     8      H               0.000000
-QMMM:     9      H               0.000000
-QMMM:    10      H               0.000000
-QMMM:    11      H               0.000000
-QMMM:    12      H               0.000000
-QMMM: Total Mulliken Charge =    0.000000
-
-  Restoring quirality in HF orbitals
- Davidson parameters
- mdflag=           2
- irflag=           0
- M4=         225
- Mx=           1
- Mj=           0
- nd=         500
- nd1=           3
- j1=           1
- istore=           1
- istore_M=           1
- Currently have            1  states
- With            1  initial guesses
- info           0
-    3.96    
- eigenvalues and residual norm
- Perturbed left m=           1
- info           0
-    3.96    
- eigenvalues and residual norm
- @@@@ Davidson subroutine Found vectors           1
-  i, e0(i), ferr(i), ftol0
-  1 +++    3.964207223253757     0.85E-07 0.10E-06
- -------------------------------------------------
-
- Frequencies (eV) and Oscillator strengths (unitless)
-        Omega            fx              fy              fz          ftotal
-   1     3.96420722325376        0.261753952161391E-08    0.602100979207602E-07    0.340807438439235E-15    0.628276377831815E-07
-
- Frequencies (eV) and Transition Dipole Moments (AU)
-        Omega            fx              fy              fz          ftotal
-   1     3.96420722325376       -0.164168372197982E-03   -0.787367591267805E-03    0.592375926101666E-07    0.646898981718092E-06
-
- Total energy of the ground state (eV,AU)
-           0  -850.31251413002246       -31.248397100991916     
- Total energies of excited states (eV,AU)
-           1  -846.34830690676870       -31.102715225864401     
- Ground State Molecular Dipole Moment (A.U.)
-                         dx              dy              dz          ftotal
-                     0.1469235E-03  0.4563296E-03 -0.7673757E-03  0.9048142E-03
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       1 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C              -0.129909
-QMMM:     2      C              -0.129843
-QMMM:     3      C              -0.129875
-QMMM:     4      C              -0.129895
-QMMM:     5      C              -0.129829
-QMMM:     6      C              -0.129860
-QMMM:     7      H               0.129886
-QMMM:     8      H               0.129868
-QMMM:     9      H               0.129939
-QMMM:    10      H               0.129850
-QMMM:    11      H               0.129872
-QMMM:    12      H               0.129796
-QMMM: Total Mulliken Charge =   -0.000000
-
- Frequencies (eV) and Total Molecular Dipole Moments (Debye)
-        Omega            dx              dy              dz          ftotal
-   1   3.964207      0.4186530E-03  0.1182384E-02 -0.2131870E-02  0.2473494E-02
-
- Frequencies (eV) and Total Molecular Dipole Moments (AU)
-        Omega            dx              dy              dz          ftotal
-   1   3.964207      0.1647108E-03  0.4651858E-03 -0.8387424E-03  0.9731476E-03
-
- Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
-        Omega            dx              dy              dz          ftotal
-   1   3.964207      0.5427700E-04  0.5734683E-04 -0.7658351E-04  0.1099986E-03
-
- Frequencies (eV) Relaxed Difference Dipole Moments (AU)
-        Omega            dx              dy              dz          ftotal
-   1   3.964207      0.1778734E-04  0.8856240E-05 -0.7136667E-04  0.7408120E-04
-QMMM:
-QMMM: SCF Energy =       22.57128253 KCal/mol,        94.43824612 KJ/mol
-QMMM: SCF Energy = Heat of formation
-QMMM:
-QMMM:        Electronic energy =     -3254.02054616 eV (   -75040.96781496 KCal/mol)
-QMMM: QM core - QM core energy =      2403.70803203 eV (    55431.91092660 KCal/mol)
-QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
-QMMM: Total core - core energy =      2403.70803203 eV (    55431.91092660 KCal/mol)
-QMMM:             Total energy =      -850.31251413 eV (   -19609.05688835 KCal/mol)
- Begin classical propagation step #          10
-QMMM: 
-QMMM: SCF Convergence Information
-QMMM: (*) = Pseudo Diagonalisation
-QMMM: Cycle      Energy          dE             dP              |FP-PF|
-QMMM:     1     -75036.74      -75036.74      0.1797693+309  -1.000000    
-QMMM:     2     -75036.74     -0.5110590E-04  0.8116280E-04  -1.000000    
-QMMM:     3     -75036.74     -0.3935464E-05  0.2058032E-04  -1.000000    
-QMMM:     4 *   -75036.74     -0.8445204E-06  0.5300579E-05  -1.000000    
-QMMM:     5 *   -75036.74      0.1440931E-06  0.9166595E-06  -1.000000    
-QMMM:     6 *   -75036.74     -0.2438901E-07  0.4674883E-06  -1.000000    
-QMMM:     7 *   -75036.74     -0.3249443E-07  0.2508984E-06  -1.000000    
-QMMM:     8 *   -75036.74      0.1271837E-07  0.3925863E-07  -1.000000    
-QMMM:     9 *   -75036.74     -0.8585630E-09  0.1914672E-07  -1.000000    
-QMMM:    10     -75036.74     -0.1251465E-08  0.2629244E-07  -1.000000    
-QMMM: SCF Converged to 0.1000E-07 in:    10 Cycles 
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       0 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C               0.000000
-QMMM:     2      C               0.000000
-QMMM:     3      C               0.000000
-QMMM:     4      C               0.000000
-QMMM:     5      C               0.000000
-QMMM:     6      C               0.000000
-QMMM:     7      H               0.000000
-QMMM:     8      H               0.000000
-QMMM:     9      H               0.000000
-QMMM:    10      H               0.000000
-QMMM:    11      H               0.000000
-QMMM:    12      H               0.000000
-QMMM: Total Mulliken Charge =    0.000000
-
-  Restoring quirality in HF orbitals
- Davidson parameters
- mdflag=           2
- irflag=           0
- M4=         225
- Mx=           1
- Mj=           0
- nd=         500
- nd1=           3
- j1=           1
- istore=           1
- istore_M=           1
- Currently have            1  states
- With            1  initial guesses
- info           0
-    3.96    
- eigenvalues and residual norm
- Perturbed left m=           1
- info           0
-    3.96    
- eigenvalues and residual norm
- @@@@ Davidson subroutine Found vectors           1
-  i, e0(i), ferr(i), ftol0
-  1 +++    3.964109734596224     0.92E-07 0.10E-06
- -------------------------------------------------
-
- Frequencies (eV) and Oscillator strengths (unitless)
-        Omega            fx              fy              fz          ftotal
-   1     3.96410973459622        0.274646834936359E-08    0.800912392183062E-07    0.748059620243386E-15    0.828377083157294E-07
-
- Frequencies (eV) and Transition Dipole Moments (AU)
-        Omega            fx              fy              fz          ftotal
-   1     3.96410973459622       -0.168164959716539E-03   -0.908114719218928E-03    0.877639809627703E-07    0.852951804641054E-06
-
- Total energy of the ground state (eV,AU)
-           0  -850.31401175116935       -31.248452137533810     
- Total energies of excited states (eV,AU)
-           1  -846.34990201657308       -31.102773845047064     
- Ground State Molecular Dipole Moment (A.U.)
-                         dx              dy              dz          ftotal
-                     0.1618545E-03  0.5117346E-03 -0.8390593E-03  0.9960369E-03
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       1 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      C              -0.129963
-QMMM:     2      C              -0.129868
-QMMM:     3      C              -0.129908
-QMMM:     4      C              -0.129933
-QMMM:     5      C              -0.129852
-QMMM:     6      C              -0.129892
-QMMM:     7      H               0.129923
-QMMM:     8      H               0.129900
-QMMM:     9      H               0.129984
-QMMM:    10      H               0.129878
-QMMM:    11      H               0.129912
-QMMM:    12      H               0.129818
-QMMM: Total Mulliken Charge =   -0.000000
-
- Frequencies (eV) and Total Molecular Dipole Moments (Debye)
-        Omega            dx              dy              dz          ftotal
-   1   3.964110      0.4620481E-03  0.1324061E-02 -0.2353480E-02  0.2739615E-02
-
- Frequencies (eV) and Total Molecular Dipole Moments (AU)
-        Omega            dx              dy              dz          ftotal
-   1   3.964110      0.1817837E-03  0.5209259E-03 -0.9259303E-03  0.1077848E-02
-
- Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
-        Omega            dx              dy              dz          ftotal
-   1   3.964110      0.5954165E-04  0.6267608E-04 -0.9390833E-04  0.1276412E-03
-
- Frequencies (eV) Relaxed Difference Dipole Moments (AU)
-        Omega            dx              dy              dz          ftotal
-   1   3.964110      0.1992924E-04  0.9191294E-05 -0.8687108E-04  0.8960044E-04
-QMMM:
-QMMM: SCF Energy =       22.53674589 KCal/mol,        94.29374481 KJ/mol
-QMMM: SCF Energy = Heat of formation
-QMMM:
-QMMM:        Electronic energy =     -3253.83724722 eV (   -75036.74075810 KCal/mol)
-QMMM: QM core - QM core energy =      2403.52323547 eV (    55427.64933311 KCal/mol)
-QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
-QMMM: Total core - core energy =      2403.52323547 eV (    55427.64933311 KCal/mol)
-QMMM:             Total energy =      -850.31401175 eV (   -19609.09142499 KCal/mol)
-
+  QMMM: QM Region Cartesian Coordinates (*=link atom) 
+  QMMM: QM_NO. MM_NO.  ATOM         X         Y         Z
+  QMMM:     1        1       1      -7.9895    0.6830    0.0000
+  QMMM:     2        2       2      -7.0994    1.7625   -0.0000
+  QMMM:     3        3       3      -5.7195    1.5314   -0.0000
+  QMMM:     4        4       4      -5.2296    0.2208    0.0000
+  QMMM:     5        5       5      -6.1197   -0.8587    0.0000
+  QMMM:     6        6       6      -7.4996   -0.6276   -0.0000
+  QMMM:     7        7       7      -9.0598    0.8622   -0.0000
+  QMMM:     8        8       8      -7.4793    2.7791    0.0000
+  QMMM:     9        9       9      -5.0291    2.3688    0.0000
+  QMMM:    10       10      10      -4.1592    0.0416   -0.0000
+  QMMM:    11       11      11      -5.7397   -1.8753   -0.0000
+  QMMM:    12       12      12      -8.1900   -1.4649   -0.0000
+ 
  |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|
- | MD normal termination at   Tue Oct 25 14:10:18 MDT 2016   |
- | MD total CPU time	         0.15000     seconds |
+ | MD normal termination at   Tue Nov  8 10:01:24 MST 2016   |
+ | MD total CPU time	         0.18000     seconds |
  |      0 days  0 hours  0 minutes  0 seconds     |
-
+ 
   SQM (ground state) took overall [s]:
        0.110E-01
   Davidson (excited states) took overall [s]:
-       0.377E-01
+       0.300E-01
   deriv (adiabatic forces) took overall [s]:
-       0.785E-01
+       0.780E-01
   nacT (NA derivatives) took overall [s]:
         0.00    
  |________________________________________________|
-
+ 

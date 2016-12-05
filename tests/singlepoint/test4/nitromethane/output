@@ -1,42 +1,42 @@
-
+ 
  |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|
- | MD execution started at    Tue Oct 25 13:53:55 MDT 2016   |
- | Computer:  Linux t1248924 x86_64               |
+ | MD execution started at    Tue Nov  8 10:01:19 MST 2016   |
+ | Computer:  Linux wc-fe1.lanl.gov x86_64        |
  |________________________________________________|
-
- rnd_seed=           1
+ 
+ rnd_seed=                     1
  !!!!!!-----MD INPUT-----!!!!!!
-
- Excited state MD,      state=           3
- Number of states to propagate           3
- Initial count for out files              0
+ 
+ Excited state MD,      state=                     3
+ Number of states to propagate                     3
+ Initial count for out files                        0
  MD using Langevin 
- with friction coefficient [1/ps]=   4.8377600000000000E-002
- Starting time, fs           0.0000000000000000     
- Time step, fs		        0.10000000000000001     
- Number of classical steps (CS)            0
- Quantum steps/per CS                    0
- Displacement for deriv. [A]      1.0000000000000001E-005
- Langevin thermostat dynamics, ither=           1
- Temperature, K                  300.00000000000000     
- Bath relaxation constant       0.40000000000000002     
+ with friction coefficient [1/ps]=  4.837760000000000E-002
+ Starting time, fs          0.000000000000000E+000
+ Time step, fs		        0.100000000000000     
+ Number of classical steps (CS)                      0
+ Quantum steps/per CS                              0
+ Displacement for deriv. [A]     1.000000000000000E-005
+ Langevin thermostat dynamics, ither=                     1
+ Temperature, K                  300.000000000000     
+ Bath relaxation constant       0.400000000000000     
  Equilibrated dynamics
- Number of steps per degree K           100
- Number of steps to write data            1
- Number of steps to write coords           1
- Friction coefficient [1/ps]      4.8377600000000002E-005
- Seed for random generator               1
- NAESMD verbosity,            0
- MD will use analytic deriv,  ideriv=           1
+ Number of steps per degree K                     100
+ Number of steps to write data                      1
+ Number of steps to write coords                     1
+ Friction coefficient [1/ps]     4.837760000000000E-005
+ Seed for random generator                         1
+ NAESMD verbosity,                      3
+ MD will use analytic deriv,  ideriv=                     1
  Cartesian coordinates are used
  Allocating initial naesmd_module variables
  Allocating md_module initial variables
  Allocating variables
- Allocating naesmd_module variables           7           3
- Allocating md_module variables           7
+ Allocating naesmd_module variables                     7                     3
+ Allocating md_module variables                     7
   Finish reading coordinates 
  Rescaling velocity
-
+ 
  Initial Geometry
     7        -3.652440    3.218510    0.000470
     6        -4.009990    1.820210   -0.001090
@@ -70,7 +70,7 @@ QMMM: RHF CALCULATION, NO. OF DOUBLY OCCUPIED LEVELS = 12
 | QMMM: Error matrix |FP-PF|         :  0.1D+00 au
 | QMMM: Density matrix change        :  0.5D-05
 | QMMM: Maximum number of SCF cycles :      300
-
+ 
 | QMMM: *** Diagonalization Routine Information ***
 | QMMM: Pseudo diagonalizations are allowed.
 | QMMM: Auto diagonalization routine selection is disabled.
@@ -90,99 +90,297 @@ QMMM: RHF CALCULATION, NO. OF DOUBLY OCCUPIED LEVELS = 12
   RESULTS
 --------------------------------------------------------------------------------
 
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       0 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      N               0.000000
-QMMM:     2      C               0.000000
-QMMM:     3      H               0.000000
-QMMM:     4      H               0.000000
-QMMM:     5      H               0.000000
-QMMM:     6      O               0.000000
-QMMM:     7      O               0.000000
-QMMM: Total Mulliken Charge =    0.000000
-
+QMMM: Allocating qmmmrijdata array as     11 x      0
+QMMM: to hold min npairs of          0 and nquant per thread of        7
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -57843.91      -57843.91      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -242018.9      -242018.9           Infinity
+QMMM:     2     -61583.25      -3739.338      0.5190842      -1.000000    
+QMMM: KJ/mol    -257664.3      -15645.39       2.171848    
+QMMM:     3     -61660.96      -77.71725      0.2143047      -1.000000    
+QMMM: KJ/mol    -257989.5      -325.1690      0.8966508    
+QMMM:     4     -61668.07      -7.104232      0.4957920E-01  -1.000000    
+QMMM: KJ/mol    -258019.2      -29.72411      0.2074394    
+QMMM:     5 *   -61667.28      0.7889670      0.1143536E-01  -1.000000    
+QMMM: KJ/mol    -258015.9       3.301038      0.4784553E-01
+QMMM:     6 *   -61667.38     -0.1025902      0.7363937E-02  -1.000000    
+QMMM: KJ/mol    -258016.3     -0.4292373      0.3081071E-01
+QMMM:     7 *   -61667.49     -0.1076224      0.4562082E-02  -1.000000    
+QMMM: KJ/mol    -258016.8     -0.4502922      0.1908775E-01
+QMMM:     8 *   -61667.43      0.6175613E-01  0.5244888E-03  -1.000000    
+QMMM: KJ/mol    -258016.5      0.2583877      0.2194461E-02
+QMMM:     9 *   -61667.43     -0.1671167E-03  0.2402462E-03  -1.000000    
+QMMM: KJ/mol    -258016.5     -0.6992164E-03  0.1005190E-02
+QMMM:    10 *   -61667.43     -0.7574723E-04  0.1012093E-03  -1.000000    
+QMMM: KJ/mol    -258016.5     -0.3169264E-03  0.4234599E-03
+QMMM:    11 *   -61667.43      0.3153337E-04  0.2995700E-04  -1.000000    
+QMMM: KJ/mol    -258016.5      0.1319356E-03  0.1253401E-03
+QMMM:    12 *   -61667.43     -0.3447058E-06  0.1539647E-04  -1.000000    
+QMMM: KJ/mol    -258016.5     -0.1442249E-05  0.6441884E-04
+QMMM:    13 *   -61667.43     -0.4802423E-06  0.9612689E-05  -1.000000    
+QMMM: KJ/mol    -258016.5     -0.2009334E-05  0.4021949E-04
+QMMM:    14 *   -61667.43      0.2895176E-06  0.7456654E-06  -1.000000    
+QMMM: KJ/mol    -258016.5      0.1211342E-05  0.3119864E-05
+QMMM:    15 *   -61667.43     -0.2037268E-09  0.3792357E-06  -1.000000    
+QMMM: KJ/mol    -258016.5     -0.8523930E-09  0.1586722E-05
+QMMM:    16     -61667.43     -0.7275958E-10  0.1633149E-06  -1.000000    
+QMMM: KJ/mol    -258016.5     -0.3044261E-09  0.6833096E-06
+QMMM: SCF Converged to 0.1000E-07 in:    16 Cycles 
+ Davidson parameters
+ mdflag=                     2
+ irflag=                     0
+ M4=                    84
+ Mx=                     3
+ Mj=                     0
+ nd=                   500
+ nd1=                     5
+ j1=                     3
+ istore=                     0
+ istore_M=                     0
+ 
+ Davidson batch                      1
+ So far found                      0  states
+ out of requested                      3  states
+ This batch will seek                     3  vectors
+  Entering davidson0
+ ++ START                      1                    78
+ ++ START                      2                    71
+ ++ START                      3                    64
+ ++ START                      4                    79
+ ++ START                      5                    72
+ Check expansion to expansion
+ COUNT=                     1 Exp=                     5
+ nd1,nd1_old,j0,j1                     5                     0
+                     0                     3
+ info                     0
+    3.73       3.83       5.28    
+ eigenvalues and residual norm
+    1    0    2    3.730055979   3.730055979  1.44     0.471    
+    2    0    4    3.826455005   3.826455005  1.26     0.287    
+    3    0    6    5.280906264   5.280906264  2.00     0.235    
+ New perturbed m=                     6
+ Perturbed left m=                     6
+ COUNT=                     2 Exp=                    11
+ nd1,nd1_old,j0,j1                    11                     5
+                     0                     3
+ info                     0
+    3.58       3.65       4.90    
+ eigenvalues and residual norm
+    1    0    2    3.579430327   3.579430327 0.703E-01 0.118E-01
+    2    0    4    3.653207634   3.653207634 0.234E-01 0.190E-02
+    3    0    6    4.903097557   4.903097557 0.545E-01 0.759E-02
+ New perturbed m=                     6
+ Perturbed left m=                     6
+ COUNT=                     3 Exp=                    17
+ nd1,nd1_old,j0,j1                    17                    11
+                     0                     3
+ info                     0
+    3.57       3.65       4.90    
+ eigenvalues and residual norm
+    1    0    2    3.574345538   3.574345538 0.129E-02 0.281E-03
+    2    0    4    3.650732510   3.650732510 0.110E-02 0.448E-04
+    3    0    6    4.899951786   4.899951786 0.799E-03 0.757E-04
+ New perturbed m=                     6
+ Perturbed left m=                     6
+ COUNT=                     4 Exp=                    23
+ nd1,nd1_old,j0,j1                    23                    17
+                     0                     3
+ info                     0
+    3.57       3.65       4.90    
+ eigenvalues and residual norm
+    1    0    2    3.574260663   3.574260663 0.466E-04 0.307E-05
+    2    0    4    3.650644022   3.650644022 0.471E-04 0.441E-05
+    3    0    6    4.899870011   4.899870011 0.230E-03 0.111E-04
+ New perturbed m=                     6
+ Perturbed left m=                     6
+ COUNT=                     5 Exp=                    29
+ nd1,nd1_old,j0,j1                    29                    23
+                     0                     3
+ info                     0
+    3.57       3.65       4.90    
+ eigenvalues and residual norm
+    1    0    2    3.574257031   3.574257031 0.732E-05 0.123E-06
+    2    0    4    3.650640353   3.650640353 0.203E-05 0.120E-06
+    3    0    6    4.899807295   4.899807295 0.151E-03 0.134E-04
+ New perturbed m=                     6
+ Perturbed left m=                     6
+ COUNT=                     6 Exp=                    35
+ nd1,nd1_old,j0,j1                    35                    29
+                     0                     3
+ info                     0
+    3.57       3.65       4.90    
+ eigenvalues and residual norm
+    1    0    2    3.574255968   3.574255968 0.286E-05 0.620E-07
+    2    0    4    3.650640215   3.650640215 0.130E-06 0.220E-08
+    3    0    6    4.899783497   4.899783497 0.469E-04 0.285E-05
+ New perturbed m=                     6
+ Perturbed left m=                     6
+ COUNT=                     7 Exp=                    41
+ nd1,nd1_old,j0,j1                    41                    35
+                     0                     3
+ info                     0
+    3.57       3.65       4.90    
+ eigenvalues and residual norm
+    1    0    2    3.574255684   3.574255684 0.139E-06 0.352E-08
+    2    1    2    3.650640199   3.650640199 0.119E-07 0.308E-09   Converged!
+    3    1    4    4.899775286   4.899775286 0.137E-04 0.272E-06
+ New perturbed m=                     4
+ Perturbed left m=                     4
+ COUNT=                     8 Exp=                    45
+ nd1,nd1_old,j0,j1                    45                    41
+                     0                     3
+ info                     0
+    3.57       3.65       4.90    
+ eigenvalues and residual norm
+    1    1    0    3.574255676   3.574255676 0.299E-08 0.163E-09   Converged!
+    2    2    0    3.650640199   3.650640199 0.193E-08 0.566E-10   Converged!
+    3    2    2    4.899774072   4.899774072 0.129E-05 0.218E-07
+ New perturbed m=                     2
+ Perturbed left m=                     2
+ COUNT=                     9 Exp=                    47
+ nd1,nd1_old,j0,j1                    47                    45
+                     0                     3
+ info                     0
+    3.57       3.65       4.90    
+ eigenvalues and residual norm
+    1    1    0    3.574255676   3.574255676 0.111E-08 0.142E-09   Converged!
+    2    2    0    3.650640199   3.650640199 0.147E-08 0.472E-10   Converged!
+    3    2    2    4.899773942   4.899773942 0.124E-06 0.412E-08
+ New perturbed m=                     2
+ Perturbed left m=                     2
+ COUNT=                    10 Exp=                    49
+ nd1,nd1_old,j0,j1                    49                    47
+                     0                     3
+ info                     0
+    3.57       3.65       4.90    
+ eigenvalues and residual norm
+    1    1    0    3.574255676   3.574255676 0.743E-09 0.140E-09   Converged!
+    2    2    0    3.650640199   3.650640199 0.146E-08 0.458E-10   Converged!
+    3    3    0    4.899773934   4.899773934 0.681E-08 0.117E-09   Converged!
+ All vectors found after loop                     0 , Expansion 
+                    49
+ @@@@ Davidson subroutine Found vectors                     3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.574255676115962     0.88E-09 0.10E-06
+  2 +++    3.650640198636067     0.15E-08 0.10E-06
+  3 +++    4.899773934034481     0.69E-08 0.10E-06
+ -------------------------------------------------
+ 
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.57425567611596        0.133839333853267E-05    0.241391191007902E-06    0.130758385938744E-04    0.146556231234149E-04
+   2     3.65064019863607        0.185500118169277E-05    0.135938153888919E-05    0.250046779223707E-04    0.282190606429527E-04
+   3     4.89977393403448        0.162909521702636E-06    0.538247381965661E-05    0.365898057049257E-07    0.558197314706417E-05
+ 
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.57425567611596       -0.390949010105454E-02    0.166030908145493E-02    0.122197693938326E-01    0.167363503134654E-03
+   2     3.65064019863607       -0.455416353778453E-02    0.389858682147680E-02    0.167204191041705E-01    0.315511799752590E-03
+   3     4.89977393403448        0.116494723575812E-02    0.669613165590079E-02    0.552094057454859E-03    0.465000890635341E-04
+ 
+ Total energy of the ground state (eV,AU)
+                     0  -1014.19568548558       -37.2709903612216     
+ Total energies of excited states (eV,AU)
+                     1  -1010.62142980946       -37.1396389358906     
+                     2  -1010.54504528694       -37.1368318574901     
+                     3  -1009.29591155155       -37.0909270561996     
  Ground State Molecular Dipole Moment (A.U.)
                          dx              dy              dz          ftotal
-                    -0.4092291      -1.624033      0.4026582E-04   1.674799    
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       1 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      N               0.180302
-QMMM:     2      C              -0.077804
-QMMM:     3      H               0.131994
-QMMM:     4      H               0.120214
-QMMM:     5      H               0.119752
-QMMM:     6      O              -0.269605
-QMMM:     7      O              -0.204853
-QMMM: Total Mulliken Charge =   -0.000000
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       2 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      N               0.190656
-QMMM:     2      C              -0.147475
-QMMM:     3      H               0.118129
-QMMM:     4      H               0.114137
-QMMM:     5      H               0.114144
-QMMM:     6      O              -0.161577
-QMMM:     7      O              -0.228015
-QMMM: Total Mulliken Charge =   -0.000000
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       3 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      N               0.411224
-QMMM:     2      C              -0.405893
-QMMM:     3      H               0.099310
-QMMM:     4      H               0.105864
-QMMM:     5      H               0.105975
-QMMM:     6      O              -0.158180
-QMMM:     7      O              -0.158299
-QMMM: Total Mulliken Charge =   -0.000000
-
+                    -0.4092291      -1.624033      0.4026852E-04   1.674799    
+ 
  Frequencies (eV) and Total Molecular Dipole Moments (Debye)
         Omega            dx              dy              dz          ftotal
-   1   3.574256     -0.7226711      -3.889925      0.7722204E-01   3.957238    
-   2   3.650640      -1.119648      -3.026467     -0.1084581       3.228758    
+   1   3.574256     -0.7226714      -3.889925      0.7722195E-01   3.957238    
+   2   3.650640      -1.119648      -3.026467     -0.1084580       3.228758    
    3   4.899774     -0.2526428      -1.170567      0.1201500E-01   1.197580    
-
+ 
  Frequencies (eV) and Total Molecular Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.574256     -0.2843207      -1.530414      0.3038150E-01   1.556897    
-   2   3.650640     -0.4405036      -1.190704     -0.4267071E-01   1.270291    
-   3   4.899774     -0.9939733E-01 -0.4605364      0.4727065E-02  0.4711645    
-
+   1   3.574256     -0.2843209      -1.530414      0.3038146E-01   1.556897    
+   2   3.650640     -0.4405035      -1.190704     -0.4267067E-01   1.270291    
+   3   4.899774     -0.9939734E-01 -0.4605364      0.4727067E-02  0.4711645    
+ 
  Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.574256      0.2621509      0.1580371      0.6698029E-01  0.3133452    
-   2   3.650640     -0.9757321E-01  0.6675356     -0.8118782E-01  0.6794967    
-   3   4.899774      0.3823752       1.445522      0.5512378E-02   1.495251    
-
+   1   3.574256      0.2621507      0.1580371      0.6698020E-01  0.3133450    
+   2   3.650640     -0.9757296E-01  0.6675355     -0.8118774E-01  0.6794966    
+   3   4.899774      0.3823751       1.445522      0.5512377E-02   1.495251    
+ 
  Frequencies (eV) Relaxed Difference Dipole Moments (AU)
         Omega            dx              dy              dz          ftotal
-   1   3.574256      0.1249084      0.9361845E-01  0.3034123E-01  0.1590192    
-   2   3.650640     -0.3127445E-01  0.4333290     -0.4271097E-01  0.4365505    
-   3   4.899774      0.3098318       1.163497      0.4686799E-02   1.204052    
+   1   3.574256      0.1249083      0.9361848E-01  0.3034119E-01  0.1590191    
+   2   3.650640     -0.3127432E-01  0.4333290     -0.4271093E-01  0.4365505    
+   3   4.899774      0.3098318       1.163497      0.4686798E-02   1.204052    
+QMMM: Occupied MO Energies (eV):
+      -43.99205867      -37.92861060      -32.72853244      -24.87125346      -19.83387208
+      -19.72178824      -19.26528895      -14.83483497      -14.61940307      -12.36879000
+      -12.14563112      -11.99188716
+QMMM: Virtual MO Energies (eV):
+       -0.11770558        0.79894204        2.77510064        2.93925195        3.34290540
+        5.58675341        6.92601703
+QMMM:
+QMMM: SCF Energy =       -7.61364564 KCal/mol,       -31.85549338 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2674.10037908 eV (   -61667.42884206 KCal/mol)
+QMMM: QM core - QM core energy =      1659.90469360 eV (    38279.06213908 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.90469360 eV (    38279.06213908 KCal/mol)
+QMMM:             Total energy =     -1014.19568549 eV (   -23388.36670298 KCal/mol)
+  Restoring quirality in cmdqt
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  3  0
+QMMM: Atm      1:    -0.29109220456291   -1.38470976907001    0.01775295821460
+QMMM: Atm      2:     0.69133051638914    2.18076577240822    0.04347387871917
+QMMM: Atm      3:     0.40499178011189   -0.08951708752036    0.13108901431025
+QMMM: Atm      4:    -0.14087975319654    0.09851728721699   -0.42283124823683
+QMMM: Atm      5:    -0.34821353134262    0.15077236170669    0.25356911770302
+QMMM: Atm      6:     1.54130051832624   -0.88557322719396    0.54094800283622
+QMMM: Atm      7:    -1.85743732572519   -0.07025533754756   -0.56400172354643
+QMMM: Forces on QM atoms excited state calculation (eV/A)
+QMMM: state=  3  0
+QMMM: Atm      1:     0.91539155297878    3.32551724867545    0.03506321695911
+QMMM: Atm      2:     0.40027074359189    1.42010677140592    0.00279889322084
+QMMM: Atm      3:    -0.16478533403427    0.14255074784010   -0.06149562476232
+QMMM: Atm      4:     0.05956165064195    0.05460124645169    0.17214187589556
+QMMM: Atm      5:     0.14687074642469    0.02957067847554   -0.11498509818203
+QMMM: Atm      6:     2.09893087772415   -3.19096523177659    0.83468285212501
+QMMM: Atm      7:    -3.45624023732720   -1.78138146107211   -0.86820611525616
+QMMM: Excited State Forces on QM atoms from SCF calculation (KJ/mol)
+QMMM: Atm      1:    88.32358981997137  320.86992768881191    3.38315246889439
+QMMM: Atm      2:    38.62101289759770  137.02216015656020    0.27005743715079
+QMMM: Atm      3:   -15.89967943687916   13.75432593821506   -5.93354212146230
+QMMM: Atm      4:     5.74693832729922    5.26832269706316   16.60949173931554
+QMMM: Atm      5:    14.17115060932654    2.85319267790114  -11.09459292495196
+QMMM: Atm      6:   202.52001375948683 -307.88737709463948   80.53623132194465
+QMMM: Atm      7:  -333.48302597680254 -171.88055206391189  -83.77079792089111
 
+  QMMM: QM Region Cartesian Coordinates (*=link atom) 
+  QMMM: QM_NO. MM_NO.  ATOM         X         Y         Z
+  QMMM:     1        1       1      -3.6524    3.2185    0.0005
+  QMMM:     2        2       2      -4.0100    1.8202   -0.0011
+  QMMM:     3        3       3      -5.0679    1.6830   -0.3148
+  QMMM:     4        4       4      -3.8843    1.4001    1.0194
+  QMMM:     5        5       5      -3.3551    1.2667   -0.7070
+  QMMM:     6        6       6      -4.4559    4.0451   -0.3097
+  QMMM:     7        7       7      -2.5497    3.5514    0.3128
+ LPRINT:                     3                     3
+ 
  |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|
- | MD normal termination at   Tue Oct 25 13:53:55 MDT 2016   |
+ | MD normal termination at   Tue Nov  8 10:01:19 MST 2016   |
  | MD total CPU time	         0.20000E-01 seconds |
  |      0 days  0 hours  0 minutes  0 seconds     |
-
+ 
   SQM (ground state) took overall [s]:
-       0.914E-03
+        0.00    
   Davidson (excited states) took overall [s]:
-       0.189E-01
+       0.190E-01
   deriv (adiabatic forces) took overall [s]:
-       0.274E-02
+       0.200E-02
   nacT (NA derivatives) took overall [s]:
         0.00    
  |________________________________________________|
-
+ 

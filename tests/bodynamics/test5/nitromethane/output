@@ -1,41 +1,41 @@
-
+ 
  |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|
- | MD execution started at    Tue Oct 25 13:55:09 MDT 2016   |
- | Computer:  Linux t1248924 x86_64               |
+ | MD execution started at    Tue Nov  8 10:01:20 MST 2016   |
+ | Computer:  Linux wc-fe1.lanl.gov x86_64        |
  |________________________________________________|
-
- rnd_seed=           1
+ 
+ rnd_seed=                     1
  !!!!!!-----MD INPUT-----!!!!!!
-
- Ground state MD,      imdtype=           0
- Initial count for out files              0
+ 
+ Ground state MD,      imdtype=                     0
+ Initial count for out files                        0
  MD using Langevin 
- with friction coefficient [1/ps]=   4.8377600000000000E-002
- Starting time, fs           0.0000000000000000     
- Time step, fs		        0.10000000000000001     
- Number of classical steps (CS)            0
- Quantum steps/per CS                    0
- Displacement for deriv. [A]      1.0000000000000001E-005
- Langevin thermostat dynamics, ither=           1
- Temperature, K                  300.00000000000000     
- Bath relaxation constant       0.40000000000000002     
+ with friction coefficient [1/ps]=  4.837760000000000E-002
+ Starting time, fs          0.000000000000000E+000
+ Time step, fs		        0.100000000000000     
+ Number of classical steps (CS)                     10
+ Quantum steps/per CS                              0
+ Displacement for deriv. [A]     1.000000000000000E-005
+ Langevin thermostat dynamics, ither=                     1
+ Temperature, K                  300.000000000000     
+ Bath relaxation constant       0.400000000000000     
  Equilibrated dynamics
- Number of steps per degree K           100
- Number of steps to write data            1
- Number of steps to write coords           1
- Friction coefficient [1/ps]      4.8377600000000002E-005
- Seed for random generator               1
- NAESMD verbosity,            0
- MD will use analytic deriv,  ideriv=           1
+ Number of steps per degree K                     100
+ Number of steps to write data                      1
+ Number of steps to write coords                     1
+ Friction coefficient [1/ps]     4.837760000000000E-005
+ Seed for random generator                         1
+ NAESMD verbosity,                      3
+ MD will use analytic deriv,  ideriv=                     1
  Cartesian coordinates are used
  Allocating initial naesmd_module variables
  Allocating md_module initial variables
  Allocating variables
- Allocating naesmd_module variables           7           0
- Allocating md_module variables           7
+ Allocating naesmd_module variables                     7                     0
+ Allocating md_module variables                     7
   Finish reading coordinates 
  Rescaling velocity
-
+ 
  Initial Geometry
     7        -3.652440    3.218510    0.000470
     6        -4.009990    1.820210   -0.001090
@@ -69,7 +69,7 @@ QMMM: RHF CALCULATION, NO. OF DOUBLY OCCUPIED LEVELS = 12
 | QMMM: Error matrix |FP-PF|         :  0.1D+00 au
 | QMMM: Density matrix change        :  0.5D-05
 | QMMM: Maximum number of SCF cycles :      300
-
+ 
 | QMMM: *** Diagonalization Routine Information ***
 | QMMM: Pseudo diagonalizations are allowed.
 | QMMM: Auto diagonalization routine selection is disabled.
@@ -89,33 +89,544 @@ QMMM: RHF CALCULATION, NO. OF DOUBLY OCCUPIED LEVELS = 12
   RESULTS
 --------------------------------------------------------------------------------
 
-
-QMMM: Mulliken Charges
-QMMM: Atomic Charges for Step       1 :
-QMMM: Atomic Charges for State (0 - ground)       0 :
-QMMM:  Atom    Element       Mulliken Charge
-QMMM:     1      N               0.000000
-QMMM:     2      C               0.000000
-QMMM:     3      H               0.000000
-QMMM:     4      H               0.000000
-QMMM:     5      H               0.000000
-QMMM:     6      O               0.000000
-QMMM:     7      O               0.000000
-QMMM: Total Mulliken Charge =    0.000000
-
-
+QMMM: Allocating qmmmrijdata array as     11 x      0
+QMMM: to hold min npairs of          0 and nquant per thread of        7
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -57843.91      -57843.91      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -242018.9      -242018.9           Infinity
+QMMM:     2     -61583.25      -3739.338      0.5190842      -1.000000    
+QMMM: KJ/mol    -257664.3      -15645.39       2.171848    
+QMMM:     3     -61660.96      -77.71725      0.2143047      -1.000000    
+QMMM: KJ/mol    -257989.5      -325.1690      0.8966508    
+QMMM:     4     -61668.07      -7.104232      0.4957920E-01  -1.000000    
+QMMM: KJ/mol    -258019.2      -29.72411      0.2074394    
+QMMM:     5 *   -61667.28      0.7889670      0.1143536E-01  -1.000000    
+QMMM: KJ/mol    -258015.9       3.301038      0.4784553E-01
+QMMM:     6 *   -61667.38     -0.1025902      0.7363937E-02  -1.000000    
+QMMM: KJ/mol    -258016.3     -0.4292373      0.3081071E-01
+QMMM:     7 *   -61667.49     -0.1076224      0.4562082E-02  -1.000000    
+QMMM: KJ/mol    -258016.8     -0.4502922      0.1908775E-01
+QMMM:     8 *   -61667.43      0.6175613E-01  0.5244888E-03  -1.000000    
+QMMM: KJ/mol    -258016.5      0.2583877      0.2194461E-02
+QMMM:     9 *   -61667.43     -0.1671167E-03  0.2402462E-03  -1.000000    
+QMMM: KJ/mol    -258016.5     -0.6992164E-03  0.1005190E-02
+QMMM:    10 *   -61667.43     -0.7574723E-04  0.1012093E-03  -1.000000    
+QMMM: KJ/mol    -258016.5     -0.3169264E-03  0.4234599E-03
+QMMM:    11 *   -61667.43      0.3153337E-04  0.2995700E-04  -1.000000    
+QMMM: KJ/mol    -258016.5      0.1319356E-03  0.1253401E-03
+QMMM:    12 *   -61667.43     -0.3447058E-06  0.1539647E-04  -1.000000    
+QMMM: KJ/mol    -258016.5     -0.1442249E-05  0.6441884E-04
+QMMM:    13 *   -61667.43     -0.4802423E-06  0.9612689E-05  -1.000000    
+QMMM: KJ/mol    -258016.5     -0.2009334E-05  0.4021949E-04
+QMMM:    14 *   -61667.43      0.2895176E-06  0.7456654E-06  -1.000000    
+QMMM: KJ/mol    -258016.5      0.1211342E-05  0.3119864E-05
+QMMM:    15 *   -61667.43     -0.2037268E-09  0.3792357E-06  -1.000000    
+QMMM: KJ/mol    -258016.5     -0.8523930E-09  0.1586722E-05
+QMMM:    16     -61667.43     -0.7275958E-10  0.1633149E-06  -1.000000    
+QMMM: KJ/mol    -258016.5     -0.3044261E-09  0.6833096E-06
+QMMM: SCF Converged to 0.1000E-07 in:    16 Cycles 
+QMMM: Occupied MO Energies (eV):
+      -43.99205867      -37.92861060      -32.72853244      -24.87125346      -19.83387208
+      -19.72178824      -19.26528895      -14.83483497      -14.61940307      -12.36879000
+      -12.14563112      -11.99188716
+QMMM: Virtual MO Energies (eV):
+       -0.11770558        0.79894204        2.77510064        2.93925195        3.34290540
+        5.58675341        6.92601703
+QMMM:
+QMMM: SCF Energy =       -7.61364564 KCal/mol,       -31.85549338 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2674.10037908 eV (   -61667.42884206 KCal/mol)
+QMMM: QM core - QM core energy =      1659.90469360 eV (    38279.06213908 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.90469360 eV (    38279.06213908 KCal/mol)
+QMMM:             Total energy =     -1014.19568549 eV (   -23388.36670298 KCal/mol)
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  0  0
+QMMM: Atm      1:    -0.29109220456291   -1.38470976907001    0.01775295821460
+QMMM: Atm      2:     0.69133051638914    2.18076577240822    0.04347387871917
+QMMM: Atm      3:     0.40499178011189   -0.08951708752036    0.13108901431025
+QMMM: Atm      4:    -0.14087975319654    0.09851728721699   -0.42283124823683
+QMMM: Atm      5:    -0.34821353134262    0.15077236170669    0.25356911770302
+QMMM: Atm      6:     1.54130051832624   -0.88557322719396    0.54094800283622
+QMMM: Atm      7:    -1.85743732572519   -0.07025533754756   -0.56400172354643
+ LPRINT:                     3                     0
+ Begin classical propagation step #                     1
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61667.30      -61667.30      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -258016.0      -258016.0           Infinity
+QMMM:     2     -61667.30     -0.2011075E-06  0.1144179E-04  -1.000000    
+QMMM: KJ/mol    -258016.0     -0.8414336E-06  0.4787245E-04
+QMMM:     3     -61667.30     -0.2435991E-07  0.2894973E-05  -1.000000    
+QMMM: KJ/mol    -258016.0     -0.1019218E-06  0.1211257E-04
+QMMM:     4 *   -61667.30     -0.7101335E-08  0.7805339E-06  -1.000000    
+QMMM: KJ/mol    -258016.0     -0.2971198E-07  0.3265754E-05
+QMMM:     5     -61667.30      0.2153683E-08  0.1292533E-06  -1.000000    
+QMMM: KJ/mol    -258016.0      0.9011012E-08  0.5407958E-06
+QMMM: SCF Converged to 0.1000E-07 in:     5 Cycles 
+QMMM: Occupied MO Energies (eV):
+      -43.99191230      -37.92851511      -32.72824659      -24.87111390      -19.83383684
+      -19.72162263      -19.26518358      -14.83479484      -14.61925459      -12.36875627
+      -12.14559627      -11.99185207
+QMMM: Virtual MO Energies (eV):
+       -0.11770916        0.79895366        2.77507344        2.93914596        3.34268601
+        5.58676761        6.92601298
+QMMM:
+QMMM: SCF Energy =       -7.61505227 KCal/mol,       -31.86137870 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2674.09497267 eV (   -61667.30416481 KCal/mol)
+QMMM: QM core - QM core energy =      1659.89922619 eV (    38278.93605520 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.89922619 eV (    38278.93605520 KCal/mol)
+QMMM:             Total energy =     -1014.19574648 eV (   -23388.36810961 KCal/mol)
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  0  0
+QMMM: Atm      1:    -0.29140188928523   -1.38467586019431    0.01774853153336
+QMMM: Atm      2:     0.69154063098154    2.18104779747819    0.04251364060792
+QMMM: Atm      3:     0.40411531010420   -0.08935642181740    0.13087429096004
+QMMM: Atm      4:    -0.14061915809549    0.09801552591782   -0.42135603939286
+QMMM: Atm      5:    -0.34775346779981    0.15051057422610    0.25323806651656
+QMMM: Atm      6:     1.54115867445626   -0.88540327602971    0.54087541201397
+QMMM: Atm      7:    -1.85704010036147   -0.07013833958069   -0.56389390223899
+ Begin classical propagation step #                     2
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61666.88      -61666.88      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -258014.2      -258014.2           Infinity
+QMMM:     2     -61666.88     -0.1610562E-05  0.4018388E-04  -1.000000    
+QMMM: KJ/mol    -258014.2     -0.6738593E-05  0.1681293E-03
+QMMM:     3     -61666.88     -0.1697190E-06  0.1022445E-04  -1.000000    
+QMMM: KJ/mol    -258014.2     -0.7101042E-06  0.4277912E-04
+QMMM:     4 *   -61666.88     -0.4520552E-07  0.2769806E-05  -1.000000    
+QMMM: KJ/mol    -258014.2     -0.1891399E-06  0.1158887E-04
+QMMM:     5 *   -61666.88      0.1431908E-07  0.5096115E-06  -1.000000    
+QMMM: KJ/mol    -258014.2      0.5991105E-07  0.2132214E-05
+QMMM:     6 *   -61666.88     -0.2692104E-09  0.2620733E-06  -1.000000    
+QMMM: KJ/mol    -258014.2     -0.1126376E-08  0.1096515E-05
+QMMM:     7     -61666.88     -0.3346941E-09  0.1637558E-06  -1.000000    
+QMMM: KJ/mol    -258014.2     -0.1400360E-08  0.6851542E-06
+QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
+QMMM: Occupied MO Energies (eV):
+      -43.99162755      -37.92848057      -32.72706022      -24.87070115      -19.83369705
+      -19.72113052      -19.26491259      -14.83465751      -14.61886335      -12.36869909
+      -12.14542927      -11.99180250
+QMMM: Virtual MO Energies (eV):
+       -0.11758523        0.79889862        2.77503313        2.93889846        3.34201766
+        5.58679103        6.92612950
+QMMM:
+QMMM: SCF Energy =       -7.62060805 KCal/mol,       -31.88462407 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2674.07641364 eV (   -61666.87617504 KCal/mol)
+QMMM: QM core - QM core energy =      1659.88042625 eV (    38278.50250965 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.88042625 eV (    38278.50250965 KCal/mol)
+QMMM:             Total energy =     -1014.19598740 eV (   -23388.37366539 KCal/mol)
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  0  0
+QMMM: Atm      1:    -0.29022940317702   -1.38263234461533    0.01803235960551
+QMMM: Atm      2:     0.69234337018997    2.18048601041687    0.04124038355258
+QMMM: Atm      3:     0.40029430614652   -0.08925720784703    0.12969090468218
+QMMM: Atm      4:    -0.13969412515635    0.09681657786587   -0.41788941018694
+QMMM: Atm      5:    -0.34620216693426    0.14970580153317    0.25220123811565
+QMMM: Atm      6:     1.54095620175099   -0.88498944528226    0.54076664923741
+QMMM: Atm      7:    -1.85746818281984   -0.07012939207129   -0.56404212500638
+ Begin classical propagation step #                     3
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61665.93      -61665.93      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -258010.2      -258010.2           Infinity
+QMMM:     2     -61665.93     -0.4673821E-05  0.7474482E-04  -1.000000    
+QMMM: KJ/mol    -258010.2     -0.1955527E-04  0.3127323E-03
+QMMM:     3     -61665.93     -0.4535468E-06  0.1848150E-04  -1.000000    
+QMMM: KJ/mol    -258010.2     -0.1897640E-05  0.7732659E-04
+QMMM:     4 *   -61665.93     -0.1251101E-06  0.4857189E-05  -1.000000    
+QMMM: KJ/mol    -258010.2     -0.5234606E-06  0.2032248E-04
+QMMM:     5 *   -61665.93      0.3958849E-07  0.1170851E-05  -1.000000    
+QMMM: KJ/mol    -258010.2      0.1656382E-06  0.4898840E-05
+QMMM:     6 *   -61665.93     -0.1055014E-08  0.7241196E-06  -1.000000    
+QMMM: KJ/mol    -258010.2     -0.4414178E-08  0.3029716E-05
+QMMM:     7     -61665.93     -0.1382432E-08  0.4510790E-06  -1.000000    
+QMMM: KJ/mol    -258010.2     -0.5784095E-08  0.1887315E-05
+QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
+QMMM: Occupied MO Energies (eV):
+      -43.99083687      -37.92833868      -32.72471587      -24.86997933      -19.83342250
+      -19.72023452      -19.26429726      -14.83425898      -14.61806533      -12.36862938
+      -12.14511135      -11.99169992
+QMMM: Virtual MO Energies (eV):
+       -0.11743893        0.79879855        2.77490260        2.93838445        3.34085306
+        5.58671928        6.92633103
+QMMM:
+QMMM: SCF Energy =       -7.63141169 KCal/mol,       -31.92982653 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2674.03523958 eV (   -61665.92666001 KCal/mol)
+QMMM: QM core - QM core energy =      1659.83878370 eV (    38277.54219098 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.83878370 eV (    38277.54219098 KCal/mol)
+QMMM:             Total energy =     -1014.19645588 eV (   -23388.38446903 KCal/mol)
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  0  0
+QMMM: Atm      1:    -0.28968322318690   -1.37875989381087    0.01832961160630
+QMMM: Atm      2:     0.69198738117393    2.18046818645234    0.03974503570703
+QMMM: Atm      3:     0.39446726818326   -0.08917125837726    0.12806027926970
+QMMM: Atm      4:    -0.13843882795683    0.09460325500754   -0.41155660657211
+QMMM: Atm      5:    -0.34232005408086    0.14707827089566    0.24882617966071
+QMMM: Atm      6:     1.54023428322603   -0.88435865386316    0.54038498120690
+QMMM: Atm      7:    -1.85624682735863   -0.06985990630426   -0.56378948087854
+ Begin classical propagation step #                     4
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61664.61      -61664.61      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -258004.7      -258004.7           Infinity
+QMMM:     2     -61664.61     -0.9381554E-05  0.1011974E-03  -1.000000    
+QMMM: KJ/mol    -258004.7     -0.3925242E-04  0.4234100E-03
+QMMM:     3     -61664.61     -0.9327559E-06  0.2496021E-04  -1.000000    
+QMMM: KJ/mol    -258004.7     -0.3902651E-05  0.1044335E-03
+QMMM:     4 *   -61664.61     -0.2992456E-06  0.7022982E-05  -1.000000    
+QMMM: KJ/mol    -258004.7     -0.1252044E-05  0.2938416E-04
+QMMM:     5 *   -61664.61      0.1045919E-06  0.2452329E-05  -1.000000    
+QMMM: KJ/mol    -258004.7      0.4376125E-06  0.1026054E-04
+QMMM:     6 *   -61664.61     -0.2641173E-08  0.1535379E-05  -1.000000    
+QMMM: KJ/mol    -258004.7     -0.1105067E-07  0.6424026E-05
+QMMM:     7     -61664.61     -0.3754394E-08  0.9551183E-06  -1.000000    
+QMMM: KJ/mol    -258004.7     -0.1570839E-07  0.3996215E-05
+QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
+QMMM: Occupied MO Energies (eV):
+      -43.98972040      -37.92820863      -32.72148231      -24.86903196      -19.83303841
+      -19.71900750      -19.26348493      -14.83362890      -14.61713280      -12.36857395
+      -12.14464705      -11.99158080
+QMMM: Virtual MO Energies (eV):
+       -0.11723198        0.79863941        2.77469048        2.93778689        3.33930897
+        5.58653983        6.92663567
+QMMM:
+QMMM: SCF Energy =       -7.64638677 KCal/mol,       -31.99248223 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.97831487 eV (   -61664.61391931 KCal/mol)
+QMMM: QM core - QM core energy =      1659.78120963 eV (    38276.21447521 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.78120963 eV (    38276.21447521 KCal/mol)
+QMMM:             Total energy =     -1014.19710525 eV (   -23388.39944410 KCal/mol)
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  0  0
+QMMM: Atm      1:    -0.28610212154945   -1.37382829024091    0.01920932746202
+QMMM: Atm      2:     0.69151941062273    2.17992370465936    0.03796920111654
+QMMM: Atm      3:     0.38655579981395   -0.08921060645761    0.12591695019992
+QMMM: Atm      4:    -0.13694818745691    0.09172161918869   -0.40315707350302
+QMMM: Atm      5:    -0.33721076198034    0.14387271551897    0.24425127964633
+QMMM: Atm      6:     1.53790867329917   -0.88253858798737    0.53946753908463
+QMMM: Atm      7:    -1.85572281274915   -0.06994055468112   -0.56365722400642
+ Begin classical propagation step #                     5
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61662.97      -61662.97      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -257997.9      -257997.9           Infinity
+QMMM:     2     -61662.97     -0.1360528E-04  0.1164936E-03  -1.000000    
+QMMM: KJ/mol    -257997.9     -0.5692448E-04  0.4874093E-03
+QMMM:     3     -61662.97     -0.1404733E-05  0.2898229E-04  -1.000000    
+QMMM: KJ/mol    -257997.9     -0.5877402E-05  0.1212619E-03
+QMMM:     4 *   -61662.97     -0.4654939E-06  0.8885351E-05  -1.000000    
+QMMM: KJ/mol    -257997.9     -0.1947627E-05  0.3717631E-04
+QMMM:     5 *   -61662.97      0.1695735E-06  0.3039348E-05  -1.000000    
+QMMM: KJ/mol    -257997.9      0.7094954E-06  0.1271663E-04
+QMMM:     6 *   -61662.97     -0.3652531E-08  0.1903453E-05  -1.000000    
+QMMM: KJ/mol    -257997.9     -0.1528219E-07  0.7964048E-05
+QMMM:     7     -61662.97     -0.5165930E-08  0.1186870E-05  -1.000000    
+QMMM: KJ/mol    -257997.9     -0.2161425E-07  0.4965864E-05
+QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
+QMMM: Occupied MO Energies (eV):
+      -43.98809395      -37.92782343      -32.71775180      -24.86796101      -19.83255775
+      -19.71745633      -19.26241282      -14.83291300      -14.61621906      -12.36848609
+      -12.14409400      -11.99139393
+QMMM: Virtual MO Energies (eV):
+       -0.11704804        0.79838042        2.77441540        2.93719980        3.33747252
+        5.58627186        6.92689848
+QMMM:
+QMMM: SCF Energy =       -7.66465455 KCal/mol,       -32.06891466 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.90723230 eV (   -61662.97468412 KCal/mol)
+QMMM: QM core - QM core energy =      1659.70933490 eV (    38274.55697222 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.70933490 eV (    38274.55697222 KCal/mol)
+QMMM:             Total energy =     -1014.19789740 eV (   -23388.41771189 KCal/mol)
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  0  0
+QMMM: Atm      1:    -0.28255528228271   -1.36873679323912    0.01989985953799
+QMMM: Atm      2:     0.69206034680747    2.17791153289681    0.03537853743296
+QMMM: Atm      3:     0.37691799814610   -0.08920093774734    0.12293578022238
+QMMM: Atm      4:    -0.13501222628776    0.08838513831932   -0.39316251054800
+QMMM: Atm      5:    -0.33231350293761    0.14107881129988    0.23981775187920
+QMMM: Atm      6:     1.53454813656140   -0.87986873076318    0.53820297019058
+QMMM: Atm      7:    -1.85364547000688   -0.06956902076638   -0.56307238871511
+ Begin classical propagation step #                     6
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61661.00      -61661.00      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -257989.6      -257989.6           Infinity
+QMMM:     2     -61661.00     -0.1845718E-04  0.1315176E-03  -1.000000    
+QMMM: KJ/mol    -257989.6     -0.7722486E-04  0.5502697E-03
+QMMM:     3     -61661.00     -0.1955537E-05  0.3282775E-04  -1.000000    
+QMMM: KJ/mol    -257989.6     -0.8181968E-05  0.1373513E-03
+QMMM:     4 *   -61661.00     -0.6664923E-06  0.1023554E-04  -1.000000    
+QMMM: KJ/mol    -257989.6     -0.2788604E-05  0.4282548E-04
+QMMM:     5 *   -61661.00      0.2452944E-06  0.3446106E-05  -1.000000    
+QMMM: KJ/mol    -257989.6      0.1026312E-05  0.1441851E-04
+QMMM:     6 *   -61661.00     -0.5129550E-08  0.2148210E-05  -1.000000    
+QMMM: KJ/mol    -257989.6     -0.2146204E-07  0.8988110E-05
+QMMM:     7     -61661.00     -0.7159542E-08  0.1339729E-05  -1.000000    
+QMMM: KJ/mol    -257989.6     -0.2995552E-07  0.5605426E-05
+QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
+QMMM: Occupied MO Energies (eV):
+      -43.98595947      -37.92723079      -32.71348935      -24.86678835      -19.83199461
+      -19.71560570      -19.26105900      -14.83220445      -14.61520810      -12.36839039
+      -12.14344867      -11.99115238
+QMMM: Virtual MO Energies (eV):
+       -0.11689627        0.79802357        2.77416638        2.93654194        3.33538953
+        5.58588420        6.92714125
+QMMM:
+QMMM: SCF Energy =       -7.68627965 KCal/mol,       -32.15939407 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.82159773 eV (   -61660.99986529 KCal/mol)
+QMMM: QM core - QM core energy =      1659.62276260 eV (    38272.56052830 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.62276260 eV (    38272.56052830 KCal/mol)
+QMMM:             Total energy =     -1014.19883513 eV (   -23388.43933699 KCal/mol)
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  0  0
+QMMM: Atm      1:    -0.27890934362063   -1.36328798916452    0.02040246016577
+QMMM: Atm      2:     0.69218062037635    2.17481783337803    0.03361787292988
+QMMM: Atm      3:     0.36615235066151   -0.08899526759976    0.11967605528795
+QMMM: Atm      4:    -0.13294928002949    0.08483639524215   -0.38270865054812
+QMMM: Atm      5:    -0.32635417168692    0.13780498697713    0.23455537290218
+QMMM: Atm      6:     1.52999488989281   -0.87623666011893    0.53652141396299
+QMMM: Atm      7:    -1.85011506559363   -0.06893929871410   -0.56206452470065
+ Begin classical propagation step #                     7
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61658.62      -61658.62      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -257979.7      -257979.7           Infinity
+QMMM:     2     -61658.62     -0.2274355E-04  0.1390674E-03  -1.000000    
+QMMM: KJ/mol    -257979.7     -0.9515902E-04  0.5818581E-03
+QMMM:     3     -61658.62     -0.2393033E-05  0.3461214E-04  -1.000000    
+QMMM: KJ/mol    -257979.7     -0.1001245E-04  0.1448172E-03
+QMMM:     4 *   -61658.62     -0.8509087E-06  0.1239512E-04  -1.000000    
+QMMM: KJ/mol    -257979.7     -0.3560202E-05  0.5186120E-04
+QMMM:     5 *   -61658.62      0.3242167E-06  0.4044159E-05  -1.000000    
+QMMM: KJ/mol    -257979.7      0.1356523E-05  0.1692076E-04
+QMMM:     6 *   -61658.62     -0.6410119E-08  0.2524477E-05  -1.000000    
+QMMM: KJ/mol    -257979.7     -0.2681994E-07  0.1056241E-04
+QMMM:     7     -61658.62     -0.9102223E-08  0.1568848E-05  -1.000000    
+QMMM: KJ/mol    -257979.7     -0.3808370E-07  0.6564062E-05
+QMMM: SCF Converged to 0.1000E-07 in:     7 Cycles 
+QMMM: Occupied MO Energies (eV):
+      -43.98317827      -37.92630081      -32.70879421      -24.86563014      -19.83132061
+      -19.71356953      -19.25937807      -14.83138310      -14.61420243      -12.36827745
+      -12.14274572      -11.99083909
+QMMM: Virtual MO Energies (eV):
+       -0.11681362        0.79751643        2.77384094        2.93590718        3.33319309
+        5.58537050        6.92730394
+QMMM:
+QMMM: SCF Energy =       -7.71069201 KCal/mol,       -32.26153538 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.71830047 eV (   -61658.61772719 KCal/mol)
+QMMM: QM core - QM core energy =      1659.51840674 eV (    38270.15397784 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.51840674 eV (    38270.15397784 KCal/mol)
+QMMM:             Total energy =     -1014.19989373 eV (   -23388.46374935 KCal/mol)
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  0  0
+QMMM: Atm      1:    -0.27446164274636   -1.35803463940931    0.02084999373153
+QMMM: Atm      2:     0.69336050145807    2.17016803105707    0.03095266265518
+QMMM: Atm      3:     0.35380241047989   -0.08921797656214    0.11579312042542
+QMMM: Atm      4:    -0.13063685422310    0.08074257307200   -0.37138498631961
+QMMM: Atm      5:    -0.32104956648737    0.13524944542098    0.23007503990868
+QMMM: Atm      6:     1.52378717999113   -0.87115413371919    0.53423142887254
+QMMM: Atm      7:    -1.84480202847226   -0.06775329985942   -0.56051725927375
+ Begin classical propagation step #                     8
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61655.87      -61655.87      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -257968.1      -257968.1           Infinity
+QMMM:     2     -61655.87     -0.3001905E-04  0.1559361E-03  -1.000000    
+QMMM: KJ/mol    -257968.1     -0.1255997E-03  0.6524365E-03
+QMMM:     3     -61655.87     -0.3196721E-05  0.3860311E-04  -1.000000    
+QMMM: KJ/mol    -257968.1     -0.1337508E-04  0.1615154E-03
+QMMM:     4 *   -61655.87     -0.1180138E-05  0.1420768E-04  -1.000000    
+QMMM: KJ/mol    -257968.1     -0.4937699E-05  0.5944494E-04
+QMMM:     5 *   -61655.87      0.4497633E-06  0.4607011E-05  -1.000000    
+QMMM: KJ/mol    -257968.1      0.1881810E-05  0.1927573E-04
+QMMM:     6 *   -61655.87     -0.9327778E-08  0.2863104E-05  -1.000000    
+QMMM: KJ/mol    -257968.1     -0.3902742E-07  0.1197923E-04
+QMMM:     7     -61655.87     -0.1320586E-07  0.1779873E-05  -1.000000    
+QMMM: KJ/mol    -257968.1     -0.5525333E-07  0.7446989E-05
+QMMM:     8     -61655.87      0.7647031E-08  0.1288025E-06  -1.000000    
+QMMM: KJ/mol    -257968.1      0.3199518E-07  0.5389096E-06
+QMMM: SCF Converged to 0.1000E-07 in:     8 Cycles 
+QMMM: Occupied MO Energies (eV):
+      -43.97988164      -37.92521880      -32.70346570      -24.86436300      -19.83054804
+      -19.71125550      -19.25745369      -14.83028964      -14.61322538      -12.36817659
+      -12.14193974      -11.99048117
+QMMM: Virtual MO Energies (eV):
+       -0.11675695        0.79693241        2.77335842        2.93533470        3.33073347
+        5.58469666        6.92747899
+QMMM:
+QMMM: SCF Energy =       -7.73825947 KCal/mol,       -32.37687764 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.59893848 eV (   -61655.86512030 KCal/mol)
+QMMM: QM core - QM core energy =      1659.39784933 eV (    38267.37380349 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.39784933 eV (    38267.37380349 KCal/mol)
+QMMM:             Total energy =     -1014.20108915 eV (   -23388.49131681 KCal/mol)
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  0  0
+QMMM: Atm      1:    -0.26924119644889   -1.35237972820335    0.02154212275229
+QMMM: Atm      2:     0.69610324615610    2.16443931932986    0.02836848267407
+QMMM: Atm      3:     0.33929817533362   -0.08955989594384    0.11137681177331
+QMMM: Atm      4:    -0.12835636908903    0.07631955734055   -0.35908681361718
+QMMM: Atm      5:    -0.31537697253725    0.13262509845902    0.22518155695650
+QMMM: Atm      6:     1.51593516051207   -0.86478907235232    0.53130213295560
+QMMM: Atm      7:    -1.83836204392662   -0.06665527862992   -0.55868429349459
+ Begin classical propagation step #                     9
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61652.82      -61652.82      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -257955.4      -257955.4           Infinity
+QMMM:     2     -61652.82     -0.3676811E-04  0.1729292E-03  -1.000000    
+QMMM: KJ/mol    -257955.4     -0.1538378E-03  0.7235358E-03
+QMMM:     3     -61652.82     -0.3956782E-05  0.4293769E-04  -1.000000    
+QMMM: KJ/mol    -257955.4     -0.1655518E-04  0.1796513E-03
+QMMM:     4 *   -61652.82     -0.1518216E-05  0.1686151E-04  -1.000000    
+QMMM: KJ/mol    -257955.4     -0.6352215E-05  0.7054854E-04
+QMMM:     5 *   -61652.82      0.5858674E-06  0.5410465E-05  -1.000000    
+QMMM: KJ/mol    -257955.4      0.2451269E-05  0.2263739E-04
+QMMM:     6 *   -61652.82     -0.1242006E-07  0.3367550E-05  -1.000000    
+QMMM: KJ/mol    -257955.4     -0.5196553E-07  0.1408983E-04
+QMMM:     7 *   -61652.82     -0.1780427E-07  0.2094207E-05  -1.000000    
+QMMM: KJ/mol    -257955.4     -0.7449306E-07  0.8762164E-05
+QMMM:     8 *   -61652.82      0.1031731E-07  0.1529464E-06  -1.000000    
+QMMM: KJ/mol    -257955.4      0.4316762E-07  0.6399275E-06
+QMMM:     9 *   -61652.82     -0.2182787E-10  0.7191962E-07  -1.000000    
+QMMM: KJ/mol    -257955.4     -0.9132782E-10  0.3009117E-06
+QMMM:    10     -61652.82       0.000000      0.3593901E-07  -1.000000    
+QMMM: KJ/mol    -257955.4       0.000000      0.1503688E-06
+QMMM: SCF Converged to 0.1000E-07 in:    10 Cycles 
+QMMM: Occupied MO Energies (eV):
+      -43.97612605      -37.92392138      -32.69764051      -24.86292606      -19.82970229
+      -19.70861639      -19.25528707      -14.82919710      -14.61206131      -12.36806149
+      -12.14104011      -11.99006496
+QMMM: Virtual MO Energies (eV):
+       -0.11674577        0.79631354        2.77290010        2.93459734        3.32796931
+        5.58392491        6.92763112
+QMMM:
+QMMM: SCF Energy =       -7.76846131 KCal/mol,       -32.50324214 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.46702223 eV (   -61652.82299975 KCal/mol)
+QMMM: QM core - QM core energy =      1659.26462344 eV (    38264.30148109 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.26462344 eV (    38264.30148109 KCal/mol)
+QMMM:             Total energy =     -1014.20239880 eV (   -23388.52151865 KCal/mol)
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  0  0
+QMMM: Atm      1:    -0.26238155648173   -1.34731978285174    0.02294082968035
+QMMM: Atm      2:     0.69690389992161    2.15883213883217    0.02727179548856
+QMMM: Atm      3:     0.32412661754577   -0.08974947540707    0.10696996355364
+QMMM: Atm      4:    -0.12600840371135    0.07212128805278   -0.34650385893897
+QMMM: Atm      5:    -0.30756469415749    0.12867752063883    0.21833474095345
+QMMM: Atm      6:     1.50629058914831   -0.85700040131087    0.52766659486281
+QMMM: Atm      7:    -1.83136645226512   -0.06556128795410   -0.55668006559983
+ Begin classical propagation step #                    10
+QMMM: 
+QMMM: SCF Convergence Information
+QMMM: (*) = Pseudo Diagonalisation
+QMMM: Cycle      Energy          dE             dP              |FP-PF|
+QMMM:     1     -61649.51      -61649.51      0.1797693+309  -1.000000    
+QMMM: KJ/mol    -257941.5      -257941.5           Infinity
+QMMM:     2     -61649.51     -0.4360721E-04  0.1869293E-03  -1.000000    
+QMMM: KJ/mol    -257941.5     -0.1824526E-03  0.7821120E-03
+QMMM:     3     -61649.51     -0.4670415E-05  0.4636782E-04  -1.000000    
+QMMM: KJ/mol    -257941.5     -0.1954102E-04  0.1940030E-03
+QMMM:     4 *   -61649.51     -0.1822744E-05  0.1805627E-04  -1.000000    
+QMMM: KJ/mol    -257941.5     -0.7626360E-05  0.7554744E-04
+QMMM:     5 *   -61649.51      0.7067065E-06  0.5837285E-05  -1.000000    
+QMMM: KJ/mol    -257941.5      0.2956860E-05  0.2442320E-04
+QMMM:     6 *   -61649.51     -0.1534499E-07  0.3642584E-05  -1.000000    
+QMMM: KJ/mol    -257941.5     -0.6420346E-07  0.1524057E-04
+QMMM:     7 *   -61649.51     -0.2209708E-07  0.2261981E-05  -1.000000    
+QMMM: KJ/mol    -257941.5     -0.9245420E-07  0.9464130E-05
+QMMM:     8 *   -61649.51      0.1279841E-07  0.1720533E-06  -1.000000    
+QMMM: KJ/mol    -257941.5      0.5354855E-07  0.7198709E-06
+QMMM:     9 *   -61649.51     -0.5093170E-10  0.7481752E-07  -1.000000    
+QMMM: KJ/mol    -257941.5     -0.2130982E-09  0.3130365E-06
+QMMM:    10     -61649.51     -0.3637979E-10  0.4611923E-07  -1.000000    
+QMMM: KJ/mol    -257941.5     -0.1522130E-09  0.1929629E-06
+QMMM: SCF Converged to 0.1000E-07 in:    10 Cycles 
+QMMM: Occupied MO Energies (eV):
+      -43.97200474      -37.92250080      -32.69132224      -24.86138511      -19.82878609
+      -19.70575503      -19.25291679      -14.82802741      -14.61077914      -12.36794857
+      -12.14006150      -11.98961342
+QMMM: Virtual MO Energies (eV):
+       -0.11675057        0.79563881        2.77241757        2.93379361        3.32498329
+        5.58305776        6.92779193
+QMMM:
+QMMM: SCF Energy =       -7.80080822 KCal/mol,       -32.63858161 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -2673.32316040 eV (   -61649.50540207 KCal/mol)
+QMMM: QM core - QM core energy =      1659.11935894 eV (    38260.95153651 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      1659.11935894 eV (    38260.95153651 KCal/mol)
+QMMM:             Total energy =     -1014.20380146 eV (   -23388.55386556 KCal/mol)
+QMMM: Forces on QM atoms ground state calculation (eV/A)
+QMMM: state=  0  0
+QMMM: Atm      1:    -0.25370107437084   -1.34225350478800    0.02444026137027
+QMMM: Atm      2:     0.69773649613580    2.15272079628903    0.02693008127608
+QMMM: Atm      3:     0.30761325442441   -0.08998458467246    0.10204562883587
+QMMM: Atm      4:    -0.12343702548989    0.06755985459961   -0.33326159210034
+QMMM: Atm      5:    -0.29902306852847    0.12447099662083    0.21088787027779
+QMMM: Atm      6:     1.49509619085109   -0.84783381737452    0.52353785662262
+QMMM: Atm      7:    -1.82428477302210   -0.06467974067448   -0.55458010628229
+ 
  |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|
- | MD normal termination at   Tue Oct 25 13:55:09 MDT 2016   |
+ | MD normal termination at   Tue Nov  8 10:01:20 MST 2016   |
  | MD total CPU time	          0.0000     seconds |
  |      0 days  0 hours  0 minutes  0 seconds     |
-
+ 
   SQM (ground state) took overall [s]:
-       0.566E-03
+       0.300E-02
   Davidson (excited states) took overall [s]:
         0.00    
   deriv (adiabatic forces) took overall [s]:
-       0.490E-03
+        0.00    
   nacT (NA derivatives) took overall [s]:
         0.00    
  |________________________________________________|
-
+ 
