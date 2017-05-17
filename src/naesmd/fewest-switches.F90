@@ -16,10 +16,10 @@ contains
         use md_module
         implicit none
         type(simulation_t), pointer :: sim
-        integer Na,lprint
-        integer k,i,j,icheck,itest,ini,ihopavant
+        integer Na,lprint,excNtemp,ipn,indx(Na)
+        integer k,i,j,jj,icheck,itest,ini,ihopavant
         integer ido,neq,idocontrol
-        _REAL_ tini,tend,toldivprk,param(50)
+        _REAL_ tini,tend,toldivprk,param(50),pn,kavant
         _REAL_ g(sim%excN),gacum(sim%excN)
         _REAL_ iseedhop,eavant, eapres
         _REAL_ xx(Na),yy(Na),zz(Na)
@@ -58,12 +58,14 @@ contains
             end if
         end do
         icheck=0
+        write(6,*)'gacum:',j,gacum(j),iseedhop
         do j=1,sim%excN
             gacum(j)=0.0d0
             if(j.ne.ihop) then
                 do k=1,j
                     if(k.ne.ihop) gacum(j)=gacum(j)+g(k)
                 end do
+                write(6,*)'gacum:',j,gacum(j),iseedhop
             end if
         end do
         itest=0
@@ -99,20 +101,193 @@ contains
                 call cpu_time(t_finish)
                 sim%time_deriv_took=sim%time_deriv_took+t_finish-t_start
                 call do_sqm_davidson_update(sim,vmdqt=vmdqtnew,vgs=vgs)
-                if(decorhop.eq.1) then
-                    do j=1,sim%excN
-                        yg(j)=0.0d0
-                        yg(j+sim%excN)=rranf1(iseedmdqt)
-                    end do
-                    yg(ihop)=1.d0
-                    ido=3
-                    call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
-                    ido=1
-                    idocontrol=1
-                end if
-                conthop=1
-            end if
+
+!                if(decorhop.eq.1) then
+!                    do j=1,sim%excN
+!                        yg(j)=0.0d0
+!                        yg(j+sim%excN)=rranf1(iseedmdqt)
+!                    end do
+!                    yg(ihop)=1.d0
+!                    ido=3
+!                    call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
+!                    ido=1
+!                    idocontrol=1
+!                end if
+
+!Added for patch JAKB
+               if(decorhop.ne.0) then
+                  do j=1,sim%excN
+                     yg(j)=0.0d0
+!                     call random(iseedmdqt,iseedhop)
+!                     yg(j+sim%excN)=iseedhop
+                     yg(j+sim%excN)=rranf1(iseedmdqt)
+                  enddo
+                  yg(ihop)=1.0d0
+                  if(idocontrol.eq.0) then
+                     ido=3
+                     write(6,*)'Test DIVPRK called 1'
+                     call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
+                     ido=1
+                     idocontrol=1
+                 endif
+! after kirill
+! check the reduction of sim%excN
+                 if(iredpot.eq.1) then
+                   if((ihop+nstates).lt.sim%excN) then
+                      sim%excN=ihop+nstates
+                      write(34,887) tfemto,ihopavant,ihop,sim%excN
+                      call flush(34)
+                   endif
+                 endif
+                 if(iredpot.eq.2) then
+                   excNtemp=sim%excN
+                   do i=1,sim%excN
+                      if((vmdqtnew(ihop)+deltared).lt.vmdqtnew(sim%excN+1-i)) then
+                         excNtemp=sim%excN+1-i
+                      endif
+                   enddo
+                   sim%excN=excNtemp
+                   write(34,887) tfemto,ihopavant,ihop,sim%excN
+                   call flush(34)
+                 endif
+! after Josiah
+                 if(iredpot.eq.3) then
+                   jj=1
+                   pn=0.0d0
+                   do i=1,natom
+                      if(atomtype(i).eq.1) then
+                        cicoeffao3(i)=cicoeffao2(jj,ihop)**2
+                        jj=jj+1
+                      endif
+                      if(atomtype(i).eq.6) then
+                        cicoeffao3(i)=cicoeffao2(jj,ihop)**2 + cicoeffao2(jj+1,ihop)**2+cicoeffao2(jj+2,ihop)**2 &
+                               + cicoeffao2(jj+3,ihop)**2
+                          jj=jj+4
+                      endif
+                      pn=pn+ cicoeffao3(i)**2
+                   enddo
+                   pn=1.0d0/pn
+                   ipn=int(pn)+1
+                   call indexx(natom,cicoeffao3,indx)
+                   deltared=0.0d0
+                   do jj=1,natom
+                      write(110,*) ipn,atomtype(indx(jj)),cicoeffao3(indx(jj))
+                   enddo
+                   call flush(110)
+                   do jj=1,natom
+                      if(indx(jj).ge.(natom-ipn)) then
+                        deltared = deltared + 0.5d0*massmdqt(jj)*(vx(jj)**2+vy(jj)**2+vz(jj)**2)
+                      endif
+                   enddo
+                   excNtemp=sim%excN
+                   do i=1,sim%excN
+                     if((vmdqtnew(ihop)+deltared).lt.vmdqtnew(sim%excN+1-i)) then
+                         excNtemp=sim%excN+1-i
+                     endif
+                   enddo
+                   sim%excN=excNtemp
+                   write(34,884) tfemto,ihopavant,ihop,sim%excN,ipn,deltared*feVmdqt,kavant*feVmdqt
+                   call flush(34)
+                 endif
+! end after josiah
+! after kirill
+               endif
+               conthop=1
+! ihopprev keep the value of the previous state from where we hop
+! in order to allow new hops for the next 2 steps only in case that
+! we do not want to hop again to the same state
+!               ihopprev=ihopavant
+!######################################### 
+            endif
+!######################################### 
+! added after Kirill
+!######################################### 
+           if (ini.eq.2) then
+!######################################### 
+               do j=1,sim%excN
+                  yg(j)=0.0d0
+                  yg(j+sim%excN)=rranf1(iseedmdqt)
+               enddo
+               yg(ihopavant)=1.0d0
+               ido=3
+               write(6,*)'test divprk called 2'
+               call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
+               ido=1
+               idocontrol=1
+               conthop=1
+! check the reduction of sim%excN
+               if(iredpot.eq.1) then
+                   if((ihopavant+nstates).lt.sim%excN) then
+                      sim%excN=ihopavant+nstates
+                      write(34,887) tfemto,ihopavant,ihop,sim%excN
+                      call flush(34)
+                   endif
+               endif
+               if(iredpot.eq.2) then
+                  excNtemp=sim%excN
+                  do i=1,sim%excN
+                     if((vmdqtnew(ihopavant)+deltared).lt.vmdqtnew(sim%excN+1-i)) then
+                         excNtemp=sim%excN+1-i
+                     endif
+                  enddo
+                  sim%excN=excNtemp
+                  write(34,887) tfemto,ihopavant,ihop,sim%excN
+                  call flush(34)
+               endif
+! after Josiah
+               if(iredpot.eq.3) then
+                  jj=1
+                  pn=0.0d0
+                  do i=1,natom
+                     if(atomtype(i).eq.1) then
+                        cicoeffao3(i)=cicoeffao2(jj,ihopavant)**2
+                        jj=jj+1
+                     endif
+                     if(atomtype(i).eq.6) then
+                        cicoeffao3(i)=cicoeffao2(jj,ihopavant)**2 &
+      + cicoeffao2(jj+1,ihopavant)**2+cicoeffao2(jj+2,ihopavant)**2 &
+      + cicoeffao2(jj+3,ihopavant)**2
+                        jj=jj+4
+                     endif
+                     pn=pn+ cicoeffao3(i)**2
+                  enddo
+                  pn=1.0d0/pn
+                  ipn=int(pn)+1
+                  call indexx(natom,cicoeffao3,indx)
+                  deltared=0.0d0
+              do jj=1,natom
+                write(110,*) ipn,atomtype(indx(jj)),cicoeffao3(indx(jj))
+             enddo
+              call flush(110)
+                  do jj=1,natom
+                     if(indx(jj).ge.(natom-ipn)) then
+                        deltared = deltared + 0.5d0*massmdqt(jj)*&
+                                (vx(jj)**2+vy(jj)**2+vz(jj)**2)
+                     endif
+                  enddo
+                  excNtemp=sim%excN
+                  do i=1,sim%excN
+                     if((vmdqtnew(ihopavant)+deltared).lt.vmdqtnew(sim%excN+1-i)) then
+                         excNtemp=sim%excN+1-i
+                     endif
+                  enddo
+                  sim%excN=excNtemp
+                  write(34,884) tfemto,ihopavant,ihop,sim%excN,ipn,&
+                                deltared*feVmdqt,kavant*feVmdqt
+                  call flush(34)
+               endif
+!###############################################3       
+            endif
+!###############################################3       
+! end after josiah
+! end added after Kirill
+! end added for patch JAKB
+
+!                conthop=1
+!            end if
+
         endif
+
         if(crosstemp.eq.2.and.conthop.eq.0) then
             conthop2=1
             ! ihopprev keep the value of the previous state from where we hop
@@ -142,6 +317,7 @@ contains
             yg(ihop+sim%excN)=ytemp2
             if(idocontrol.eq.0) then
                 ido=3
+                write(6,*)'call divprk test 3'
                 call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
                 ido=1
                 idocontrol=1
@@ -164,6 +340,7 @@ contains
                     yg(iorden(i)+sim%excN)=ytemp2
                     if(idocontrol.eq.0) then
                         ido=3
+                        write(6,*)'call divprk test 4'
                         call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
                         ido=1
                         idocontrol=1
@@ -202,6 +379,7 @@ contains
         ! end analyze the hopping
         !**********************************
 887     FORMAT(F18.10,1X,I2,1X,I3,1X,I3,10000(1X,F18.10))
+884   FORMAT(F18.10,1X,I2,1X,I3,1X,I3,1X,I3,10000(1X,F18.10))
         return
     end subroutine
     ! At the point of hop, in general, the value of the potential energy in the new
@@ -259,6 +437,9 @@ contains
         end do
         if(racine.le.0.0d0) then
             ini=1
+! change made after Kirill
+            if(decorhop.eq.2) ini=2
+! end change made after Kirill
             goto 4321
         end if
         ctehop1=0.0d0
@@ -292,4 +473,92 @@ contains
      !********************************************************
      return
  end subroutine
+
+subroutine indexx(n,arr,indx)
+! ************************************************************************
+
+      integer icont
+      integer n,indx(n),M,NSTACK
+      double precision arr(n)
+      parameter (M=7, NSTACK=50)
+! Indexes an array arr(1:n), i.e., outputs the array indx(1:n) such that arr(indx(j))
+! is in ascending order for j=1,2,...N. The input quantities n and arr are not changed.
+
+      integer i,indxt,ir,itemp,j,jstack,k,l,istack(NSTACK)
+      double precision a
+
+      do j=1,n
+        indx(j)=j
+      enddo
+      jstack=0
+      l=1
+      ir=n
+1     if(ir-l.lt.M)then
+        do j=l+1,ir
+           indxt=indx(j)
+           a=arr(indxt)
+           do i=j-1,l,-1
+               if(arr(indx(i)).le.a)goto 2
+               indx(i+1)=indx(i)
+           enddo
+           i=l-1
+2          indx(i+1)=indxt
+        enddo
+        if(jstack.eq.0)return
+        ir=istack(jstack)
+        l=istack(jstack-1)
+        jstack=jstack-2
+      else
+        k=(l+ir)/2
+        itemp=indx(k)
+        indx(k)=indx(l+1)
+        indx(l+1)=itemp
+        if(arr(indx(l)).gt.arr(indx(ir)))then
+         itemp=indx(l)
+          indx(l)=indx(ir)
+          indx(ir)=itemp
+        endif
+        if(arr(indx(l+1)).gt.arr(indx(ir)))then
+          itemp=indx(l+1)
+          indx(l+1)=indx(ir)
+          indx(ir)=itemp
+        endif
+        if(arr(indx(l)).gt.arr(indx(l+1)))then
+          itemp=indx(l)
+          indx(l)=indx(l+1)
+          indx(l+1)=itemp
+        endif
+        i=l+1
+        j=ir
+        indxt=indx(l+1)
+        a=arr(indxt)
+3       continue
+           i=i+1
+        if(arr(indx(i)).lt.a)goto 3
+4       continue
+           j=j-1
+        if(arr(indx(j)).gt.a)goto 4
+        if(j.lt.i)goto 5
+        itemp=indx(i)
+        indx(i)=indx(j)
+        indx(j)=itemp
+        goto 3
+5       indx(l+1)=indx(j)
+        indx(j)=indxt
+        jstack=jstack+2
+        if(jstack.gt.NSTACK)pause 'NSTACK too small in indexx'
+        if(ir-i+1.ge.j-l)then
+          istack(jstack)=ir
+          istack(jstack-1)=i
+          ir=j-1
+        else
+          istack(jstack)=j-1
+        istack(jstack-1)=l
+          l=i
+        endif
+      endif
+      goto 1
+
+      return
+      end
  end module

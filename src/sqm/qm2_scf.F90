@@ -65,7 +65,7 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
                       !this value in escf.
     integer sm_energy_diff_step_number
     integer scf_iteration !Number of scf iteration that have been done.
-    integer i,m,n
+    integer i,m,n,o,p,q
     logical converged, first_iteration
     logical doing_pseudo_diag !Initially false, set to true if we are doing a pseudo diagonalisation.
     logical allow_pseudo_diag !Initially set to false. Set to true after at least 2 SCF iterations have been done 
@@ -225,6 +225,13 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
 
         CALL qm2_cpt_fock_and_energy(SIZE(fock_matrix), fock_matrix, hmatrix, den_matrix, &
             & SIZE(W), W, SIZE(scf_mchg), scf_mchg, density_diff )
+        !q=0
+        !do o=1,qm2_struct%norb
+        !  do p=1,o
+        !    write(6,'(40e18.9)',advance="no") fock_matrix(o)
+        !  enddo
+        !  write(6,*)" "
+        !enddo
 
         call timer_start(TIME_QMMMENERGYSCFELEC)
         scf_energy = qmmm_struct%elec_eng*EV_TO_KCAL
@@ -1615,6 +1622,7 @@ SUBROUTINE qm2_diag( n, fock_matrix,    &
     IMPLICIT NONE
 
     INTEGER,INTENT(IN)   :: n
+    integer :: o,p,q
     _REAL_,INTENT(INOUT) :: fock_matrix(n)
     LOGICAL,INTENT(IN) :: allow_pseudo_diag
     LOGICAL,INTENT(INOUT) :: doing_pseudo_diag
@@ -1669,13 +1677,21 @@ SUBROUTINE qm2_diag( n, fock_matrix,    &
         call timer_start(TIME_QMMMENERGYSCFDIAG)
         call qm2_full_diagonalize(qmmm_nml%diag_routine,fock_matrix, &
             qm2_struct%norbs,qm2_struct%eigen_vectors,abstol)
+
+        
         call timer_stop(TIME_QMMMENERGYSCFDIAG)
 #ifdef MPI
      end if
 #endif
     end if !pseudo diag.
   !End of step 1
-
+        
+!    do o=1,qm2_struct%norbs
+!      do p=1,qm2_struct%norbs
+!        write(6,'(40e18.9)',advance="no") qm2_struct%eigen_vectors(o,p)
+!      enddo
+!      write(6,*) "  "
+!    enddo
 
 END SUBROUTINE qm2_diag
 

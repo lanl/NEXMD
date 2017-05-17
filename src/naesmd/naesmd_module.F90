@@ -4,7 +4,7 @@
 module naesmd_module
     !sizes variables
     integer natom,npot,ihop,nquantumstep,nstep,nquantumreal
-    integer nstepcross
+    integer nstepcross,iredpot,nstates
     integer icontw,nstepw,icontini
     integer istepheat,iconttemperature,icontpdb,icont,nstepcoord
     integer txtinicoord,txtendcoord
@@ -18,7 +18,7 @@ module naesmd_module
     integer,target,allocatable:: atomtype(:) !atom types currently max 1000
     integer,allocatable:: lowvaluestep(:)
     _REAL_,allocatable:: lowvalue(:)
-    _REAL_ tini0
+    _REAL_ tini0,deltared
     _REAL_,target,allocatable:: rx(:),ry(:),rz(:)
     _REAL_,target,allocatable:: rxold(:),ryold(:),rzold(:)
     _REAL_,target,allocatable:: deltaxxpold(:),deltayypold(:)
@@ -57,6 +57,8 @@ module naesmd_module
     _REAL_,allocatable:: cmdqtnew(:,:)
     _REAL_,allocatable:: scpr(:,:)
     _REAL_,allocatable:: cicoeffao2(:,:)
+    _REAL_,allocatable:: cicoeffao3(:)
+
     _REAL_,allocatable:: uuold(:,:)
     _REAL_ xcmini,ycmini,zcmini,masstot
     _REAL_ tfemto
@@ -127,6 +129,7 @@ contains
         allocate(ax(Na),ay(Na),az(Na))
         allocate(axold(Na),ayold(Na),azold(Na))
         allocate(fxmdqt(Na),fymdqt(Na),fzmdqt(Na))
+        allocate(cicoeffao3(Na))
     end subroutine
     subroutine allocate_naesmd_module2(Ncis,Nmo,Nexc)
         implicit none

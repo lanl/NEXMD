@@ -1,0 +1,1270 @@
+This is a summary of values obtained from the master version and current version
+Using /turquoise/users/bnebgen/SQM-NAESMD-master/sqmceonaesmd.exe
+
+-----------------------------------------------------------------------
+Check calculation singlepoint/test4/benzene
+
+Total energy of the ground state (eV,AU): Match
+
+Total energies of excited states (eV,AU): Match
+
+QMMM: Total energy =: Match
+
+QMMM: Occupied MO Energies (eV): Within Tolerance
+RMS Error: 7.40000047849e-15
+
+QMMM: Virtual MO Energies (eV): Within Tolerance
+RMS Error: 8.10000010583e-15
+
+Forces on QM atoms ground state calculation RMSD: Within Tolerance
+RMS Error: 1.23697241712e-13
+
+Forces on QM atoms excited state calculation RMSD: Within Tolerance
+RMS Error: 6.95346630996e-13
+
+Excited State Forces on QM atoms from SCF calculation RMSD: Within Tolerance
+RMS Error: 5.44169756762e-09
+
+Frequencies (eV) and Total Molecular Dipole Moments (Debye), Frequencies: Within Tolerance
+RMS Error: 0.0
+Frequencies (eV) and Total Molecular Dipole Moments (Debye), Dipole: Within Tolerance
+RMS Error: 5.41167755405e-13
+
+Frequencies (eV) and Total Molecular Dipole Moments (AU), Frequencies: Within Tolerance
+RMS Error: 0.0
+Frequencies (eV) and Total Molecular Dipole Moments (AU), Dipole: Within Tolerance
+RMS Error: 8.37654190277e-14
+
+Frequencies (eV) Unrelaxed Difference Dipole Moments (AU), Frequencies: Within Tolerance
+RMS Error: 0.0
+Frequencies (eV) Unrelaxed Difference Dipole Moments (AU), Dipole: Within Tolerance
+RMS Error: 1.30991132663e-13
+
+Frequencies (eV) Relaxed Difference Dipole Moments (AU), Frequencies: Within Tolerance
+RMS Error: 0.0
+Frequencies (eV) Relaxed Difference Dipole Moments (AU), Dipole: Within Tolerance
+RMS Error: 3.00662828302e-14
+
+-----------------------------------------------------------------------
+Check calculation singlepoint/test4/nitromethane
+
+Total energy of the ground state (eV,AU): Match
+
+Total energies of excited states (eV,AU): Match
+
+QMMM: Total energy =: Match
+
+QMMM: Occupied MO Energies (eV): Within Tolerance
+RMS Error: 1.499999964e-15
+
+QMMM: Virtual MO Energies (eV): Within Tolerance
+RMS Error: 1.49999998676e-15
+
+Forces on QM atoms ground state calculation RMSD: Within Tolerance
+RMS Error: 7.72054214225e-14
+
+Forces on QM atoms excited state calculation RMSD: Within Tolerance
+RMS Error: 4.14082355685e-14
+
+Excited State Forces on QM atoms from SCF calculation RMSD: Within Tolerance
+RMS Error: 1.77744827496e-10
+
+Frequencies (eV) and Total Molecular Dipole Moments (Debye), Frequencies: Within Tolerance
+RMS Error: 0.0
+Frequencies (eV) and Total Molecular Dipole Moments (Debye), Dipole: Within Tolerance
+RMS Error: 7.87300000002e-12
+
+Frequencies (eV) and Total Molecular Dipole Moments (AU), Frequencies: Within Tolerance
+RMS Error: 0.0
+Frequencies (eV) and Total Molecular Dipole Moments (AU), Dipole: Within Tolerance
+RMS Error: 2.10272100025e-12
+
+Frequencies (eV) Unrelaxed Difference Dipole Moments (AU), Frequencies: Within Tolerance
+RMS Error: 0.0
+Frequencies (eV) Unrelaxed Difference Dipole Moments (AU), Dipole: Within Tolerance
+RMS Error: 4.627416e-12
+
+Frequencies (eV) Relaxed Difference Dipole Moments (AU), Frequencies: Within Tolerance
+RMS Error: 0.0
+Frequencies (eV) Relaxed Difference Dipole Moments (AU), Dipole: Within Tolerance
+RMS Error: 1.12140400001e-12
+
+-----------------------------------------------------------------------
+Check calculation singlepoint/test12/benzene
+
+Total energy of the ground state (eV,AU): Match
+
+Total energies of excited states (eV,AU): Match
+
+QMMM: Total energy =: Match
+
+QMMM: Occupied MO Energies (eV): Within Tolerance
+RMS Error: 0.0
+
+QMMM: Virtual MO Energies (eV): Within Tolerance
+RMS Error: 0.0
+
+Forces on QM atoms ground state calculation RMSD: Within Tolerance
+RMS Error: 8.55683542389e-14
+
+Forces on QM atoms excited state calculation RMSD: Within Tolerance
+RMS Error: 1.26394998438e-11
+
+Excited State Forces on QM atoms from SCF calculation RMSD: Within Tolerance
+RMS Error: 9.28603101056e-08
+
+Frequencies (eV) and Total Molecular Dipole Moments (Debye), Frequencies: Within Tolerance
+RMS Error: 0.0
+Frequencies (eV) and Total Molecular Dipole Moments (Debye), Dipole: Within Tolerance
+RMS Error: 2.4418474e-14
+
+Frequencies (eV) and Total Molecular Dipole Moments (AU), Frequencies: Within Tolerance
+RMS Error: 0.0
+Frequencies (eV) and Total Molecular Dipole Moments (AU), Dipole: Within Tolerance
+RMS Error: 3.804506296e-15
+
+Frequencies (eV) Unrelaxed Difference Dipole Moments (AU), Frequencies: Within Tolerance
+RMS Error: 0.0
+Frequencies (eV) Unrelaxed Difference Dipole Moments (AU), Dipole: Within Tolerance
+RMS Error: 3.405207693e-15
+
+Frequencies (eV) Relaxed Difference Dipole Moments (AU), Frequencies: Within Tolerance
+RMS Error: 0.0
+Frequencies (eV) Relaxed Difference Dipole Moments (AU), Dipole: Within Tolerance
+RMS Error: 1.541099921e-15
+
+-----------------------------------------------------------------------
+Check calculation singlepoint/test12/nitromethane
+
+Total energy of the ground state (eV,AU): Match
+
+Total energies of excited states (eV,AU): Match
+
+QMMM: Total energy =: Match
+
+QMMM: Occupied MO Energies (eV): Within Tolerance
+RMS Error: 0.0
+
+QMMM: Virtual MO Energies (eV): Within Tolerance
+RMS Error: 0.0
+
+Forces on QM atoms ground state calculation RMSD: Within Tolerance
+RMS Error: 2.36101680905e-14
+
+Forces on QM atoms excited state calculation RMSD: Within Tolerance
+RMS Error: 2.11037464824e-14
+
+Excited State Forces on QM atoms from SCF calculation RMSD: Within Tolerance
+RMS Error: 5.43288664668e-11
+
+Frequencies (eV) and Total Molecular Dipole Moments (Debye), Frequencies: Within Tolerance
+RMS Error: 0.0
+Frequencies (eV) and Total Molecular Dipole Moments (Debye), Dipole: Within Tolerance
+RMS Error: 1.09000000118e-14
+
+Frequencies (eV) and Total Molecular Dipole Moments (AU), Frequencies: Within Tolerance
+RMS Error: 0.0
+Frequencies (eV) and Total Molecular Dipole Moments (AU), Dipole: Within Tolerance
+RMS Error: 1.64000000036e-16
+
+Frequencies (eV) Unrelaxed Difference Dipole Moments (AU), Frequencies: Within Tolerance
+RMS Error: 0.0
+Frequencies (eV) Unrelaxed Difference Dipole Moments (AU), Dipole: Within Tolerance
+RMS Error: 1.02639999979e-14
+
+Frequencies (eV) Relaxed Difference Dipole Moments (AU), Frequencies: Within Tolerance
+RMS Error: 0.0
+Frequencies (eV) Relaxed Difference Dipole Moments (AU), Dipole: Within Tolerance
+RMS Error: 1.07359999896e-14
+
+-----------------------------------------------------------------------
+Check calculation bodynamics/test5/benzene
+
+Coordinates for step 0000:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0001:Within Tolerance
+RMS Error: 1.00000016548e-20
+Coordinates for step 0002:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0003:Within Tolerance
+RMS Error: 2.00000016549e-20
+Coordinates for step 0004:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0005:Within Tolerance
+RMS Error: 2.00000016616e-20
+Coordinates for step 0006:Within Tolerance
+RMS Error: 9.00000033031e-20
+Coordinates for step 0007:Within Tolerance
+RMS Error: 2.80000006295e-19
+Coordinates for step 0008:Within Tolerance
+RMS Error: 4.50000012916e-19
+Coordinates for step 0009:Within Tolerance
+RMS Error: 7.60000025016e-19
+Coordinates for step 0010:Within Tolerance
+RMS Error: 1.06000002384e-18
+
+Velocities for step 0000:Within Tolerance
+RMS Error: 0.0
+Velocities for step 0001:Within Tolerance
+RMS Error: 2.6809700004e-15
+Velocities for step 0002:Within Tolerance
+RMS Error: 5.14941999847e-15
+Velocities for step 0003:Within Tolerance
+RMS Error: 1.60801699892e-14
+Velocities for step 0004:Within Tolerance
+RMS Error: 1.82486290132e-13
+Velocities for step 0005:Within Tolerance
+RMS Error: 1.34142871002e-12
+Velocities for step 0006:Within Tolerance
+RMS Error: 3.1071667796e-12
+Velocities for step 0007:Within Tolerance
+RMS Error: 3.73173090004e-12
+Velocities for step 0008:Within Tolerance
+RMS Error: 3.38510754995e-12
+Velocities for step 0009:Within Tolerance
+RMS Error: 3.2471115205e-12
+Velocities for step 0010:Within Tolerance
+RMS Error: 3.28870629994e-12
+
+QMMM: Total energy =: Match
+
+QMMM: Occupied MO Energies (eV): Within Tolerance
+RMS Error: 4.19999980684e-15
+
+QMMM: Virtual MO Energies (eV): Within Tolerance
+RMS Error: 2.1999999777e-15
+
+Forces on QM atoms ground state calculation RMSD: Within Tolerance
+RMS Error: 4.78534059897e-11
+
+Temperature (T) from energy-ev.out:Within Tolerance
+RMS Error: 1.21000000022e-18
+
+Temperature Difference (T-T0) from energy-ev.out:Within Tolerance
+RMS Error: 1.21000000022e-18
+
+Potential Energy (U) from energy-ev.out:Within Tolerance
+RMS Error: 3.00039216935e-20
+
+Potential Energy Difference (U-U0) from energy-ev.out:Within Tolerance
+RMS Error: 5.00000002076e-20
+
+Total Energy (E) from energy-ev.out:Within Tolerance
+RMS Error: 1.47014626738e-18
+
+Total Energy Difference (E-E0) from energy-ev.out:Within Tolerance
+RMS Error: 1.46999999995e-18
+
+-----------------------------------------------------------------------
+Check calculation bodynamics/test5/nitromethane
+
+Coordinates for step 0000:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0001:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0002:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0003:Within Tolerance
+RMS Error: 1.00000016548e-20
+Coordinates for step 0004:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0005:Within Tolerance
+RMS Error: 3.00000033164e-20
+Coordinates for step 0006:Within Tolerance
+RMS Error: 2.00000033096e-20
+Coordinates for step 0007:Within Tolerance
+RMS Error: 3.00000049644e-20
+Coordinates for step 0008:Within Tolerance
+RMS Error: 3.9999995517e-20
+Coordinates for step 0009:Within Tolerance
+RMS Error: 4.00000049712e-20
+Coordinates for step 0010:Within Tolerance
+RMS Error: 6.99999655051e-20
+
+Velocities for step 0000:Within Tolerance
+RMS Error: 0.0
+Velocities for step 0001:Within Tolerance
+RMS Error: 5.53310000506e-16
+Velocities for step 0002:Within Tolerance
+RMS Error: 8.37796002361e-15
+Velocities for step 0003:Within Tolerance
+RMS Error: 1.48143799867e-14
+Velocities for step 0004:Within Tolerance
+RMS Error: 1.50644400016e-14
+Velocities for step 0005:Within Tolerance
+RMS Error: 2.03553299884e-14
+Velocities for step 0006:Within Tolerance
+RMS Error: 3.56123299935e-14
+Velocities for step 0007:Within Tolerance
+RMS Error: 9.01234499546e-14
+Velocities for step 0008:Within Tolerance
+RMS Error: 1.31170079957e-13
+Velocities for step 0009:Within Tolerance
+RMS Error: 1.79646250266e-13
+Velocities for step 0010:Within Tolerance
+RMS Error: 2.82271930006e-13
+
+QMMM: Total energy =: Match
+
+QMMM: Occupied MO Energies (eV): Within Tolerance
+RMS Error: 9.1000006177e-15
+
+QMMM: Virtual MO Energies (eV): Within Tolerance
+RMS Error: 5.90000002793e-15
+
+Forces on QM atoms ground state calculation RMSD: Within Tolerance
+RMS Error: 3.9087782065e-13
+
+Temperature (T) from energy-ev.out:Within Tolerance
+RMS Error: 1.39999999228e-19
+
+Temperature Difference (T-T0) from energy-ev.out:Within Tolerance
+RMS Error: 1.39999999228e-19
+
+Potential Energy (U) from energy-ev.out:Within Tolerance
+RMS Error: 1.00088854119e-20
+
+Potential Energy Difference (U-U0) from energy-ev.out:Within Tolerance
+RMS Error: 1.00000000068e-20
+
+Total Energy (E) from energy-ev.out:Within Tolerance
+RMS Error: 5.00444270595e-20
+
+Total Energy Difference (E-E0) from energy-ev.out:Within Tolerance
+RMS Error: 2.99999999988e-20
+
+-----------------------------------------------------------------------
+Check calculation bodynamics/test6/benzene
+
+Coordinates for step 0000:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0001:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0002:Within Tolerance
+RMS Error: 1.00000016548e-20
+Coordinates for step 0003:Within Tolerance
+RMS Error: 1.00000016548e-20
+Coordinates for step 0004:Within Tolerance
+RMS Error: 2.00000033096e-20
+Coordinates for step 0005:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0006:Within Tolerance
+RMS Error: 2.00000033096e-20
+Coordinates for step 0007:Within Tolerance
+RMS Error: 4.00000066192e-20
+Coordinates for step 0008:Within Tolerance
+RMS Error: 5.0000008274e-20
+Coordinates for step 0009:Within Tolerance
+RMS Error: 3.99999622104e-20
+Coordinates for step 0010:Within Tolerance
+RMS Error: 7.00000115837e-20
+
+Velocities for step 0000:Within Tolerance
+RMS Error: 0.0
+Velocities for step 0001:Within Tolerance
+RMS Error: 4.68099000301e-15
+Velocities for step 0002:Within Tolerance
+RMS Error: 9.67484000222e-15
+Velocities for step 0003:Within Tolerance
+RMS Error: 1.86761499857e-14
+Velocities for step 0004:Within Tolerance
+RMS Error: 2.78319100213e-14
+Velocities for step 0005:Within Tolerance
+RMS Error: 2.9522589944e-14
+Velocities for step 0006:Within Tolerance
+RMS Error: 3.75715899807e-14
+Velocities for step 0007:Within Tolerance
+RMS Error: 3.96603800295e-14
+Velocities for step 0008:Within Tolerance
+RMS Error: 4.05462100459e-14
+Velocities for step 0009:Within Tolerance
+RMS Error: 4.46742598358e-14
+Velocities for step 0010:Within Tolerance
+RMS Error: 4.3100709783e-14
+
+QMMM: Total energy =: Match
+
+QMMM: Occupied MO Energies (eV): Within Tolerance
+RMS Error: 8.00000025803e-16
+
+QMMM: Virtual MO Energies (eV): Within Tolerance
+RMS Error: 4.99999996143e-16
+
+Forces on QM atoms ground state calculation RMSD: Within Tolerance
+RMS Error: 4.67256099356e-14
+
+Temperature (T) from energy-ev.out:Within Tolerance
+RMS Error: 2.30000000113e-19
+
+Temperature Difference (T-T0) from energy-ev.out:Within Tolerance
+RMS Error: 2.30000000113e-19
+
+Potential Energy (U) from energy-ev.out:Within Tolerance
+RMS Error: 9.99979030256e-20
+
+Potential Energy Difference (U-U0) from energy-ev.out:Within Tolerance
+RMS Error: 9.99999995478e-20
+
+Total Energy (E) from energy-ev.out:Within Tolerance
+RMS Error: 4.99989579752e-20
+
+Total Energy Difference (E-E0) from energy-ev.out:Within Tolerance
+RMS Error: 6.00000000001e-20
+
+-----------------------------------------------------------------------
+Check calculation bodynamics/test6/nitromethane
+
+Coordinates for step 0000:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0001:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0002:Within Tolerance
+RMS Error: 1.00000016548e-20
+Coordinates for step 0003:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0004:Within Tolerance
+RMS Error: 1.00000016548e-20
+Coordinates for step 0005:Within Tolerance
+RMS Error: 2.00000033096e-20
+Coordinates for step 0006:Within Tolerance
+RMS Error: 4.00000066192e-20
+Coordinates for step 0007:Within Tolerance
+RMS Error: 1.00000016548e-20
+Coordinates for step 0008:Within Tolerance
+RMS Error: 4.00000066192e-20
+Coordinates for step 0009:Within Tolerance
+RMS Error: 4.00000066192e-20
+Coordinates for step 0010:Within Tolerance
+RMS Error: 5.0000008274e-20
+
+Velocities for step 0000:Within Tolerance
+RMS Error: 0.0
+Velocities for step 0001:Within Tolerance
+RMS Error: 1.33653999888e-15
+Velocities for step 0002:Within Tolerance
+RMS Error: 2.73202999474e-15
+Velocities for step 0003:Within Tolerance
+RMS Error: 2.36234200023e-14
+Velocities for step 0004:Within Tolerance
+RMS Error: 3.86949300118e-14
+Velocities for step 0005:Within Tolerance
+RMS Error: 7.62695699549e-14
+Velocities for step 0006:Within Tolerance
+RMS Error: 1.06476889881e-13
+Velocities for step 0007:Within Tolerance
+RMS Error: 1.05952309922e-13
+Velocities for step 0008:Within Tolerance
+RMS Error: 1.04141080123e-13
+Velocities for step 0009:Within Tolerance
+RMS Error: 1.036556497e-13
+Velocities for step 0010:Within Tolerance
+RMS Error: 1.12612299891e-13
+
+QMMM: Total energy =: Match
+
+QMMM: Occupied MO Energies (eV): Within Tolerance
+RMS Error: 3.90000039668e-15
+
+QMMM: Virtual MO Energies (eV): Within Tolerance
+RMS Error: 2.39999998082e-15
+
+Forces on QM atoms ground state calculation RMSD: Within Tolerance
+RMS Error: 1.78164232134e-13
+
+Temperature (T) from energy-ev.out:Within Tolerance
+RMS Error: 3.99999998321e-20
+
+Temperature Difference (T-T0) from energy-ev.out:Within Tolerance
+RMS Error: 3.99999998321e-20
+
+Potential Energy (U) from energy-ev.out:Within Tolerance
+RMS Error: 3.99900725633e-20
+
+Potential Energy Difference (U-U0) from energy-ev.out:Within Tolerance
+RMS Error: 1.00000000936e-20
+
+Total Energy (E) from energy-ev.out:Within Tolerance
+RMS Error: 3.00266562357e-20
+
+Total Energy Difference (E-E0) from energy-ev.out:Within Tolerance
+RMS Error: 3e-20
+
+-----------------------------------------------------------------------
+Check calculation bodynamics/test7/benzene
+
+Coordinates for step 0000:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0001:Within Tolerance
+RMS Error: 1.00000016548e-20
+Coordinates for step 0002:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0003:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0004:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0005:Within Tolerance
+RMS Error: 1.00000016548e-20
+Coordinates for step 0006:Within Tolerance
+RMS Error: 1.00000016548e-20
+Coordinates for step 0007:Within Tolerance
+RMS Error: 3.00000049644e-20
+Coordinates for step 0008:Within Tolerance
+RMS Error: 2.00000033096e-20
+Coordinates for step 0009:Within Tolerance
+RMS Error: 2.00000033096e-20
+Coordinates for step 0010:Within Tolerance
+RMS Error: 3.00000035766e-20
+
+Velocities for step 0000:Within Tolerance
+RMS Error: 0.0
+Velocities for step 0001:Within Tolerance
+RMS Error: 2.72080999747e-15
+Velocities for step 0002:Within Tolerance
+RMS Error: 4.32709000763e-15
+Velocities for step 0003:Within Tolerance
+RMS Error: 6.13026998491e-15
+Velocities for step 0004:Within Tolerance
+RMS Error: 7.23173001766e-15
+Velocities for step 0005:Within Tolerance
+RMS Error: 9.92270997295e-15
+Velocities for step 0006:Within Tolerance
+RMS Error: 1.03043600324e-14
+Velocities for step 0007:Within Tolerance
+RMS Error: 9.54853001319e-15
+Velocities for step 0008:Within Tolerance
+RMS Error: 1.06154499894e-14
+Velocities for step 0009:Within Tolerance
+RMS Error: 1.27808799831e-14
+Velocities for step 0010:Within Tolerance
+RMS Error: 1.37840299576e-14
+
+QMMM: Total energy =: Match
+
+QMMM: Occupied MO Energies (eV): Within Tolerance
+RMS Error: 3.10000001561e-15
+
+QMMM: Virtual MO Energies (eV): Within Tolerance
+RMS Error: 2.09999998114e-15
+
+Forces on QM atoms ground state calculation RMSD: Within Tolerance
+RMS Error: 6.12823650392e-14
+
+Temperature (T) from energy-ev.out:Within Tolerance
+RMS Error: 9.99999992008e-21
+
+Temperature Difference (T-T0) from energy-ev.out:Within Tolerance
+RMS Error: 9.99999992008e-21
+
+Potential Energy (U) from energy-ev.out:Within Tolerance
+RMS Error: 1.8902010677e-18
+
+Potential Energy Difference (U-U0) from energy-ev.out:Within Tolerance
+RMS Error: 1.86000000155e-18
+
+Total Energy (E) from energy-ev.out:Within Tolerance
+RMS Error: 1.89004190005e-18
+
+Total Energy Difference (E-E0) from energy-ev.out:Within Tolerance
+RMS Error: 1.86e-18
+
+-----------------------------------------------------------------------
+Check calculation bodynamics/test7/nitromethane
+
+Coordinates for step 0000:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0001:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0002:Within Tolerance
+RMS Error: 1.00000016548e-20
+Coordinates for step 0003:Within Tolerance
+RMS Error: 4.00000066192e-20
+Coordinates for step 0004:Within Tolerance
+RMS Error: 5.0000008274e-20
+Coordinates for step 0005:Within Tolerance
+RMS Error: 1.000000149e-19
+Coordinates for step 0006:Within Tolerance
+RMS Error: 2.60000043025e-19
+Coordinates for step 0007:Within Tolerance
+RMS Error: 3.60000057925e-19
+Coordinates for step 0008:Within Tolerance
+RMS Error: 4.99999903446e-19
+Coordinates for step 0009:Within Tolerance
+RMS Error: 7.59999944834e-19
+Coordinates for step 0010:Within Tolerance
+RMS Error: 1.18000018698e-18
+
+Velocities for step 0000:Within Tolerance
+RMS Error: 0.0
+Velocities for step 0001:Within Tolerance
+RMS Error: 5.51059000008e-14
+Velocities for step 0002:Within Tolerance
+RMS Error: 2.12286139995e-13
+Velocities for step 0003:Within Tolerance
+RMS Error: 4.44049520033e-13
+Velocities for step 0004:Within Tolerance
+RMS Error: 7.47139789943e-13
+Velocities for step 0005:Within Tolerance
+RMS Error: 1.1397273601e-12
+Velocities for step 0006:Within Tolerance
+RMS Error: 1.6160954002e-12
+Velocities for step 0007:Within Tolerance
+RMS Error: 2.13083246976e-12
+Velocities for step 0008:Within Tolerance
+RMS Error: 2.65881796018e-12
+Velocities for step 0009:Within Tolerance
+RMS Error: 3.18618640034e-12
+Velocities for step 0010:Within Tolerance
+RMS Error: 3.68812078088e-12
+
+QMMM: Total energy =: Match
+
+QMMM: Occupied MO Energies (eV): Within Tolerance
+RMS Error: 2.09999992118e-15
+
+QMMM: Virtual MO Energies (eV): Within Tolerance
+RMS Error: 5.99999993817e-16
+
+Forces on QM atoms ground state calculation RMSD: Within Tolerance
+RMS Error: 1.40724109016e-13
+
+Temperature (T) from energy-ev.out:Within Tolerance
+RMS Error: 8.39999997277e-19
+
+Temperature Difference (T-T0) from energy-ev.out:Within Tolerance
+RMS Error: 8.39999997277e-19
+
+Potential Energy (U) from energy-ev.out:Within Tolerance
+RMS Error: 6.38221048541e-16
+
+Potential Energy Difference (U-U0) from energy-ev.out:Within Tolerance
+RMS Error: 8.55359999996e-16
+
+Total Energy (E) from energy-ev.out:Within Tolerance
+RMS Error: 6.52619425195e-16
+
+Total Energy Difference (E-E0) from energy-ev.out:Within Tolerance
+RMS Error: 8.4086e-16
+
+-----------------------------------------------------------------------
+Check calculation bodynamics/test8/benzene
+
+Coordinates for step 0000:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0001:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0002:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0003:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0004:Within Tolerance
+RMS Error: 1.00000016548e-20
+Coordinates for step 0005:Within Tolerance
+RMS Error: 2.00000033096e-20
+Coordinates for step 0006:Within Tolerance
+RMS Error: 2.00000033096e-20
+Coordinates for step 0007:Within Tolerance
+RMS Error: 1.00000016548e-20
+Coordinates for step 0008:Within Tolerance
+RMS Error: 1.00000016548e-20
+Coordinates for step 0009:Within Tolerance
+RMS Error: 3.00000035766e-20
+Coordinates for step 0010:Within Tolerance
+RMS Error: 4.00000066192e-20
+
+Velocities for step 0000:Within Tolerance
+RMS Error: 0.0
+Velocities for step 0001:Within Tolerance
+RMS Error: 2.33455999969e-15
+Velocities for step 0002:Within Tolerance
+RMS Error: 3.24726999707e-15
+Velocities for step 0003:Within Tolerance
+RMS Error: 4.56794000415e-15
+Velocities for step 0004:Within Tolerance
+RMS Error: 5.09980999144e-15
+Velocities for step 0005:Within Tolerance
+RMS Error: 7.55995999752e-15
+Velocities for step 0006:Within Tolerance
+RMS Error: 7.97449000433e-15
+Velocities for step 0007:Within Tolerance
+RMS Error: 9.89508003385e-15
+Velocities for step 0008:Within Tolerance
+RMS Error: 1.45354599897e-14
+Velocities for step 0009:Within Tolerance
+RMS Error: 1.98472000515e-14
+Velocities for step 0010:Within Tolerance
+RMS Error: 2.32464099658e-14
+
+QMMM: Total energy =: Match
+
+QMMM: Occupied MO Energies (eV): Within Tolerance
+RMS Error: 7.99999990276e-16
+
+QMMM: Virtual MO Energies (eV): Within Tolerance
+RMS Error: 9.99999987845e-17
+
+Forces on QM atoms ground state calculation RMSD: Within Tolerance
+RMS Error: 5.34152473149e-14
+
+Temperature (T) from energy-ev.out:Within Tolerance
+RMS Error: 0.0
+
+Temperature Difference (T-T0) from energy-ev.out:Within Tolerance
+RMS Error: 0.0
+
+Potential Energy (U) from energy-ev.out:Within Tolerance
+RMS Error: 9.73009437109e-18
+
+Potential Energy Difference (U-U0) from energy-ev.out:Within Tolerance
+RMS Error: 8.65999999733e-18
+
+Total Energy (E) from energy-ev.out:Within Tolerance
+RMS Error: 9.55025279482e-18
+
+Total Energy Difference (E-E0) from energy-ev.out:Within Tolerance
+RMS Error: 8.85e-18
+
+-----------------------------------------------------------------------
+Check calculation bodynamics/test8/nitromethane
+
+Coordinates for step 0000:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0001:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0002:Within Tolerance
+RMS Error: 1.00000016548e-20
+Coordinates for step 0003:Within Tolerance
+RMS Error: 3.9999995517e-20
+Coordinates for step 0004:Within Tolerance
+RMS Error: 8.00000132385e-20
+Coordinates for step 0005:Within Tolerance
+RMS Error: 1.3999993435e-19
+Coordinates for step 0006:Within Tolerance
+RMS Error: 1.70000026473e-19
+Coordinates for step 0007:Within Tolerance
+RMS Error: 3.89999929663e-19
+Coordinates for step 0008:Within Tolerance
+RMS Error: 8.80000142316e-19
+Coordinates for step 0009:Within Tolerance
+RMS Error: 1.11999989952e-18
+Coordinates for step 0010:Within Tolerance
+RMS Error: 1.66000026644e-18
+
+Velocities for step 0000:Within Tolerance
+RMS Error: 0.0
+Velocities for step 0001:Within Tolerance
+RMS Error: 7.64205199997e-14
+Velocities for step 0002:Within Tolerance
+RMS Error: 2.96958770037e-13
+Velocities for step 0003:Within Tolerance
+RMS Error: 6.25942729997e-13
+Velocities for step 0004:Within Tolerance
+RMS Error: 1.06627964013e-12
+Velocities for step 0005:Within Tolerance
+RMS Error: 1.64480904993e-12
+Velocities for step 0006:Within Tolerance
+RMS Error: 2.31209382978e-12
+Velocities for step 0007:Within Tolerance
+RMS Error: 3.02672470998e-12
+Velocities for step 0008:Within Tolerance
+RMS Error: 3.7779151999e-12
+Velocities for step 0009:Within Tolerance
+RMS Error: 4.59425187055e-12
+Velocities for step 0010:Within Tolerance
+RMS Error: 4.8603773593e-12
+
+QMMM: Total energy =: Match
+
+QMMM: Occupied MO Energies (eV): Within Tolerance
+RMS Error: 1.00000016548e-16
+
+QMMM: Virtual MO Energies (eV): Within Tolerance
+RMS Error: 9.99999987845e-17
+
+Forces on QM atoms ground state calculation RMSD: Within Tolerance
+RMS Error: 2.85013471947e-13
+
+Temperature (T) from energy-ev.out:Within Tolerance
+RMS Error: 2.60000000611e-19
+
+Temperature Difference (T-T0) from energy-ev.out:Within Tolerance
+RMS Error: 2.60000000611e-19
+
+Potential Energy (U) from energy-ev.out:Within Tolerance
+RMS Error: 5.26190116575e-16
+
+Potential Energy Difference (U-U0) from energy-ev.out:Within Tolerance
+RMS Error: 6.09299999983e-16
+
+Total Energy (E) from energy-ev.out:Within Tolerance
+RMS Error: 5.29668364961e-16
+
+Total Energy Difference (E-E0) from energy-ev.out:Within Tolerance
+RMS Error: 6.0004e-16
+
+-----------------------------------------------------------------------
+Check calculation bodynamics/test9/benzene
+
+Coordinates for step 0000:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0001:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0002:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0003:Within Tolerance
+RMS Error: 2.00000033096e-20
+Coordinates for step 0004:Within Tolerance
+RMS Error: 4.00000005301e-20
+Coordinates for step 0005:Within Tolerance
+RMS Error: 1.00000000068e-20
+Coordinates for step 0006:Within Tolerance
+RMS Error: 3.00000049644e-20
+Coordinates for step 0007:Within Tolerance
+RMS Error: 8.99998339556e-20
+Coordinates for step 0008:Within Tolerance
+RMS Error: 6.00000082809e-20
+Coordinates for step 0009:Within Tolerance
+RMS Error: 1.5000001491e-19
+Coordinates for step 0010:Within Tolerance
+RMS Error: 2.10000014888e-19
+
+Velocities for step 0000:Within Tolerance
+RMS Error: 0.0
+Velocities for step 0001:Within Tolerance
+RMS Error: 2.73918000345e-15
+Velocities for step 0002:Within Tolerance
+RMS Error: 7.22278000196e-15
+Velocities for step 0003:Within Tolerance
+RMS Error: 5.68619400544e-14
+Velocities for step 0004:Within Tolerance
+RMS Error: 1.11101810161e-13
+Velocities for step 0005:Within Tolerance
+RMS Error: 1.62175120046e-13
+Velocities for step 0006:Within Tolerance
+RMS Error: 3.10685710007e-13
+Velocities for step 0007:Within Tolerance
+RMS Error: 4.76355730096e-13
+Velocities for step 0008:Within Tolerance
+RMS Error: 4.65064370236e-13
+Velocities for step 0009:Within Tolerance
+RMS Error: 4.73679439768e-13
+Velocities for step 0010:Within Tolerance
+RMS Error: 4.21872899826e-13
+
+QMMM: Total energy =: Match
+
+QMMM: Occupied MO Energies (eV): Within Tolerance
+RMS Error: 1.50000017717e-15
+
+QMMM: Virtual MO Energies (eV): Within Tolerance
+RMS Error: 1.09999999551e-15
+
+Forces on QM atoms ground state calculation RMSD: Within Tolerance
+RMS Error: 4.23893761903e-11
+
+Temperature (T) from energy-ev.out:Within Tolerance
+RMS Error: 2.90000000631e-19
+
+Temperature Difference (T-T0) from energy-ev.out:Within Tolerance
+RMS Error: 2.90000000631e-19
+
+Potential Energy (U) from energy-ev.out:Within Tolerance
+RMS Error: 1.54901635164e-17
+
+Potential Energy Difference (U-U0) from energy-ev.out:Within Tolerance
+RMS Error: 1.371e-17
+
+Total Energy (E) from energy-ev.out:Within Tolerance
+RMS Error: 1.41104155271e-17
+
+Total Energy Difference (E-E0) from energy-ev.out:Within Tolerance
+RMS Error: 1.24899999997e-17
+
+-----------------------------------------------------------------------
+Check calculation bodynamics/test9/nitromethane
+
+Coordinates for step 0000:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0001:Within Tolerance
+RMS Error: 2.00000016508e-20
+Coordinates for step 0002:Within Tolerance
+RMS Error: 1.00000016548e-20
+Coordinates for step 0003:Within Tolerance
+RMS Error: 4.00000066192e-20
+Coordinates for step 0004:Within Tolerance
+RMS Error: 5.0000008274e-20
+Coordinates for step 0005:Within Tolerance
+RMS Error: 1.19999927733e-19
+Coordinates for step 0006:Within Tolerance
+RMS Error: 1.60000026477e-19
+Coordinates for step 0007:Within Tolerance
+RMS Error: 3.20000049647e-19
+Coordinates for step 0008:Within Tolerance
+RMS Error: 5.40000087701e-19
+Coordinates for step 0009:Within Tolerance
+RMS Error: 7.90000113014e-19
+Coordinates for step 0010:Within Tolerance
+RMS Error: 1.04999945658e-18
+
+Velocities for step 0000:Within Tolerance
+RMS Error: 0.0
+Velocities for step 0001:Within Tolerance
+RMS Error: 4.84564400021e-14
+Velocities for step 0002:Within Tolerance
+RMS Error: 1.9206450009e-13
+Velocities for step 0003:Within Tolerance
+RMS Error: 4.42353839951e-13
+Velocities for step 0004:Within Tolerance
+RMS Error: 7.73288329934e-13
+Velocities for step 0005:Within Tolerance
+RMS Error: 1.16296506018e-12
+Velocities for step 0006:Within Tolerance
+RMS Error: 1.61158665989e-12
+Velocities for step 0007:Within Tolerance
+RMS Error: 2.12895133021e-12
+Velocities for step 0008:Within Tolerance
+RMS Error: 2.6793857301e-12
+Velocities for step 0009:Within Tolerance
+RMS Error: 3.21317383066e-12
+Velocities for step 0010:Within Tolerance
+RMS Error: 3.35646255992e-12
+
+QMMM: Total energy =: Match
+
+QMMM: Occupied MO Energies (eV): Within Tolerance
+RMS Error: 2.00000033096e-16
+
+QMMM: Virtual MO Energies (eV): Within Tolerance
+RMS Error: 9.99999987845e-17
+
+Forces on QM atoms ground state calculation RMSD: Within Tolerance
+RMS Error: 8.88237612771e-14
+
+Temperature (T) from energy-ev.out:Within Tolerance
+RMS Error: 4.30000002895e-19
+
+Temperature Difference (T-T0) from energy-ev.out:Within Tolerance
+RMS Error: 4.30000002895e-19
+
+Potential Energy (U) from energy-ev.out:Within Tolerance
+RMS Error: 2.19971618449e-16
+
+Potential Energy Difference (U-U0) from energy-ev.out:Within Tolerance
+RMS Error: 9.61380000064e-16
+
+Total Energy (E) from energy-ev.out:Within Tolerance
+RMS Error: 2.12850932309e-16
+
+Total Energy Difference (E-E0) from energy-ev.out:Within Tolerance
+RMS Error: 9.39029999998e-16
+
+-----------------------------------------------------------------------
+Check calculation bodynamics/test10/benzene
+
+Coordinates for step 0000:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0001:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0002:Within Tolerance
+RMS Error: 9.9998240199e-21
+Coordinates for step 0003:Within Tolerance
+RMS Error: 1e-20
+Coordinates for step 0004:Within Tolerance
+RMS Error: 3.00000049644e-20
+Coordinates for step 0005:Within Tolerance
+RMS Error: 4.00000066192e-20
+Coordinates for step 0006:Within Tolerance
+RMS Error: 3.00000016548e-20
+Coordinates for step 0007:Within Tolerance
+RMS Error: 2.00000033096e-20
+Coordinates for step 0008:Within Tolerance
+RMS Error: 4.00000066192e-20
+Coordinates for step 0009:Within Tolerance
+RMS Error: 5.00000066192e-20
+Coordinates for step 0010:Within Tolerance
+RMS Error: 1.30000014893e-19
+
+Velocities for step 0000:Within Tolerance
+RMS Error: 0.0
+Velocities for step 0001:Within Tolerance
+RMS Error: 2.07225000109e-14
+Velocities for step 0002:Within Tolerance
+RMS Error: 2.07434100166e-14
+Velocities for step 0003:Within Tolerance
+RMS Error: 2.01434899825e-14
+Velocities for step 0004:Within Tolerance
+RMS Error: 3.85663400059e-14
+Velocities for step 0005:Within Tolerance
+RMS Error: 7.22510500547e-14
+Velocities for step 0006:Within Tolerance
+RMS Error: 7.25160699376e-14
+Velocities for step 0007:Within Tolerance
+RMS Error: 7.42847599805e-14
+Velocities for step 0008:Within Tolerance
+RMS Error: 8.27001900315e-14
+Velocities for step 0009:Within Tolerance
+RMS Error: 9.56467899273e-14
+Velocities for step 0010:Within Tolerance
+RMS Error: 1.09679059944e-13
+
+QMMM: Total energy =: Match
+
+QMMM: Occupied MO Energies (eV): Within Tolerance
+RMS Error: 4.99999976159e-16
+
+QMMM: Virtual MO Energies (eV): Within Tolerance
+RMS Error: 1.10000000439e-15
+
+Forces on QM atoms ground state calculation RMSD: Within Tolerance
+RMS Error: 1.14813804695e-13
+
+Temperature (T) from energy-ev.out:Within Tolerance
+RMS Error: 9.99999992008e-21
+
+Temperature Difference (T-T0) from energy-ev.out:Within Tolerance
+RMS Error: 9.99999992008e-21
+
+Potential Energy (U) from energy-ev.out:Within Tolerance
+RMS Error: 2.08985576514e-18
+
+Potential Energy Difference (U-U0) from energy-ev.out:Within Tolerance
+RMS Error: 2.77999999883e-18
+
+Total Energy (E) from energy-ev.out:Within Tolerance
+RMS Error: 1.90992323777e-18
+
+Total Energy Difference (E-E0) from energy-ev.out:Within Tolerance
+RMS Error: 3.09e-18
+
+-----------------------------------------------------------------------
+Check calculation bodynamics/test10/nitromethane
+
+Coordinates for step 0000:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0001:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0002:Within Tolerance
+RMS Error: 1.00000016548e-20
+Coordinates for step 0003:Within Tolerance
+RMS Error: 1.00000016548e-20
+Coordinates for step 0004:Within Tolerance
+RMS Error: 2.00000033096e-20
+Coordinates for step 0005:Within Tolerance
+RMS Error: 1.00000016548e-20
+Coordinates for step 0006:Within Tolerance
+RMS Error: 4.00000049712e-20
+Coordinates for step 0007:Within Tolerance
+RMS Error: 7.00000115837e-20
+Coordinates for step 0008:Within Tolerance
+RMS Error: 1.00000016548e-19
+Coordinates for step 0009:Within Tolerance
+RMS Error: 1.40000000963e-19
+Coordinates for step 0010:Within Tolerance
+RMS Error: 1.80000028128e-19
+
+Velocities for step 0000:Within Tolerance
+RMS Error: 0.0
+Velocities for step 0001:Within Tolerance
+RMS Error: 1.3814299999e-14
+Velocities for step 0002:Within Tolerance
+RMS Error: 3.85196200187e-14
+Velocities for step 0003:Within Tolerance
+RMS Error: 7.18742499918e-14
+Velocities for step 0004:Within Tolerance
+RMS Error: 1.13014149976e-13
+Velocities for step 0005:Within Tolerance
+RMS Error: 1.72624819941e-13
+Velocities for step 0006:Within Tolerance
+RMS Error: 2.44874590054e-13
+Velocities for step 0007:Within Tolerance
+RMS Error: 3.01976030012e-13
+Velocities for step 0008:Within Tolerance
+RMS Error: 3.50113879974e-13
+Velocities for step 0009:Within Tolerance
+RMS Error: 4.0984242012e-13
+Velocities for step 0010:Within Tolerance
+RMS Error: 4.9311747016e-13
+
+QMMM: Total energy =: Match
+
+QMMM: Occupied MO Energies (eV): Within Tolerance
+RMS Error: 1.00000016548e-16
+
+QMMM: Virtual MO Energies (eV): Within Tolerance
+RMS Error: 1.99999997569e-16
+
+Forces on QM atoms ground state calculation RMSD: Within Tolerance
+RMS Error: 7.10331322031e-14
+
+Temperature (T) from energy-ev.out:Within Tolerance
+RMS Error: 6.00000000409e-20
+
+Temperature Difference (T-T0) from energy-ev.out:Within Tolerance
+RMS Error: 6.00000000409e-20
+
+Potential Energy (U) from energy-ev.out:Within Tolerance
+RMS Error: 1.07142530549e-15
+
+Potential Energy Difference (U-U0) from energy-ev.out:Within Tolerance
+RMS Error: 1.22265999991e-15
+
+Total Energy (E) from energy-ev.out:Within Tolerance
+RMS Error: 1.08320028158e-15
+
+Total Energy Difference (E-E0) from energy-ev.out:Within Tolerance
+RMS Error: 1.22769e-15
+
+-----------------------------------------------------------------------
+Check calculation bodynamics/test11/benzene
+
+Coordinates for step 0000:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0001:Within Tolerance
+RMS Error: 1.00000016548e-20
+Coordinates for step 0002:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0003:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0004:Within Tolerance
+RMS Error: 2.00000019218e-20
+Coordinates for step 0005:Within Tolerance
+RMS Error: 3.00000033096e-20
+Coordinates for step 0006:Within Tolerance
+RMS Error: 1.00000016548e-20
+Coordinates for step 0007:Within Tolerance
+RMS Error: 6.00000099288e-20
+Coordinates for step 0008:Within Tolerance
+RMS Error: 5.00000068863e-20
+Coordinates for step 0009:Within Tolerance
+RMS Error: 2.99999811052e-20
+Coordinates for step 0010:Within Tolerance
+RMS Error: 3.00000049644e-20
+
+Velocities for step 0000:Within Tolerance
+RMS Error: 0.0
+Velocities for step 0001:Within Tolerance
+RMS Error: 2.13114699994e-14
+Velocities for step 0002:Within Tolerance
+RMS Error: 2.34460500082e-14
+Velocities for step 0003:Within Tolerance
+RMS Error: 2.28601500138e-14
+Velocities for step 0004:Within Tolerance
+RMS Error: 1.85081099973e-14
+Velocities for step 0005:Within Tolerance
+RMS Error: 2.25185900094e-14
+Velocities for step 0006:Within Tolerance
+RMS Error: 2.28752100317e-14
+Velocities for step 0007:Within Tolerance
+RMS Error: 2.50486000218e-14
+Velocities for step 0008:Within Tolerance
+RMS Error: 3.03317199339e-14
+Velocities for step 0009:Within Tolerance
+RMS Error: 3.83718301133e-14
+Velocities for step 0010:Within Tolerance
+RMS Error: 4.07473798509e-14
+
+QMMM: Total energy =: Match
+
+QMMM: Occupied MO Energies (eV): Within Tolerance
+RMS Error: 2.89999994699e-15
+
+QMMM: Virtual MO Energies (eV): Within Tolerance
+RMS Error: 1.70000000709e-15
+
+Forces on QM atoms ground state calculation RMSD: Within Tolerance
+RMS Error: 8.81219437498e-14
+
+Temperature (T) from energy-ev.out:Within Tolerance
+RMS Error: 2.00000001871e-20
+
+Temperature Difference (T-T0) from energy-ev.out:Within Tolerance
+RMS Error: 2.00000001871e-20
+
+Potential Energy (U) from energy-ev.out:Within Tolerance
+RMS Error: 8.17999070605e-18
+
+Potential Energy Difference (U-U0) from energy-ev.out:Within Tolerance
+RMS Error: 1.48000000031e-17
+
+Total Energy (E) from energy-ev.out:Within Tolerance
+RMS Error: 7.99004930619e-18
+
+Total Energy Difference (E-E0) from energy-ev.out:Within Tolerance
+RMS Error: 1.474e-17
+
+-----------------------------------------------------------------------
+Check calculation bodynamics/test11/nitromethane
+
+Coordinates for step 0000:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0001:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0002:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0003:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0004:Within Tolerance
+RMS Error: 0.0
+Coordinates for step 0005:Within Tolerance
+RMS Error: 3.00000049644e-20
+Coordinates for step 0006:Within Tolerance
+RMS Error: 2.00000033096e-20
+Coordinates for step 0007:Within Tolerance
+RMS Error: 4.00000066192e-20
+Coordinates for step 0008:Within Tolerance
+RMS Error: 5.0000008274e-20
+Coordinates for step 0009:Within Tolerance
+RMS Error: 5.0000008274e-20
+Coordinates for step 0010:Within Tolerance
+RMS Error: 5.0000008274e-20
+
+Velocities for step 0000:Within Tolerance
+RMS Error: 0.0
+Velocities for step 0001:Within Tolerance
+RMS Error: 3.58022000001e-15
+Velocities for step 0002:Within Tolerance
+RMS Error: 5.55477999594e-15
+Velocities for step 0003:Within Tolerance
+RMS Error: 1.30767699837e-14
+Velocities for step 0004:Within Tolerance
+RMS Error: 2.84667500033e-14
+Velocities for step 0005:Within Tolerance
+RMS Error: 4.88152999558e-14
+Velocities for step 0006:Within Tolerance
+RMS Error: 6.23402999794e-14
+Velocities for step 0007:Within Tolerance
+RMS Error: 6.36966700016e-14
+Velocities for step 0008:Within Tolerance
+RMS Error: 6.26321800058e-14
+Velocities for step 0009:Within Tolerance
+RMS Error: 5.74524699602e-14
+Velocities for step 0010:Within Tolerance
+RMS Error: 6.10289000125e-14
+
+QMMM: Total energy =: Match
+
+QMMM: Occupied MO Energies (eV): Within Tolerance
+RMS Error: 9.0000001393e-15
+
+QMMM: Virtual MO Energies (eV): Within Tolerance
+RMS Error: 9.70000004197e-15
+
+Forces on QM atoms ground state calculation RMSD: Within Tolerance
+RMS Error: 3.79897078261e-13
+
+Temperature (T) from energy-ev.out:Within Tolerance
+RMS Error: 2.00000001871e-20
+
+Temperature Difference (T-T0) from energy-ev.out:Within Tolerance
+RMS Error: 2.00000001871e-20
+
+Potential Energy (U) from energy-ev.out:Within Tolerance
+RMS Error: 3.61718367027e-15
+
+Potential Energy Difference (U-U0) from energy-ev.out:Within Tolerance
+RMS Error: 3.26681899994e-14
+
+Total Energy (E) from energy-ev.out:Within Tolerance
+RMS Error: 3.62319298381e-15
+
+Total Energy Difference (E-E0) from energy-ev.out:Within Tolerance
+RMS Error: 3.26616e-14

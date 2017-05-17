@@ -197,6 +197,11 @@
 
    
 ! Write vectors only for BIG sizes in the case of crash/restart       	  
+!   write(6,*) "Davidson Eigenvectors"
+!   do j=1,j0
+!     write(6, '(40e18.9)') (qm2ds%v0(i,j),i=1,qm2ds%Nrpa)
+!   end do
+   
    if(qm2ds%mdflag.lt.0.and.qm2ds%Nb.gt.100) then
       open (10,file='modes.b',form='unformatted')
       open (12,file='ee.b')
@@ -719,9 +724,13 @@
         !stop
         !end if
    !!End JAB Testing
+   write(6,*)'info00',info 
  
    call dsyev ('v','u',nd1,rayvR,nd,raye,xi,qm2ds%Nrpa,info) 
         !Eigenvalues of ray1 in raye and eigenvectors in rayvR
+   write(6,*)'info000',info
+   write(6,*)'info Nrpa,nd,nd1',qm2ds%Nrpa,nd,nd1
+   write(6,*)'info shapes',shape(rayvR),shape(raye),shape(xi)
  
    do j=1,nd1
       raye1(j)=Sign(Sqrt(Abs(raye(j))),raye(j)) !make raye1 sqrt(eigenvalues) with same sign as eigenvalues
@@ -761,6 +770,7 @@
    !!End JAB Testing
 
 ! find eigenvalues and eigenvectors of ray
+   write(6,*)'info0',info
    call dsyev ('v','u',nd1,rayv,nd,raye,xi,qm2ds%Nrpa,info)
    do j=1,nd1
       raye(j) = Sign(Sqrt(Abs(raye(j))),raye(j))

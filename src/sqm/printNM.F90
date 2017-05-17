@@ -242,10 +242,11 @@ end subroutine
 !
 !--------------------------------------------------------------------
 
-   subroutine printNM_binary(fn1,fn2)
+   subroutine printNM_binary(fn1,fn2,fn3)
    use qm2_davidson_module
+   use qmmm_module
    implicit none
-   integer i,j,fn1,fn2
+   integer i,j,fn1,fn2,fn3
    !character(len=20) FMT
    open (fn1,file='modes.b',form='unformatted')
    open (fn2,file='ee.b')
@@ -253,7 +254,12 @@ end subroutine
       write (fn1) (qm2ds%v0(i,j),i=1,qm2ds%Nrpa)
       write (fn2,*)  qm2ds%e0(j)
    enddo
+   open (fn3,file='rhogr.b',form='unformatted')
+   do j=1,qm2_struct%matsize
+      write (fn3) qm2_struct%den_matrix(j)
+   enddo
    close(fn1)
    close(fn2)
+   close(fn3)
    end subroutine
 

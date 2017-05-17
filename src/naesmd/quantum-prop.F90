@@ -197,6 +197,7 @@ SUBROUTINE DIVPRK (IDO, NEQ, FCN, X, XEND, TOL, PARAM, Y)
     EXTERNAL   I1KGT, N1RTY, DI3PRK
     INTEGER    I1KGT, N1RTY
     !
+    WRITE(6,*)'DIVPRK CALLED IDO=',IDO
     CALL E1PSH ('DIVPRK ')
     !                                  Check IDO
     IF (IDO.LT.1 .OR. IDO.GT.6) THEN

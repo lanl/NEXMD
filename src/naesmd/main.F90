@@ -77,7 +77,8 @@ program MD_Geometry
         berendsen_relax_const,heating, &
         heating_steps_per_degree,out_data_steps,out_coords_steps, &
         therm_friction,rnd_seed,out_data_cube,verbosity,moldyn_deriv_flag, &
-        quant_step_reduction_factor,decoher_e0,decoher_c,decoher_type,dotrivial
+        quant_step_reduction_factor,decoher_e0,decoher_c,decoher_type,dotrivial,&
+        iredpot,nstates,deltared
     integer cohertype
     _REAL_,allocatable :: yg(:)
     integer,allocatable :: cross(:)
@@ -368,6 +369,10 @@ program MD_Geometry
                 !--------------------------------------------------------------------
                 ! Runge-Kutta-Verner propagator
                 !--------------------------------------------------------------------
+                write(6,*)'Propagator about to be called:',ido,neq,tini,tend,toldivprk
+                write(6,*)'param:',param
+                write(6,*)'yg:',yg
+
                 call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
                 ! Check the norm
                 call checknorm(sim,ido,neq,tini,tend,toldivprk,param,yg)
@@ -524,6 +529,7 @@ contains
     !
     subroutine init_main()
         use naesmd_module
+        use naesmd_constants
         use md_module
 
         implicit none
@@ -654,6 +660,9 @@ contains
         decoher_c=0.1d0 ! decoherecne parameter C
         decoher_type=0 ! decoherence type, Persico/Granucci(0), or Truhlar (1)
         dotrivial=1 !do trivial unavoided crossing routine (1) or not (0)  
+        iredpot=0 !don't reduce the number of potentials during dynamics
+        nstates=2 !do 2 states higher by default for iredpot
+        deltared=1 !do 1 eV higher in energy for iredpot
  
         inputfdes=12
         open (inputfdes,file='input.ceon',status='old')
@@ -737,6 +746,8 @@ contains
         constcoherC=decoher_c
 
         cohertype=decoher_type
+
+        deltared=deltared/feVmdqt !for reducing number of potentials   
 
         write(6,*) '!!!!!!-----MD INPUT-----!!!!!!'
         write(6,*)

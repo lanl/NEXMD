@@ -190,7 +190,7 @@ contains
         end if
           
         call qmmm2coords_r(sim)
-        sim%dav%Mx=sim%excN
+        sim%dav%Mx=sim%excN+1
         if(present(statelimit)) then !reduces the calculated number of states
             sim%dav%Mx=statelimit
         endif

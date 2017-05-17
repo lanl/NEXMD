@@ -1,0 +1,110 @@
+&qmmm
+   !***** Ground state and output parameters
+   qm_theory='AM1', !Integral type [AM1]
+   scfconv=1.0d-8, !Ground state scf convergence criteria [1.0d-8]
+   verbosity=5, ![0]
+   printcharges=0, ! Mulliken charges for ground state [0]
+   printdipole=2, ! (0) None, (1) Transition, Relaxed, and Unrelaxed [0]
+   printbondorders=0, ! (0) No, (1) Yes [0]
+   density_predict=0, !(0) None, (1) Reversible MD, (2) XL-BOMD [0]
+   itrmax=300, ! Maximum number of scf iterations for ground state, negative to ignore convergence [300]
+
+   !***** Excited state parameters
+   exst_method=2, ! CIS (1) or RPA (2), [1]
+   dav_guess=1, ! restart Davidson from previous (1) or from scratch (0) or XL-BOXMD (2)
+   ftol=0.d0, !   Min tolerance (|emin-eold|) [0.d0]
+   ftol0=1.d-7, !  Acceptance tol.(|emin-eold|) [1.d-4]
+   ftol1=1.d-8, ! Accept.tol.for residual norm [1.d-5]
+   dav_maxcyc=200, !Max cycles for davidson diagonalization, negative for fixed number, [100]
+   calcxdens=.false.,
+
+   !***** Geometry optimization
+   maxcyc=0, !Number of cycles for geometry optimization [0]
+   ntpr=1, !Print results every ntpr cycles [1]
+   grms_tol=0.01, !Tolerance in eV/A (derivatives) [0.01]
+
+   !***** Solvent models
+   solvent_model=1, ! (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi [0]
+   potential_type=3, ! (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
+   ceps=10, !Dielectric constant [10]
+   linmixparam=1
+   cosmo_scf_ftol=1.0d-5, !State specific scf tolerance [1.d-5]
+   EF=0, !(1) Electric field in ground and excited state, (2) Electric field in excited state only [0]
+   Ex=0, !Electric Field Vector X [0]
+   Ez=0, !Electric Field Vector Z [0] 
+   Ey=0.01, !Electric Field Vector Y [0]
+   onsager_radius=2, ! Onsager radius [2]
+&endqmmm
+
+&moldyn
+   !***** General parameters
+   natoms=15,
+   rnd_seed=11, ! seed for the random number generator
+   bo_dynamics_flag=1, ! 0-non-BO, 1-BO [1]
+   exc_state_init=1, ! initial excited state (0 - ground state) [0]
+   n_exc_states_propagate=1, ! number of excited states [0]
+
+   !***** Dynamics parameters
+   time_init=0.d0, ! initial time, fs [0.0]
+   time_step=0.1, !time step, fs [0.1]
+   n_class_steps=10, !number of classical steps [1]
+   n_quant_steps=0, ! number of quantum steps for each classical step [4]
+   moldyn_deriv_flag=1, ! 0-none, 1-analyt, 2-numeric [1]
+   num_deriv_step=1.d-5, ! displacement for numerical derivatives, A [1.d-3]
+   rk_tolerance=1.d-7, ! tolerance for the Runge-Kutta propagator [1.d-7]
+
+   !***** Non-adiabatic parameters
+   quant_coeffs_reinit=0, ! reinit (1) or not (0) quantum coeffs after a hop [0]
+   quant_step_reduction_factor=1d0, ! quantum step reduction factor [0.1]
+   decoher_type=0, ! type of decoherence: Persico/Granucci (0), Truhlar(1) [0]
+   decoher_e0=0.d0, ! decoherence parameter E0 [0.1]
+   decoher_c=0.d0, ! decoherence parameter C [0.1]
+   dotrivial=0, !do trivial unavoided crossing routine (1) or not (0)
+
+   !***** Thermostat parameters
+   therm_type=0, ! Thermostat type (0-no thermostat,1-Langevin,2-Berendsen) [0] 
+   therm_temperature=300.d0, ! Thermostate temperature, K [300.0]
+   therm_friction=2.d0, ! thermostate friction coefficient, 1/ps [2.0]
+   berendsen_relax_const=0.4d0, ! bath relaxation constant, only for Berendsen [0.4]
+   heating=0, ! heating (1) or equilibrated(0) [0]
+   heating_steps_per_degree=100, ! number of steps per degree during heating [100]
+
+   !***** Output & Log parameters
+   verbosity=3, ! output verbosity (0-minimal, 3-highest) [2]
+   out_count_init=0, ! the initial count for output files [0]
+   out_data_steps=1, ! number of steps to write data [1]
+   out_coords_steps=1, ! number of steps to write the restart file [10]
+   out_data_cube=0, ! write(1) or not(0) view files to generate cubes [0]
+&endmoldyn
+
+&coord
+6         -7.98937        0.68297       -0.00000
+6         -7.09935        1.76241       -0.00000
+6         -5.71952        1.53135        0.00000
+6         -5.22971        0.22085       -0.00000
+6         -6.11972       -0.85859       -0.00000
+6         -7.49955       -0.62753       -0.00000
+1         -9.05685        0.86172       -0.00000
+1         -7.47829        2.77624       -0.00000
+1         -5.03098        2.36644        0.00000
+1         -4.16223        0.04210       -0.00000
+1         -5.74079       -1.87242       -0.00000
+1         -8.18810       -1.46262       -0.00000
+&endcoord
+
+&veloc
+   0.0   0.0   0.0
+   0.0   0.0   0.0
+&endveloc
+
+&coeff
+  0.00	0.00
+  0.00	0.00
+  1.00  0.00
+  0.00  0.00
+  0.00  0.00
+  0.00  0.00
+  0.00  0.00
+  0.00  0.00
+&endcoeff
+

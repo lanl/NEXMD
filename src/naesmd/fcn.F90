@@ -71,14 +71,10 @@ subroutine vqcalc(n,yg,yprime)
             vnqcorrhop(k,j)=vnqcorrhop(k,j)*2.0d0*yg(k)
         end do
 
-        if(dabs(yg(k)).lt.1.0d-7) then
-            yprime(k+n/2)=0.0d0
-        else
-            do j=1,n/2
-                yprime(k+n/2)=yprime(k+n/2)-yg(j)/yg(k)* &
-                    dsin(yg(j+n/2)-yg(k+n/2))*cadiab(k,j)
-            end do
-        end if
+        do j=1,n/2
+            yprime(k+n/2)=yprime(k+n/2)-yg(j)/(1.0d-6+yg(k))* &
+                dsin(yg(j+n/2)-yg(k+n/2))*cadiab(k,j)
+        end do
     end do
     return
 end subroutine
