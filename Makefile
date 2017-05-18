@@ -17,6 +17,7 @@ LIB = lib
 
 SQMINC = -I$(MODDIR)/$(SQMDIR)/
 AMOEBAINC = -I$(MODDIR)/$(AMOEBADIR)/
+MODOPT = -J
 
 INC= -Iinc/ -Iinc/$(SANDERDIR) -Iinc/$(LIBDIR)/ -Iinc/$(SQMDIR) -Imod/$(SQMDIR)/ -Imod/$(NAESMDDIR)
 
@@ -323,16 +324,16 @@ $(OBJDIR)/$(LIBDIR)/%.o: $(SRCDIR)/$(LIBDIR)/%.c
 	$(CC) $(INC) $(FFLAG) -o $@ -c $<
 
 $(OBJDIR)/$(SANDERDIR)/%.o: $(SRCDIR)/$(SANDERDIR)/%.F90
-	$(FC) $(INC) $(FFLAG) $(SQMINC) -J$(MODDIR)/$(SANDERDIR)/ -o $@ -c $<
+	$(FC) $(INC) $(FFLAG) $(SQMINC) ${MODOPT}$(MODDIR)/$(SANDERDIR)/ -o $@ -c $<
 
 $(OBJDIR)/$(SANDERDIR)/%.o: $(SRCDIR)/$(SANDERDIR)/%.c
 	$(CC) $(INC) $(FFLAG) -o $@ -c $<
 
 $(OBJDIR)/$(SQMDIR)/%.o: $(SRCDIR)/$(SQMDIR)/%.F90
-	$(FC) $(INC) $(FFLAG) -DSQM -J$(MODDIR)/$(SQMDIR)/ -o $@ -c $< 
+	$(FC) $(INC) $(FFLAG) -DSQM ${MODOPT}$(MODDIR)/$(SQMDIR)/ -o $@ -c $< 
 
 $(OBJDIR)/$(NAESMDDIR)/%.o: $(SRCDIR)/$(NAESMDDIR)/%.F90
-	$(FC) $(INC) $(FFLAG) $(SQMINC) -J$(MODDIR)/$(NAESMDDIR)/  -o $@ -c $<  
+	$(FC) $(INC) $(FFLAG) $(SQMINC) ${MODOPT}$(MODDIR)/$(NAESMDDIR)/  -o $@ -c $<  
 
 $(OBJDIR)/$(NAESMDDIR)/old/%.o: $(SRCDIR)/$(NAESMDDIR)/old/%.F90
 	$(FC) $(INC) $(FFLAG) -o $@ -c $< 
@@ -354,17 +355,18 @@ all:  sqmceonaesmd.exe
 
 all_ic: FC = ifort
 all_ic: CC = icc
+all_ic: MODOPT = -module 
 all_ic: LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
 all_ic: FFLAG= -O3 -I${MKLROOT}/include
 all_ic: CFLAG= -O3 -I${MKLROOT}/include -DMKL_LP64
 all_ic: sqmceonaesmd.exe
 
-debugBen: FC = ifort
-debugBen: CC = icc
-debugBen: LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
-debugBen: FFLAG= -g -I${MKLROOT}/include
-debugBen: CFLAG= -g -I${MKLROOT}/include -DMKL_LP64
-debugBen: sqmceonaesmd.exe
+debug_ic: FC = ifort
+debug_ic: CC = icc
+debug_ic: LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
+debug_ic: FFLAG= -g -I${MKLROOT}/include
+debug_ic: CFLAG= -g -I${MKLROOT}/include -DMKL_LP64
+debug_ic: sqmceonaesmd.exe
 
 LINK =  $(LINALG)
 
