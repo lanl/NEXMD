@@ -1059,16 +1059,16 @@ contains
 100     format(I5,'     ',3F12.6)
 
 
-        if(tfemto.eq.0.d0) then
-            open (9,file='coords.xyz')
-            write (9,*) Na
-            write (9,*) 'Input Geometry'
-
-            do j = 1,Na
-                write(9,302) ELEMNT(atoms(j)),xx(j),yy(j),zz(j)
-            end do
-            close (9)
-        end if
+!        if(tfemto.eq.0.d0) then
+!            open (9,file='coords.xyz')
+!            write (9,*) Na
+!            write (9,*) 'Input Geometry'
+!
+!            do j = 1,Na
+!                write(9,302) ELEMNT(atoms(j)),xx(j),yy(j),zz(j)
+!            end do
+!            close (9)
+!        end if
         sim%coords(1:3*Na)=r0(1:3*Na)
         allocate(sim%deriv_forces(3*Na))
         pOmega=>Omega

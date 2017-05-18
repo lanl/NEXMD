@@ -122,49 +122,46 @@ contains
 
         ! write the atomic positions to trajectory file
         card='coordinates.dat'
-        OPEN(10,FILE=card,action='write',position='append')
+        OPEN(201,FILE=card,action='write',position='append')
         
-        write (10,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
+        write (201,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
             '  time = ',tfemto
-        write(10,557) '$COORD'
+        write(201,557) '$COORD'
         do i=1,txtinicoord
-            write(10,555) txtinput(i)
+            write(201,555) txtinput(i)
         end do
 
         do i=1,natom
-            write(10,999) atomtype(i),rx(i)*convl &
+            write(201,999) atomtype(i),rx(i)*convl &
                 ,ry(i)*convl,rz(i)*convl
         end do
 
-        write(10,556) '$ENDCOORD'
-        close(10)
+        write(201,556) '$ENDCOORD'
         
         
         card='velocity.dat'
-        OPEN(10,FILE=card,action='write',position='append')
-        write(10,600) 'Frame: ', ktbig(icontpdb)
-        write(10,557) '$VELOC'
+        OPEN(202,FILE=card,action='write',position='append')
+        write(202,600) 'Frame: ', ktbig(icontpdb)
+        write(202,557) '$VELOC'
 
         do k=1,natom
-            write(10,223) vx(k)*convl/convt, &
+            write(202,223) vx(k)*convl/convt, &
                 vy(k)*convl/convt,vz(k)*convl/convt
         end do
 
-        write(10,556) '$ENDVELOC'
-        close(10)
+        write(202,556) '$ENDVELOC'
         
         card='coefficient.dat'
-        OPEN(10,FILE=card,action='write',position='append')
-        write(10,600) 'Frame: ', ktbig(icontpdb)
-        write(10,557) '$COEFF'
+        OPEN(203,FILE=card,action='write',position='append')
+        write(203,600) 'Frame: ', ktbig(icontpdb)
+        write(203,557) '$COEFF'
 
         do k=1,sim%excN
-            write(10,223) yg(k)**2,dsin(yg(k+sim%excN))
+            write(203,223) yg(k)**2,dsin(yg(k+sim%excN))
         enddo
 
-        write(10,556) '$ENDCOEFF'
+        write(203,556) '$ENDCOEFF'
 
-        close(10)
 
         if(iview.eq.1) then
 
@@ -372,56 +369,47 @@ contains
         else
             icont=1
             icontpdb=icontpdb+1
-
-            card='coordinates.dat'
-            OPEN(10,FILE=card,action='write',position='append')
             
-            write (10,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
+            write (201,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
                 '  time = ',tfemto
-            write(10,557) '$COORD'
+            write(201,557) '$COORD'
             do k=1,txtinicoord
-                write(10,555) txtinput(k)
+                write(201,555) txtinput(k)
             end do
     
             do k=1,natom
-                write(10,999) atomtype(k),rx(k)*convl &
+                write(201,999) atomtype(k),rx(k)*convl &
                     ,ry(k)*convl,rz(k)*convl
             end do
     
-            write(10,556) '$ENDCOORD'
-            close(10)
+            write(201,556) '$ENDCOORD'
             
             
-            card='velocity.dat'
-            OPEN(10,FILE=card,action='write',position='append')
-            write (10,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
+            write (202,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
                 '  time = ',tfemto
-            write(10,557) '$VELOC'
+            write(202,557) '$VELOC'
     
             do k=1,natom
-                write(10,223) vx(k)*convl/convt, &
+                write(202,223) vx(k)*convl/convt, &
                     vy(k)*convl/convt,vz(k)*convl/convt
             end do
     
-            write(10,556) '$ENDVELOC'
-            close(10)
+            write(202,556) '$ENDVELOC'
             
-            card='coefficient.dat'
-            OPEN(10,FILE=card,action='write',position='append')
-            write (10,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
+            write (203,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
                 '  time = ',tfemto
-            write(10,557) '$COEFF'
+            write(203,557) '$COEFF'
     
             do k=1,sim%excN
-                write(10,223) yg(k)**2,dsin(yg(k+sim%excN))
+                write(203,223) yg(k)**2,dsin(yg(k+sim%excN))
             enddo
     
-            write(10,556) '$ENDCOEFF'
+            write(203,556) '$ENDCOEFF'
     
-            close(10)
-            
             card='restart.dat'
             OPEN(10,FILE=card,ACTION='write',STATUS='replace')
+            write (203,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
+                '  time = ',tfemto
             write(10,557) '$COORD'
             do k=1,txtinicoord
                 write(10,555) txtinput(k)
