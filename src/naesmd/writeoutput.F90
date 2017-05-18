@@ -120,9 +120,12 @@ contains
             end do
         end if
 
-        ! write the atomic positions in angstoms
-        card='coordinates' // ktbig(icontini) // '.dat'
-        OPEN(10,FILE=card)
+        ! write the atomic positions to trajectory file
+        card='coordinates.dat'
+        OPEN(10,FILE=card,action='write',position='append')
+        
+        write (10,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
+            '  time = ',tfemto
         write(10,557) '$COORD'
         do i=1,txtinicoord
             write(10,555) txtinput(i)
@@ -134,6 +137,12 @@ contains
         end do
 
         write(10,556) '$ENDCOORD'
+        close(10)
+        
+        
+        card='velocity.dat'
+        OPEN(10,FILE=card,action='write',position='append')
+        write(10,600) 'Frame: ', ktbig(icontpdb)
         write(10,557) '$VELOC'
 
         do k=1,natom
@@ -142,6 +151,11 @@ contains
         end do
 
         write(10,556) '$ENDVELOC'
+        close(10)
+        
+        card='coefficient.dat'
+        OPEN(10,FILE=card,action='write',position='append')
+        write(10,600) 'Frame: ', ktbig(icontpdb)
         write(10,557) '$COEFF'
 
         do k=1,sim%excN
@@ -198,6 +212,7 @@ contains
 443     format(a41)
         !444   format(a80)
 445     format(a29)
+449     format(a28,F18.10,a9,F18.10)
 889     FORMAT(10000(1X,F18.10))
         !887   FORMAT(F18.10,10000(1X,I1))
 999     FORMAT(I3,1X,1000(1X,F18.10))
@@ -211,6 +226,7 @@ contains
 557     format(a6)
         !558   format(a7)
         !88    format(a1)
+600     format(a7,a4)
 
         return
     end subroutine
@@ -357,45 +373,93 @@ contains
             icont=1
             icontpdb=icontpdb+1
 
-            card='coordinates' // ktbig(icontpdb) // '.dat'
-            open(10,FILE=card)
+            card='coordinates.dat'
+            OPEN(10,FILE=card,action='write',position='append')
+            
+            write (10,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
+                '  time = ',tfemto
             write(10,557) '$COORD'
             do k=1,txtinicoord
                 write(10,555) txtinput(k)
             end do
-
+    
             do k=1,natom
-                write(10,999) atomtype(k),rx(k)*convl, &
-                    ry(k)*convl,rz(k)*convl
+                write(10,999) atomtype(k),rx(k)*convl &
+                    ,ry(k)*convl,rz(k)*convl
             end do
+    
             write(10,556) '$ENDCOORD'
+            close(10)
+            
+            
+            card='velocity.dat'
+            OPEN(10,FILE=card,action='write',position='append')
+            write (10,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
+                '  time = ',tfemto
             write(10,557) '$VELOC'
-
+    
             do k=1,natom
                 write(10,223) vx(k)*convl/convt, &
                     vy(k)*convl/convt,vz(k)*convl/convt
             end do
-
+    
             write(10,556) '$ENDVELOC'
+            close(10)
+            
+            card='coefficient.dat'
+            OPEN(10,FILE=card,action='write',position='append')
+            write (10,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
+                '  time = ',tfemto
             write(10,557) '$COEFF'
-
+    
             do k=1,sim%excN
                 write(10,223) yg(k)**2,dsin(yg(k+sim%excN))
-            end do
-
+            enddo
+    
             write(10,556) '$ENDCOEFF'
-
+    
             close(10)
-
-            open (9,file='coords.xyz',access='append')
-            write (9,*) natom
-            write (9,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
-                '  time = ',tfemto
-            do k=1,natom
-                write(9,302) ELEMNT(atomtype(k)),rx(k)*convl, &
-                    ry(k)*convl,rz(k)*convl
+            
+            card='restart.dat'
+            OPEN(10,FILE=card,ACTION='write',STATUS='replace')
+            write(10,557) '$COORD'
+            do k=1,txtinicoord
+                write(10,555) txtinput(k)
             end do
-            close (9)
+    
+            do k=1,natom
+                write(10,999) atomtype(k),rx(k)*convl &
+                    ,ry(k)*convl,rz(k)*convl
+            end do
+    
+            write(10,556) '$ENDCOORD'
+            write(10,557) '$VELOC'
+    
+            do k=1,natom
+                write(10,223) vx(k)*convl/convt, &
+                    vy(k)*convl/convt,vz(k)*convl/convt
+            end do
+    
+            write(10,556) '$ENDVELOC'
+            write(10,557) '$COEFF'
+    
+            do k=1,sim%excN
+                write(10,223) yg(k)**2,dsin(yg(k+sim%excN))
+            enddo
+    
+            write(10,556) '$ENDCOEFF'
+            close(10)
+            
+
+!            open (9,file='coords.xyz',access='append')
+!            write (9,*) natom
+!            write (9,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
+!                '  time = ',tfemto
+!            do k=1,natom
+!                write(9,302) ELEMNT(atomtype(k)),rx(k)*convl, &
+!                    ry(k)*convl,rz(k)*convl
+!            end do
+!            close (9)
 
             if(iview.eq.1) then
                 do kki=1,sim%excN
@@ -472,6 +536,7 @@ contains
         !557   format(a6)
         !558   format(a7)
         !88    format(a1)
+600     format(a7,a4)
 
         return
     end subroutine
