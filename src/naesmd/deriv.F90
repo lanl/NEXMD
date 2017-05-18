@@ -108,12 +108,12 @@ subroutine deriv(sim,state) ! , xyz_in)
                 dxyz1=dxyz1+dxyz1_test
             endif
             
-!BTN remove excited state derivatives
-!            do i=1,qmmm_struct%nquant_nlink
-!                do j=1,3
-!                    dxyz((i-1)*3+j)=dxyz((i-1)*3+j)-dxyz1(j,i)*KCAL_TO_EV
-!                end do
-!            end do
+
+            do i=1,qmmm_struct%nquant_nlink
+                do j=1,3
+                    dxyz((i-1)*3+j)=dxyz((i-1)*3+j)-dxyz1(j,i)*KCAL_TO_EV
+                end do
+            end do
 
             !TERM 2: Tr(V^x(xi) xi^+)
             !Symmetric part
@@ -135,12 +135,12 @@ subroutine deriv(sim,state) ! , xyz_in)
             end if
             dxyz1=dxyz1+0.5*dxyz1_test
             
-!BTN remove excited state derivatives
-!            do i=1,qmmm_struct%nquant_nlink
-!                do j=1,3
-!                    dxyz((i-1)*3+j)=dxyz((i-1)*3+j)-dxyz1(j,i)*KCAL_TO_EV
-!                end do
-!            end do
+
+            do i=1,qmmm_struct%nquant_nlink
+                do j=1,3
+                    dxyz((i-1)*3+j)=dxyz((i-1)*3+j)-dxyz1(j,i)*KCAL_TO_EV
+                end do
+            end do
 
             !STATE SPECIFIC SOLVENT TERMS
             dxyz1=0.d0; dxyz1_test=0.d0; charges2=0.d0; acharges2=0.d0; density2=0.d0
@@ -168,12 +168,12 @@ subroutine deriv(sim,state) ! , xyz_in)
                 endif
                 dxyz1=dxyz1+0.5*dxyz1_test
                 
-!BTN remove excited state derivatives                
-!                do i=1,qmmm_struct%nquant_nlink
-!                    do j=1,3
-!                        dxyz((i-1)*3+j)=dxyz((i-1)*3+j)-dxyz1(j,i)*KCAL_TO_EV
-!                    end do
-!                end do
+      
+                do i=1,qmmm_struct%nquant_nlink
+                    do j=1,3
+                        dxyz((i-1)*3+j)=dxyz((i-1)*3+j)-dxyz1(j,i)*KCAL_TO_EV
+                    end do
+                end do
             endif
 
             !State Specific Model
@@ -197,12 +197,12 @@ subroutine deriv(sim,state) ! , xyz_in)
                 endif
                 dxyz1=dxyz1+dxyz1_test
    
-!BTN remove excited state derivatives
-!                do i=1,qmmm_struct%nquant_nlink
-!                    do j=1,3
-!                        dxyz((i-1)*3+j)=dxyz((i-1)*3+j)-dxyz1(j,i)*KCAL_TO_EV
-!                    end do
-!                end do
+
+                do i=1,qmmm_struct%nquant_nlink
+                    do j=1,3
+                        dxyz((i-1)*3+j)=dxyz((i-1)*3+j)-dxyz1(j,i)*KCAL_TO_EV
+                    end do
+                end do
 
                 dxyz1=0.d0; dxyz1_test=0.d0; charges2=0.d0; acharges2=0.d0; density2=0.d0
                 !Ground State part
@@ -213,12 +213,12 @@ subroutine deriv(sim,state) ! , xyz_in)
                     call rcnfldgrad2(dxyz1_test,qm2ds%rhoT,qm2_struct%den_matrix,qm2ds%nb,.true.)
                 endif
                 dxyz1=dxyz1+dxyz1_test
-!BTN remove excited state derivatives
-!                do i=1,qmmm_struct%nquant_nlink
-!                    do j=1,3
-!                        dxyz_gs((i-1)*3+j)=dxyz_gs((i-1)*3+j)-dxyz1(j,i)*KCAL_TO_EV
-!                    end do
-!                end do
+
+                do i=1,qmmm_struct%nquant_nlink
+                    do j=1,3
+                        dxyz_gs((i-1)*3+j)=dxyz_gs((i-1)*3+j)-dxyz1(j,i)*KCAL_TO_EV
+                    end do
+                end do
 
             endif
 

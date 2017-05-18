@@ -198,6 +198,7 @@ subroutine coherence(sim,Na,ido,neq,tini,tend,toldivprk, &
         ido=3
         call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
         ido=1
+        idocontrol=1
     end if
     ! end modified by Seba
 

@@ -373,9 +373,13 @@ program MD_Geometry
                 write(6,*)'param:',param
                 write(6,*)'yg:',yg
 
+                if(ido.eq.3) then
+                    write(*,*)  'Error: Deallocating on propogation step'
+                endif
                 call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
+                idocontrol=0
                 ! Check the norm
-                call checknorm(sim,ido,neq,tini,tend,toldivprk,param,yg)
+                call checknorm(sim,ido,neq,tini,tend,toldivprk,param,yg,idocontrol)
                 !******************************************************
                 ! values for hop probability
                 do k=1,sim%excN
@@ -453,8 +457,12 @@ program MD_Geometry
     if(state.eq.'exct'.and.ibo.ne.1) then
         if(1==0) then ! kav: to skip it whatsoever
                        ! jakb: not sure if this should be skipped or not
-            ido=3
-            call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
+            if(idocontrol.eq.0) then
+                    ido=3
+                    call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
+                    ido=1
+                    idocontrol=1
+            endif
         end if
     end if
 
@@ -589,7 +597,7 @@ contains
         ! ido= Flag indicating the state of the computation
         ! use by divprk propagator
         ido=1
-
+        idocontrol=1
         conthop=0
         conthop2=0
         !

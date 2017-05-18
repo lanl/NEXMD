@@ -27,7 +27,6 @@ contains
         _REAL_ t_start,t_finish
         integer cross(sim%excN),crosstemp,ininonhop
         external fcn
-        idocontrol=0
         ! conthop is used to not allow crossing inmediately after a hop
         ! conthop2 is used to not allow hoppings inmediately after a crossing
         if(conthop.eq.3) conthop=0
@@ -209,11 +208,13 @@ contains
                   yg(j+sim%excN)=rranf1(iseedmdqt)
                enddo
                yg(ihopavant)=1.0d0
-               ido=3
-               write(6,*)'test divprk called 2'
-               call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
-               ido=1
-               idocontrol=1
+               if(idocontrol.eq.0) then 
+                       ido=3
+                       write(6,*)'test divprk called 2'
+                       call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
+                       ido=1
+                       idocontrol=1
+               endif
                conthop=1
 ! check the reduction of sim%excN
                if(iredpot.eq.1) then

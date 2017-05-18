@@ -11,6 +11,7 @@ fort*
 *.sw*
 *.sv*
 .*
+*.bak
 
 # Libraries
 *.lib

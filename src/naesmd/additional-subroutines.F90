@@ -157,13 +157,13 @@ contains
         return
     end SUBROUTINE
 
-    SUBROUTINE checknorm(sim,ido,neq,tini,tend,toldivprk,param,yg)
+    SUBROUTINE checknorm(sim,ido,neq,tini,tend,toldivprk,param,yg,idocontrol)
         use naesmd_module
         use md_module
         use communism
         IMPLICIT NONE
         type(simulation_t), pointer :: sim
-        integer k,ido,neq
+        integer k,ido,neq, idocontrol
         double precision tini,tend,toldivprk,norm,normdiff,param(50)
         double precision yg(sim%excN)
         external fcn
@@ -177,11 +177,14 @@ contains
             do k = 1,sim%excN
                 yg(k)=yg(k)/dsqrt(norm)
             enddo
-            ido=3
-            write(45,*) tini*convtf,normdiff
-            call divprk(ido,neq,fcn,tini,tend, &
-                toldivprk,param,yg)
-            ido=1
+            if(idocontrol.eq.0) then
+                    ido=3
+                    write(45,*) tini*convtf,normdiff
+                    call divprk(ido,neq,fcn,tini,tend, &
+                        toldivprk,param,yg)
+                    ido=1
+                    idocontrol=1
+            endif
         endif
 
         RETURN
