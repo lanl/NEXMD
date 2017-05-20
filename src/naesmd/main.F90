@@ -418,9 +418,9 @@ program MD_Geometry
                         do j=1,sim%excN
                             ntotcoher=ntotcoher+yg(j)**2
                         end do
-
-                        write(105,999) ihop,tfemto,(yg(j)**2,j=1,sim%excN), &
-                            ntotcoher
+!BTN: removed file coeff-n-before.out. grep this line to undo
+!                        write(105,999) ihop,tfemto,(yg(j)**2,j=1,sim%excN), &
+!                            ntotcoher
                         call flush(105)
                     end if
                 end if
