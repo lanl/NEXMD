@@ -121,26 +121,26 @@ contains
         end if
 
         ! write the atomic positions to trajectory file
-        card='coordinates.dat'
-        OPEN(201,FILE=card,action='write',position='append')
+!        card='coordinates.out'
+!        OPEN(201,FILE=card,action='write',STATUS='replace')
+!        
+!        write (201,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
+!            '  time = ',tfemto
+!        write(201,557) '$COORD'
+!        do i=1,txtinicoord
+!            write(201,555) txtinput(i)
+!        end do
+!
+!        do i=1,natom
+!            write(201,999) atomtype(i),rx(i)*convl &
+!                ,ry(i)*convl,rz(i)*convl
+!        end do
+!
+!        write(201,556) '$ENDCOORD'
         
-        write (201,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
-            '  time = ',tfemto
-        write(201,557) '$COORD'
-        do i=1,txtinicoord
-            write(201,555) txtinput(i)
-        end do
-
-        do i=1,natom
-            write(201,999) atomtype(i),rx(i)*convl &
-                ,ry(i)*convl,rz(i)*convl
-        end do
-
-        write(201,556) '$ENDCOORD'
         
-        
-        card='velocity.dat'
-        OPEN(202,FILE=card,action='write',position='append')
+        card='velocity.out'
+        OPEN(202,FILE=card,action='write',STATUS='replace')
         write(202,600) 'Frame: ', ktbig(icontpdb)
         write(202,557) '$VELOC'
 
@@ -151,8 +151,8 @@ contains
 
         write(202,556) '$ENDVELOC'
         
-        card='coefficient.dat'
-        OPEN(203,FILE=card,action='write',position='append')
+        card='coefficient.out'
+        OPEN(203,FILE=card,action='write',STATUS='replace')
         write(203,600) 'Frame: ', ktbig(icontpdb)
         write(203,557) '$COEFF'
 
@@ -161,6 +161,15 @@ contains
         enddo
 
         write(203,556) '$ENDCOEFF'
+        
+        open (9,file='coords.xyz',STATUS='replace')
+        write (9,*) natom
+        write (9,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
+            '  time = ',tfemto
+        do k=1,natom
+            write(9,302) ELEMNT(atomtype(k)),rx(k)*convl, &
+                ry(k)*convl,rz(k)*convl
+        end do
 
 
         if(iview.eq.1) then
@@ -224,6 +233,7 @@ contains
         !558   format(a7)
         !88    format(a1)
 600     format(a7,a4)
+302     format(A3,3f12.6)
 
         return
     end subroutine
@@ -236,6 +246,7 @@ contains
     subroutine writeoutput(sim,ibo,yg,lprint,cross)
         use naesmd_constants
         use naesmd_module
+        use langevin_temperature
         use md_module
         use communism
         use qm2_davidson_module,only:qm2ds
@@ -246,6 +257,8 @@ contains
         INTEGER j,k,ibo,kki,lprint
         _REAL_ ntot
         _REAL_ xcm,ycm,zcm
+        _REAL_ randre
+        integer randint
         integer cross(sim%excN)
         character*1000 card
         _REAL_ yg(2*sim%excN)
@@ -326,9 +339,15 @@ contains
         !******************************************************
         !
         if(lprint.ge.3) then
-            write(85,889) tfemto,(sim%deriv_forces(1+3*(j-1)),j=1,natom)
-            write(84,889) tfemto,(sim%deriv_forces(2+3*(j-1)),j=1,natom)
-            write(83,889) tfemto,(sim%deriv_forces(3+3*(j-1)),j=1,natom)
+            write (85,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
+                '  time = ',tfemto
+            do k=1,natom
+                write(85,999) atomtype(k),sim%deriv_forces(1+3*(k-1)) &
+                    ,sim%deriv_forces(2+3*(k-1)),sim%deriv_forces(3+3*(k-1))
+            end do
+!            write(85,889) tfemto,(sim%deriv_forces(1+3*(j-1)),j=1,natom)
+!            write(84,889) tfemto,(sim%deriv_forces(2+3*(j-1)),j=1,natom)
+!            write(83,889) tfemto,(sim%deriv_forces(3+3*(j-1)),j=1,natom)
 
             write(125,889) tfemto,(sim%naesmd%a%x(j),j=1,natom)
             write(126,889) tfemto,(ax(j),j=1,natom)
@@ -370,19 +389,19 @@ contains
             icont=1
             icontpdb=icontpdb+1
             
-            write (201,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
-                '  time = ',tfemto
-            write(201,557) '$COORD'
-            do k=1,txtinicoord
-                write(201,555) txtinput(k)
-            end do
-    
-            do k=1,natom
-                write(201,999) atomtype(k),rx(k)*convl &
-                    ,ry(k)*convl,rz(k)*convl
-            end do
-    
-            write(201,556) '$ENDCOORD'
+!            write (201,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
+!                '  time = ',tfemto
+!            write(201,557) '$COORD'
+!            do k=1,txtinicoord
+!                write(201,555) txtinput(k)
+!            end do
+!    
+!            do k=1,natom
+!                write(201,999) atomtype(k),rx(k)*convl &
+!                    ,ry(k)*convl,rz(k)*convl
+!            end do
+!    
+!            write(201,556) '$ENDCOORD'
             
             
             write (202,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
@@ -406,10 +425,13 @@ contains
     
             write(203,556) '$ENDCOEFF'
     
-            card='restart.dat'
+            card='restart.out'
             OPEN(10,FILE=card,ACTION='write',STATUS='replace')
-            write (203,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
+            write (10,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
                 '  time = ',tfemto
+            randint=int(rranf1(iseedmdqt)*1d8)
+            write (10,*) 'State = ', ihop
+            write (10,*) 'Seed  = ', randint
             write(10,557) '$COORD'
             do k=1,txtinicoord
                 write(10,555) txtinput(k)
@@ -439,15 +461,13 @@ contains
             close(10)
             
 
-!            open (9,file='coords.xyz',access='append')
-!            write (9,*) natom
-!            write (9,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
-!                '  time = ',tfemto
-!            do k=1,natom
-!                write(9,302) ELEMNT(atomtype(k)),rx(k)*convl, &
-!                    ry(k)*convl,rz(k)*convl
-!            end do
-!            close (9)
+            write (9,*) natom
+            write (9,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
+                '  time = ',tfemto
+            do k=1,natom
+                write(9,302) ELEMNT(atomtype(k)),rx(k)*convl, &
+                    ry(k)*convl,rz(k)*convl
+            end do
 
             if(iview.eq.1) then
                 do kki=1,sim%excN
@@ -509,6 +529,7 @@ contains
         !444   format(a80)
         !445   format(a29)
 449     format(a28,F18.10,a9,F18.10)
+450     format(a8,I10)
 688     FORMAT(F18.10,10000(1X,I4))
         !889   FORMAT(20000(1X,F18.10))
 888     FORMAT(30000(1X,F18.10))

@@ -127,9 +127,10 @@ contains
                 status=file_status, access=file_access)
             if (imdtype.gt.0.and.ibo.ne.1) OPEN(95, FILE= 'coeff-n.out', &
                 status=file_status, access=file_access)
-            if (imdtype.gt.0.and.ibo.ne.1)  &
-                OPEN(105, FILE= 'coeff-n-before.out', &
-                status=file_status, access=file_access)
+!BTN: removed file coeff-n-before.out. grep this line to undo
+!            if (imdtype.gt.0.and.ibo.ne.1)  &
+!                OPEN(105, FILE= 'coeff-n-before.out', &
+!                status=file_status, access=file_access)
         endif
 
         if(lprint.ge.2) then
@@ -137,12 +138,12 @@ contains
                 status=file_status, access=file_access)
             if (imdtype.gt.0..and.ibo.ne.1) OPEN(100,FILE='order.out', &
                 status=file_status, access=file_access)
-            OPEN(85, FILE= 'fx.out', status=file_status, &
+            OPEN(85, FILE= 'forces.out', status=file_status, &
                 access=file_access)
-            OPEN(84, FILE= 'fy.out', status=file_status, &
-                access=file_access)
-            OPEN(83, FILE= 'fz.out', status=file_status, &
-                access=file_access)
+!            OPEN(84, FILE= 'fy.out', status=file_status, &
+!                access=file_access)
+!            OPEN(83, FILE= 'fz.out', status=file_status, &
+!                access=file_access)
             OPEN(101, FILE= 'cross-steps.out', status=file_status, &
                 access=file_access)
         endif
