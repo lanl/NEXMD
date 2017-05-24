@@ -72,7 +72,7 @@ program MD_Geometry
     namelist /moldyn/ natoms,bo_dynamics_flag,exc_state_init, &
         n_exc_states_propagate,out_count_init,time_init, &
         rk_tolerance,time_step,n_class_steps,n_quant_steps, &
-        quant_coeffs_reinit,num_deriv_step, &
+        num_deriv_step, &
         therm_temperature,therm_type, &
         berendsen_relax_const,heating, &
         heating_steps_per_degree,out_data_steps,out_coords_steps, &
@@ -649,24 +649,23 @@ contains
         time_step=0.1d0 ! classical time step, fs
         n_class_steps=1 ! number of classical steps
         n_quant_steps=4 ! number of quantum steps for each classical step
-        quant_coeffs_reinit=0 ! reinit of quantum coeffs after a hop (1-yes,0-no)
         num_deriv_step=1.d-3 ! finite step for numerical derivatives, A
         therm_temperature=300.d0 ! Thermostat temperature, K
-        therm_type=0 ! Thermostate type (0-no thermostat, 1-Langevin,2-Berendsen)
+        therm_type=1 ! Thermostate type (0-no thermostat, 1-Langevin,2-Berendsen)
         berendsen_relax_const=0.4d0 ! Berendsen bath relaxation constant
         heating=0 ! 0-equilibrium dynamics, 1-heating
         heating_steps_per_degree=100 ! number of steps per degree during heating
         out_data_steps=1 ! number of steps to write data
         out_coords_steps=10 ! number of steps to write coordinates (to restart)
-        therm_friction=2.d0 ! friction coefficient, ps^{-1}
+        therm_friction=2.d1 ! friction coefficient, ps^{-1}
         rnd_seed=1 ! seed for random number generator
         out_data_cube=0 ! write view files to generate cubes, 0-no, 1-yes
-        verbosity=2 ! output verbosity (0-minimal,3-largest)
+        verbosity=-1 ! output verbosity (0-minimal,3-largest)
         moldyn_deriv_flag=1 ! derivatives (0-numer,1-analyt,2-fast GS analytical)
         quant_step_reduction_factor=0.1d0 ! ???
         decoher_e0=0.1d0 ! decoherence parameter E0
         decoher_c=0.1d0 ! decoherecne parameter C
-        decoher_type=0 ! decoherence type, Persico/Granucci(0), or Truhlar (1)
+        decoher_type=2 ! Type of decoherence: Reinitialize (0) Never, ! (1) At successful hops, (2) At successful plus frustrated hops... ! (3) Persico/Granucci, or (4) Truhlar [2]
         dotrivial=1 !do trivial unavoided crossing routine (1) or not (0)  
         iredpot=0 !don't reduce the number of potentials during dynamics
         nstates=2 !do 2 states higher by default for iredpot
@@ -686,6 +685,24 @@ contains
         else
             write(6,*)'Could not find moldyn namelist'
             stop
+        endif
+        
+        ! Set quant_coeffs_reinit
+        if(decoher_type==1) then
+            quant_coeffs_reinit=1 ! reinit of quantum coeffs after a hop (1-yes,0-no)
+        else if(decoher_type==2) then
+            quant_coeffs_reinit=2 ! reinit after frustrated and actual hops
+        else
+            quant_coeffs_reinit=0
+        endif
+        
+        !This happens if verbosity is not set durring read namelist
+        if(verbosity==-1) then
+            if(n_class_steps>1) then
+                verbosity=2
+            else
+                verbosity=3
+            endif
         endif
 
         ! Tentatively, loading new parameter from the moldyn namelist to
@@ -774,7 +791,7 @@ contains
 
         if(ensemble.eq.'langev') then
             write(6,*)'MD using Langevin '
-            write(6,*)'with friction coefficient [1/ps]=',friction*1.0D3
+            !write(6,*)'with friction coefficient [1/ps]=',friction*1.0D3
 
         else
             if(ensemble.eq.'temper') then

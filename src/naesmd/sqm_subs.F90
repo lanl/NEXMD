@@ -474,7 +474,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
     atnum,maxcyc,grms_tol,ntpr,ncharge_in, &
     excharge,chgatnum, &
     excNin,struct_opt_state,exst_method,dav_guess, & ! Excited state
-    ftol,ftol0,ftol1,dav_maxcyc)
+    ftol,ftol0,ftol1,dav_maxcyc,nstep)
 
     use findmask
     use constants, only : RETIRED_INPUT_OPTION
@@ -512,6 +512,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
     _REAL_, intent(in) :: excharge(*)
     integer, intent(in) :: chgatnum(*)
     integer, intent(in) :: ncharge_in
+    integer, intent(in) :: nstep
 
     ! Input parameters for excited state calculations
   
@@ -666,7 +667,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
         !Geometry optimization
         maxcyc, ntpr, grms_tol, struct_opt_state, &
         !Excited state and davidson
-        exst_method,dav_guess,dav_maxcyc,ftol,ftol0,ftol1,printtd, &
+        exst_method,dav_guess,dav_maxcyc,ftol0,ftol1,printtd, &
         !Solvent Model and E-Field parameters
         ceps, chg_lambda, vsolv, nspa, solvent_model,potential_type,cosmo_scf_ftol,cosmo_scf_maxcyc,&
         doZ,index_of_refraction,onsager_radius,EF,Ex,Ey,Ez,linmixparam, &
@@ -691,7 +692,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
     printtd=0 ! Do not print tds by default
     exst_method=1 ! CI singles
     dav_guess=0 ! use previous davidson result as guess
-    ftol=0.d0   ! Min tolerance (|emin-eold|)
+    ftol=0.d-5   ! Min tolerance (|emin-eold|)
     ftol0=1.d-5 !  Acceptance tol.(|emin-eold|)
     ftol1=1.d-4 ! Accept.tol.for residual norm
     dav_maxcyc=100 ! Maximum cycles for davidson diagonalization
@@ -723,7 +724,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
     spin = 1
     qmqmdx = 1 !Depricated in NAESMD/SQM integration
     qmqmdx_exc=2 ! CML 7/10/12 Numerical excited state derivatives by default !Depricated
-    verbosity = 0
+    verbosity = -1
     parameter_file=''
     qxd=.false.
 
@@ -743,7 +744,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
     !        code, but these should be updated once we figure out the best
     !        values for geometry optimization
     tight_p_conv = 0
-    scfconv = 1.0D-8
+    scfconv = 1.0D-6
     errconv = 1.0d-1
     ndiis_matrices = 6
     ndiis_attempts = 0
@@ -751,7 +752,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
     !-TJG 01/26/2010
     printcharges = 0
     printbondorders = 0
-    printdipole = 0
+    printdipole = -1
     peptide_corr = 0
     itrmax = 1000
     qmshake = 1
@@ -801,6 +802,10 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
     call nmlsrc('qmmm',fdes_in,ifind)
     if (ifind /= 0) mdin_qmmm=.true.
 
+    if(nstep>0) then
+        write(6,*) "nstep successful"
+    endif
+
     !Read qmmm namelist
     rewind fdes_in
     if ( mdin_qmmm ) then
@@ -808,6 +813,24 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
     else
         write(fdes_out, '(1x,a,/)') 'Could not find qmmm namelist'
         call mexit(fdes_out,1)
+    endif
+
+    !set verbosity if not set at read
+    if(verbosity==-1) then
+        if(nstep>0 .OR. maxcyc>0) then
+            verbosity=1
+        else
+            verbosity=5
+        endif
+    endif
+    
+    !et print dipoles if not set at read
+    if(printdipole==-1) then
+        if(nstep>0 .OR. maxcyc>0) then
+            printdipole=1
+        else
+            printdipole=2
+        endif
     endif
 
     !AWG NEW

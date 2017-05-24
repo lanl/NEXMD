@@ -363,6 +363,7 @@ all_ic: sqmceonaesmd.exe
 
 debug_ic: FC = ifort
 debug_ic: CC = icc
+debug_ic: MODOPT = -module 
 debug_ic: LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
 debug_ic: FFLAG= -g -I${MKLROOT}/include
 debug_ic: CFLAG= -g -I${MKLROOT}/include -DMKL_LP64

@@ -233,7 +233,7 @@ contains
         !558   format(a7)
         !88    format(a1)
 600     format(a7,a4)
-302     format(A3,3f12.6)
+302     format(A3,3f16.10)
 
         return
     end subroutine
@@ -520,7 +520,7 @@ contains
 557     format(a6)
         !558   format(a7)
         !88    format(a1)
-302     format(A3,3f12.6)
+302     format(A3,3f16.10)
         !333   format(a5,I3,1X,a80)
         !440   format(a17)
         !441   format(a20)
