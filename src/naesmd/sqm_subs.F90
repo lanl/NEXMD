@@ -702,7 +702,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
     index_of_refraction=1.d0
     onsager_radius=4.0
     solvent_model=0 !no solvent model
-    potential_type=3 !COSMO default
+    potential_type=1 !COSMO default
     cosmo_scf_ftol=1.d-3
     cosmo_scf_maxcyc=300
     doZ=.true.
@@ -813,6 +813,25 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
     else
         write(fdes_out, '(1x,a,/)') 'Could not find qmmm namelist'
         call mexit(fdes_out,1)
+    endif
+
+    !Set Solvent_model
+    !The input format is: (0) None, (1) Linear response, (2) Vertical excitation, ! or (3) State-specific [0]
+    !Going forward the code treats: (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi [0]
+    if(solvent_model==3) then
+        solvent_model=4
+    else if(solvent_model>4)
+        write(fdes_out,*) 'Invalid solvent_model'
+        call mexit(fdes_out,1)
+    endif
+    
+    !Set potential_type
+    !The input format is:  (1) COSMO or (2) Onsager [1]
+    !Going forward the code treats:  (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
+    if(potential_type==1) then
+        potential_type=3
+    elseif(potential_type==2) then
+        potential_type=2
     endif
 
     !set verbosity if not set at read

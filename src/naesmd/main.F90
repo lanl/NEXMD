@@ -662,7 +662,7 @@ contains
         out_data_cube=0 ! write view files to generate cubes, 0-no, 1-yes
         verbosity=-1 ! output verbosity (0-minimal,3-largest)
         moldyn_deriv_flag=1 ! derivatives (0-numer,1-analyt,2-fast GS analytical)
-        quant_step_reduction_factor=0.1d0 ! ???
+        quant_step_reduction_factor=0.025d0 ! ???
         decoher_e0=0.1d0 ! decoherence parameter E0
         decoher_c=0.1d0 ! decoherecne parameter C
         decoher_type=2 ! Type of decoherence: Reinitialize (0) Never, ! (1) At successful hops, (2) At successful plus frustrated hops... ! (3) Persico/Granucci, or (4) Truhlar [2]
