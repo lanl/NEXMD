@@ -820,7 +820,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
     !Going forward the code treats: (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi [0]
     if(solvent_model==3) then
         solvent_model=4
-    else if(solvent_model>4)
+    else if(solvent_model>4) then
         write(fdes_out,*) 'Invalid solvent_model'
         call mexit(fdes_out,1)
     endif
