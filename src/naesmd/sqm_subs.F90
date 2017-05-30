@@ -490,6 +490,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
         index_of_refraction,nspa,onsager_radius,Ex,Ey,Ez,EF,linmixparam !COSMO parameters
     use xlbomd_module, only: xlbomd_flag,K,dt2w2,xlalpha,coef
     use qm2_davidson_module
+    use naesmd_constants
 
     !XL-BOMD parameters
     implicit none
@@ -744,6 +745,7 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
     !        code, but these should be updated once we figure out the best
     !        values for geometry optimization
     tight_p_conv = 0
+    !We want inputs to be in eV, SCF algorithm works in kcal/mol
     scfconv = 1.0D-6
     errconv = 1.0d-1
     ndiis_matrices = 6
@@ -815,6 +817,9 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
         call mexit(fdes_out,1)
     endif
 
+    !convert scfconv to kcal/mol from input eV
+    scfconv=scfconv*evkcal
+    
     !Set Solvent_model
     !The input format is: (0) None, (1) Linear response, (2) Vertical excitation, ! or (3) State-specific [0]
     !Going forward the code treats: (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi [0]
