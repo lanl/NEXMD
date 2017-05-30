@@ -826,7 +826,7 @@ contains
         write(6,*)'Number of steps per degree K  ',istepheat
         write(6,*)'Number of steps to write data ',nstepw
         write(6,*)'Number of steps to write coords',nstepcoord
-        write(6,*)'Friction coefficient [1/ps]   ',friction
+        write(6,*)'Friction coefficient [1/ps]   ',friction/convtf
         write(6,*)'Seed for random generator    ',iseedmdqt
 
         if(iview.eq.1) write(6,*)'Will write files to generate cubes'
