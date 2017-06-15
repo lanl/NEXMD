@@ -92,7 +92,13 @@ contains
         if((solvent_model.eq.4).or.(solvent_model.eq.5)) then
             call calc_cosmo_4(sim)
         else
-            call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs,statelimit=sim%excn+1)
+            if(sim%excn>0) then
+                call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs, &
+                    statelimit=sim%excn+1)
+            else
+                call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs, &
+                    statelimit=qmmm_struct%state_of_interest)
+            end if
         endif
         ihop=qmmm_struct%state_of_interest
         call cpu_time(t_start)
@@ -239,7 +245,13 @@ contains
         !     Newton second law to get the next accelerations;
         !     the forces are calculated by deriv
 
-        call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs,statelimit=sim%excn+1)
+        if(sim%excn>0) then
+            call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs, &
+                statelimit=sim%excn+1)
+        else
+            call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs, &
+                statelimit=qmmm_struct%state_of_interest)
+        end if
 
         call cpu_time(t_start)
         call deriv(sim,ihop)

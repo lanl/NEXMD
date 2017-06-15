@@ -369,6 +369,15 @@ debug_ic: FFLAG= -g -I${MKLROOT}/include
 debug_ic: CFLAG= -g -I${MKLROOT}/include -DMKL_LP64
 debug_ic: sqmceonaesmd.exe
 
+performance_ic: FC = ifort
+performance_ic: CC = icc
+performance_ic: MODOPT = -module 
+performance_ic: LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
+performance_ic: FFLAG= -O3 -g -I${MKLROOT}/include
+performance_ic: CFLAG= -O3 -g -I${MKLROOT}/include -DMKL_LP64
+performance_ic: sqmceonaesmd.exe
+
+
 LINK =  $(LINALG)
 
 sqmceonaesmd.exe: $(OBJSQM) $(OBJLIB) $(OBJNAESMD) $(OBJSFF)
