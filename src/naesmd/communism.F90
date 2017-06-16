@@ -190,7 +190,11 @@ contains
         end if
           
         call qmmm2coords_r(sim)
-        sim%dav%Mx=sim%excN+1
+        if(sim%excN>0) then
+            sim%dav%Mx=sim%excN+1
+        else
+            sim%dav%Mx=sim%excN
+        endif
         if(present(statelimit)) then !reduces the calculated number of states
             sim%dav%Mx=statelimit
         endif
@@ -384,8 +388,8 @@ contains
             call naesmd2qmmm_r(sim)
             call xmin(natom, qmmm_struct%qm_coords, xmin_iter, maxcyc, grms_tol, ntpr,sim)
         else
-            write(6,*)"You must run Dynamics(n_class_steps>0) or Geom. &
-                      &  optimization (maxcyc>0). Running both of them are not possible"            
+            write(6,*) "You must run dynamics (n_class_steps > 0) or geometry optimization &
+                (maxcyc > 0). Running both simultaneously is not possible."            
             STOP 0;
         end if
         return

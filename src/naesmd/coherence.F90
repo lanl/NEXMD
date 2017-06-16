@@ -11,7 +11,7 @@ subroutine coherence(sim,Na,ido,neq,tini,tend,toldivprk, &
     use md_module
     implicit none
 
-    type(simulation_t),pointer::sim
+    type(simulation_t),pointer  ::  sim
     integer cohertype,idocontrol
     integer Na,kk
     _REAL_ xx(Na),yy(Na),zz(Na)

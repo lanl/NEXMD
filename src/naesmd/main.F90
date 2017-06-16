@@ -167,7 +167,7 @@ program MD_Geometry
     !Open output files
     call open_output(ibo,tfemto,imdtype,lprint)
     ihop=qmmm_struct%state_of_interest !FIXME change ihop to module variable
-    if(tfemto.eq.0.d0) call writeoutputini(sim,ibo,yg,lprint)
+    call writeoutputini(sim,ibo,yg,lprint)
 
     do imdqt=1,nstep !Main loop
         !Classical propagation step - BOMD or NAESMD
@@ -428,6 +428,12 @@ program MD_Geometry
 
             if(constcoherE0.ne.0.d0.and.constcoherC.ne.0.d0) then
                 if(conthop.ne.1.and.conthop2.ne.1) then
+                    !BTN: I have not had time to investigate this fully, but the simulation object gets garbled when passed to coherence. 
+                    !My guess is that one of the variables passed (though it does not appear to be sim) is not defined identically correctly inside coherence.
+                    !For now, just exit.
+                    write(6,*) 'Your choices for decoher_e0 and decoher_c &
+                        are not currently available'
+                    stop
                     call coherence(sim,Na,ido,neq,tini,tend,toldivprk, &
                         param,yg,constcoherE0,constcoherC,cohertype,idocontrol)
                 end if
@@ -756,9 +762,7 @@ contains
         nstepw=out_data_steps
         nstepcoord=out_coords_steps
    
-        friction=therm_friction
-        friction=friction/1.d3
-        friction=friction*convtf
+        friction=therm_friction/1.d3*convtf !convter therm_friction (in 1/ps) to friction (1/AU)
 
         iseedmdqt=rnd_seed
         write(6,*)"rnd_seed=",rnd_seed
@@ -826,7 +830,7 @@ contains
         write(6,*)'Number of steps per degree K  ',istepheat
         write(6,*)'Number of steps to write data ',nstepw
         write(6,*)'Number of steps to write coords',nstepcoord
-        write(6,*)'Friction coefficient [1/ps]   ',friction/convtf
+        write(6,*)'Friction coefficient [1/ps]   ',friction/convtf*1d3 !convert back to ps
         write(6,*)'Seed for random generator    ',iseedmdqt
 
         if(iview.eq.1) write(6,*)'Will write files to generate cubes'
