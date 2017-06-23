@@ -353,6 +353,18 @@ all:  FFLAG = -O3 -mcmodel=medium
 all:  LDFLAGS = $(FFLAG)
 all:  sqmceonaesmd.exe
 
+ic:   FC = ifort
+ic:   CC = icc
+ic:   FFLAG = -O3 -mcmodel=medium
+ic:   LDFLAGS = $(FFLAG)
+ic:   sqmceonaesmd.exe
+
+gnu:  FC = gfortran
+gnu:  CC = gcc
+gnu:  FFLAG = -O3 -mcmodel=medium
+gnu:  LDFLAGS = $(FFLAG)
+gnu:  sqmceonaesmd.exe
+
 all_ic: FC = ifort
 all_ic: CC = icc
 all_ic: MODOPT = -module 
