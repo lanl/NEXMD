@@ -95,13 +95,19 @@ contains
             open(98,file='energy-ev.out',status=file_status,access=file_access)
 
             ! creating header
-            write(98,'(a)') '##     time(fs)           T                  &
+            ! BTN: only print header when not restarting
+            if(tfemto.eq.0.d0) then
+              write(98,'(a)') '##     time(fs)           T                  &
 	      &T-T0               U                  U-U0               E                  E-E0'
+	          end if
  
             open(92,file='temperature.out',status=file_status,access=file_access)
 
             ! creating header
-            write(92,'(a)') '## time(fs)    Temp(current)       Temp(thermostat)'
+            ! BTN: only print header when not restarting
+            if(tfemto.eq.0.d0) then
+              write(92,'(a)') '## time(fs)    Temp(current)       Temp(thermostat)'
+            end if 
 
             if(imdtype.gt.0.and.ibo.ne.1) then
                 open(30,file='hops.out',status=file_status, access=file_access)
