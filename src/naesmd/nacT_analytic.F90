@@ -234,12 +234,6 @@ module nacT_analytic_module
    ! Above eta contains transition density martix between state 
    ! ihop and icheck in AO
 
-   call getmodef(M2_M,Mx_M,Np,Nh,ihop,qm2ds%cmdqt,qm2ds%nacr_scratch)
-   call mo2sitef (Nb,qm2ds%vhf,qm2ds%nacr_scratch,qm2ds%xi,qm2ds%eta_scratch)
-   call getmodef(M2_M,Mx_M,Np,Nh,icheck,qm2ds%cmdqt,qm2ds%nacr_scratch)
-   call mo2sitef (Nb,qm2ds%vhf,qm2ds%nacr_scratch, &
-      qm2ds%xi_scratch_2,qm2ds%eta_scratch)
-
    ! Above xi and xi_scratch_2 contain transition density martices 
    ! for states ihop and icheck in AO
 
