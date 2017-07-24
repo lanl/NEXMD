@@ -343,27 +343,27 @@ $(OBJDIR)/$(NAESMDDIR)/old/%.o: $(SRCDIR)/$(NAESMDDIR)/old/%.f
 
 debug: FFLAG = -O0 -DDEBUG -C -g -Wall
 debug: LDFLAGS = $(FFLAG)
-debug: sqmceonaesmd.exe
+debug: nexmd.exe
 
 debug2: FFLAG = -O0 -DDEBUG -C -g
 debug2: LDFLAGS = $(FFLAG)
-debug2: sqmceonaesmd.exe
+debug2: nexmd.exe
 
 all:  FFLAG = -O3 -mcmodel=medium
 all:  LDFLAGS = $(FFLAG)
-all:  sqmceonaesmd.exe
+all:  nexmd.exe
 
 ic:   FC = ifort
 ic:   CC = icc
 ic:   FFLAG = -O3 -mcmodel=medium
 ic:   LDFLAGS = $(FFLAG)
-ic:   sqmceonaesmd.exe
+ic:   nexmd.exe
 
 gnu:  FC = gfortran
 gnu:  CC = gcc
 gnu:  FFLAG = -O3 -mcmodel=medium
 gnu:  LDFLAGS = $(FFLAG)
-gnu:  sqmceonaesmd.exe
+gnu:  nexmd.exe
 
 all_ic: FC = ifort
 all_ic: CC = icc
@@ -371,7 +371,7 @@ all_ic: MODOPT = -module
 all_ic: LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
 all_ic: FFLAG= -O3 -I${MKLROOT}/include
 all_ic: CFLAG= -O3 -I${MKLROOT}/include -DMKL_LP64
-all_ic: sqmceonaesmd.exe
+all_ic: nexmd.exe
 
 debug_ic: FC = ifort
 debug_ic: CC = icc
@@ -379,7 +379,7 @@ debug_ic: MODOPT = -module
 debug_ic: LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
 debug_ic: FFLAG= -g -I${MKLROOT}/include
 debug_ic: CFLAG= -g -I${MKLROOT}/include -DMKL_LP64
-debug_ic: sqmceonaesmd.exe
+debug_ic: nexmd.exe
 
 performance_ic: FC = ifort
 performance_ic: CC = icc
@@ -387,13 +387,13 @@ performance_ic: MODOPT = -module
 performance_ic: LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
 performance_ic: FFLAG= -O3 -g -I${MKLROOT}/include
 performance_ic: CFLAG= -O3 -g -I${MKLROOT}/include -DMKL_LP64
-performance_ic: sqmceonaesmd.exe
+performance_ic: nexmd.exe
 
 
 LINK =  $(LINALG)
 
-sqmceonaesmd.exe: $(OBJSQM) $(OBJLIB) $(OBJNAESMD) $(OBJSFF)
-	$(FC) $(LDFLAGS) -o sqmceonaesmd.exe $(OBJNAESMD) $(OBJSQM) $(OBJLIB) $(OBJSFF) -L$(LIB) $(LINK) 
+nexmd.exe: $(OBJSQM) $(OBJLIB) $(OBJNAESMD) $(OBJSFF)
+	$(FC) $(LDFLAGS) -o nexmd.exe $(OBJNAESMD) $(OBJSQM) $(OBJLIB) $(OBJSFF) -L$(LIB) $(LINK) 
 		
 clean :
 	rm -f ob*/*.o obj/*/*.o  mod/*.mod *.mod mod/*/*.mod rm lib/*.a
