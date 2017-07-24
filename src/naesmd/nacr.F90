@@ -91,12 +91,6 @@ subroutine nacR_analytic(xyz_in, ihop, icheck)
     call mo2sitef (Nb,qm2ds%vhf,qm2ds%xi,qm2ds%eta,qm2ds%xi_scratch)
     ! Above eta contains transition density matrix between state ihop and icheck in AO
 
-    call getmodef(M2_M,Mx_M,Np,Nh,ihop,qm2ds%cmdqt,qm2ds%nacr_scratch)
-    call mo2sitef (Nb,qm2ds%vhf,qm2ds%nacr_scratch,qm2ds%xi,qm2ds%eta_scratch)
-    call getmodef(M2_M,Mx_M,Np,Nh,icheck,qm2ds%cmdqt,qm2ds%nacr_scratch)
-    call mo2sitef (Nb,qm2ds%vhf,qm2ds%nacr_scratch,qm2ds%xi_scratch_2,qm2ds%eta_scratch)
-    ! Above xi and xi_scratch_2 contain transition density martices for states ihop and icheck in AO
-
     ideriv = 3
     if (ideriv.eq.3) then  ! Fast GS MOPAC derivatives
         do i = 1,qmmm_struct%nquant_nlink
