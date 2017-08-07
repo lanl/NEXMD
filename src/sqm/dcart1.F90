@@ -21,6 +21,7 @@ subroutine dcart1(dxyzqm, gs_dm, ex_dm, xyz_in) ! CML add coordinates passed in 
       use qmmm_module        , only : qmmm_nml,qmmm_struct, qm2_struct, qm2_params, qmmm_mpi
       use qm2_pm6_hof_module
       use dh_correction_module, only : dh_correction_grad
+      use dcart_xpm_module !BTN 8/7/17 use dhc1 and h1elec functions from here
 	  use qm2_davidson_module ! CML 7/13/12
 
  
@@ -146,214 +147,215 @@ subroutine dcart1(dxyzqm, gs_dm, ex_dm, xyz_in) ! CML add coordinates passed in 
 
 end subroutine dcart1
 
-subroutine qm2_dhc1(P,PTZ,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, & ! CML 7/13/12
-                   natqmj, iif, iil, jjf, jjl, DENER)
-!***********************************************************************
+!BTN: The following code is a repeat from dcart_xpm_module. Reusing that code
+!subroutine qm2_dhc1(P,PTZ,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, & ! CML 7/13/12
+!                   natqmj, iif, iil, jjf, jjl, DENER)
+!!***********************************************************************
+!!
+!! Ross Walker (SDSC, 2006) : Do 'Pseudo' Numerical Derivatives for QM
+!!
+!! d-orbital extension,  (Taisung Lee, 2011)  
+!!
+!!***********************************************************************
 !
-! Ross Walker (SDSC, 2006) : Do 'Pseudo' Numerical Derivatives for QM
+!      use constants          , only: ONE, A_TO_BOHRS, A2_TO_BOHRS2, EV_TO_KCAL
+!      use ElementOrbitalIndex, only: MaxValenceOrbitals,MaxValenceDimension 
+!      use qmmm_module        , only: qm2_params, OVERLAP_CUTOFF, qmmm_nml, qm2_struct
+!      use Rotation           , only: GetRotationMatrix, Rotate2Center2Electron, RotateCore   
+!      use qm2_fock_d         , only: W2Fock_atompair
+! 
+!      implicit none
 !
-! d-orbital extension,  (Taisung Lee, 2011)  
+!!Passed in
+!      _REAL_ P(*)
+!      _REAL_ PTZ(*) ! CML 7/13/12
+!      _REAL_, intent(in)  :: xyz_qmi(3),xyz_qmj(3)
+!      integer, intent(in) :: iqm, jqm, natqmi, natqmj, qmitype, qmjtype
+!      integer, intent(in) :: iif, iil, jjf, jjl
+!      _REAL_, intent(out) :: DENER
 !
-!***********************************************************************
-
-      use constants          , only: ONE, A_TO_BOHRS, A2_TO_BOHRS2, EV_TO_KCAL
-      use ElementOrbitalIndex, only: MaxValenceOrbitals,MaxValenceDimension 
-      use qmmm_module        , only: qm2_params, OVERLAP_CUTOFF, qmmm_nml, qm2_struct
-      use Rotation           , only: GetRotationMatrix, Rotate2Center2Electron, RotateCore   
-      use qm2_fock_d         , only: W2Fock_atompair
- 
-      implicit none
-
-!Passed in
-      _REAL_ P(*)
-      _REAL_ PTZ(*) ! CML 7/13/12
-      _REAL_, intent(in)  :: xyz_qmi(3),xyz_qmj(3)
-      integer, intent(in) :: iqm, jqm, natqmi, natqmj, qmitype, qmjtype
-      integer, intent(in) :: iif, iil, jjf, jjl
-      _REAL_, intent(out) :: DENER
-
-! Local
-      integer :: n_atomic_orbi, n_atomic_orbj
-      integer :: i_dimension, j_dimension
-      integer :: i,j,k,j1,jj,i1, linear, i2, ii, j2
-      integer :: firstIndexAO_i, lastIndexAO_i, firstIndexAO_j, lastIndexAO_j      
-
-      _REAL_ :: H(MaxValenceOrbitals*(MaxValenceOrbitals*2+1))
-      _REAL_ :: F(MaxValenceOrbitals*(MaxValenceOrbitals*2+1))
-      _REAL_ :: SHMAT(MaxValenceOrbitals,MaxValenceOrbitals)
-      _REAL_ :: W(MaxValenceDimension**2)
-      _REAL_ :: enuclr, ee, temp
-      _REAL_ :: r2, rij, r2InAu, rijInAu, oneOverRij
-      
-      _REAL_ :: RI(22), CORE(10,2)
-      _REAL_ :: rotationMatrix(15,45)
-      _REAL_, allocatable:: WW(:,:)
-      integer ::orb_loc(2,2),KR
-      logical::hasDOrbital
-
-      !qm2_Helect1 is a function
-      _REAL_ qm2_helect1	! CML 7/13/12
-
-      if (iif < jjf) then
-        i=iif-1
-        j=jjf-iil+iif-2
-      else
-        i=iif-jjl+jjf-2
-        j=jjf-1
-      end if
-      
-      firstIndexAO_i=iif-i
-      lastIndexAO_i=iil-i
-      firstIndexAO_j=jjf-j
-      lastIndexAO_j=jjl-j     
-      
-      n_atomic_orbi = lastIndexAO_i-firstIndexAO_i+1
-      n_atomic_orbj = lastIndexAO_j-firstIndexAO_j+1
-      
-      linear=qm2_params%pascal_tri2(n_atomic_orbi+n_atomic_orbj)
-      F(1:linear)=0.0D0
-      H(1:linear)=0.0D0
-
-! RCW: Caution, i and j reversed here.
-
-        r2 = sum((xyz_qmj-xyz_qmi)**2) 
-        rij=sqrt(r2)
-        rijInAu=rij*A_TO_BOHRS
-        oneOverRij=one/rij
-        r2InAu=r2*A2_TO_BOHRS2
-        
-      if (r2InAu < OVERLAP_CUTOFF) then
-      
-        if ((n_atomic_orbi.lt.9) .and. (n_atomic_orbj.lt.9)) then  ! SP case
-            SHMAT=0.0d0
-             call qm2_h1elec(r2InAu,xyz_qmi(1),                                  &
-                   xyz_qmj(1),n_atomic_orbi, n_atomic_orbj, SHMAT,           &
-                   qmitype,qmjtype)
-            
-              I2=0
-              do I1=firstIndexAO_i,lastIndexAO_i
-                 II=qm2_params%pascal_tri1(i1)+firstIndexAO_j-1
-                 I2=I2+1
-                 J2=0
-                 JJ=MIN(I1,lastIndexAO_j)
-                 do J1=firstIndexAO_j,JJ                                                   
-                    II=II+1                                                       
-                    J2=J2+1                                                       
-                    H(II)=H(II)+SHMAT(I2,J2) 
-                 end do
-              end do
-            
-        else  ! for atoms with d orbitals
-        
-            call qm2_h1elec_d(r2InAu,xyz_qmi(1:3), xyz_qmj(1:3),  &
-                        n_atomic_orbi,n_atomic_orbj,                &
-                        firstIndexAO_i, firstIndexAO_j, qmitype, qmjtype,  &
-                        n_atomic_orbi+n_atomic_orbj, H)                
-
-        end if ! ((n_atomic_orbi.lt.9) .and. (n_atomic_orbj.lt.9))
-      end if !(R2 < OVERLAP_CUTOFF)
-
-      KR=1
-      hasDOrbital=((n_atomic_orbi.ge.9) .or. (n_atomic_orbj.ge.9))
-      call GetRotationMatrix(xyz_qmj-xyz_qmi, rotationMatrix, hasDOrbital)        
-      call qm2_rotate_qmqm(-1,iqm,jqm,natqmi,natqmj,xyz_qmi,xyz_qmj,            &
-                  W(KR),KR, RI, core)
-
-      if (hasDOrbital) then   ! spd case
-
-        i_dimension=n_atomic_orbi*(n_atomic_orbi+1)/2
-        j_dimension=n_atomic_orbj*(n_atomic_orbj+1)/2
-       
-        allocate(ww(1:j_dimension, 1:i_dimension)) 
-        WW=0.0D0
-
-        ! calculate the 2-center integrals and core-core interaction integrals
-        call qm2_repp_d(qmitype,qmjtype,rijInAu,RI,CORE,WW,i_dimension,j_dimension,1)
- 
-        ! put 2-center 2-electron integrals to the linearized matrix W
-
-        k=0
-        do ii=1,i_dimension
-          do jj=1, j_dimension
-            k=k+1
-            W(k)=WW(jj,ii)
-          end do
-        end do
-                   
-        deallocate(ww)
-        call Rotate2Center2Electron(W, i_dimension, j_dimension,rotationMatrix)
-        
-   end if ! ((n_atomic_orbi.ge.9) .and. (n_atomic_orbj.ge.9))
-   
-   
-   ! calculate the core-core contribution to the H matrix
-    ii=qm2_params%pascal_tri2(firstIndexAO_i)
-    jj=qm2_params%pascal_tri2(firstIndexAO_j)   
-      
-   call RotateCore(firstIndexAO_i,firstIndexAO_j,              &
-    n_atomic_orbi,n_atomic_orbj,  &
-    ii,jj,core,rotationMatrix,H)
-   
-   !call qm2_core_core_repulsion(iqm, jqm, rij, oneOverRij, RI, enuclr) !not used        
-        
-    ! put what we have now to the Fock matrix
-    F(1:linear)=H(1:linear)
-       
-    ! 2-center 2-electron contribution to the Fock matrix      
-    call W2Fock_atompair(W, F, P, n_atomic_orbj, n_atomic_orbi,  &
-      firstIndexAO_j, firstIndexAO_i)
-    call W2Fock_atompair(W, F, P, n_atomic_orbi, n_atomic_orbj,  &
-      firstIndexAO_i, firstIndexAO_j)   
-
-    EE=qm2_helect1(n_atomic_orbi+n_atomic_orbj-1,PTZ,F)   ! CML 7/13/12
-	! SQM uses only RHF, so we need to multiply by 2 for the upper triangle.
-	! If UHF is implemented in the future, we need to make sure we calculate the
-	! upper triangle of the matrix as well. CML 6/26/12
-    DENER=EE*2.d0
-   
-   
-end subroutine qm2_dhc1
-
-function qm2_helect1(nminus,den_matrix,F)
-!***********************************************************************
+!! Local
+!      integer :: n_atomic_orbi, n_atomic_orbj
+!      integer :: i_dimension, j_dimension
+!      integer :: i,j,k,j1,jj,i1, linear, i2, ii, j2
+!      integer :: firstIndexAO_i, lastIndexAO_i, firstIndexAO_j, lastIndexAO_j      
 !
-!    SUBROUTINE CALCULATES THE ELECTRONIC ENERGY OF THE SYSTEM IN EV.
+!      _REAL_ :: H(MaxValenceOrbitals*(MaxValenceOrbitals*2+1))
+!      _REAL_ :: F(MaxValenceOrbitals*(MaxValenceOrbitals*2+1))
+!      _REAL_ :: SHMAT(MaxValenceOrbitals,MaxValenceOrbitals)
+!      _REAL_ :: W(MaxValenceDimension**2)
+!      _REAL_ :: enuclr, ee, temp
+!      _REAL_ :: r2, rij, r2InAu, rijInAu, oneOverRij
+!      
+!      _REAL_ :: RI(22), CORE(10,2)
+!      _REAL_ :: rotationMatrix(15,45)
+!      _REAL_, allocatable:: WW(:,:)
+!      integer ::orb_loc(2,2),KR
+!      logical::hasDOrbital
 !
-!    ON ENTRY Nminus = NUMBER OF ATOMIC ORBITALS - 1
-!             den_matrix = DENSITY MATRIX, PACKED, LOWER TRIANGLE.
-!             hmatrix = ONE-ELECTRON MATRIX, PACKED, LOWER TRIANGLE.
-!             F = TWO-ELECTRON MATRIX, PACKED, LOWER TRIANGLE.
-!    ON EXIT
-!        qm2_HELECT1 = ELECTRONIC ENERGY.
+!      !qm2_Helect1 is a function
+!      _REAL_ qm2_helect1	! CML 7/13/12
 !
-!***********************************************************************
-   implicit none
-
-   _REAL_, intent(in) :: den_matrix(*), F(*)
-   integer, intent(in) :: nminus
-
-   _REAL_ ed, qm2_helect1
-   integer k,i,j
-
-   ED=0.0D00
-   qm2_helect1=0.0D00
-   K=0
-   do I=1,nminus
-      K=K+1
-      ED=ED+den_matrix(K)*0.5D0*F(K)
-      do J=1,I
-         K=K+1
-         qm2_helect1=qm2_helect1+den_matrix(K)*F(K)
-      end do
-   end do
-
-   K=K+1
-   ED=ED+den_matrix(K)*0.5D0*F(K)
-
-   qm2_helect1=qm2_helect1+ED
-
-
-end function qm2_helect1
+!      if (iif < jjf) then
+!        i=iif-1
+!        j=jjf-iil+iif-2
+!      else
+!        i=iif-jjl+jjf-2
+!        j=jjf-1
+!      end if
+!      
+!      firstIndexAO_i=iif-i
+!      lastIndexAO_i=iil-i
+!      firstIndexAO_j=jjf-j
+!      lastIndexAO_j=jjl-j     
+!      
+!      n_atomic_orbi = lastIndexAO_i-firstIndexAO_i+1
+!      n_atomic_orbj = lastIndexAO_j-firstIndexAO_j+1
+!      
+!      linear=qm2_params%pascal_tri2(n_atomic_orbi+n_atomic_orbj)
+!      F(1:linear)=0.0D0
+!      H(1:linear)=0.0D0
+!
+!! RCW: Caution, i and j reversed here.
+!
+!        r2 = sum((xyz_qmj-xyz_qmi)**2) 
+!        rij=sqrt(r2)
+!        rijInAu=rij*A_TO_BOHRS
+!        oneOverRij=one/rij
+!        r2InAu=r2*A2_TO_BOHRS2
+!        
+!      if (r2InAu < OVERLAP_CUTOFF) then
+!      
+!        if ((n_atomic_orbi.lt.9) .and. (n_atomic_orbj.lt.9)) then  ! SP case
+!            SHMAT=0.0d0
+!             call qm2_h1elec(r2InAu,xyz_qmi(1),                                  &
+!                   xyz_qmj(1),n_atomic_orbi, n_atomic_orbj, SHMAT,           &
+!                   qmitype,qmjtype)
+!            
+!              I2=0
+!              do I1=firstIndexAO_i,lastIndexAO_i
+!                 II=qm2_params%pascal_tri1(i1)+firstIndexAO_j-1
+!                 I2=I2+1
+!                 J2=0
+!                 JJ=MIN(I1,lastIndexAO_j)
+!                 do J1=firstIndexAO_j,JJ                                                   
+!                    II=II+1                                                       
+!                    J2=J2+1                                                       
+!                    H(II)=H(II)+SHMAT(I2,J2) 
+!                 end do
+!              end do
+!            
+!        else  ! for atoms with d orbitals
+!        
+!            call qm2_h1elec_d(r2InAu,xyz_qmi(1:3), xyz_qmj(1:3),  &
+!                        n_atomic_orbi,n_atomic_orbj,                &
+!                        firstIndexAO_i, firstIndexAO_j, qmitype, qmjtype,  &
+!                        n_atomic_orbi+n_atomic_orbj, H)                
+!
+!        end if ! ((n_atomic_orbi.lt.9) .and. (n_atomic_orbj.lt.9))
+!      end if !(R2 < OVERLAP_CUTOFF)
+!
+!      KR=1
+!      hasDOrbital=((n_atomic_orbi.ge.9) .or. (n_atomic_orbj.ge.9))
+!      call GetRotationMatrix(xyz_qmj-xyz_qmi, rotationMatrix, hasDOrbital)        
+!      call qm2_rotate_qmqm(-1,iqm,jqm,natqmi,natqmj,xyz_qmi,xyz_qmj,            &
+!                  W(KR),KR, RI, core)
+!
+!      if (hasDOrbital) then   ! spd case
+!
+!        i_dimension=n_atomic_orbi*(n_atomic_orbi+1)/2
+!        j_dimension=n_atomic_orbj*(n_atomic_orbj+1)/2
+!       
+!        allocate(ww(1:j_dimension, 1:i_dimension)) 
+!        WW=0.0D0
+!
+!        ! calculate the 2-center integrals and core-core interaction integrals
+!        call qm2_repp_d(qmitype,qmjtype,rijInAu,RI,CORE,WW,i_dimension,j_dimension,1)
+! 
+!        ! put 2-center 2-electron integrals to the linearized matrix W
+!
+!        k=0
+!        do ii=1,i_dimension
+!          do jj=1, j_dimension
+!            k=k+1
+!            W(k)=WW(jj,ii)
+!          end do
+!        end do
+!                   
+!        deallocate(ww)
+!        call Rotate2Center2Electron(W, i_dimension, j_dimension,rotationMatrix)
+!        
+!   end if ! ((n_atomic_orbi.ge.9) .and. (n_atomic_orbj.ge.9))
+!   
+!   
+!   ! calculate the core-core contribution to the H matrix
+!    ii=qm2_params%pascal_tri2(firstIndexAO_i)
+!    jj=qm2_params%pascal_tri2(firstIndexAO_j)   
+!      
+!   call RotateCore(firstIndexAO_i,firstIndexAO_j,              &
+!    n_atomic_orbi,n_atomic_orbj,  &
+!    ii,jj,core,rotationMatrix,H)
+!   
+!   !call qm2_core_core_repulsion(iqm, jqm, rij, oneOverRij, RI, enuclr) !not used        
+!        
+!    ! put what we have now to the Fock matrix
+!    F(1:linear)=H(1:linear)
+!       
+!    ! 2-center 2-electron contribution to the Fock matrix      
+!    call W2Fock_atompair(W, F, P, n_atomic_orbj, n_atomic_orbi,  &
+!      firstIndexAO_j, firstIndexAO_i)
+!    call W2Fock_atompair(W, F, P, n_atomic_orbi, n_atomic_orbj,  &
+!      firstIndexAO_i, firstIndexAO_j)   
+!
+!    EE=qm2_helect1(n_atomic_orbi+n_atomic_orbj-1,PTZ,F)   ! CML 7/13/12
+!	! SQM uses only RHF, so we need to multiply by 2 for the upper triangle.
+!	! If UHF is implemented in the future, we need to make sure we calculate the
+!	! upper triangle of the matrix as well. CML 6/26/12
+!    DENER=EE*2.d0
+!   
+!   
+!end subroutine qm2_dhc1
+!
+!function qm2_helect1(nminus,den_matrix,F)
+!!***********************************************************************
+!!
+!!    SUBROUTINE CALCULATES THE ELECTRONIC ENERGY OF THE SYSTEM IN EV.
+!!
+!!    ON ENTRY Nminus = NUMBER OF ATOMIC ORBITALS - 1
+!!             den_matrix = DENSITY MATRIX, PACKED, LOWER TRIANGLE.
+!!             hmatrix = ONE-ELECTRON MATRIX, PACKED, LOWER TRIANGLE.
+!!             F = TWO-ELECTRON MATRIX, PACKED, LOWER TRIANGLE.
+!!    ON EXIT
+!!        qm2_HELECT1 = ELECTRONIC ENERGY.
+!!
+!!***********************************************************************
+!   implicit none
+!
+!   _REAL_, intent(in) :: den_matrix(*), F(*)
+!   integer, intent(in) :: nminus
+!
+!   _REAL_ ed, qm2_helect1
+!   integer k,i,j
+!
+!   ED=0.0D00
+!   qm2_helect1=0.0D00
+!   K=0
+!   do I=1,nminus
+!      K=K+1
+!      ED=ED+den_matrix(K)*0.5D0*F(K)
+!      do J=1,I
+!         K=K+1
+!         qm2_helect1=qm2_helect1+den_matrix(K)*F(K)
+!      end do
+!   end do
+!
+!   K=K+1
+!   ED=ED+den_matrix(K)*0.5D0*F(K)
+!
+!   qm2_helect1=qm2_helect1+ED
+!
+!
+!end function qm2_helect1
 
 
 

@@ -198,7 +198,7 @@ contains
         integer ::orb_loc(2,2),KR
         logical::hasDOrbital
         !qm2_Helect1 is a function
-        _REAL_ qm2_helect1    ! CML 7/13/12
+        !_REAL_ qm2_helect1    ! CML 7/13/12 BTN:8/7/17 Why would you force reference to external function when function is internal? 
         if (iif < jjf) then
             i=iif-1
             j=jjf-iil+iif-2
