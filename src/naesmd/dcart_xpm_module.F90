@@ -55,12 +55,15 @@ contains
         integer i,j,k,l
         integer n_atomic_orbi, n_atomic_orbj
         integer jstart, jend
+        integer qm2dhci,qm2dhcj  !BTN: variables to mimic those inside qm2dhc
         _REAL_ aa,ee,deriv,angle,refh,heat,sum
+        _REAL_ DENER  !BTN 08/10/17 to store energy derivative
         _REAL_ corei, corej
         _REAL_ betasas, betasap, betapas, betapap
         _REAL_ bdd1i, bdd2i, bdd3i, bdd1j, bdd2j, bdd3j
         _REAL_ qqi, qqi2, qqj, qqj2, ddi,ddj
         _REAL_ htype, fqmii(3)
+        _REAL_ :: F(MaxValenceOrbitals*(MaxValenceOrbitals*2+1)) !BTN 10/08/2017 place to store fock matrix
         integer natom
           
         !#define change 1.D-4
@@ -130,18 +133,51 @@ contains
                         end do
                     end do
 
+                    !xyz_qmi(:)=xyz_in_m(:,ii)
+                    !xyz_qmj(:)=xyz_in_m(:,jj)
+                    !call qm2_dhc1(psum,ptzsum,ii,jj,qmitype,qmjtype,xyz_qmi, &
+                    !    xyz_qmj,natqmi,natqmj,iif,iil,jjf,jjl,AA)
+                    !
+                    !xyz_qmi(:)=xyz_in_p(:,ii)
+                    !xyz_qmj(:)=xyz_in_p(:,jj)
+                    !call qm2_dhc1(psum,ptzsum,ii,jj,qmitype,qmjtype,xyz_qmi, &
+                    !    xyz_qmj,natqmi,natqmj,iif,iil,jjf,jjl,EE)
+                    !
+                    ! 
+                    !DERIV=(EE-AA)*EV_TO_KCAL ! /(xyz_in_p(K,ii)-xyz_in_m(k,ii))
+                    
+                    !BTN Changed to remove fock calculation from multiplication with transition density
+                       
+                    if (iif < jjf) then
+                        qm2dhci=iif-1
+                        qm2dhcj=jjf-iil+iif-2
+                    else
+                        qm2dhci=iif-jjl+jjf-2
+                        qm2dhcj=jjf-1
+                    end if
+                    
                     xyz_qmi(:)=xyz_in_m(:,ii)
                     xyz_qmj(:)=xyz_in_m(:,jj)
-                    call qm2_dhc1(psum,ptzsum,ii,jj,qmitype,qmjtype,xyz_qmi, &
-                        xyz_qmj,natqmi,natqmj,iif,iil,jjf,jjl,AA)
-
+                    call qm2_dhc1(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+                       jjl,F)
+                    DENER=qm2_helect1(iil-qm2dhci-iif-qm2dhci+1+jjl-qm2dhcj-jjf-qm2dhcj+1-1,ptzsum,F)   ! CML 7/13/12 BTN 08/10/2017
+                    AA=DENER*2.d0
+                             
+                             
+                             
                     xyz_qmi(:)=xyz_in_p(:,ii)
                     xyz_qmj(:)=xyz_in_p(:,jj)
-                    call qm2_dhc1(psum,ptzsum,ii,jj,qmitype,qmjtype,xyz_qmi, &
-                        xyz_qmj,natqmi,natqmj,iif,iil,jjf,jjl,EE)
-
-                     
-                    DERIV=(EE-AA)*EV_TO_KCAL ! /(xyz_in_p(K,ii)-xyz_in_m(k,ii))
+                    call qm2_dhc1(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+                             jjl,F)
+                    DENER=qm2_helect1(iil-qm2dhci-iif-qm2dhci+1+jjl-qm2dhcj-jjf-qm2dhcj+1-1,ptzsum,F)   ! CML 7/13/12 BTN 08/10/2017
+                    EE=DENER*2.d0
+                             
+                         
+                    DERIV=(EE-AA)*EV_TO_KCAL
+                    
+                    
+                    
+                    
                     dcart1_xpm = dcart1_xpm + DERIV
                   !dxyzqm(K,II)=dxyzqm(K,II)-DERIV
                   !dxyzqm(K,JJ)=dxyzqm(K,JJ)+DERIV
@@ -153,8 +189,8 @@ contains
         return
     end function dcart1_xpm
 
-    subroutine qm2_dhc1(P,PTZ,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, & ! CML 7/13/12
-        natqmj, iif, iil, jjf, jjl, DENER)
+    subroutine qm2_dhc1(P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, & ! CML 7/13/12
+        natqmj, iif, iil, jjf, jjl, F)
         !***********************************************************************
         !
         ! Ross Walker (SDSC, 2006) : Do 'Pseudo' Numerical Derivatives for QM
@@ -173,11 +209,10 @@ contains
 
         !Passed in
         _REAL_ P(:)
-        _REAL_ PTZ(:) ! CML 7/13/12
         _REAL_, intent(in)  :: xyz_qmi(3),xyz_qmj(3)
         integer, intent(in) :: iqm, jqm, natqmi, natqmj, qmitype, qmjtype
         integer, intent(in) :: iif, iil, jjf, jjl
-        _REAL_, intent(out) :: DENER
+        _REAL_, intent(out) :: F(MaxValenceOrbitals*(MaxValenceOrbitals*2+1))
 
         ! Local
         integer :: n_atomic_orbi, n_atomic_orbj
@@ -186,7 +221,6 @@ contains
         integer :: firstIndexAO_i, lastIndexAO_i, firstIndexAO_j, lastIndexAO_j
 
         _REAL_ :: H(MaxValenceOrbitals*(MaxValenceOrbitals*2+1))
-        _REAL_ :: F(MaxValenceOrbitals*(MaxValenceOrbitals*2+1))
         _REAL_ :: SHMAT(MaxValenceOrbitals,MaxValenceOrbitals)
         _REAL_ :: W(MaxValenceDimension**2)
         _REAL_ :: enuclr, ee
@@ -312,14 +346,10 @@ contains
         !write(6,*)'here2.1'
         call W2Fock_atompair(W, F, P, n_atomic_orbi, n_atomic_orbj,  &
             firstIndexAO_i, firstIndexAO_j)
-        !write(6,*)'here2.2'
+        !write(6,*)'here2.2' 
+        
 
-        EE=qm2_helect1(n_atomic_orbi+n_atomic_orbj-1,PTZ,F)   ! CML 7/13/12
-        ! SQM uses only RHF, so we need to multiply by 2 for the upper triangle.
-        ! If UHF is implemented in the future, we need to make sure we calculate the
-        ! upper triangle of the matrix as well. CML 6/26/12
-        DENER=EE*2.d0
-        !write(6,*)'here3'
+
     end subroutine qm2_dhc1
 
     function qm2_helect1(nminus,den_matrix,F)

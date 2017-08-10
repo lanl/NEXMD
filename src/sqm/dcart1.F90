@@ -44,9 +44,11 @@ subroutine dcart1(dxyzqm, gs_dm, ex_dm, xyz_in) ! CML add coordinates passed in 
       _REAL_ psum(MaxValenceOrbitals**2*3) 
       _REAL_ ptzsum(MaxValenceOrbitals**2*3) ! CML for excited state DM 7/13/12
       _REAL_ xyz_qmi(3), xyz_qmj(3), vec_qm_qm1, vec_qm_qm2, vec_qm_qm3
+      _REAL_ DENER ! BTN 08/10/2017 done to store energy derivative
       integer natqmi, natqmj, qmitype, qmjtype
       integer ii, iif, iil, jj, jjf, jjl, ij
       integer i,j,k,l
+      integer qm2dhci,qm2dhcj  !BTN: variables to mimic those inside qm2dhc
       integer n_atomic_orbi, n_atomic_orbj
       integer jstart, jend
       _REAL_ aa,ee,deriv,angle,refh,heat,sum
@@ -55,6 +57,7 @@ subroutine dcart1(dxyzqm, gs_dm, ex_dm, xyz_in) ! CML add coordinates passed in 
       _REAL_ bdd1i, bdd2i, bdd3i, bdd1j, bdd2j, bdd3j
       _REAL_ qqi, qqi2, qqj, qqj2, ddi,ddj
       _REAL_ htype, fqmii(3)
+      _REAL_ :: F(MaxValenceOrbitals*(MaxValenceOrbitals*2+1))
       integer natom
       
 !#define change 1.D-4
@@ -128,11 +131,28 @@ subroutine dcart1(dxyzqm, gs_dm, ex_dm, xyz_in) ! CML add coordinates passed in 
             end do
             do K=1,3
               xyz_qmi(K)=xyz_qmi(K)+halfChange
-              call qm2_dhc1(psum,ptzsum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
-                       jjl,AA)
+              call qm2_dhc1(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+                       jjl,F)
+                       
+              if (iif < jjf) then
+                  qm2dhci=iif-1
+                  qm2dhcj=jjf-iil+iif-2
+              else
+                  qm2dhci=iif-jjl+jjf-2
+                  qm2dhcj=jjf-1
+              end if
+              
+              DENER=qm2_helect1(iil-qm2dhci-iif-qm2dhci+1+jjl-qm2dhcj-jjf-qm2dhcj+1-1,ptzsum,F)   ! CML 7/13/12 BTN 08/10/2017
+              AA=DENER*2.d0
+                       
               xyz_qmi(K)=xyz_qmi(K)-change
-              call qm2_dhc1(psum,ptzsum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
-                       jjl,EE)
+              call qm2_dhc1(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+                       jjl,F)
+                       
+              DENER=qm2_helect1(iil-qm2dhci-iif-qm2dhci+1+jjl-qm2dhcj-jjf-qm2dhcj+1-1,ptzsum,F)   ! CML 7/13/12 BTN 08/10/2017
+              EE=DENER*2.d0
+                       
+                       
               xyz_qmi(K)=xyz_qmi(K)+halfChange
                    
               DERIV=(EE-AA)*EV_TO_KCAL*onechange

@@ -262,6 +262,9 @@ module nacT_analytic_module
 !********************************************************************
 !
    subroutine nacT_direct(sim,nact,xs)
+   
+   use dcart_xpm_module
+   
    implicit none
 
    type(simulation_t),pointer::sim
