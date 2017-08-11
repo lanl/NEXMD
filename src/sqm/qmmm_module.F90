@@ -107,7 +107,7 @@ module qmmm_module
      _REAL_, dimension(:,:), pointer :: fock_matrix_dp => null()
      
      ! Fock matrix displace minus
-     _REAL_, dimension(:,:), pointer :: fock_matrix_dm => null()
+     !_REAL_, dimension(:,:), pointer :: fock_matrix_dm => null()
 
      ! QM-MM electron repulsion integrals
      _REAL_, dimension(:,:), pointer :: qm_mm_e_repul => null()

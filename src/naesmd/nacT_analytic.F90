@@ -241,8 +241,7 @@ module nacT_analytic_module
    call packing(Nb,qm2ds%eta,qm2ds%nacr_scratch,'s')
 
 
-   nacT_direct_ihc=dcart1_xpm(qm2_struct%den_matrix, &
-      qm2ds%nacr_scratch,xstep%Rp,xstep%Rm) 
+   nacT_direct_ihc=dcart1_xpm(qm2ds%nacr_scratch,xstep%Rp,xstep%Rm) 
 
 
    nacT_direct_ihc=nacT_direct_ihc*kcalev &
@@ -278,8 +277,7 @@ module nacT_analytic_module
   
    _REAL_ psum(MaxValenceOrbitals**2*3)
    _REAL_ xyz_qmi(3), xyz_qmj(3)
-   !_REAL_ :: F(MaxValenceOrbitals*(MaxValenceOrbitals*2+1)) !BTN 10/08/2017 place to store fock matrix
-   _REAL_, dimension(:), pointer :: curFmatPt
+   _REAL_ :: Fm(MaxValenceOrbitals*(MaxValenceOrbitals*2+1)) !BTN 10/08/2017 place to store fock matrix
 
    integer natqmi, natqmj, qmitype, qmjtype
    integer ii, iif, iil, jj, jjf, jjl, ij
@@ -289,9 +287,6 @@ module nacT_analytic_module
    type(xstep_t),pointer::xs
 
    nact=0.d0
-!   do i=1,MaxValenceOrbitals*(MaxValenceOrbitals*2+1)
-!       F(i)=0.d0
-!   end do
    
    call xstep_au2A(xs)
    
@@ -346,31 +341,25 @@ module nacT_analytic_module
            
            !BTN Changed to remove fock calculation from multiplication with transition density
            
+           !BTN zero temp array
+           Fm=0.0d0
+           
            xyz_qmi(:)=xs%rm(:,ii)
            xyz_qmj(:)=xs%rm(:,jj)
-           !curFmatPt => qm2_struct%fock_matrix_dm(qm2_params%pascal_tri1(ii-1)+jj,:)
            call qm2_dhc1(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
-              jjl,qm2_struct%fock_matrix_dm(qm2_params%pascal_tri1(ii-1)+jj,:))
-           !Save Fock matrix and zero F
-           !do i=1,MaxValenceOrbitals*(MaxValenceOrbitals*2+1)
-           !    qm2_struct%fock_matrix_dm(qm2_params%pascal_tri1(ii-1)+jj+i-1)=F(i)
-           !    F(i)=0.d0
-           !end do
+              jjl,Fm)
                     
            xyz_qmi(:)=xs%rp(:,ii)
            xyz_qmj(:)=xs%rp(:,jj)
-           !curFmatPt => qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:)
            call qm2_dhc1(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
               jjl,qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:))
-           !Save Fock matrix and zero F
-           !do i=1,MaxValenceOrbitals*(MaxValenceOrbitals*2+1)
-           !    qm2_struct%fock_matrix_dm(qm2_params%pascal_tri1(ii-1)+jj+i-1)=F(i)
-           !    F(i)=0.d0
-           !end do
+              
+           qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:)=qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:)-Fm(:)
            
        end do
    end do
    
+   !qm2_struct%fock_matrix_dp=qm2_struct%fock_matrix_dp-qm2_struct%fock_matrix_dm
    
    !BTN End here
 

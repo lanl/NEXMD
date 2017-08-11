@@ -13,7 +13,7 @@ contains
     ! CML this subroutine, as well as DCART1() and DCART2(), since they are based
     ! CML on the same subroutine. 7/13/12
 
-    function dcart1_xpm(gs_dm, ex_dm, xyz_in_p, xyz_in_m) 
+    function dcart1_xpm(ex_dm, xyz_in_p, xyz_in_m) 
         !Current code maintained by: Ross Walker (TSRI 2004)
 
         !This routine calculates the derivatives of the energy for QM-QM
@@ -38,7 +38,6 @@ contains
         _REAL_, intent(in) :: xyz_in_p(3,qmmm_struct%nquant_nlink), xyz_in_m(3,qmmm_struct%nquant_nlink) !, xyz_in(3,qmmm_struct%nquant_nlink)
         !_REAL_, pointer    :: xyz_in(:,:)
         ! CML Just in case we don't update coords in qmmm_struct 7/13/12
-        _REAL_, intent(in) :: gs_dm(qm2ds%Nb*(qm2ds%Nb+1)/2) ! CML 7/13/12
         _REAL_, intent(in) :: ex_dm(qm2ds%Nb*(qm2ds%Nb+1)/2) ! CML 7/13/12
         !Local
 
@@ -46,8 +45,6 @@ contains
         _REAL_ e_repul(22) !Used when qmqm_erep_incore = false
         _REAL_ pair_force(3)
         integer loop_count !Keeps track of number of times through nquant * (nquant-1)/2 loop
-        !      _REAL_ psum(36) !36 = max combinations with heavy and heavy = 4 orbs * 4 orbs (Note, no d orb support)
-        _REAL_ psum(MaxValenceOrbitals**2*3)
         _REAL_ ptzsum(MaxValenceOrbitals**2*3) ! CML for excited state DM 7/13/12
         _REAL_ xyz_qmi(3), xyz_qmj(3), vec_qm_qm1, vec_qm_qm2, vec_qm_qm3
         integer natqmi, natqmj, qmitype, qmjtype
@@ -63,7 +60,6 @@ contains
         _REAL_ qqi, qqi2, qqj, qqj2, ddi,ddj
         _REAL_ htype, fqmii(3)
         _REAL_, target :: F(MaxValenceOrbitals*(MaxValenceOrbitals*2+1)) !BTN 10/08/2017 place to store fock matrix
-        _REAL_, dimension(:), pointer :: curFmatPt
         integer natom
           
         !#define change 1.D-4
@@ -111,7 +107,6 @@ contains
                         do J=jjf,I
                             IJ=IJ+1
                             K=K+1
-                            psum(IJ)=gs_dm(K)
                             ptzsum(IJ)=ex_dm(K)
                         end do
                     end do
@@ -122,70 +117,30 @@ contains
                         do J=jjf,jjl
                             IJ=IJ+1
                             K=K+1
-                            psum(IJ)=gs_dm(K)
                             ptzsum(IJ)=ex_dm(K)
                         end do
                         K=L+iif-1
                         do L=iif,I
                             K=K+1
                             IJ=IJ+1
-                            psum(IJ)=gs_dm(K)
                             ptzsum(IJ)=ex_dm(K)
                         end do
                     end do
 
-                    !xyz_qmi(:)=xyz_in_m(:,ii)
-                    !xyz_qmj(:)=xyz_in_m(:,jj)
-                    !call qm2_dhc1(psum,ptzsum,ii,jj,qmitype,qmjtype,xyz_qmi, &
-                    !    xyz_qmj,natqmi,natqmj,iif,iil,jjf,jjl,AA)
-                    !
-                    !xyz_qmi(:)=xyz_in_p(:,ii)
-                    !xyz_qmj(:)=xyz_in_p(:,jj)
-                    !call qm2_dhc1(psum,ptzsum,ii,jj,qmitype,qmjtype,xyz_qmi, &
-                    !    xyz_qmj,natqmi,natqmj,iif,iil,jjf,jjl,EE)
-                    !
-                    ! 
-                    !DERIV=(EE-AA)*EV_TO_KCAL ! /(xyz_in_p(K,ii)-xyz_in_m(k,ii))
-                    
-                    !BTN Changed to remove fock calculation from multiplication with transition density
-                    
-                    !BTN zero F
-                    !do i=1,MaxValenceOrbitals*(MaxValenceOrbitals*2+1)
-                    !    F(i)=0.d0
-                    !end do
-                    !xyz_qmi(:)=xyz_in_m(:,ii)
-                    !xyz_qmj(:)=xyz_in_m(:,jj)
-                    !curFmatPt => F
-                    !call qm2_dhc1(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
-                    !   jjl,F)
-                    !DENER=qm2_helect1(iil-iif+jjl-jjf+1,ptzsum,F)   ! CML 7/13/12 BTN 08/10/2017
-                    
-                    DENER=qm2_helect1(iil-iif+jjl-jjf+1,ptzsum,qm2_struct%fock_matrix_dm(qm2_params%pascal_tri1(ii-1)+jj,:))   ! CML 7/13/12 BTN 08/10/2017
-                    AA=DENER*2.d0
-                             
-                             
-                    !BTN zero F
-                    !do i=1,MaxValenceOrbitals*(MaxValenceOrbitals*2+1)
-                    !    F(i)=0.d0
-                    !end do
-                    !xyz_qmi(:)=xyz_in_p(:,ii)
-                    !xyz_qmj(:)=xyz_in_p(:,jj)
-                    !curFmatPt => F
-                    !call qm2_dhc1(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
-                    !    jjl,F)
-                    !DENER=qm2_helect1(iil-iif+jjl-jjf+1,ptzsum,F)   ! CML 7/13/12 BTN 08/10/2017
-                    
+!                    DENER=qm2_helect1(iil-iif+jjl-jjf+1,ptzsum,qm2_struct%fock_matrix_dm(qm2_params%pascal_tri1(ii-1)+jj,:))   ! CML 7/13/12 BTN 08/10/2017
+!                    AA=DENER*2.d0
+!                    
+!                    DENER=qm2_helect1(iil-iif+jjl-jjf+1,ptzsum,qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:))   ! CML 7/13/12 BTN 08/10/2017
+!                    EE=DENER*2.d0
+!                             
+!                    DERIV=(EE-AA)*EV_TO_KCAL
                     DENER=qm2_helect1(iil-iif+jjl-jjf+1,ptzsum,qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:))   ! CML 7/13/12 BTN 08/10/2017
-                    EE=DENER*2.d0
-                             
-                         
-                    DERIV=(EE-AA)*EV_TO_KCAL
                     
-                    write(6,*) "Deriv is"
-                    write(6,*) DERIV
+                    DERIV=DENER*2.0*EV_TO_KCAL
+
                     
-                    
-                    
+                    !write(6,*) "Deriv is"
+                    !write(6,*) DERIV
                     
                     dcart1_xpm = dcart1_xpm + DERIV
                   !dxyzqm(K,II)=dxyzqm(K,II)-DERIV
