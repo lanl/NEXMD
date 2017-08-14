@@ -13,7 +13,7 @@ contains
     ! CML this subroutine, as well as DCART1() and DCART2(), since they are based
     ! CML on the same subroutine. 7/13/12
 
-    function dcart1_xpm(gs_dm, ex_dm, xyz_in_p, xyz_in_m) 
+    function dcart1_xpm(ex_dm, xyz_in_p, xyz_in_m) 
         !Current code maintained by: Ross Walker (TSRI 2004)
 
         !This routine calculates the derivatives of the energy for QM-QM
@@ -38,7 +38,6 @@ contains
         _REAL_, intent(in) :: xyz_in_p(3,qmmm_struct%nquant_nlink), xyz_in_m(3,qmmm_struct%nquant_nlink) !, xyz_in(3,qmmm_struct%nquant_nlink)
         !_REAL_, pointer    :: xyz_in(:,:)
         ! CML Just in case we don't update coords in qmmm_struct 7/13/12
-        _REAL_, intent(in) :: gs_dm(qm2ds%Nb*(qm2ds%Nb+1)/2) ! CML 7/13/12
         _REAL_, intent(in) :: ex_dm(qm2ds%Nb*(qm2ds%Nb+1)/2) ! CML 7/13/12
         !Local
 
@@ -46,8 +45,6 @@ contains
         _REAL_ e_repul(22) !Used when qmqm_erep_incore = false
         _REAL_ pair_force(3)
         integer loop_count !Keeps track of number of times through nquant * (nquant-1)/2 loop
-        !      _REAL_ psum(36) !36 = max combinations with heavy and heavy = 4 orbs * 4 orbs (Note, no d orb support)
-        _REAL_ psum(MaxValenceOrbitals**2*3)
         _REAL_ ptzsum(MaxValenceOrbitals**2*3) ! CML for excited state DM 7/13/12
         _REAL_ xyz_qmi(3), xyz_qmj(3), vec_qm_qm1, vec_qm_qm2, vec_qm_qm3
         integer natqmi, natqmj, qmitype, qmjtype
@@ -56,11 +53,13 @@ contains
         integer n_atomic_orbi, n_atomic_orbj
         integer jstart, jend
         _REAL_ aa,ee,deriv,angle,refh,heat,sum
+        _REAL_ DENER  !BTN 08/10/17 to store energy derivative
         _REAL_ corei, corej
         _REAL_ betasas, betasap, betapas, betapap
         _REAL_ bdd1i, bdd2i, bdd3i, bdd1j, bdd2j, bdd3j
         _REAL_ qqi, qqi2, qqj, qqj2, ddi,ddj
         _REAL_ htype, fqmii(3)
+        _REAL_, target :: F(MaxValenceOrbitals*(MaxValenceOrbitals*2+1)) !BTN 10/08/2017 place to store fock matrix
         integer natom
           
         !#define change 1.D-4
@@ -70,6 +69,7 @@ contains
         !#define delAdj 1.0D-8
         !#define TWOONEdelAdj 50000000
         dcart1_xpm = 0.d0
+        
 
            !xyz_in => qmmm_struct%qm_coords
 
@@ -107,7 +107,6 @@ contains
                         do J=jjf,I
                             IJ=IJ+1
                             K=K+1
-                            psum(IJ)=gs_dm(K)
                             ptzsum(IJ)=ex_dm(K)
                         end do
                     end do
@@ -118,30 +117,31 @@ contains
                         do J=jjf,jjl
                             IJ=IJ+1
                             K=K+1
-                            psum(IJ)=gs_dm(K)
                             ptzsum(IJ)=ex_dm(K)
                         end do
                         K=L+iif-1
                         do L=iif,I
                             K=K+1
                             IJ=IJ+1
-                            psum(IJ)=gs_dm(K)
                             ptzsum(IJ)=ex_dm(K)
                         end do
                     end do
 
-                    xyz_qmi(:)=xyz_in_m(:,ii)
-                    xyz_qmj(:)=xyz_in_m(:,jj)
-                    call qm2_dhc1(psum,ptzsum,ii,jj,qmitype,qmjtype,xyz_qmi, &
-                        xyz_qmj,natqmi,natqmj,iif,iil,jjf,jjl,AA)
+!                    DENER=qm2_helect1(iil-iif+jjl-jjf+1,ptzsum,qm2_struct%fock_matrix_dm(qm2_params%pascal_tri1(ii-1)+jj,:))   ! CML 7/13/12 BTN 08/10/2017
+!                    AA=DENER*2.d0
+!                    
+!                    DENER=qm2_helect1(iil-iif+jjl-jjf+1,ptzsum,qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:))   ! CML 7/13/12 BTN 08/10/2017
+!                    EE=DENER*2.d0
+!                             
+!                    DERIV=(EE-AA)*EV_TO_KCAL
+                    DENER=qm2_helect1(iil-iif+jjl-jjf+1,ptzsum,qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:))   ! CML 7/13/12 BTN 08/10/2017
+                    
+                    DERIV=DENER*2.0*EV_TO_KCAL
 
-                    xyz_qmi(:)=xyz_in_p(:,ii)
-                    xyz_qmj(:)=xyz_in_p(:,jj)
-                    call qm2_dhc1(psum,ptzsum,ii,jj,qmitype,qmjtype,xyz_qmi, &
-                        xyz_qmj,natqmi,natqmj,iif,iil,jjf,jjl,EE)
-
-                     
-                    DERIV=(EE-AA)*EV_TO_KCAL ! /(xyz_in_p(K,ii)-xyz_in_m(k,ii))
+                    
+                    !write(6,*) "Deriv is"
+                    !write(6,*) DERIV
+                    
                     dcart1_xpm = dcart1_xpm + DERIV
                   !dxyzqm(K,II)=dxyzqm(K,II)-DERIV
                   !dxyzqm(K,JJ)=dxyzqm(K,JJ)+DERIV
@@ -153,8 +153,8 @@ contains
         return
     end function dcart1_xpm
 
-    subroutine qm2_dhc1(P,PTZ,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, & ! CML 7/13/12
-        natqmj, iif, iil, jjf, jjl, DENER)
+    subroutine qm2_dhc1(P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, & ! CML 7/13/12
+        natqmj, iif, iil, jjf, jjl, F)
         !***********************************************************************
         !
         ! Ross Walker (SDSC, 2006) : Do 'Pseudo' Numerical Derivatives for QM
@@ -173,11 +173,11 @@ contains
 
         !Passed in
         _REAL_ P(:)
-        _REAL_ PTZ(:) ! CML 7/13/12
         _REAL_, intent(in)  :: xyz_qmi(3),xyz_qmj(3)
         integer, intent(in) :: iqm, jqm, natqmi, natqmj, qmitype, qmjtype
         integer, intent(in) :: iif, iil, jjf, jjl
-        _REAL_, intent(out) :: DENER
+        _REAL_, intent(out) :: F(:)
+        !_REAL_, intent(out), dimension(:), pointer :: F
 
         ! Local
         integer :: n_atomic_orbi, n_atomic_orbj
@@ -186,7 +186,6 @@ contains
         integer :: firstIndexAO_i, lastIndexAO_i, firstIndexAO_j, lastIndexAO_j
 
         _REAL_ :: H(MaxValenceOrbitals*(MaxValenceOrbitals*2+1))
-        _REAL_ :: F(MaxValenceOrbitals*(MaxValenceOrbitals*2+1))
         _REAL_ :: SHMAT(MaxValenceOrbitals,MaxValenceOrbitals)
         _REAL_ :: W(MaxValenceDimension**2)
         _REAL_ :: enuclr, ee
@@ -198,7 +197,7 @@ contains
         integer ::orb_loc(2,2),KR
         logical::hasDOrbital
         !qm2_Helect1 is a function
-        _REAL_ qm2_helect1    ! CML 7/13/12
+        !_REAL_ qm2_helect1    ! CML 7/13/12 BTN:8/7/17 Why would you force reference to external function when function is internal? 
         if (iif < jjf) then
             i=iif-1
             j=jjf-iil+iif-2
@@ -312,14 +311,10 @@ contains
         !write(6,*)'here2.1'
         call W2Fock_atompair(W, F, P, n_atomic_orbi, n_atomic_orbj,  &
             firstIndexAO_i, firstIndexAO_j)
-        !write(6,*)'here2.2'
+        !write(6,*)'here2.2' 
+        
 
-        EE=qm2_helect1(n_atomic_orbi+n_atomic_orbj-1,PTZ,F)   ! CML 7/13/12
-        ! SQM uses only RHF, so we need to multiply by 2 for the upper triangle.
-        ! If UHF is implemented in the future, we need to make sure we calculate the
-        ! upper triangle of the matrix as well. CML 6/26/12
-        DENER=EE*2.d0
-        !write(6,*)'here3'
+
     end subroutine qm2_dhc1
 
     function qm2_helect1(nminus,den_matrix,F)

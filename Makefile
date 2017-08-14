@@ -50,6 +50,7 @@ OBJSQM = \
 	$(OBJDIR)/$(SQMDIR)/qm2_davidson_module.o \
 	$(OBJDIR)/$(SQMDIR)/qm2_pm6_hof_module.o \
 	$(OBJDIR)/$(SQMDIR)/qm2_get_qm_forces.o \
+	$(OBJDIR)/$(NAESMDDIR)/dcart_xpm_module.o \
 	$(OBJDIR)/$(SQMDIR)/dcart1.o \
 	$(OBJDIR)/$(SQMDIR)/qm2_dftb_module.o \
 	$(OBJDIR)/$(SQMDIR)/qm2_dftb_read_cm3.o \
@@ -141,7 +142,6 @@ OBJNAESMD = \
         $(OBJDIR)/$(NAESMDDIR)/naesmd_space_module.o \
         $(OBJDIR)/$(NAESMDDIR)/communism.o \
         $(OBJDIR)/$(NAESMDDIR)/additional-subroutines.o \
-        $(OBJDIR)/$(NAESMDDIR)/dcart_xpm_module.o \
         $(OBJDIR)/$(NAESMDDIR)/fcn.o \
         $(OBJDIR)/$(NAESMDDIR)/quantum-prop.o \
 	$(OBJDIR)/$(NAESMDDIR)/random.o \
