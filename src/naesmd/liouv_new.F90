@@ -124,6 +124,14 @@ subroutine outDavidson()
     do i=1,qm2ds%Mx
         write(6,*) i,qm2ds%Etot(i),qm2ds%Etot(i)/ONE_AU
     end do
+    
+    
+    if (qm2ds%verbosity==5) then
+        write(6,*) 'Davidson eigenenergies (eV,AU)'
+        do i=1,qm2ds%Mx
+            write(6,*) i,qm2ds%e0(i),qm2ds%e0(i)/ONE_AU
+        end do
+    endif
 
     !Printing of transition densities to files
     !Print normal modes, etc. to file ! JAB
