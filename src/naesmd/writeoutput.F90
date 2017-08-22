@@ -158,7 +158,7 @@ contains
         end if
         
         OPEN(202,FILE='velocity.out',action='write',STATUS=file_status,ACCESS=file_access)
-        OPEN(203,FILE='coefficient.out',action='write',STATUS=file_status,ACCESS=file_access)
+        if(ibo==0) OPEN(203,FILE='coefficient.out',action='write',STATUS=file_status,ACCESS=file_access)
         OPEN(9,file='coords.xyz',action='write',STATUS=file_status,ACCESS=file_access)
         
         if(tfemto.eq.0.d0) then
@@ -174,15 +174,17 @@ contains
             
             write(202,556) '$ENDVELOC'
             
-            write (203,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
-                '  time = ',tfemto
-            write(203,557) '$COEFF'
-            
-            do k=1,sim%excN
-                write(203,223) yg(k)**2,dsin(yg(k+sim%excN))
-            enddo
-            
-            write(203,556) '$ENDCOEFF'
+            if(ibo==0) then
+                write (203,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
+                    '  time = ',tfemto
+                write(203,557) '$COEFF'
+                
+                do k=1,sim%excN
+                    write(203,223) yg(k)**2,dsin(yg(k+sim%excN))
+                enddo
+                
+                write(203,556) '$ENDCOEFF'
+            end if
             
             write (9,*) natom
             write (9,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
@@ -437,15 +439,17 @@ contains
     
             write(202,556) '$ENDVELOC'
             
-            write (203,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
-                '  time = ',tfemto
-            write(203,557) '$COEFF'
-    
-            do k=1,sim%excN
-                write(203,223) yg(k)**2,dsin(yg(k+sim%excN))
-            enddo
-    
-            write(203,556) '$ENDCOEFF'
+            if(ibo==0) then
+                write (203,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
+                    '  time = ',tfemto
+                write(203,557) '$COEFF'
+                
+                do k=1,sim%excN
+                    write(203,223) yg(k)**2,dsin(yg(k+sim%excN))
+                enddo
+                
+                write(203,556) '$ENDCOEFF'
+            end if
     
             card='restart.out'
             OPEN(10,FILE=card,ACTION='write',STATUS='replace')
