@@ -816,6 +816,28 @@ subroutine sqm_read_and_alloc(fdes_in,fdes_out,natom_inout,igb,atnam, &
         write(fdes_out, '(1x,a,/)') 'Could not find qmmm namelist'
         call mexit(fdes_out,1)
     endif
+    
+    !Begin qmmm input checks
+    if(printbondorders>0) then
+        write(6,*) "Print bonding orders under development. Do not use."
+        stop
+    endif
+    
+    if(density_predict>0) then
+        write(6,*) "density_prediction under development. Do not use."
+        stop
+    endif
+    
+    if(dav_guess>1) then
+        write(6,*) "XL-BOMD under development. dav_guess can be 1 or 0. Do not use."
+        stop
+    endif
+    
+    if(abs(index_of_refraction-100)>1d-1) then
+        write(6,*) "Index of refraction has unverified effects. Do not use."
+        stop
+    endif
+    !End qmmm input checks
 
     !convert scfconv to kcal/mol from input eV
     scfconv=scfconv*evkcal

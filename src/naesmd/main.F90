@@ -693,6 +693,22 @@ contains
             stop
         endif
         
+        !Input checks for features under development
+        if(decoher_type>2) then
+            write(6,*) "decoher_type under development. Do not use."
+            stop
+        endif
+        
+        if(therm_type==2) then
+            write(6,*) "Berendsen thermostat under development. Do not use."
+            stop
+        endif
+        
+        if(heating>0) then
+            write(6,*) "heating under development. Do not use."
+        endif
+        !End input checks
+        
         ! Set quant_coeffs_reinit
         if(decoher_type==1) then
             quant_coeffs_reinit=1 ! reinit of quantum coeffs after a hop (1-yes,0-no)
