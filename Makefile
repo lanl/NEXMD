@@ -370,6 +370,12 @@ gnu_mkl: FFLAG= -O3 -I${MKLROOT}/include -mcmodel=medium
 gnu_mkl: CFLAG= -O3 -I${MKLROOT}/include -DMKL_LP64
 gnu_mkl: nexmd.exe
 
+gnu_debug:  FC = gfortran
+gnu_debug:  CC = gcc
+gnu_debug:  FFLAG = -g -mcmodel=medium
+gnu_debug:  LDFLAGS = $(FFLAG)
+gnu_debug:  nexmd.exe
+
 ic:   FC = ifort
 ic:   CC = icc
 ic:   FFLAG = -O3 -mcmodel=medium
