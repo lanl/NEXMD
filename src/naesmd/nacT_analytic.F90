@@ -354,7 +354,8 @@ module nacT_analytic_module
            call qm2_dhc1(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
               jjl,qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:))
               
-           qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:)=qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:)-Fm(:)
+           qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:)= &
+              qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:)-Fm(:)
            
        end do
    end do

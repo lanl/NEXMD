@@ -341,23 +341,21 @@ $(OBJDIR)/$(NAESMDDIR)/old/%.o: $(SRCDIR)/$(NAESMDDIR)/old/%.F90
 $(OBJDIR)/$(NAESMDDIR)/old/%.o: $(SRCDIR)/$(NAESMDDIR)/old/%.f
 	$(FC) $(INC) $(FFLAG) -o $@ -c $<
 
-debug: FFLAG = -O0 -DDEBUG -C -g -Wall
-debug: LDFLAGS = $(FFLAG)
-debug: nexmd.exe
 
-debug2: FFLAG = -O0 -DDEBUG -C -g
-debug2: LDFLAGS = $(FFLAG)
-debug2: nexmd.exe
+pgi:   FC = pgf90
+pgi:   CC = pgcc
+pgi:   MODOPT = -module 
+pgi:   FFLAG = -O3 
+pgi:   LDFLAGS = $(FFLAG)
+pgi:   nexmd.exe
 
-all:  FFLAG = -O3 -mcmodel=medium
-all:  LDFLAGS = $(FFLAG)
-all:  nexmd.exe
-
-ic:   FC = ifort
-ic:   CC = icc
-ic:   FFLAG = -O3 -mcmodel=medium
-ic:   LDFLAGS = $(FFLAG)
-ic:   nexmd.exe
+pgi_mkl:   FC = pgf90
+pgi_mkl:   CC = pgcc
+pgi_mkl:   MODOPT = -module 
+pgi_mkl:   LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
+pgi_mkl:   FFLAG= -O3 -I${MKLROOT}/include
+pgi_mkl:   CFLAG= -O3 -I${MKLROOT}/include -DMKL_LP64
+pgi_mkl:   nexmd.exe
 
 gnu:  FC = gfortran
 gnu:  CC = gcc
@@ -365,13 +363,32 @@ gnu:  FFLAG = -O3 -mcmodel=medium
 gnu:  LDFLAGS = $(FFLAG)
 gnu:  nexmd.exe
 
-all_ic: FC = ifort
-all_ic: CC = icc
-all_ic: MODOPT = -module 
-all_ic: LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
-all_ic: FFLAG= -O3 -I${MKLROOT}/include
-all_ic: CFLAG= -O3 -I${MKLROOT}/include -DMKL_LP64
-all_ic: nexmd.exe
+gnu_mkl: FC = gfortran
+gnu_mkl: CC = gcc
+gnu_mkl: LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
+gnu_mkl: FFLAG= -O3 -I${MKLROOT}/include -mcmodel=medium
+gnu_mkl: CFLAG= -O3 -I${MKLROOT}/include -DMKL_LP64
+gnu_mkl: nexmd.exe
+
+gnu_debug:  FC = gfortran
+gnu_debug:  CC = gcc
+gnu_debug:  FFLAG = -g -mcmodel=medium
+gnu_debug:  LDFLAGS = $(FFLAG)
+gnu_debug:  nexmd.exe
+
+ic:   FC = ifort
+ic:   CC = icc
+ic:   FFLAG = -O3 -mcmodel=medium
+ic:   LDFLAGS = $(FFLAG)
+ic:   nexmd.exe
+
+ic_mkl: FC = ifort
+ic_mkl: CC = icc
+ic_mkl: MODOPT = -module 
+ic_mkl: LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
+ic_mkl: FFLAG= -O3 -I${MKLROOT}/include
+ic_mkl: CFLAG= -O3 -I${MKLROOT}/include -DMKL_LP64
+ic_mkl: nexmd.exe
 
 debug_ic: FC = ifort
 debug_ic: CC = icc
