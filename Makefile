@@ -357,6 +357,14 @@ pgi_mkl:   FFLAG= -O3 -I${MKLROOT}/include
 pgi_mkl:   CFLAG= -O3 -I${MKLROOT}/include -DMKL_LP64
 pgi_mkl:   nexmd.exe
 
+pgi_GOTO:   FC = pgf90
+pgi_GOTO:   CC = pgcc
+pgi_GOTO:   MODOPT = -module 
+pgi_GOTO:   LINALG =  -llapack ./lib/goto2r1.13/libgoto2_nehalem-r1.13.a -lpthread -lm
+pgi_GOTO:   FFLAG= -O3 -I${MKLROOT}/include
+pgi_GOTO:   CFLAG= -O3 -I${MKLROOT}/include -DMKL_LP64
+pgi_GOTO:   nexmd.exe
+
 gnu:  FC = gfortran
 gnu:  CC = gcc
 gnu:  FFLAG = -O3 -mcmodel=medium
