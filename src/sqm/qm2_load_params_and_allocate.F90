@@ -236,6 +236,14 @@ subroutine qm2_load_params_and_allocate()
     REQUIRE ( ier == 0 )
     allocate ( qm2_struct%hmatrix(qm2_struct%matsize), stat=ier )
     REQUIRE ( ier == 0 )
+    
+    !BTN 08/10/2017 allocate Fock matricies
+    allocate ( qm2_struct%fock_matrix_dp(qmmm_struct%nquant_nlink*(qmmm_struct%nquant_nlink-1)/2, &
+        MaxValenceOrbitals*(MaxValenceOrbitals*2+1)), stat=ier )
+    REQUIRE ( ier == 0 )
+    !allocate ( qm2_struct%fock_matrix_dm(qmmm_struct%nquant_nlink*(qmmm_struct%nquant_nlink-1)/2, &
+    !    MaxValenceOrbitals*(MaxValenceOrbitals*2+1)), stat=ier )
+    !REQUIRE ( ier == 0 )
 
     !+TJG 01/26/2010
     allocate ( qm2_struct%diis_fock(qm2_struct%matsize,qmmm_nml%ndiis_matrices), stat=ier )

@@ -241,8 +241,7 @@ module nacT_analytic_module
    call packing(Nb,qm2ds%eta,qm2ds%nacr_scratch,'s')
 
 
-   nacT_direct_ihc=dcart1_xpm(qm2_struct%den_matrix, &
-      qm2ds%nacr_scratch,xstep%Rp,xstep%Rm) 
+   nacT_direct_ihc=dcart1_xpm(qm2ds%nacr_scratch,xstep%Rp,xstep%Rm) 
 
 
    nacT_direct_ihc=nacT_direct_ihc*kcalev &
@@ -262,25 +261,117 @@ module nacT_analytic_module
 !********************************************************************
 !
    subroutine nacT_direct(sim,nact,xs)
+   
+   use dcart_xpm_module
+   use constants          , only : EV_TO_KCAL
+   use ElementOrbitalIndex, only: MaxValenceOrbitals
+   use qmmm_module        , only : qmmm_nml,qmmm_struct, qm2_struct, qm2_params, qmmm_mpi
+   use qm2_pm6_hof_module
+   use dh_correction_module, only : dh_correction_grad
+   use qm2_davidson_module ! CML 7/13/12
+   
    implicit none
 
    type(simulation_t),pointer::sim
    _REAL_,intent(inout)::nact(:,:)
+  
+   _REAL_ psum(MaxValenceOrbitals**2*3)
+   _REAL_ xyz_qmi(3), xyz_qmj(3)
+   _REAL_ :: Fm(MaxValenceOrbitals*(MaxValenceOrbitals*2+1)) !BTN 10/08/2017 place to store fock matrix
 
-   integer i,j
+   integer natqmi, natqmj, qmitype, qmjtype
+   integer ii, iif, iil, jj, jjf, jjl, ij
+   integer i,j,k,l
+   integer n_atomic_orbi, n_atomic_orbj
+   integer jstart, jend
    type(xstep_t),pointer::xs
 
    nact=0.d0
-
+   
    call xstep_au2A(xs)
+   
+   !BTN Start here
+   
+#ifdef MPI
+   do ii = qmmm_mpi%nquant_nlink_istart, qmmm_mpi%nquant_nlink_iend
+      jstart =  qmmm_mpi%nquant_nlink_jrange(1,ii)
+      jend = qmmm_mpi%nquant_nlink_jrange(2,ii)
+#else
+   do II=2,qmmm_struct%nquant_nlink
+       jstart = 1
+       jend = ii-1
+#endif
+       !Loop over all pairs of quantum atoms
+       iif=qm2_params%orb_loc(1,II)
+       iil=qm2_params%orb_loc(2,II)
+       qmitype = qmmm_struct%qm_atom_type(ii)
+       natqmi=qmmm_struct%iqm_atomic_numbers(II)
+       do JJ=jstart,jend !jj=1,ii-1
+           !  FORM DIATOMIC MATRICES
+           jjf=qm2_params%orb_loc(1,JJ)
+           jjl=qm2_params%orb_loc(2,JJ)
+           !   GET FIRST ATOM
+           qmjtype = qmmm_struct%qm_atom_type(jj)
+           natqmj=qmmm_struct%iqm_atomic_numbers(JJ)
+           IJ=0
+           do I=jjf,jjl
+               K=qm2_params%pascal_tri1(i)+jjf-1
+               do J=jjf,I
+                   IJ=IJ+1
+                   K=K+1
+                   psum(IJ)=qm2_struct%den_matrix(K)               
+               end do
+           end do
+           ! GET SECOND ATOM FIRST ATOM INTERSECTION
+           do I=iif,iil
+               L=qm2_params%pascal_tri1(i)
+               K=L+jjf-1
+               do J=jjf,jjl
+                   IJ=IJ+1
+                   K=K+1
+                   psum(IJ)=qm2_struct%den_matrix(K)
+               end do
+               K=L+iif-1
+               do L=iif,I
+                   K=K+1
+                   IJ=IJ+1
+                   psum(IJ)=qm2_struct%den_matrix(K)
+               end do
+           end do
+           
+           !BTN Changed to remove fock calculation from multiplication with transition density
+           
+           !BTN zero temp array
+           Fm=0.0d0
+           
+           xyz_qmi(:)=xs%rm(:,ii)
+           xyz_qmj(:)=xs%rm(:,jj)
+           call qm2_dhc1(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+              jjl,Fm)
+                    
+           xyz_qmi(:)=xs%rp(:,ii)
+           xyz_qmj(:)=xs%rp(:,jj)
+           call qm2_dhc1(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+              jjl,qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:))
+              
+           qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:)= &
+              qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:)-Fm(:)
+           
+       end do
+   end do
+   
+   !qm2_struct%fock_matrix_dp=qm2_struct%fock_matrix_dp-qm2_struct%fock_matrix_dm
+   
+   !BTN End here
+
    !FIXME nacT_direct_ihc calls part of derivative each time.. is this necessary
    !or calculated previously?
    do i=2,sim%excN
-      do j=1,i-1
-         nact(i,j)=nacT_direct_ihc(sim,i,j,xs) ! notice i corresponds to 
-                                                        ! ihop, i - icheck
-         nact(j,i)=-nact(i,j)
-      end do
+       do j=1,i-1
+           nact(i,j)=nacT_direct_ihc(sim,i,j,xs) ! notice i corresponds to 
+                                                       ! ihop, i - icheck
+           nact(j,i)=-nact(i,j)
+       end do
    end do
 
    call xstep_A2au(xs)
