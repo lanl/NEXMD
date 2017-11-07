@@ -136,6 +136,7 @@ OBJSQM = \
         $(OBJDIR)/$(SQMDIR)/polarizab0ab_new.o
 OBJNAESMD = \
 	$(OBJDIR)/$(NAESMDDIR)/apc.o \
+        $(OBJDIR)/$(NAESMDDIR)/quantum-prop.o \
         $(OBJDIR)/$(NAESMDDIR)/naesmd_constants.o\
         $(OBJDIR)/$(NAESMDDIR)/naesmd_module.o\
         $(OBJDIR)/$(NAESMDDIR)/md_module.o\
@@ -143,7 +144,6 @@ OBJNAESMD = \
         $(OBJDIR)/$(NAESMDDIR)/communism.o \
         $(OBJDIR)/$(NAESMDDIR)/additional-subroutines.o \
         $(OBJDIR)/$(NAESMDDIR)/fcn.o \
-        $(OBJDIR)/$(NAESMDDIR)/quantum-prop.o \
 	$(OBJDIR)/$(NAESMDDIR)/random.o \
 	$(OBJDIR)/$(NAESMDDIR)/langevin-temperature.o \
         $(OBJDIR)/$(NAESMDDIR)/statespecific.o \
@@ -155,12 +155,12 @@ OBJNAESMD = \
 	$(OBJDIR)/$(NAESMDDIR)/writeoutput.o \
 	$(OBJDIR)/$(NAESMDDIR)/verlet.o \
 	$(OBJDIR)/$(NAESMDDIR)/cadiab.o \
-	$(OBJDIR)/$(NAESMDDIR)/main.o \
         $(OBJDIR)/$(NAESMDDIR)/sqm_subs.o \
 	$(OBJDIR)/$(NAESMDDIR)/deriv.o \
 	$(OBJDIR)/$(NAESMDDIR)/buildM.o \
 	$(OBJDIR)/$(NAESMDDIR)/liouv_new.o \
-        $(OBJDIR)/$(NAESMDDIR)/rescaleveloc.o
+        $(OBJDIR)/$(NAESMDDIR)/rescaleveloc.o\
+	$(OBJDIR)/$(NAESMDDIR)/main.o 
 
 OBJSANDER = \
 	$(OBJDIR)/$(SANDERDIR)/amoeba_mdin.o \
