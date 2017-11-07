@@ -2,6 +2,7 @@
 #include "assert.fh"
 
 module naesmd_module
+	use rksuite_90, only:rk_comm_real_1d 
     !sizes variables
     integer natom,npot,ihop,nquantumstep,nstep,nquantumreal
     integer nstepcross,iredpot,nstates
@@ -79,6 +80,8 @@ module naesmd_module
     character*200 txtinput(1000)
     _REAL_ cadiabhop
     _REAL_,allocatable:: scprreal(:,:)
+  
+    type(rk_comm_real_1d) :: rk_comm !quantum coeff ode solver common variables
 
 contains
     subroutine allocate_naesmd_module_init(natoms)

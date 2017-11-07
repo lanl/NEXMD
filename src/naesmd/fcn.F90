@@ -1,10 +1,22 @@
 #include "dprec.fh"
 #include "assert.fh"
+
 !
 !********************************************************************      
 !********************************************************************      
 !   
-subroutine fcn(n,x,yg,yprime)
+subroutine fcn(x,yg,ygprime)
+	implicit none
+      _REAL_, intent(in) :: x                                  !indep!
+      _REAL_, dimension(:), intent(in) :: yg                   !dep!
+      _REAL_, dimension(:), intent(in) :: ygprime                   !dep!
+
+	    call interpolate(size(yg,1),x)
+	    call vqcalc(size(yg,1),yg,ygprime)
+       return
+end subroutine fcn
+ 
+subroutine fcn_old(n,x,yg,yprime)
     implicit none
     integer n
     _REAL_ x,yg(n),yprime(n)

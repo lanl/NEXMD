@@ -1,4731 +1,3185 @@
-!-----------------------------------------------------------------------
-!  IMSL Name:  IVPRK/DIVPRK (Single/Double precision version)
-!
-!  Computer:   pcdsms/DOUBLE
-!
-!  Revised:    October 1, 1985
-!
-!  Purpose:    Solve an initial-value problem for ordinary differential
-!              equations using the Runge-Kutta-Verner fifth- and
-!              sixth-order method.
-!
-!  Usage:      CALL IVPRK (IDO, NEQ, FCN, X, XEND, TOL, PARAM, Y)
-!
-!  Arguments:
-!     IDO    - Flag indicating the state of the computation.
-!              (Input/Output)
-!              1        Initial entry
-!              2        Normal reentry
-!              3        Final call to release workspace
-!              4        Return because of interrupt 1
-!              5        Return because of interrupt 2 with step accepted
-!              6        Return because of interrupt 2 with step rejected
-!              Normally, the initial call is made with IDO=1.  The
-!              routine then sets IDO=2 and this value is then used for
-!              all but the last call which is made with IDO=3.  This
-!              final call is only used to release workspace, which was
-!              automatically allocated by the initial call with IDO=1.
-!     NEQ    - Number of differential equations.  (Input)
-!     FCN    - User-supplied SUBROUTINE to evaluate functions.
-!              The usage is
-!              CALL FCN (NEQ, X, Y, YPRIME), where
-!              NEQ    - Number of equations.  (Input)
-!              X      - Independent variable.  (Input)
-!              Y      - Array of length NEQ containing the dependent
-!                       variable values.  (Input)
-!              YPRIME - Array of length NEQ containing the values of
-!                       dY/dX at (X,Y).  (Output)
-!              FCN must be declared EXTERNAL in the calling program.
-!     X      - Independent variable.  (Input/Output)
-!              On input, X supplies the initial value.
-!              On output, X is replaced by XEND unless error conditions
-!              arise.  See IDO for details.
-!     XEND   - Value of X at which the solution is desired.  (Input)
-!              XEND may be less than the initial value of X.
-!     TOL    - Tolerance for error control.  (Input)
-!              An attempt is made to control the norm of the local error
-!              such that the global error is proportional to TOL.
-!              More than one run, with different values of TOL, can be
-!              used to estimate the global error.
-!              Generally, it should not be greater than 0.001.
-!     PARAM  - Real vector of length 50 containing optional parameters.
-!              (Input/Output)
-!              If a parameter is zero then a default value is used.
-!              The following parameters must be set by the user.
-!                 PARAM              Meaning
-!                   1   HINIT  - Initial value of the step-size H.
-!                                Default: See Algorithm section.
-!                   2   HMIN   - Minimum value of the step-size H.
-!                                Default: 0.0
-!                   3   HMAX   - Maximum value of the step-size H.
-!                                Default: No limit
-!                   4   MXSTEP - Maximum number of steps allowed
-!                                Default: 500
-!                   5   MXFCN  - Maximum number of function evaluations
-!                                allowed.
-!                                Default: No limit
-!                   6          - Not used.
-!                   7   INTRP1 - If nonzero then return with IDO=4,
-!                                before each step.
-!                                See Remark 3.
-!                                Default: 0.
-!                   8   INTRP2 - If nonzero then return with IDO=5,
-!                                after every successful step and with
-!                                IDO=6 after every unsuccessful step.
-!                                See Remark 3.
-!                                Default: 0.
-!                   9   SCALE  - A measure of the scale of the problem,
-!                                such as an approximation to the average
-!                                value of a norm of the Jacobian along
-!                                the trajectory.
-!                                Default: 1.0
-!                  10   INORM  - Switch determining error norm.
-!                                In the following Ei is the absolute
-!                                value of an estimate of the error in
-!                                Y(i), called Yi here.
-!                                0 - min(absolute error, relative error)
-!                                    = max(Ei/Wi), i=1,2,...,NEQ, where
-!                                    Wi = max(abs(Yi,1.0),
-!                                1 - absolute error = max(Ei), i=1,2,...
-!                                2 - max(Ei/Wi), i=1,2,..., where
-!                                    Wi = max(abs(Yi),FLOOR),
-!                                    and FLOOR is PARAM(11).
-!                                3 - Euclidian norm scaled by YMAX
-!                                    = sqrt(sum(Ei**2/Wi**2)), where
-!                                    Wi = max(abs(Yi),1.0); for YMAX,
-!                                    see Remark 1.
-!                  11   FLOOR  - Used in the norm computation.
-!                                Default: 1.0
-!                  12-30       - Not used.
-!              The following entries in PARAM are set by the program.
-!                  31   HTRIAL - Current trial step size.
-!                  32   HMIN   - Minimum step size allowed.
-!                  33   HMAX   - Maximum step size allowed.
-!                  34   NSTEP  - Number of steps taken.
-!                  35   NFCN   - Number of function evaluations used.
-!                  36-50       - Not used.
-!     Y      - Vector of length NEQ of dependent variables.
-!              (Input/Output)
-!              On input, Y contains the initial values.  On output,
-!              Y contains the approximate solution.
-!
-!  Remarks:
-!  1. Automatic workspace usage is
-!              IVPRK    10*NEQ units, or
-!              DIVPRK   20*NEQ units.
-!     Workspace may be explicitly provided, if desired, by use of
-!     I2PRK/DI2PRK.  The reference is
-!              CALL I2PRK (IDO, NEQ, FCN, X, XEND, TOL, PARAM, Y,
-!                          VNORM, WK)
-!     The additional arguments are as follows:
-!     VNORM  - User-supplied SUBROUTINE to compute the norm of the
-!              error.  (Input)
-!              The routine may be provided by the user, or the IMSL
-!              routine I3PRK/DI3PRK may be used.
-!              The usage is
-!              CALL VNORM (NEQ, V, Y, YMAX, ENORM), where
-!              NEQ    - Number of equations.  (Input)
-!              V      - Vector of length NEQ containing the vector whose
-!                       norm is to be computed.  (Input)
-!              Y      - Vector of length NEQ containing the values of
-!                       the dependent variable.  (Input)
-!              YMAX   - Vector of length NEQ containing the maximum Y
-!                       values computed so far.  (Input)
-!              ENORM  - Norm of the vector V.  (Output)
-!              VNORM must be declared EXTERNAL in the calling program.
-!     WK     - Real work array of length 10*NEQ.  WK must not be changed
-!              from the first call with IDO=1 until after the final call
-!              with IDO=3.
-!
-!  2. Informational errors
-!     Type Code
-!       4   1  Cannot satisfy error condition.  TOL may be too small.
-!       4   2  Too many function evaluations needed.
-!       4   3  Too many steps needed.  The problem may be stiff.
-!
-!  3. If PARAM(7) is nonzero, the subroutine returns with
-!     IDO = 4, and will resume calculation at the point of interruption
-!     if reentered with IDO = 4.  If PARAM(8) is nonzero, the
-!     subroutine will interrupt the calculations immediately after it
-!     decides whether or not to accept the result of the most
-!     recent trial step.  IDO = 5 if the routine plans to accept,
-!     or IDO = 6 if it plans to reject.  IDO may be changed by the user
-!     in order to force acceptance of a step (by changing IDO from 6
-!     to 5) that would otherwise be rejected, or vice versa.
-!     Relevant parameters to observe after return from an interrupt
-!     are IDO, HTRIAL, NSTEP, NFCN, and Y.  Y is the newly computed
-!     trial value, accepted or not.
-!
-!  GAMS:       I1a1a
-!
-!  Chapter:    MATH/LIBRARY Differential Equations
-!
-!  Copyright:  1985 by IMSL, Inc.  All Rights Reserved.
-!
-!  Warranty:   IMSL warrants only that IMSL testing has been applied
-!              to this code.  No other warranty, expressed or implied,
-!              is applicable.
-!
-!-----------------------------------------------------------------------
-!
-SUBROUTINE DIVPRK (IDO, NEQ, FCN, X, XEND, TOL, PARAM, Y)
-    !                                  SPECIFICATIONS FOR ARGUMENTS
-    INTEGER    IDO, NEQ
-    DOUBLE PRECISION X, XEND, TOL, PARAM(*), Y(*)
-    EXTERNAL   FCN
-    !                                  SPECIFICATIONS FOR SAVE VARIABLES
-    INTEGER    IRW
-    SAVE       IRW
-    !                                  SPECIFICATIONS FOR SPECIAL CASES
-    !                                  SPECIFICATIONS FOR COMMON /WORKSP/
-    REAL       RWKSP(5000)
-    DOUBLE PRECISION RDWKSP(2500)
-    DOUBLE PRECISION DWKSP(2500)
-    COMPLEX    CWKSP(2500)
-    COMPLEX    *16 CZWKSP(1250)
-    COMPLEX    *16 ZWKSP(1250)
-    INTEGER    IWKSP(5000)
-    LOGICAL    LWKSP(5000)
-    EQUIVALENCE (DWKSP(1), RWKSP(1))
-    EQUIVALENCE (CWKSP(1), RWKSP(1)), (ZWKSP(1), RWKSP(1))
-    EQUIVALENCE (IWKSP(1), RWKSP(1)), (LWKSP(1), RWKSP(1))
-    EQUIVALENCE (RDWKSP(1), RWKSP(1)), (CZWKSP(1), RWKSP(1))
-    COMMON     /WORKSP/ RWKSP
-    !                                  SPECIFICATIONS FOR SUBROUTINES
-    EXTERNAL   E1MES, E1POP, E1PSH, E1STI, I1KNR, I1KRL, DI2PRK
-    !                                  SPECIFICATIONS FOR FUNCTIONS
-    EXTERNAL   I1KGT, N1RTY, DI3PRK
-    INTEGER    I1KGT, N1RTY
-    !
-    WRITE(6,*)'DIVPRK CALLED IDO=',IDO
-    CALL E1PSH ('DIVPRK ')
-    !                                  Check IDO
-    IF (IDO.LT.1 .OR. IDO.GT.6) THEN
-        CALL E1STI (1, IDO)
-        CALL E1MES (5, 2, 'The status indicator IDO = %(I1).  It '// &
-            'must be in the range 1 to 6.')
-        GO TO 9000
-    END IF
-    !
-    IF (IDO .EQ. 1) THEN
-        !                                  Check NEQ
-        IF (NEQ .LT. 1) THEN
-            CALL E1STI (1, NEQ)
-            CALL E1MES (5, 1, 'The number of equations NEQ = %(I1).  '// &
-                'It must be at least 1.')
-            GO TO 9000
-        END IF
-        !                                  Allocate workspace
-        IRW = I1KGT(10*NEQ,4)
-        IF (N1RTY(0) .NE. 0) THEN
-            CALL E1MES (5, 8, ' ')
-            CALL E1STI (1, NEQ)
-            CALL E1MES (5, 8, 'Workspace allocation based on '// &
-                'NEQ = %(I1).')
-            GO TO 9000
-        END IF
-        CALL I1KNR
-    END IF
-    !
-    CALL DI2PRK (IDO, NEQ, FCN, X, XEND, TOL, PARAM, Y, DI3PRK, &
-        RDWKSP(IRW))
-!
-9000 CONTINUE
-     CALL E1POP ('DIVPRK ')
-     IF (IDO .EQ. 3) CALL I1KRL (1)
-     RETURN
- END
+#include "dprec.fh"
 
- !-----------------------------------------------------------------------
- !  IMSL Name:  I2PRK/DI2PRK (Single/Double precision version)
- !
- !  Computer:   pcdsms/DOUBLE
- !
- !  Revised:    January 29, 1985
- !
- !  Purpose:    Solve an initial value problem for ordinary differential
- !              equations using the Runge-Kutta-Verner fifth- and
- !              sixth-order method.
- !
- !  Usage:      CALL I2PRK (IDO, NEQ, FCN, X, XEND, TOL, PARAM, Y,
- !                          VNORM, WK)
- !
- !  Arguments:  (See IVPRK)
- !
- !  Chapter:    MATH/LIBRARY Integration and Differentiation
- !
- !  Copyright:  1985 by IMSL, Inc.  All Rights Reserved.
- !
- !  Warranty:   IMSL warrants only that IMSL testing has been applied
- !              to this code.  No other warranty, expressed or implied,
- !              is applicable.
- !
- !-----------------------------------------------------------------------
- !
- SUBROUTINE DI2PRK (IDO, NEQ, FCN, X, XEND, TOL, PARAM, Y, VNORM, &
-     WK)
-     !                                  SPECIFICATIONS FOR ARGUMENTS
-     INTEGER    IDO, NEQ
-     DOUBLE PRECISION X, XEND, TOL, PARAM(*), Y(*), WK(NEQ,*)
-     EXTERNAL   FCN, VNORM
-     !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-     INTEGER    I, K, NEWFCN
-     DOUBLE PRECISION TEMP
-     !                                  SPECIFICATIONS FOR SAVE VARIABLES
-     INTEGER    INTRP1, INTRP2, IXEND, MXFCN, MXSTEP, NFCN, NSTEP, &
-         NSUCFL, NSUCST
-     DOUBLE PRECISION EPS, EST, HINIT, HMAG, HMAX, HMIN, HTRIAL, &
-         RK(43), SCALE, TINY, WNORMY, XENDPV, XTRIAL
-     LOGICAL    INIT
-     SAVE
-     !                                  SPECIFICATIONS FOR COMMON /DI5PRK/
-     COMMON     /DI5PRK/ FLOOR, INORM
-     INTEGER    INORM
-     DOUBLE PRECISION FLOOR
-     !                                  SPECIFICATIONS FOR INTRINSICS
-     !     INTRINSIC  DABS,DMAX1,DMIN1,DSIGN
-     INTRINSIC  DABS, DMAX1, DMIN1, DSIGN
-     DOUBLE PRECISION DABS, DMAX1, DMIN1, DSIGN
-     !                                  SPECIFICATIONS FOR SUBROUTINES
-     EXTERNAL   E1MES, E1STI, E1STD, E1USR, DAXPY, DCOPY, DI4PRK, &
-         DSWAP
-     !                                  SPECIFICATIONS FOR FUNCTIONS
-     EXTERNAL   DMACH, N1RTY, DDOT
-     INTEGER    N1RTY
-     DOUBLE PRECISION DMACH, DDOT
-     !
-     DATA INIT/.FALSE./, ISTAT/0/
-     !
-     CALL E1PSH ('DI2PRK ')
-     !
-     IF (IDO.LT.1 .OR. IDO.GT.6) THEN
-         CALL E1STI (1, IDO)
-         CALL E1MES (5, 2, 'The status indicator IDO = %(I1).  It '// &
-             'must be in the range 1 to 6.')
-         GO TO 9000
-     END IF
-     !
-     IF (IDO .EQ. 1) THEN
-         IF (ISTAT .EQ. 0) THEN
-             ISTAT = 1
-         ELSE
-             CALL E1MES (5, 8, 'IDO = 1.  IDO can only be set to 1 '// &
-                 'in the initial call to the routine, or '// &
-                 'if the previous call was made with IDO = 3.')
-             GO TO 9000
-         END IF
-     ELSE IF (IDO.EQ.2 .OR. IDO.EQ.3) THEN
-         IF (ISTAT .EQ. 1) THEN
-             IF (IDO .EQ. 3) THEN
-                 ISTAT = 0
-                 GO TO 9000
-             END IF
-         ELSE
-             CALL E1STI (1, IDO)
-             CALL E1MES (5, 9, 'IDO has been set to %(I1), but the '// &
-                 'routine has not been initialized in a call '// &
-                 'with IDO = 1.')
-             GO TO 9000
-         END IF
-     END IF
-     !                                  Cases - Initial entry, normal
-     !                                  re-entry, interrupt re-entries
-     GO TO (10, 40, 9000, 70, 160, 160), IDO
- !                                  Case 1 - initial entry
-10 CONTINUE
-   !                                  Check NEQ
-   IF (NEQ .LT. 1) THEN
-       CALL E1STI (1, NEQ)
-       CALL E1MES (5, 1, 'The number of equations NEQ = %(I1).  '// &
-           'It must be at least 1.')
-   END IF
-   !                                  Check TOL
-   IF (TOL .LE. 0.0D0) THEN
-       CALL E1STD (1, TOL)
-       CALL E1MES (5, 3, 'The tolerance TOL = %(D1).  It must '// &
-           'be greater than 0.0.')
-   END IF
-   IF (N1RTY(0) .GT. 0) GO TO 9000
-   !                                  Check INORM
-   IF (NINT(PARAM(10)) .GT. 3) THEN
-       CALL E1STD (1, PARAM(10))
-       CALL E1MES (5, 10, 'The argument PARAM(10) = INORM = %(D1).'// &
-           '  It must be less than four.')
-   END IF
-   !                                  Get constants
-   IF (.NOT.INIT) THEN
-       CALL DI4PRK (RK)
-       TINY = DMACH(1)
-       EPS = DMACH(4)
-       INIT = .TRUE.
-   END IF
-   !                                  Initialize
-   INORM = 0
-   HMIN = 0.0D0
-   HINIT = 0.0D0
-   SCALE = 1.0D0
-   HMAG = 0.0D0
-   HMAX = 2.0D0
-   MXSTEP = 500
-   NSTEP = 0
-   MXFCN = 0
-   NFCN = 0
-   INTRP1 = 0
-   INTRP2 = 0
-   INORM = 0
-   FLOOR = 1.0D0
-   DO 20  K=1, 11
-       IF (PARAM(K) .LT. 0.0D0) THEN
-           CALL E1STI (1, K)
-           CALL E1STD (1, PARAM(K))
-           CALL E1MES (5, 4, 'Argument PARAM(%(I1)) = %(D1).  It '// &
-               'cannot be negative.')
-       END IF
-20 CONTINUE
-   IF (N1RTY(0) .NE. 0) GO TO 9000
-   !                                  Initial WK(*,10) = YMAX(*)
-   DO 30  I=1, NEQ
-       WK(I,10) = DABS(Y(I))
-30 CONTINUE
-   !
-   IF (PARAM(1) .GT. 0.0D0) HINIT = PARAM(1)
-   IF (PARAM(2) .GT. 0.0D0) HMIN = PARAM(2)
-   IF (PARAM(3) .GT. 0.0D0) HMAX = PARAM(3)
-   IF (PARAM(4) .GT. 0.0D0) MXSTEP = PARAM(4)
-   IF (PARAM(5) .GT. 0.0D0) MXFCN = PARAM(5)
-   IF (PARAM(7) .GT. 0.0D0) INTRP1 = PARAM(7)
-   IF (PARAM(8) .GT. 0.0D0) INTRP2 = PARAM(8)
-   IF (PARAM(9) .GT. 0.0D0) THEN
-       SCALE = PARAM(9)
-       HMAX = DMIN1(HMAX,2.0D0/SCALE)
-   END IF
-   IF (PARAM(10) .GT. 0.0D0) INORM = PARAM(10)
-   IF (PARAM(11) .GT. 0.0D0) FLOOR = PARAM(11)
-   !                                  Initialize EPS and HMAG
-   EST = 0.0D0
-   IF (HINIT .EQ. 0.0D0) THEN
-       HMAG = 0.5D0*HMAX*TOL**(1.0D0/6.0D0)
-   ELSE
-       HMAG = 0.5D0*HINIT
-   END IF
-   !                                  Set previous XEND initially to
-   !                                  initial value of X
-   XENDPV = X
-   IXEND = 0
-   NSUCST = 0
-   NSUCFL = 0
-   GO TO 50
-   !                                  Case 2 - Normal re-entry (IDO.EQ.2)
-   !                                  abort if XEND reached, and either
-   !                                  X changed or XEND not changed
-40 CONTINUE
-   IF (IXEND.NE.0 .AND. X.NE.XENDPV) THEN
-       CALL E1STD (1, X)
-       CALL E1MES (5, 5, 'Independent variable X = %(D1) is '// &
-           'changed from the previous call.')
-       GO TO 9000
-   ELSE IF (IXEND.NE.0 .AND. XEND.EQ.XENDPV) THEN
-       CALL E1STD (1, XEND)
-       CALL E1MES (5, 6, 'Final point XEND = %(D1) is not '// &
-           'changed from the previous call.')
-       GO TO 9000
-   END IF
-   !                                  Re-initialize flag IXEND
-   IXEND = 0
-   !                                  Case 3 - Re-entry following an
-   !                                  interrupt (IDO .EQ. 4 to 6)
-50 CONTINUE
-   !                                  Loop through the following four
-   !                                  stages, once for each trial step
-   !                                  until the occurrence of one of the
-   !                                  following (A) Normal return (with
-   !                                  IDO .EQ. 2) on reaching XEND in
-   !                                  stage 4, or (B) An error return in
-   !                                  stage 1 or 4, or (C) An interrupt
-   !                                  return (with IDO .EQ. 4, 5 or 6)
-   !                                  in stage 1 or 4.
-60 CONTINUE
-   !                                  Stage 1 -- Prepare Do calculations
-   !                                  of HMIN, HMAX, etc., and some
-   !                                  parameter checking. End up with
-   !                                  suitable values of HMAG, XTRIAL
-   !                                  and HTRIAL for use in the
-   !                                  integration step. Check MXFCN
-   NEWFCN = 7
-   IF (IDO .NE. 6) NEWFCN = NEWFCN + 1
-   IF (MXFCN.GT.0 .AND. NFCN+NEWFCN.GT.MXFCN) THEN
-       CALL E1STI (1, NFCN+NEWFCN)
-       CALL E1STI (2, MXFCN)
-       CALL E1MES (4, 2, 'Completion of the next step would make '// &
-           'the number of function evaluations '// &
-           '%(I1), but only %(I2) evaluations are allowed.')
-       GO TO 9000
-   END IF
-   !                                  Check MXSTEP
-   IF (MXSTEP.GT.0 .AND. NSTEP.GE.MXSTEP) THEN
-       CALL E1STI (1, MXSTEP)
-       CALL E1MES (4, 3, 'Maximum number of steps allowed, '// &
-           '%(I1), used.  The problem may be stiff.')
-       GO TO 9000
-   END IF
-   !                                  Calculate slope
-   IF (IDO .NE. 6) THEN
-       CALL E1USR ('ON')
-       CALL FCN (NEQ, X, Y, WK(1,1))
-       CALL E1USR ('OFF')
-       NFCN = NFCN + 1
-       IF (N1RTY(0) .GT. 3) GO TO 9000
-   END IF
-   !                                  Calculate HMIN - Use default unless
-   !                                    value prescribed
-   IF (HMIN .EQ. 0.0D0) THEN
-       !                                  Calculate default value of HMIN
-       HMIN = 10.0D0*DMAX1(TINY,EPS*DMAX1(DABS(XEND),DABS(X)))
-   END IF
-   !                                  Error return if HMIN .GT. HMAX
-   IF (HMIN .GT. HMAX) THEN
-       CALL E1STD (1, HMIN)
-       CALL E1STD (2, HMAX)
-       CALL E1MES (5, 7, 'HMIN = %(D1) is greater than HMAX = '// &
-           '%(D2).')
-       GO TO 9000
-   END IF
-   !                                  Calculate preliminary HMAG -
-   IF (NSUCFL .LE. 1) THEN
-       !                                  After a successful step, or at most
-       !                                  one failure
-       TEMP = 2.0D0*HMAG
-       !                                  Avoid possible overflow
-       !
-       IF (TOL .LT. (2.0D0/.9D0)**6*EST) TEMP = 0.9D0* &
-           (TOL/EST)**(1.0D0/6.0D0)*HMAG
-       !                                  Avoid reduction by more than half
-       HMAG = DMAX1(TEMP,0.5D0*HMAG)
-   ELSE
-       !                                  After two or more successive
-       !                                  failures
-       HMAG = 0.5D0*HMAG
-   END IF
-   !                                  Check against HMAX and HMIN
-   HMAG = DMAX1(DMIN1(HMAG,HMAX),HMIN)
-   !                                  Interrupt 1 (with IDO=4) if
-   !                                  requested
-   IF (INTRP1 .NE. 0) THEN
-       IDO = 4
-       GO TO 9000
-   END IF
-   !                                  Resume here on re-entry
-70 CONTINUE
-   !                                  Calculate HMAG, XTRIAL - depending
-   !                                  on preliminary HMAG, XEND
-   IF (HMAG .LT. DABS(XEND-X)) THEN
-       !                                  Do not step more than half way to
-       !                                  XEND
-       HMAG = DMIN1(HMAG,0.5D0*DABS(XEND-X))
-       XTRIAL = X + DSIGN(HMAG,XEND-X)
-   ELSE
-       !                                  Hit XEND exactly
-       HMAG = DABS(XEND-X)
-       XTRIAL = XEND
-   END IF
-   !                                  Calculate HTRIAL
-   HTRIAL = XTRIAL - X
-   !                                  Stage 2 -- Calculate YTRIAL WK(*,2),
-   !                                  ..., WK(*,8) hold intermediate
-   !                                  results needed in stage 3. WK(*,9)
-   !                                  is temporary storage until finally
-   !                                  it holds YTRIAL.
-   CALL DCOPY (NEQ, Y, 1, WK(1,9), 1)
-   CALL DAXPY (NEQ, HTRIAL*RK(1), WK(1,1), 1, WK(1,9), 1)
-   CALL E1USR ('ON')
-   CALL FCN (NEQ, X+HTRIAL/6.0D0, WK(1,9), WK(1,2))
-   CALL E1USR ('OFF')
-   NFCN = NFCN + 1
-   IF (N1RTY(0) .GT. 3) GO TO 9000
-   !
-   DO 80  K=1, NEQ
-       WK(K,9) = Y(K) + HTRIAL*DDOT(2,WK(K,1),NEQ,RK(2),1)
-80 CONTINUE
-   CALL E1USR ('ON')
-   CALL FCN (NEQ, X+4.0D0*HTRIAL/15.0D0, WK(1,9), WK(1,3))
-   CALL E1USR ('OFF')
-   NFCN = NFCN + 1
-   IF (N1RTY(0) .GT. 3) GO TO 9000
-   !
-   DO 90  K=1, NEQ
-       WK(K,9) = Y(K) + HTRIAL*DDOT(3,WK(K,1),NEQ,RK(4),1)
-90 CONTINUE
-   CALL E1USR ('ON')
-   CALL FCN (NEQ, X+2.0D0*HTRIAL/3.0D0, WK(1,9), WK(1,4))
-   CALL E1USR ('OFF')
-   NFCN = NFCN + 1
-   IF (N1RTY(0) .GT. 3) GO TO 9000
-   !
-   DO 100  K=1, NEQ
-       WK(K,9) = Y(K) + HTRIAL*DDOT(4,WK(K,1),NEQ,RK(7),1)
-100 CONTINUE
-    CALL E1USR ('ON')
-    CALL FCN (NEQ, X+5.0D0*HTRIAL/6.0D0, WK(1,9), WK(1,5))
-    CALL E1USR ('OFF')
-    NFCN = NFCN + 1
-    IF (N1RTY(0) .GT. 3) GO TO 9000
-    !
-    DO 110  K=1, NEQ
-        WK(K,9) = Y(K) + HTRIAL*DDOT(5,WK(K,1),NEQ,RK(11),1)
-110 CONTINUE
-    CALL E1USR ('ON')
-    CALL FCN (NEQ, X+HTRIAL, WK(1,9), WK(1,6))
-    CALL E1USR ('OFF')
-    NFCN = NFCN + 1
-    IF (N1RTY(0) .GT. 3) GO TO 9000
-    !
-    DO 120  K=1, NEQ
-        WK(K,9) = Y(K) + HTRIAL*DDOT(5,WK(K,1),NEQ,RK(16),1)
-120 CONTINUE
-    CALL E1USR ('ON')
-    CALL FCN (NEQ, X+HTRIAL/15.0D0, WK(1,9), WK(1,7))
-    CALL E1USR ('OFF')
-    NFCN = NFCN + 1
-    IF (N1RTY(0) .GT. 3) GO TO 9000
-    !
-    DO 130  K=1, NEQ
-        WK(K,9) = Y(K) + HTRIAL*DDOT(7,WK(K,1),NEQ,RK(21),1)
-130 CONTINUE
-    CALL E1USR ('ON')
-    CALL FCN (NEQ, X+HTRIAL, WK(1,9), WK(1,8))
-    CALL E1USR ('OFF')
-    NFCN = NFCN + 1
-    IF (N1RTY(0) .GT. 3) GO TO 9000
-    !                                  Calculate YTRIAL, the extrapolated
-    !                                  approximation and store in WK(*,9)
-    DO 140  K=1, NEQ
-        WK(K,9) = Y(K) + HTRIAL*DDOT(8,WK(K,1),NEQ,RK(28),1)
-140 CONTINUE
-    !                                  Stage 3 -- Calculate the error
-    !                                  estimate EST Calculate the
-    !                                  unweighted absolute error estimate
-    !                                  vector
-    DO 150  K=1, NEQ
-        WK(K,2) = DDOT(8,WK(K,1),NEQ,RK(36),1)
-150 CONTINUE
-    !                                  Calculate the weighted max norm of
-    !                                  WK(*,2) as specified by the error
-    !                                  control indicator INORM
-    CALL E1USR ('ON')
-    CALL VNORM (NEQ, WK(1,2), Y, WK(1,10), TEMP)
-    CALL E1USR ('OFF')
-    IF (N1RTY(0) .GT. 3) GO TO 9000
-    !                                  Calculate EST - (The weighted max
-    !                                  norm of WK(*,2))*HMAG*SCALE - EST
-    !                                  is intended to be a measure of the
-    !                                  error per unit step in YTRIAL
-    EST = TEMP*HMAG*SCALE
-    !                                  Stage 4 -- Make decisions Set IDO=5
-    !                                  if step acceptable, else set IDO=6
-    IF (EST .LE. TOL) THEN
-        IDO = 5
-    ELSE
-        IDO = 6
-    END IF
-    !                                  Interrupt 2 if requested
-    IF (INTRP2 .NE. 0) THEN
-        CALL DSWAP (NEQ, Y, 1, WK(1,9), 1)
-        GO TO 9000
-    END IF
-!                                  Resume here on re-entry
-160 CONTINUE
-    IF (INTRP2 .NE. 0) CALL DSWAP (NEQ, Y, 1, WK(1,9), 1)
-    !
-    IF (IDO .EQ. 5) THEN
-        !                                  Step accepted, so update X, Y from
-        !                                  XTRIAL, YTRIAL
-        X = XTRIAL
-        CALL DCOPY (NEQ, WK(1,9), 1, Y, 1)
-        !                                  Update YMAX values
-        DO 170  I=1, NEQ
-            WK(I,10) = DMAX1(WK(I,10),DABS(Y(I)))
-170     CONTINUE
-        NSUCST = NSUCST + 1
-        NSUCFL = 0
-        NSTEP = NSTEP + 1
-        !                                  Return with IDO=2, XEND saved, flag
-        !                                  set
-        IF (X .EQ. XEND) THEN
-            IDO = 2
-            XENDPV = XEND
-            IXEND = 1
-            GO TO 9000
-        END IF
-    ELSE IF (IDO .EQ. 6) THEN
-        !                                  Step not accepted - Add 1 to number
-        !                                  successive failures
-        NSUCFL = NSUCFL + 1
-        !                                  Error return if HMAG .LE. HMIN
-        IF (HMAG .LE. HMIN) THEN
-            CALL E1STD (1, TOL)
-            CALL E1MES (4, 1, 'Unable to satisfy the error '// &
-                'requirement.  TOL = %(D1) may be too small.')
-            GO TO 9000
-        END IF
-    END IF
-    !                                  End stage 4
-    GO TO 60
-!                                  End loop
-9000 CONTINUE
-     !                                  Set PARAMs for user
-     PARAM(31) = HTRIAL
-     PARAM(32) = HMIN
-     PARAM(33) = HMAX
-     PARAM(34) = NSTEP
-     PARAM(35) = NFCN
-     !
-     CALL E1POP ('DI2PRK ')
-     RETURN
- END
- !-----------------------------------------------------------------------
- !  IMSL Name:  I3PRK/DI3PRK (Single/Double precision version)
- !
- !  Computer:   pcdsms/DOUBLE
- !
- !  Revised:    January 29, 1985
- !
- !  Purpose:    Solve an initial value problem for ordinary differential
- !              equations using the Runge-Kutta-Verner fifth and sixth
- !              order method.
- !
- !  Usage:      CALL I3PRK (NEQ, V, Y, YMAX, ENORM)
- !
- !  Arguments:
- !     NEQ    - Number of equations.  (Input)
- !     V      - Vector of length NEQ containing the vector whose
- !              norm is to be computed.  (Input)
- !     Y      - Vector of length NEQ containing the values of the
- !              dependent variable.  (Input)
- !     YMAX   - Vector of length NEQ containing the maximum Y values
- !              computed so far.  (Input)
- !     ENORM  - Norm of the vector V.  (Output)
- !
- !  Chapter:    MATH/LIBRARY Integration and Differentiation
- !
- !  Copyright:  1985 by IMSL, Inc.  All Rights Reserved.
- !
- !  Warranty:   IMSL warrants only that IMSL testing has been applied
- !              to this code.  No other warranty, expressed or implied,
- !              is applicable.
- !
- !-----------------------------------------------------------------------
- !
- SUBROUTINE DI3PRK (NEQ, V, Y, YMAX, ENORM)
-     !                                  SPECIFICATIONS FOR ARGUMENTS
-     INTEGER    NEQ
-     DOUBLE PRECISION ENORM, V(*), Y(*), YMAX(*)
-     !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-     INTEGER    K
-     DOUBLE PRECISION WEIGHT
-     !                                  SPECIFICATIONS FOR COMMON /DI5PRK/
-     COMMON     /DI5PRK/ FLOOR, INORM
-     INTEGER    INORM
-     DOUBLE PRECISION FLOOR
-     !                                  SPECIFICATIONS FOR INTRINSICS
-     !     INTRINSIC  DABS,DMAX1
-     INTRINSIC  DABS, DMAX1
-     DOUBLE PRECISION DABS, DMAX1
-     !                                  SPECIFICATIONS FOR FUNCTIONS
-     EXTERNAL   IDAMAX
-     INTEGER    IDAMAX
-     !
-     IF (INORM .EQ. 0) THEN
-         !                                  max (absolute, relative)
-         ENORM = 0.0D0
-         DO 10  K=1, NEQ
-             WEIGHT = DMAX1(1.0D0,DABS(Y(K)))
-             ENORM = DMAX1(ENORM,DABS(V(K))/WEIGHT)
-10       CONTINUE
-     !                                  Absolute error control
-     ELSE IF (INORM .EQ. 1) THEN
-         ENORM = DABS(V(IDAMAX(NEQ,V,1)))
-     !                                  Relative error control
-     ELSE IF (INORM .EQ. 2) THEN
-         ENORM = 0.0D0
-         DO 20  K=1, NEQ
-             WEIGHT = DMAX1(DABS(Y(K)),FLOOR)
-             ENORM = DMAX1(ENORM,DABS(V(K))/WEIGHT)
-20       CONTINUE
-     ELSE IF (INORM .EQ. 3) THEN
-         !                                  Same as DGEAR's error control
-         ENORM = 0.0D0
-         DO 30  K=1, NEQ
-             WEIGHT = DMAX1(1.0D0,DABS(YMAX(K)))
-             ENORM = ENORM + (V(K)/WEIGHT)**2
-30       CONTINUE
-         ENORM = DSQRT(ENORM)
-     END IF
- !
-9000 CONTINUE
-     RETURN
- END
- !-----------------------------------------------------------------------
- !  IMSL Name:  I4PRK/DI4PRK (Single/Double precision version)
- !
- !  Computer:   pcdsms/DOUBLE
- !
- !  Revised:    January 29, 1985
- !
- !  Purpose:    Solve an initial value problem for ordinary differential
- !              equations using the Runge-Kutta-Verner fifth and sixth
- !              order method.
- !
- !  Usage:      CALL I4PRK (RK)
- !
- !  Argument:
- !     RK     - Vector of length 43 to be initialized.  (Output)
- !
- !  Chapter:    MATH/LIBRARY Integration and Differentiation
- !
- !  Copyright:  1985 by IMSL, Inc.  All Rights Reserved.
- !
- !  Warranty:   IMSL warrants only that IMSL testing has been applied
- !              to this code.  No other warranty, expressed or implied,
- !              is applicable.
- !
- !-----------------------------------------------------------------------
- !
- SUBROUTINE DI4PRK (RK)
-     !                                  SPECIFICATIONS FOR ARGUMENTS
-     DOUBLE PRECISION RK(*)
-     !
-     RK(1) = 1.0D0/6.0D0
-     RK(2) = 4.0D0/75.0D0
-     RK(3) = 16.0D0/75.0D0
-     RK(4) = 5.0D0/6.0D0
-     RK(5) = -8.0D0/3.0D0
-     RK(6) = 5.0D0/2.0D0
-     RK(7) = -165.0D0/64.0D0
-     RK(8) = 55.0D0/6.0D0
-     RK(9) = -425.0D0/64.0D0
-     RK(10) = 85.0D0/96.0D0
-     RK(11) = 12.0D0/5.0D0
-     RK(12) = -8.0D0
-     RK(13) = 4015.0D0/612.0D0
-     RK(14) = -11.0D0/36.0D0
-     RK(15) = 88.0D0/255.0D0
-     RK(16) = -8263.0D0/15000.0D0
-     RK(17) = 124.0D0/75.0D0
-     RK(18) = -4501.0D0/4760.0D0
-     RK(19) = -81.0D0/250.0D0
-     RK(20) = 2484.0D0/10625.0D0
-     RK(21) = 3501.0D0/1720.0D0
-     RK(22) = -300.0D0/43.0D0
-     RK(23) = 297275.0D0/52632.0D0
-     RK(24) = -319.0D0/2322.0D0
-     RK(25) = 24068.0D0/84065.0D0
-     RK(26) = 0.0D0
-     RK(27) = 3850.0D0/26703.0D0
-     RK(28) = 3.0D0/40.0D0
-     RK(29) = 0.0D0
-     RK(30) = 875.0D0/2244.0D0
-     RK(31) = 23.0D0/72.0D0
-     RK(32) = 264.0D0/1955.0D0
-     RK(33) = 0.0D0
-     RK(34) = 125.0D0/11592.0D0
-     RK(35) = 43.0D0/616.0D0
-     RK(36) = 1.0D0/160.0D0
-     RK(37) = 0.0D0
-     RK(38) = 125.0D0/17952.0D0
-     RK(39) = -1.0D0/144.0D0
-     RK(40) = 84.0D0/13685.0D0
-     RK(41) = 3.0D0/44.0D0
-     RK(42) = -125.0D0/11592.0D0
-     RK(43) = -43.0D0/616.0D0
-     !
-     RETURN
- END
- !-----------------------------------------------------------------------
- !  IMSL Name:  DMACH (Double precision version)
- !
- !  Computer:   pcdsms/DOUBLE
- !
- !  Revised:    March 15, 1984
- !
- !  Purpose:    Generate double precision machine constants.
- !
- !  Usage:      DMACH(N)
- !
- !  Arguments:
- !     N      - Index of desired constant.  (Input)
- !     DMACH  - Machine constant.  (Output)
- !              DMACH(1) = B**(EMIN-1), the smallest positive magnitude.
- !              DMACH(2) = B**EMAX*(1 - B**(-T)), the largest magnitude.
- !              DMACH(3) = B**(-T), the smallest relative spacing.
- !              DMACH(4) = B**(1-T), the largest relative spacing.
- !              DMACH(5) = LOG10(B), the log, base 10, of the radix.
- !              DMACH(6) = not-a-number.
- !              DMACH(7) = positive machine infinity.
- !              DMACH(8) = negative machine infinity.
- !
- !  GAMS:       R1
- !
- !  Chapters:   MATH/LIBRARY Reference Material
- !              STAT/LIBRARY Reference Material
- !              SFUN/LIBRARY Reference Material
- !
- !  Copyright:  1984 by IMSL, Inc.  All Rights Reserved.
- !
- !  Warranty:   IMSL warrants only that IMSL testing has been applied
- !              to this code.  No other warranty, expressed or implied,
- !              is applicable.
- !
- !-----------------------------------------------------------------------
- !
- DOUBLE PRECISION FUNCTION DMACH (N)
-     !                                  SPECIFICATIONS FOR ARGUMENTS
-     INTEGER    N
-     !                                  SPECIFICATIONS FOR SAVE VARIABLES
-     DOUBLE PRECISION RMACH(8)
-     SAVE       RMACH
-     !                                  SPECIFICATIONS FOR SUBROUTINES
-     EXTERNAL   E1MES, E1POP, E1PSH, E1STI
-     !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-     INTEGER    IRMACH(16)
-     !
-     !!      EQUIVALENCE (RMACH, IRMACH)
-     !                                  DEFINE CONSTANTS
-     DATA RMACH(1)/2.22559D-308/
-     DATA RMACH(2)/1.79728D308/
-     DATA RMACH(3)/1.11048D-16/
-     DATA RMACH(4)/2.22096D-16/
-     DATA RMACH(5)/.3010299956639811952137388947245D0/
-     DATA IRMACH(11)/0/
-     DATA IRMACH(12)/1206910591/
-     DATA RMACH(7)/1.79728D308/
-     DATA RMACH(8)/-1.79728D308/
-     !
-     IF (N.LT.1 .OR. N.GT.8) THEN
-         CALL E1PSH ('DMACH ')
-         DMACH = RMACH(6)
-         CALL E1STI (1, N)
-         CALL E1MES (5, 5, 'The argument must be between 1 '// &
-             'and 8 inclusive. N = %(I1)')
-         CALL E1POP ('DMACH ')
-     ELSE
-         DMACH = RMACH(N)
-     END IF
-     !
-     RETURN
- END
- !-----------------------------------------------------------------------
- !  IMSL Name:  E1STD
- !
- !  Computer:   pcdsms/SINGLE
- !
- !  Revised:    March 6, 1984
- !
- !  Purpose:    To store a real number for subsequent use within an error
- !              message.
- !
- !  Usage:      CALL E1STD(ID, DVALUE)
- !
- !  Arguments:
- !     ID     - Integer specifying the substitution index.  ID must be
- !              between 1 and 9.  (Input)
- !     DVALUE - The double precision number to be stored.  (Input)
- !
- !  Copyright:  1984 by IMSL, Inc.  All rights reserved.
- !
- !  Warranty:   IMSL warrants only that IMSL testing has been applied
- !              to this code.  No other warranty, expressed or implied,
- !              is applicable.
- !
- !-----------------------------------------------------------------------
- !
- SUBROUTINE E1STD (ID, DVALUE)
-     !                                  SPECIFICATIONS FOR ARGUMENTS
-     INTEGER    ID
-     DOUBLE PRECISION DVALUE
-     !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-     INTEGER    I, IBEG, ILEN
-     CHARACTER  ARRAY(24), SAVE*24
-     !                                  SPECIFICATIONS FOR SAVE VARIABLES
-     INTEGER    IFINIT
-     CHARACTER  BLANK(1)
-     SAVE       BLANK, IFINIT
-     !                                  SPECIFICATIONS FOR SPECIAL CASES
-     !                              SPECIFICATIONS FOR COMMON /ERCOM1/
-     INTEGER    CALLVL, MAXLEV, MSGLEN, ERTYPE(51), ERCODE(51), &
-         PRINTB(7), STOPTB(7), PLEN, IFERR6, IFERR7, &
-         IALLOC(51), HDRFMT(7), TRACON(7)
-     COMMON     /ERCOM1/ CALLVL, MAXLEV, MSGLEN, ERTYPE, ERCODE, &
-         PRINTB, STOPTB, PLEN, IFERR6, IFERR7, IALLOC, HDRFMT, &
-         TRACON
-     SAVE       /ERCOM1/
-     !                              SPECIFICATIONS FOR COMMON /ERCOM2/
-     CHARACTER  MSGSAV(255), PLIST(300), RNAME(51)*6
-     COMMON     /ERCOM2/ MSGSAV, PLIST, RNAME
-     SAVE       /ERCOM2/
-     !                              SPECIFICATIONS FOR COMMON /ERCOM3/
-     DOUBLE PRECISION ERCKSM
-     COMMON     /ERCOM3/ ERCKSM
-     SAVE       /ERCOM3/
-     !                              SPECIFICATIONS FOR COMMON /ERCOM4/
-     LOGICAL    ISUSER(51)
-     COMMON     /ERCOM4/ ISUSER
-     SAVE       /ERCOM4/
-     !                                  SPECIFICATIONS FOR SUBROUTINES
-     EXTERNAL   E1INIT, E1INPL
-     !                                  SPECIFICATIONS FOR FUNCTIONS
-     EXTERNAL   I1ERIF
-     INTEGER    I1ERIF
-     !
-     DATA BLANK/' '/, IFINIT/0/
-     !                                  INITIALIZE IF NECESSARY
-     IF (IFINIT .EQ. 0) THEN
-         CALL E1INIT
-         IFINIT = 1
-     END IF
-     IF (DVALUE .EQ. 0.0D0) THEN
-         WRITE (SAVE,'(D24.15)') DVALUE
-     ELSE
-         WRITE (SAVE,'(1PE24.15E4)') DVALUE
-     END IF
-     DO 40  I=1, 24
-40       ARRAY(I) = SAVE(I:I)
-         IBEG = I1ERIF(ARRAY,24,BLANK,1)
-         IF (ID.GE.1 .AND. ID.LE.9) THEN
-             ILEN = 25 - IBEG
-             CALL E1INPL ('D', ID, ILEN, ARRAY(IBEG))
-         END IF
-         !
-         RETURN
-     END
-     !-----------------------------------------------------------------------
-     !  IMSL Name:  E1USR
-     !
-     !  Computer:   pcdsms/SINGLE
-     !
-     !  Revised:    November 2, 1984
-     !
-     !  Purpose:    Set USER CODE switch.
-     !
-     !  Usage:      CALL E1USR(SWITCH)
-     !
-     !  Arguments:
-     !     SWITCH - Character string.  (Input)
-     !                'ON'  Indicates that USER CODE mode is being entered.
-     !                'OFF' Indicates that USER CODE mode is being exited.
-     !  Remarks:
-     !     When E1POP is called from a routine while in USER CODE mode,
-     !     then an error message of type 1-4 will be printed (if an error
-     !     condition is in effect and the print table allows it).
-     !     However, an error message of type 1-4 will never be printed
-     !     if USER CODE mode is not in effect.
-     !
-     !  Copyright:  1984 by IMSL, Inc.  All rights reserved.
-     !
-     !  Warranty:   IMSL warrants only that IMSL testing has been applied
-     !              to this code.  No other warranty, expressed or implied,
-     !              is applicable.
-     !
-     !-----------------------------------------------------------------------
-     !
-     SUBROUTINE E1USR (SWITCH)
-         !                                  SPECIFICATIONS FOR ARGUMENTS
-         CHARACTER  SWITCH*(*)
-         !                                  SPECIFICATIONS FOR SAVE VARIABLES
-         INTEGER    IFINIT
-         SAVE       IFINIT
-         !                                  SPECIFICATIONS FOR SPECIAL CASES
-         !                              SPECIFICATIONS FOR COMMON /ERCOM1/
-         INTEGER    CALLVL, MAXLEV, MSGLEN, ERTYPE(51), ERCODE(51), &
-             PRINTB(7), STOPTB(7), PLEN, IFERR6, IFERR7, &
-             IALLOC(51), HDRFMT(7), TRACON(7)
-         COMMON     /ERCOM1/ CALLVL, MAXLEV, MSGLEN, ERTYPE, ERCODE, &
-             PRINTB, STOPTB, PLEN, IFERR6, IFERR7, IALLOC, HDRFMT, &
-             TRACON
-         SAVE       /ERCOM1/
-         !                              SPECIFICATIONS FOR COMMON /ERCOM2/
-         CHARACTER  MSGSAV(255), PLIST(300), RNAME(51)*6
-         COMMON     /ERCOM2/ MSGSAV, PLIST, RNAME
-         SAVE       /ERCOM2/
-         !                              SPECIFICATIONS FOR COMMON /ERCOM3/
-         DOUBLE PRECISION ERCKSM
-         COMMON     /ERCOM3/ ERCKSM
-         SAVE       /ERCOM3/
-         !                              SPECIFICATIONS FOR COMMON /ERCOM4/
-         LOGICAL    ISUSER(51)
-         COMMON     /ERCOM4/ ISUSER
-         SAVE       /ERCOM4/
-         !                                  SPECIFICATIONS FOR SUBROUTINES
-         EXTERNAL   E1INIT, E1MES, E1STL
-         !
-         DATA IFINIT/0/
-         !                                  INITIALIZE ERROR TABLE IF NECESSARY
-         IF (IFINIT .EQ. 0) THEN
-             CALL E1INIT
-             IFINIT = 1
-         END IF
-         IF (SWITCH.EQ.'ON' .OR. SWITCH.EQ.'on') THEN
-             ISUSER(CALLVL) = .TRUE.
-         ELSE IF (SWITCH.EQ.'OFF' .OR. SWITCH.EQ.'off') THEN
-             ISUSER(CALLVL) = .FALSE.
-         ELSE
-             CALL E1STL (1, SWITCH)
-             CALL E1MES (5, 1, 'Invalid value for SWITCH in call to'// &
-                 ' E1USR.  SWITCH must be set to ''ON'' or '// &
-                 '''OFF''.  SWITCH = ''%(L1)'' ')
-         END IF
-         !
-         RETURN
-     END
-     !-----------------------------------------------------------------------
-     !  IMSL Name:  I1KNR
-     !
-     !  Computer:   pcdsms/SINGLE
-     !
-     !  Revised:    August 29, 1983
-     !
-     !  Purpose:    To cause the workspace which was allocated at the
-     !              current level to NOT be released at that level.
-     !
-     !  Usage:      CALL I1KNR
-     !
-     !  Arguments:  None
-     !
-     !  Copyright:  1984 by IMSL, Inc.  All rights reserved.
-     !
-     !  Warranty:   IMSL warrants only that IMSL testing has been applied
-     !              to this code.  No other warranty, expressed or implied,
-     !              is applicable.
-     !
-     !-----------------------------------------------------------------------
-     !
-     SUBROUTINE I1KNR
-         !                                  SPECIFICATIONS FOR SPECIAL CASES
-         !                              SPECIFICATIONS FOR COMMON /ERCOM1/
-         INTEGER    CALLVL, MAXLEV, MSGLEN, ERTYPE(51), ERCODE(51), &
-             PRINTB(7), STOPTB(7), PLEN, IFERR6, IFERR7, &
-             IALLOC(51), HDRFMT(7), TRACON(7)
-         COMMON     /ERCOM1/ CALLVL, MAXLEV, MSGLEN, ERTYPE, ERCODE, &
-             PRINTB, STOPTB, PLEN, IFERR6, IFERR7, IALLOC, HDRFMT, &
-             TRACON
-         SAVE       /ERCOM1/
-         !                              SPECIFICATIONS FOR COMMON /ERCOM2/
-         CHARACTER  MSGSAV(255), PLIST(300), RNAME(51)*6
-         COMMON     /ERCOM2/ MSGSAV, PLIST, RNAME
-         SAVE       /ERCOM2/
-         !                              SPECIFICATIONS FOR COMMON /ERCOM3/
-         DOUBLE PRECISION ERCKSM
-         COMMON     /ERCOM3/ ERCKSM
-         SAVE       /ERCOM3/
-         !                              SPECIFICATIONS FOR COMMON /ERCOM4/
-         LOGICAL    ISUSER(51)
-         COMMON     /ERCOM4/ ISUSER
-         SAVE       /ERCOM4/
-         !                                  SPECIFICATIONS FOR FUNCTIONS
-         EXTERNAL   I1KST
-         INTEGER    I1KST
-         !
-         IALLOC(CALLVL-1) = I1KST(1)
-         !
-         RETURN
-     END
-     !-----------------------------------------------------------------------
-     !  IMSL Name:  IDAMAX (Single precision version)
-     !
-     !  Computer:   pcdsms/SINGLE
-     !
-     !  Revised:    August 9, 1986
-     !
-     !  Purpose:    Find the smallest index of the component of a
-     !              double-precision vector having maximum absolute value.
-     !
-     !  Usage:      IDAMAX(N, DX, INCX)
-     !
-     !  Arguments:
-     !     N      - Length of vector X.  (Input)
-     !     DX     - Double precision vector of length N*INCX.  (Input)
-     !     INCX   - Displacement between elements of DX.  (Input)
-     !              X(I) is defined to be DX(1+(I-1)*INCX). INCX must be
-     !              greater than zero.
-     !     IDAMAX - The smallest index I such that DABS(X(I)) is the maximum
-     !              of DABS(X(J)) for J=1 to N.  (Output)
-     !              X(I) refers to a specific element of DX. See INCX
-     !              argument description.
-     !
-     !  GAMS:       D1a2
-     !
-     !  Chapters:   MATH/LIBRARY Basic Matrix/Vector Operations
-     !              STAT/LIBRARY Mathematical Support
-     !
-     !  Copyright:  1986 by IMSL, Inc.  All Rights Reserved.
-     !
-     !  Warranty:   IMSL warrants only that IMSL testing has been applied
-     !              to this code.  No other warranty, expressed or implied,
-     !              is applicable.
-     !
-     !-----------------------------------------------------------------------
-     !
-     INTEGER FUNCTION IDAMAX (N, DX, INCX)
-         !                                  SPECIFICATIONS FOR ARGUMENTS
-         INTEGER    N, INCX
-         DOUBLE PRECISION DX(*)
-         !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-         INTEGER    I, II, NS
-         DOUBLE PRECISION DMAX, XMAG
-         !                                  SPECIFICATIONS FOR INTRINSICS
-         !     INTRINSIC  DABS
-         INTRINSIC  DABS
-         DOUBLE PRECISION DABS
-         !
-         IDAMAX = 0
-         IF (N .GE. 1) THEN
-             IDAMAX = 1
-             IF (N .GT. 1) THEN
-                 IF (INCX .NE. 1) THEN
-                     !                                  CODE FOR INCREMENTS NOT EQUAL TO 1.
-                     DMAX = DABS(DX(1))
-                     NS = N*INCX
-                     II = 1
-                     DO 10  I=1, NS, INCX
-                         XMAG = DABS(DX(I))
-                         IF (XMAG .GT. DMAX) THEN
-                             IDAMAX = II
-                             DMAX = XMAG
-                         END IF
-                         II = II + 1
-10                   CONTINUE
-                 ELSE
-                     !                                  CODE FOR INCREMENTS EQUAL TO 1.
-                     DMAX = DABS(DX(1))
-                     DO 20  I=2, N
-                         XMAG = DABS(DX(I))
-                         IF (XMAG .GT. DMAX) THEN
-                             IDAMAX = I
-                             DMAX = XMAG
-                         END IF
-20                   CONTINUE
-                 END IF
-             END IF
-         END IF
-         RETURN
-     END
-     !-----------------------------------------------------------------------
-     !  IMSL Name:  SSET (Single precision version)
-     !
-     !  Computer:   pcdsms/SINGLE
-     !
-     !  Revised:    August 9, 1986
-     !
-     !  Purpose:    Set the components of a vector to a scalar, all
-     !              single precision.
-     !
-     !  Usage:      CALL SSET (N, SA, SX, INCX)
-     !
-     !  Arguments:
-     !     N      - Length of vector X.  (Input)
-     !     SA     - Real scalar.  (Input)
-     !     SX     - Real vector of length N*INCX.  (Input/Output)
-     !              SSET replaces X(I) with SA for I=1,...,N. X(I) refers to
-     !              a specific element of SX. See INCX argument description.
-     !     INCX   - Displacement between elements of SX.  (Input)
-     !              X(I) is defined to be SX(1+(I-1)*INCX). INCX must be
-     !              greater than zero.
-     !
-     !  GAMS:       D1a1
-     !
-     !  Chapters:   MATH/LIBRARY Basic Matrix/Vector Operations
-     !              STAT/LIBRARY Mathematical Support
-     !
-     !  Copyright:  1986 by IMSL, Inc.  All Rights Reserved.
-     !
-     !  Warranty:   IMSL warrants only that IMSL testing has been applied
-     !              to this code.  No other warranty, expressed or implied,
-     !              is applicable.
-     !
-     !-----------------------------------------------------------------------
-     !
-     SUBROUTINE SSET (N, SA, SX, INCX)
-         !                                  SPECIFICATIONS FOR ARGUMENTS
-         INTEGER    N, INCX
-         REAL       SA, SX(*)
-         !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-         INTEGER    I, M, MP1, NINCX
-         !                                  SPECIFICATIONS FOR SPECIAL CASES
-         !     INTRINSIC  MOD
-         INTRINSIC  MOD
-         INTEGER    MOD
-         !
-         IF (N .GT. 0) THEN
-             IF (INCX .NE. 1) THEN
-                 !                                  CODE FOR INCREMENT NOT EQUAL TO 1
-                 NINCX = N*INCX
-                 DO 10  I=1, NINCX, INCX
-                     SX(I) = SA
-10               CONTINUE
-             ELSE
-                 !                                  CODE FOR INCREMENT EQUAL TO 1
-                 M = MOD(N,8)
-                 !                                  CLEAN-UP LOOP
-                 DO 30  I=1, M
-                     SX(I) = SA
-30               CONTINUE
-                 MP1 = M + 1
-                 DO 40  I=MP1, N, 8
-                     SX(I) = SA
-                     SX(I+1) = SA
-                     SX(I+2) = SA
-                     SX(I+3) = SA
-                     SX(I+4) = SA
-                     SX(I+5) = SA
-                     SX(I+6) = SA
-                     SX(I+7) = SA
-40               CONTINUE
-             END IF
-         END IF
-         RETURN
-     END
+module rksuite_90
+!
+! Part of rksuite_90 v1.0 (Aug 1994)
+!         software for initial value problems in ODEs
+!
+! Authors: R.W. Brankin (NAG Ltd., Oxford, England)
+!          I. Gladwell  (Math Dept., SMU, Dallas, TX, USA)
+!          see main doc for contact details
+!
 
-     !-----------------------------------------------------------------------
-     !  IMSL Name:  E1INIT
-     !
-     !  Computer:   pcdsms/SINGLE
-     !
-     !  Revised:    March 13, 1984
-     !
-     !  Purpose:    Initialization.
-     !
-     !  Usage:      CALL E1INIT
-     !
-     !  Arguments:  None
-     !
-     !  Copyright:  1984 by IMSL, Inc.  All rights reserved.
-     !
-     !  Warranty:   IMSL warrants only that IMSL testing has been applied
-     !              to this code.  No other warranty, expressed or implied,
-     !              is applicable.
-     !
-     !-----------------------------------------------------------------------
-     !
-     SUBROUTINE E1INIT
-         !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-         INTEGER    L
-         !                                  SPECIFICATIONS FOR SAVE VARIABLES
-         INTEGER    ISINIT
-         SAVE       ISINIT
-         !                                  SPECIFICATIONS FOR SPECIAL CASES
-         !                              SPECIFICATIONS FOR COMMON /ERCOM1/
-         INTEGER    CALLVL, MAXLEV, MSGLEN, ERTYPE(51), ERCODE(51), &
-             PRINTB(7), STOPTB(7), PLEN, IFERR6, IFERR7, &
-             IALLOC(51), HDRFMT(7), TRACON(7)
-         COMMON     /ERCOM1/ CALLVL, MAXLEV, MSGLEN, ERTYPE, ERCODE, &
-             PRINTB, STOPTB, PLEN, IFERR6, IFERR7, IALLOC, HDRFMT, &
-             TRACON
-         SAVE       /ERCOM1/
-         !                              SPECIFICATIONS FOR COMMON /ERCOM2/
-         CHARACTER  MSGSAV(255), PLIST(300), RNAME(51)*6
-         COMMON     /ERCOM2/ MSGSAV, PLIST, RNAME
-         SAVE       /ERCOM2/
-         !                              SPECIFICATIONS FOR COMMON /ERCOM3/
-         DOUBLE PRECISION ERCKSM
-         COMMON     /ERCOM3/ ERCKSM
-         SAVE       /ERCOM3/
-         !                              SPECIFICATIONS FOR COMMON /ERCOM4/
-         LOGICAL    ISUSER(51)
-         COMMON     /ERCOM4/ ISUSER
-         SAVE       /ERCOM4/
-         !                              SPECIFICATIONS FOR COMMON /ERCOM8/
-         INTEGER    PROLVL, XXLINE(10), XXPLEN(10), ICALOC(10), INALOC(10)
-         COMMON     /ERCOM8/ PROLVL, XXLINE, XXPLEN, ICALOC, INALOC
-         SAVE       /ERCOM8/
-         !                              SPECIFICATIONS FOR COMMON /ERCOM9/
-         CHARACTER  XXPROC(10)*31
-         COMMON     /ERCOM9/ XXPROC
-         SAVE       /ERCOM9/
-         !
-         DATA ISINIT/0/
-         !
-         IF (ISINIT .EQ. 0) THEN
-             !                                  INITIALIZE
-             CALLVL = 1
-             ERCODE(1) = 0
-             ERTYPE(1) = 0
-             IALLOC(1) = 0
-             ISUSER(1) = .TRUE.
-             IFERR6 = 0
-             IFERR7 = 0
-             PLEN = 1
-             MAXLEV = 50
-             DO 10  L=2, 51
-                 ERTYPE(L) = -1
-                 ERCODE(L) = -1
-                 IALLOC(L) = 0
-                 ISUSER(L) = .FALSE.
-10           CONTINUE
-             DO 20  L=1, 7
-                 HDRFMT(L) = 1
-                 TRACON(L) = 1
-20           CONTINUE
-             PROLVL = 1
-             DO 30  L=1, 10
-30               ICALOC(L) = 0
-                 XXLINE(1) = 0
-                 XXPLEN(1) = 1
-                 XXPROC(1) = '?'
-                 RNAME(1) = 'USER'
-                 PRINTB(1) = 0
-                 PRINTB(2) = 0
-                 DO 40  L=3, 7
-40                   PRINTB(L) = 1
-                     STOPTB(1) = 0
-                     STOPTB(2) = 0
-                     STOPTB(3) = 0
-                     STOPTB(4) = 1
-                     STOPTB(5) = 1
-                     STOPTB(6) = 0
-                     STOPTB(7) = 1
-                     ERCKSM = 0.0D0
-                     !                                  SET FLAG TO INDICATE THAT
-                     !                                    INITIALIZATION HAS OCCURRED
-                     ISINIT = 1
-                 END IF
-                 !
-                 RETURN
-             END
-             !-----------------------------------------------------------------------
-             !  IMSL Name:  E1INPL
-             !
-             !  Computer:   pcdsms/SINGLE
-             !
-             !  Revised:    March 2, 1984
-             !
-             !  Purpose:    To store a character string in the parameter list PLIST
-             !              for use by the error message handler.
-             !
-             !  Usage:      CALL E1INPL(FORM,NUM,SLEN,STRUP)
-             !
-             !  Arguments:
-             !     FORM   - A character string of length one to be inserted into
-             !              PLIST which specifies the form of the string.  (Input)
-             !              For example, 'L' for string, 'A' for character array,
-             !              'I' for integer, 'K' for keyword (PROTRAN only).  An
-             !              asterisk is inserted into PLIST preceding FORM.
-             !     NUM    - Integer to be inserted as a character into PLIST
-             !              immediately following FORM.  (Input)  NUM must be between
-             !              1 and 9.
-             !     SLEN   - The number of characters in STRUP.  (Input)  LEN must be
-             !              less than or equal to 255.  The character representation
-             !              of SLEN is inserted into PLIST after NUM and an asterisk.
-             !     STRUP  - A character string of length LEN which is to be inserted
-             !              into PLIST.  (Input)  Trailing blanks are ignored.
-             !
-             !  Copyright:  1984 by IMSL, Inc.  All rights reserved.
-             !
-             !  Warranty:   IMSL warrants only that IMSL testing has been applied
-             !              to this code.  No other warranty, expressed or implied,
-             !              is applicable.
-             !
-             !-----------------------------------------------------------------------
-             !
-             SUBROUTINE E1INPL (FORM, NUM, SLEN, STRUP)
-                 !                                  SPECIFICATIONS FOR ARGUMENTS
-                 INTEGER    NUM, SLEN
-                 CHARACTER  FORM, STRUP(*)
-                 !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-                 INTEGER    IER, L, LEN2, LENCK, LOC, NLEN, NNUM
-                 CHARACTER  STRNCH(3)
-                 !                                  SPECIFICATIONS FOR SAVE VARIABLES
-                 CHARACTER  BLANK, PRCNT(1), TEMP(4)
-                 SAVE       BLANK, PRCNT, TEMP
-                 !                                  SPECIFICATIONS FOR SPECIAL CASES
-                 !                              SPECIFICATIONS FOR COMMON /ERCOM1/
-                 INTEGER    CALLVL, MAXLEV, MSGLEN, ERTYPE(51), ERCODE(51), &
-                     PRINTB(7), STOPTB(7), PLEN, IFERR6, IFERR7, &
-                     IALLOC(51), HDRFMT(7), TRACON(7)
-                 COMMON     /ERCOM1/ CALLVL, MAXLEV, MSGLEN, ERTYPE, ERCODE, &
-                     PRINTB, STOPTB, PLEN, IFERR6, IFERR7, IALLOC, HDRFMT, &
-                     TRACON
-                 SAVE       /ERCOM1/
-                 !                              SPECIFICATIONS FOR COMMON /ERCOM2/
-                 CHARACTER  MSGSAV(255), PLIST(300), RNAME(51)*6
-                 COMMON     /ERCOM2/ MSGSAV, PLIST, RNAME
-                 SAVE       /ERCOM2/
-                 !                              SPECIFICATIONS FOR COMMON /ERCOM3/
-                 DOUBLE PRECISION ERCKSM
-                 COMMON     /ERCOM3/ ERCKSM
-                 SAVE       /ERCOM3/
-                 !                              SPECIFICATIONS FOR COMMON /ERCOM4/
-                 LOGICAL    ISUSER(51)
-                 COMMON     /ERCOM4/ ISUSER
-                 SAVE       /ERCOM4/
-                 !                                  SPECIFICATIONS FOR INTRINSICS
-                 !     INTRINSIC  IABS
-                 INTRINSIC  IABS
-                 INTEGER    IABS
-                 !                                  SPECIFICATIONS FOR SUBROUTINES
-                 EXTERNAL   C1TIC, M1VE
-                 !
-                 DATA TEMP/'*', ' ', ' ', '*'/, PRCNT/'%'/, BLANK/' '/
-                 !
-                 NNUM = IABS(NUM)
-                 LENCK = PLEN + SLEN + 8
-                 IF (NNUM.GE.1 .AND. NNUM.LE.9 .AND. LENCK.LE.300) THEN
-                     TEMP(2) = FORM
-                     CALL C1TIC (NNUM, TEMP(3), 1, IER)
-                     LOC = PLEN + 1
-                     IF (LOC .EQ. 2) LOC = 1
-                     CALL M1VE (TEMP, 1, 4, 4, PLIST(LOC), 1, 4, 262, IER)
-                     LOC = LOC + 4
-                     IF (NUM .LT. 0) THEN
-                         LEN2 = SLEN
-                     ELSE
-                         DO 10  L=1, SLEN
-                             LEN2 = SLEN - L + 1
-                             IF (STRUP(LEN2) .NE. BLANK) GO TO 20
-10                       CONTINUE
-                         LEN2 = 1
-20                   CONTINUE
-                 END IF
-                 NLEN = 1
-                 IF (LEN2 .GE. 10) NLEN = 2
-                 IF (LEN2 .GE. 100) NLEN = 3
-                 CALL C1TIC (LEN2, STRNCH, NLEN, IER)
-                 CALL M1VE (STRNCH, 1, NLEN, 3, PLIST(LOC), 1, NLEN, 262, IER)
-                 LOC = LOC + NLEN
-                 CALL M1VE (PRCNT, 1, 1, 1, PLIST(LOC), 1, 1, 262, IER)
-                 LOC = LOC + 1
-                 CALL M1VE (STRUP, 1, LEN2, LEN2, PLIST(LOC), 1, LEN2, 262, &
-                     IER)
-                 PLEN = LOC + LEN2 - 1
-             END IF
-             !
-             RETURN
-         END
-         !-----------------------------------------------------------------------
-         !  IMSL Name:  E1MES
-         !
-         !  Computer:   pcdsms/SINGLE
-         !
-         !  Revised:    March 2, 1984
-         !
-         !  Purpose:    Set an error state for the current level in the stack.
-         !              The message is printed immediately if the error type is
-         !              5, 6, or 7 and the print attribute for that type is YES.
-         !
-         !  Usage:      CALL E1MES(IERTYP,IERCOD,MSGPKD)
-         !
-         !  Arguments:
-         !     IERTYP - Integer specifying the error type.  (Input)
-         !                IERTYP=1,  informational/note
-         !                IERTYP=2,  informational/alert
-         !                IERTYP=3,  informational/warning
-         !                IERTYP=4,  informational/fatal
-         !                IERTYP=5,  terminal
-         !                IERTYP=6,  PROTRAN/warning
-         !                IERTYP=7,  PROTRAN/fatal
-         !     IERCOD - Integer specifying the error code.  (Input)
-         !     MSGPKD - A character string containing the message.
-         !              (Input)  Within the message, any of following may appear
-         !                %(A1),%(A2),...,%(A9) for character arrays
-         !                %(C1),%(C2),...,%(C9) for complex numbers
-         !                %(D1),%(D2),...,%(D9) for double precision numbers
-         !                %(I1),%(I2),...,%(I9) for integer numbers
-         !                %(K1),%(K2),...,%(K9) for keywords
-         !                %(L1),%(L2),...,%(L9) for literals (strings)
-         !                %(R1),%(R2),...,%(R9) for real numbers
-         !                %(Z1),%(Z2),...,%(Z9) for double complex numbers
-         !              This provides a way to insert character arrays, strings,
-         !              numbers, and keywords into the message.  See remarks
-         !              below.
-         !
-         !  Remarks:
-         !     The number of characters in the message after the insertion of
-         !     the corresponding strings, etc. should not exceed 255.  If the
-         !     limit is exceeded, only the first 255 characters will be used.
-         !     The appropriate strings, etc. need to have been previously stored
-         !     in common via calls to E1STA, E1STD, etc.  Line breaks may be
-         !     specified by inserting the two characters '%/' into the message
-         !     at the desired locations.
-         !
-         !  Copyright:  1984 by IMSL, Inc.  All rights reserved.
-         !
-         !  Warranty:   IMSL warrants only that IMSL testing has been applied
-         !              to this code.  No other warranty, expressed or implied,
-         !              is applicable.
-         !
-         !-----------------------------------------------------------------------
-         !
-         SUBROUTINE E1MES (IERTYP, IERCOD, MSGPKD)
-             !                                  SPECIFICATIONS FOR ARGUMENTS
-             INTEGER    IERTYP, IERCOD
-             CHARACTER  MSGPKD*(*)
-             !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-             INTEGER    ERTYP2, I, IER, IPLEN, ISUB, LAST, LEN2, LOC, M, MS, &
-                 NLOC, NUM, PBEG
-             CHARACTER  MSGTMP(255)
-             !                                  SPECIFICATIONS FOR SAVE VARIABLES
-             INTEGER    IFINIT, NFORMS
-             CHARACTER  BLNK, DBB(3), FIND(4), FORMS(9), INREF(25), LPAR, &
-                 NCHECK(3), PERCNT, RPAR
-             SAVE       BLNK, DBB, FIND, FORMS, IFINIT, INREF, LPAR, NCHECK, &
-                 NFORMS, PERCNT, RPAR
-             !                                  SPECIFICATIONS FOR SPECIAL CASES
-             !                              SPECIFICATIONS FOR COMMON /ERCOM1/
-             INTEGER    CALLVL, MAXLEV, MSGLEN, ERTYPE(51), ERCODE(51), &
-                 PRINTB(7), STOPTB(7), PLEN, IFERR6, IFERR7, &
-                 IALLOC(51), HDRFMT(7), TRACON(7)
-             COMMON     /ERCOM1/ CALLVL, MAXLEV, MSGLEN, ERTYPE, ERCODE, &
-                 PRINTB, STOPTB, PLEN, IFERR6, IFERR7, IALLOC, HDRFMT, &
-                 TRACON
-             SAVE       /ERCOM1/
-             !                              SPECIFICATIONS FOR COMMON /ERCOM2/
-             CHARACTER  MSGSAV(255), PLIST(300), RNAME(51)*6
-             COMMON     /ERCOM2/ MSGSAV, PLIST, RNAME
-             SAVE       /ERCOM2/
-             !                              SPECIFICATIONS FOR COMMON /ERCOM3/
-             DOUBLE PRECISION ERCKSM
-             COMMON     /ERCOM3/ ERCKSM
-             SAVE       /ERCOM3/
-             !                              SPECIFICATIONS FOR COMMON /ERCOM4/
-             LOGICAL    ISUSER(51)
-             COMMON     /ERCOM4/ ISUSER
-             SAVE       /ERCOM4/
-             !                                  SPECIFICATIONS FOR INTRINSICS
-             !     INTRINSIC  LEN,MIN0
-             INTRINSIC  LEN, MIN0
-             INTEGER    LEN, MIN0
-             !                                  SPECIFICATIONS FOR SUBROUTINES
-             EXTERNAL   C1TCI, E1INIT, E1PRT, E1UCS, M1VE, M1VECH
-             !                                  SPECIFICATIONS FOR FUNCTIONS
-             EXTERNAL   I1DX
-             INTEGER    I1DX
-             !
-             DATA FORMS/'A', 'C', 'D', 'I', 'K', 'L', 'R', 'S', 'Z'/, &
-                 NFORMS/9/
-             DATA PERCNT/'%'/, LPAR/'('/, RPAR/')'/, BLNK/' '/
-             DATA INREF/' ', 'i', 'n', ' ', 'r', 'e', 'f', 'e', 'r', &
-                 'e', 'n', 'c', 'e', ' ', 't', 'o', ' ', 'k', 'e', &
-                 'y', 'w', 'o', 'r', 'd', ' '/
-             DATA NCHECK/'N', '1', '*'/, DBB/'.', ' ', ' '/
-             DATA FIND/'*', ' ', ' ', '*'/
-             DATA IFINIT/0/
-             !                                  INITIALIZE ERROR TABLE IF NECESSARY
-             IF (IFINIT .EQ. 0) THEN
-                 CALL E1INIT
-                 IFINIT = 1
-             END IF
-             !                                  CHECK AND SET ERROR TYPE IF NECESSARY
-             IF (IERTYP .NE. -1) THEN
-                 ERTYPE(CALLVL) = IERTYP
-             ELSE IF (IERTYP.LT.-1 .OR. IERTYP.GT.7) THEN
-                 MSGLEN = 51
-                 CALL M1VECH ('.  Error from E1MES.  Illegal error type'// &
-                     ' specified. ', MSGLEN, MSGSAV, MSGLEN)
-                 CALL E1PRT
-                 STOP
-             END IF
-             !
-             ERTYP2 = ERTYPE(CALLVL)
-             !                                  SET ERROR CODE IF NECESSARY
-             IF (IERCOD .GT. -1) ERCODE(CALLVL) = IERCOD
-             LEN2 = LEN(MSGPKD)
-             !
-             IF (IERTYP.EQ.0 .OR. IERCOD.EQ.0) THEN
-                 !                                  REMOVE THE ERROR STATE
-                 MSGLEN = 0
-             ELSE IF (LEN2.EQ.0 .OR. (LEN2.EQ.1.AND.MSGPKD(1:1).EQ.BLNK)) THEN
-                 IF (ERTYP2 .EQ. 6) IFERR6 = 1
-                 IF (ERTYP2 .EQ. 7) IFERR7 = 1
-                 !                                  UPDATE CHECKSUM PARAMETER ERCKSM
-                 CALL E1UCS
-                 !                                  PRINT MESSAGE IF NECESSARY
-                 IF (ERTYP2.GE.5 .AND. PRINTB(ERTYP2).EQ.1) CALL E1PRT
-             ELSE
-                 !                                  FILL UP MSGSAV WITH EXPANDED MESSAGE
-                 LEN2 = MIN0(LEN2,255)
-                 DO 10  I=1, LEN2
-                     MSGTMP(I) = MSGPKD(I:I)
-10               CONTINUE
-                 MS = 0
-                 M = 0
-                 !                                  CHECK PLIST FOR KEYWORD NAME
-                 NLOC = I1DX(PLIST,PLEN,NCHECK,3)
-                 IF (NLOC.GT.0 .AND. HDRFMT(ERTYP2).EQ.3) THEN
-                     !                                  M1VE INREF INTO MSGSAV
-                     CALL M1VE (INREF, 1, 25, 25, MSGSAV, 1, 25, 25, IER)
-                     !                                  GET LENGTH OF KEYWORD NAME
-                     CALL C1TCI (PLIST(NLOC+3), 3, IPLEN, IER)
-                     PBEG = NLOC + 3 + IER
-                     !                                  M1VE KEYWORD NAME INTO MSGSAV
-                     CALL M1VE (PLIST, PBEG, PBEG+IPLEN-1, PLEN, MSGSAV, 26, &
-                         IPLEN+25, 255, IER)
-                     !                                  UPDATE POINTER
-                     MS = IPLEN + 25
-                 END IF
-                 !                                  INSERT DOT, BLANK, BLANK
-                 CALL M1VE (DBB, 1, 3, 3, MSGSAV, MS+1, MS+3, 255, IER)
-                 MS = MS + 3
-                 !                                  LOOK AT NEXT CHARACTER
-20               M = M + 1
-                 ISUB = 0
-                 IF (M .GT. LEN2-4) THEN
-                     LAST = LEN2 - M + 1
-                     DO 30  I=1, LAST
-30                       MSGSAV(MS+I) = MSGTMP(M+I-1)
-                         MSGLEN = MS + LAST
-                         GO TO 40
-                     ELSE IF (MSGTMP(M).EQ.PERCNT .AND. MSGTMP(M+1).EQ.LPAR .AND. &
-                         MSGTMP(M+4).EQ.RPAR) THEN
-                         CALL C1TCI (MSGTMP(M+3), 1, NUM, IER)
-                         IF (IER.EQ.0 .AND. NUM.NE.0 .AND. I1DX(FORMS,NFORMS, &
-                             MSGTMP(M+2),1).NE.0) THEN
-                             !                                  LOCATE THE ITEM IN THE PARAMETER LIST
-                             CALL M1VE (MSGTMP(M+2), 1, 2, 2, FIND, 2, 3, 4, IER)
-                             LOC = I1DX(PLIST,PLEN,FIND,4)
-                             IF (LOC .GT. 0) THEN
-                                 !                                  SET IPLEN = LENGTH OF STRING
-                                 CALL C1TCI (PLIST(LOC+4), 4, IPLEN, IER)
-                                 PBEG = LOC + 4 + IER
-                                 !                                  ADJUST IPLEN IF IT IS TOO BIG
-                                 IPLEN = MIN0(IPLEN,255-MS)
-                                 !                                  M1VE STRING FROM PLIST INTO MSGSAV
-                                 CALL M1VE (PLIST, PBEG, PBEG+IPLEN-1, PLEN, MSGSAV, &
-                                     MS+1, MS+IPLEN, 255, IER)
-                                 IF (IER.GE.0 .AND. IER.LT.IPLEN) THEN
-                                     !                                  UPDATE POINTERS
-                                     M = M + 4
-                                     MS = MS + IPLEN - IER
-                                     !                                  BAIL OUT IF NO MORE ROOM
-                                     IF (MS .GE. 255) THEN
-                                         MSGLEN = 255
-                                         GO TO 40
-                                     END IF
-                                     !                                  SET FLAG TO SHOW SUBSTITION WAS MADE
-                                     ISUB = 1
-                                 END IF
-                             END IF
-                         END IF
-                     END IF
-                     IF (ISUB .EQ. 0) THEN
-                         MS = MS + 1
-                         MSGSAV(MS) = MSGTMP(M)
-                     END IF
-                     GO TO 20
-40                   ERTYP2 = ERTYPE(CALLVL)
-                     IF (ERTYP2 .EQ. 6) IFERR6 = 1
-                     IF (ERTYP2 .EQ. 7) IFERR7 = 1
-                     !                                  UPDATE CHECKSUM PARAMETER ERCKSM
-                     CALL E1UCS
-                     !                                  PRINT MESSAGE IF NECESSARY
-                     IF (ERTYP2.GE.5 .AND. PRINTB(ERTYP2).EQ.1) CALL E1PRT
-                 END IF
-                 !                                  CLEAR PARAMETER LIST
-                 PLEN = 1
-                 !
-                 RETURN
-             END
-             !-----------------------------------------------------------------------
-             !  IMSL Name:  E1POP
-             !
-             !  Computer:   pcdsms/SINGLE
-             !
-             !  Revised:    March 13, 1984
-             !
-             !  Purpose:    To pop a subroutine name from the error control stack.
-             !
-             !  Usage:      CALL E1POP(NAME)
-             !
-             !  Arguments:
-             !     NAME   - A character string of length six specifying the name
-             !              of the subroutine.  (Input)
-             !
-             !  Copyright:  1984 by IMSL, Inc.  All rights reserved.
-             !
-             !  Warranty:   IMSL warrants only that IMSL testing has been applied
-             !              to this code.  No other warranty, expressed or implied,
-             !              is applicable.
-             !
-             !-----------------------------------------------------------------------
-             !
-             SUBROUTINE E1POP (NAME)
-                 !                                  SPECIFICATIONS FOR ARGUMENTS
-                 CHARACTER  NAME*(*)
-                 !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-                 INTEGER    IERTYP, IR
-                 !                                  SPECIFICATIONS FOR SPECIAL CASES
-                 !                              SPECIFICATIONS FOR COMMON /ERCOM1/
-                 INTEGER    CALLVL, MAXLEV, MSGLEN, ERTYPE(51), ERCODE(51), &
-                     PRINTB(7), STOPTB(7), PLEN, IFERR6, IFERR7, &
-                     IALLOC(51), HDRFMT(7), TRACON(7)
-                 COMMON     /ERCOM1/ CALLVL, MAXLEV, MSGLEN, ERTYPE, ERCODE, &
-                     PRINTB, STOPTB, PLEN, IFERR6, IFERR7, IALLOC, HDRFMT, &
-                     TRACON
-                 SAVE       /ERCOM1/
-                 !                              SPECIFICATIONS FOR COMMON /ERCOM2/
-                 CHARACTER  MSGSAV(255), PLIST(300), RNAME(51)*6
-                 COMMON     /ERCOM2/ MSGSAV, PLIST, RNAME
-                 SAVE       /ERCOM2/
-                 !                              SPECIFICATIONS FOR COMMON /ERCOM3/
-                 DOUBLE PRECISION ERCKSM
-                 COMMON     /ERCOM3/ ERCKSM
-                 SAVE       /ERCOM3/
-                 !                              SPECIFICATIONS FOR COMMON /ERCOM4/
-                 LOGICAL    ISUSER(51)
-                 COMMON     /ERCOM4/ ISUSER
-                 SAVE       /ERCOM4/
-                 !                                  SPECIFICATIONS FOR SUBROUTINES
-                 EXTERNAL   E1MES, E1PRT, E1PSH, E1STI, E1STL, I1KRL
-                 !                                  SPECIFICATIONS FOR FUNCTIONS
-                 EXTERNAL   I1KST
-                 INTEGER    I1KST
-                 !
-                 IF (CALLVL .LE. 1) THEN
-                     CALL E1PSH ('E1POP ')
-                     CALL E1STL (1, NAME)
-                     CALL E1MES (5, 1, 'Error condition in E1POP.  Cannot pop '// &
-                         'from %(L1) because stack is empty.')
-                     STOP
-                 ELSE IF (NAME .NE. RNAME(CALLVL)) THEN
-                     CALL E1STL (1, NAME)
-                     CALL E1STL (2, RNAME(CALLVL))
-                     CALL E1MES (5, 2, 'Error condition in E1POP.  %(L1) does '// &
-                         'not match the name %(L2) in the stack.')
-                     STOP
-                 ELSE
-                     IERTYP = ERTYPE(CALLVL)
-                     IF (IERTYP .NE. 0) THEN
-                         !                                  M1VE ERROR TYPE AND ERROR CODE TO
-                         !                                    PREVIOUS LEVEL FOR ERROR TYPES 2-7
-                         IF (IERTYP.GE.2 .AND. IERTYP.LE.7) THEN
-                             ERTYPE(CALLVL-1) = ERTYPE(CALLVL)
-                             ERCODE(CALLVL-1) = ERCODE(CALLVL)
-                         END IF
-                         !                                  CHECK PRINT TABLE TO DETERMINE
-                         !                                    WHETHER TO PRINT STORED MESSAGE
-                         IF (IERTYP .LE. 4) THEN
-                             IF (ISUSER(CALLVL-1) .AND. PRINTB(IERTYP).EQ.1) &
-                                 CALL E1PRT
-                         ELSE
-                             IF (PRINTB(IERTYP) .EQ. 1) CALL E1PRT
-                         END IF
-                         !                                  CHECK STOP TABLE AND ERROR TYPE TO
-                         !                                    DETERMINE WHETHER TO STOP
-                         IF (IERTYP .LE. 4) THEN
-                             IF (ISUSER(CALLVL-1) .AND. STOPTB(IERTYP).EQ.1) THEN
-                                 STOP
-                             END IF
-                         ELSE IF (IERTYP .EQ. 5) THEN
-                             IF (STOPTB(IERTYP) .EQ. 1) THEN
-                                 STOP
-                             END IF
-                         ELSE IF (HDRFMT(IERTYP) .EQ. 1) THEN
-                             IF (ISUSER(CALLVL-1)) THEN
-                                 IF (N1RGB(0) .NE. 0) THEN
-                                     STOP
-                                 END IF
-                             END IF
-                         END IF
-                     END IF
-                     !                                  SET ERROR TYPE AND CODE
-                     IF (CALLVL .LT. MAXLEV) THEN
-                         ERTYPE(CALLVL+1) = -1
-                         ERCODE(CALLVL+1) = -1
-                     END IF
-                     !                                  SET IR = AMOUNT OF WORKSPACE
-                     !                                  ALLOCATED AT THIS LEVEL
-                     IR = I1KST(1) - IALLOC(CALLVL-1)
-                     IF (IR .GT. 0) THEN
-                         !                                  RELEASE WORKSPACE
-                         CALL I1KRL (IR)
-                         IALLOC(CALLVL) = 0
-                     ELSE IF (IR .LT. 0) THEN
-                         CALL E1STI (1, CALLVL)
-                         CALL E1STI (2, IALLOC(CALLVL-1))
-                         CALL E1STI (3, I1KST(1))
-                         CALL E1MES (5, 3, 'Error condition in E1POP. '// &
-                             ' The number of workspace allocations at '// &
-                             'level %(I1) is %(I2).  However, the total '// &
-                             'number of workspace allocations is %(I3).')
-                         STOP
-                     END IF
-                     !                                  DECREASE THE STACK POINTER BY ONE
-                     CALLVL = CALLVL - 1
-                 END IF
-                 !
-                 RETURN
-             END
-             !-----------------------------------------------------------------------
-             !  IMSL Name:  E1POS
-             !
-             !  Computer:   pcdsms/SINGLE
-             !
-             !  Revised:    March 2, 1984
-             !
-             !  Purpose:    Set or retrieve print and stop attributes.
-             !
-             !  Usage:      CALL E1POS(IERTYP,IPATT,ISATT)
-             !
-             !  Arguments:
-             !     IERTYP - Integer specifying the error type for which print and
-             !              stop attributes are to be set or retrieved.  (Input)  If
-             !              IERTYP is 0 then the settings apply to all error types.
-             !              If IERTYP is between 1 and 7, then the settings only
-             !              apply to that specified error type.  If IERTYP is
-             !              negative then the current print and stop attributes will
-             !              be returned in IPATT and ISATT.
-             !     IPATT  - If IERTYP is positive, IPATT is an integer specifying the
-             !              desired print attribute as follows: -1 means no change,
-             !              0 means NO, 1 means YES, and 2 means assign the default
-             !              setting.  (Input)  If IERTYP is negative, IPATT is
-             !              returned as 1 if print is YES or 0 if print is NO for
-             !              error type IABS(IERTYP).  (Output)
-             !     ISATT  - If IERTYP is positive, ISATT is an integer specifying the
-             !              desired stop attribute as follows: -1 means no change,
-             !              0 means NO, 1 means YES, and 2 means assign the default
-             !              setting.  (Input)  If IERTYP is negative, ISATT is
-             !              returned as 1 if print is YES or 0 if print is NO for
-             !              error type IABS(IERTYP).  (Output)
-             !
-             !  Copyright:  1984 by IMSL, Inc.  All rights reserved.
-             !
-             !  Warranty:   IMSL warrants only that IMSL testing has been applied
-             !              to this code.  No other warranty, expressed or implied,
-             !              is applicable.
-             !
-             !-----------------------------------------------------------------------
-             !
-             SUBROUTINE E1POS (IERTYP, IPATT, ISATT)
-                 !                                  SPECIFICATIONS FOR ARGUMENTS
-                 INTEGER    IERTYP, IPATT, ISATT
-                 !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-                 INTEGER    I, IER
-                 !                                  SPECIFICATIONS FOR SAVE VARIABLES
-                 INTEGER    DEFLTP(7), DEFLTS(7), IFINIT
-                 SAVE       DEFLTP, DEFLTS, IFINIT
-                 !                                  SPECIFICATIONS FOR SPECIAL CASES
-                 !                              SPECIFICATIONS FOR COMMON /ERCOM1/
-                 INTEGER    CALLVL, MAXLEV, MSGLEN, ERTYPE(51), ERCODE(51), &
-                     PRINTB(7), STOPTB(7), PLEN, IFERR6, IFERR7, &
-                     IALLOC(51), HDRFMT(7), TRACON(7)
-                 COMMON     /ERCOM1/ CALLVL, MAXLEV, MSGLEN, ERTYPE, ERCODE, &
-                     PRINTB, STOPTB, PLEN, IFERR6, IFERR7, IALLOC, HDRFMT, &
-                     TRACON
-                 SAVE       /ERCOM1/
-                 !                              SPECIFICATIONS FOR COMMON /ERCOM2/
-                 CHARACTER  MSGSAV(255), PLIST(300), RNAME(51)*6
-                 COMMON     /ERCOM2/ MSGSAV, PLIST, RNAME
-                 SAVE       /ERCOM2/
-                 !                              SPECIFICATIONS FOR COMMON /ERCOM3/
-                 DOUBLE PRECISION ERCKSM
-                 COMMON     /ERCOM3/ ERCKSM
-                 SAVE       /ERCOM3/
-                 !                              SPECIFICATIONS FOR COMMON /ERCOM4/
-                 LOGICAL    ISUSER(51)
-                 COMMON     /ERCOM4/ ISUSER
-                 SAVE       /ERCOM4/
-                 !                                  SPECIFICATIONS FOR INTRINSICS
-                 !     INTRINSIC  IABS
-                 INTRINSIC  IABS
-                 INTEGER    IABS
-                 !                                  SPECIFICATIONS FOR SUBROUTINES
-                 EXTERNAL   E1INIT, E1MES, E1STI
-                 !
-                 DATA IFINIT/0/
-                 DATA DEFLTP/0, 0, 1, 1, 1, 1, 1/, DEFLTS/0, 0, 0, 1, 1, 0, 1/
-                 !                                  INITIALIZE ERROR TABLE IF NECESSARY
-                 IF (IFINIT .EQ. 0) THEN
-                     CALL E1INIT
-                     IFINIT = 1
-                 END IF
-                 IER = 0
-                 IF (IERTYP .GE. 0) THEN
-                     IF (IPATT.LT.-1 .OR. IPATT.GT.2) THEN
-                         CALL E1STI (1, IPATT)
-                         CALL E1MES (5, 1, 'Invalid value specified for print '// &
-                             'table attribute.  IPATT must be -1, 0, 1, '// &
-                             'or 2.  IPATT = %(I1)')
-                         IER = 1
-                     END IF
-                     IF (ISATT.LT.-1 .OR. ISATT.GT.2) THEN
-                         CALL E1STI (1, ISATT)
-                         CALL E1MES (5, 1, 'Invalid value specified for stop '// &
-                             'table attribute.  ISATT must be -1, 0, 1, '// &
-                             'or 2.  ISATT = %(I1)')
-                         IER = 1
-                     END IF
-                 END IF
-                 IF (IER .EQ. 0) THEN
-                     IF (IERTYP .EQ. 0) THEN
-                         IF (IPATT.EQ.0 .OR. IPATT.EQ.1) THEN
-                             DO 10  I=1, 7
-10                               PRINTB(I) = IPATT
-                             ELSE IF (IPATT .EQ. 2) THEN
-                                 !                                  ASSIGN DEFAULT SETTINGS
-                                 DO 20  I=1, 7
-20                                   PRINTB(I) = DEFLTP(I)
-                                 END IF
-                                 IF (ISATT.EQ.0 .OR. ISATT.EQ.1) THEN
-                                     DO 30  I=1, 7
-30                                       STOPTB(I) = ISATT
-                                     ELSE IF (ISATT .EQ. 2) THEN
-                                         !                                  ASSIGN DEFAULT SETTINGS
-                                         DO 40  I=1, 7
-40                                           STOPTB(I) = DEFLTS(I)
-                                         END IF
-                                     ELSE IF (IERTYP.GE.1 .AND. IERTYP.LE.7) THEN
-                                         IF (IPATT.EQ.0 .OR. IPATT.EQ.1) THEN
-                                             PRINTB(IERTYP) = IPATT
-                                         ELSE IF (IPATT .EQ. 2) THEN
-                                             !                                  ASSIGN DEFAULT SETTING
-                                             PRINTB(IERTYP) = DEFLTP(IERTYP)
-                                         END IF
-                                         IF (ISATT.EQ.0 .OR. ISATT.EQ.1) THEN
-                                             STOPTB(IERTYP) = ISATT
-                                         ELSE IF (ISATT .EQ. 2) THEN
-                                             !                                  ASSIGN DEFAULT SETTING
-                                             STOPTB(IERTYP) = DEFLTS(IERTYP)
-                                         END IF
-                                     ELSE IF (IERTYP.LE.-1 .AND. IERTYP.GE.-7) THEN
-                                         I = IABS(IERTYP)
-                                         IPATT = PRINTB(I)
-                                         ISATT = STOPTB(I)
-                                     END IF
-                                 END IF
-                                 !
-                                 RETURN
-                             END
-                             !-----------------------------------------------------------------------
-                             !  IMSL Name:  E1PRT
-                             !
-                             !  Computer:   pcdsms/SINGLE
-                             !
-                             !  Revised:    March 14, 1984
-                             !
-                             !  Purpose:    To print an error message.
-                             !
-                             !  Usage:      CALL E1PRT
-                             !
-                             !  Arguments:  None
-                             !
-                             !  Copyright:  1984 by IMSL, Inc.  All rights reserved.
-                             !
-                             !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                             !              to this code.  No other warranty, expressed or implied,
-                             !              is applicable.
-                             !
-                             !-----------------------------------------------------------------------
-                             !
-                             SUBROUTINE E1PRT
-                                 !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-                                 INTEGER    ALL, I, IBEG, IBLOC, IBLOC2, IEND, IER, IHDR, J, &
-                                     LERTYP, LOC, LOCM1, LOCX, MAXLOC, MAXTMP, MLOC, MOD, &
-                                     NCBEG, NLOC, NOUT
-                                 CHARACTER  MSGTMP(70), STRING(10)
-                                 !                                  SPECIFICATIONS FOR SAVE VARIABLES
-                                 CHARACTER  ATLINE(9), BLANK(1), DBB(3), FROM(6), MSGTYP(8,7), &
-                                     PERSLA(2), QMARK, UNKNOW(8)
-                                 !                                  SPECIFICATIONS FOR SPECIAL CASES
-                                 !                              SPECIFICATIONS FOR COMMON /ERCOM1/
-                                 INTEGER    CALLVL, MAXLEV, MSGLEN, ERTYPE(51), ERCODE(51), &
-                                     PRINTB(7), STOPTB(7), PLEN, IFERR6, IFERR7, &
-                                     IALLOC(51), HDRFMT(7), TRACON(7)
-                                 COMMON     /ERCOM1/ CALLVL, MAXLEV, MSGLEN, ERTYPE, ERCODE, &
-                                     PRINTB, STOPTB, PLEN, IFERR6, IFERR7, IALLOC, HDRFMT, &
-                                     TRACON
-                                 SAVE       /ERCOM1/
-                                 !                              SPECIFICATIONS FOR COMMON /ERCOM2/
-                                 CHARACTER  MSGSAV(255), PLIST(300), RNAME(51)*6
-                                 COMMON     /ERCOM2/ MSGSAV, PLIST, RNAME
-                                 SAVE       /ERCOM2/
-                                 !                              SPECIFICATIONS FOR COMMON /ERCOM3/
-                                 DOUBLE PRECISION ERCKSM
-                                 COMMON     /ERCOM3/ ERCKSM
-                                 SAVE       /ERCOM3/
-                                 !                              SPECIFICATIONS FOR COMMON /ERCOM4/
-                                 LOGICAL    ISUSER(51)
-                                 COMMON     /ERCOM4/ ISUSER
-                                 SAVE       /ERCOM4/
-                                 !                              SPECIFICATIONS FOR COMMON /ERCOM8/
-                                 INTEGER    PROLVL, XXLINE(10), XXPLEN(10), ICALOC(10), INALOC(10)
-                                 COMMON     /ERCOM8/ PROLVL, XXLINE, XXPLEN, ICALOC, INALOC
-                                 SAVE       /ERCOM8/
-                                 !                              SPECIFICATIONS FOR COMMON /ERCOM9/
-                                 CHARACTER  XXPROC(10)*31
-                                 COMMON     /ERCOM9/ XXPROC
-                                 SAVE       /ERCOM9/
-                                 SAVE       ATLINE, BLANK, DBB, FROM, MSGTYP, PERSLA, QMARK, &
-                                     UNKNOW
-                                 !                                  SPECIFICATIONS FOR INTRINSICS
-                                 !     INTRINSIC  MIN0
-                                 INTRINSIC  MIN0
-                                 INTEGER    MIN0
-                                 !                                  SPECIFICATIONS FOR SUBROUTINES
-                                 EXTERNAL   C1TIC, M1VE, UMACH
-                                 !                                  SPECIFICATIONS FOR FUNCTIONS
-                                 EXTERNAL   I1DX, I1ERIF
-                                 INTEGER    I1DX, I1ERIF
-                                 !
-                                 DATA MSGTYP/'N', 'O', 'T', 'E', ' ', ' ', ' ', ' ', 'A', &
-                                     'L', 'E', 'R', 'T', ' ', ' ', ' ', 'W', 'A', 'R', &
-                                     'N', 'I', 'N', 'G', ' ', 'F', 'A', 'T', 'A', 'L', &
-                                     ' ', ' ', ' ', 'T', 'E', 'R', 'M', 'I', 'N', 'A', &
-                                     'L', 'W', 'A', 'R', 'N', 'I', 'N', 'G', ' ', 'F', &
-                                     'A', 'T', 'A', 'L', ' ', ' ', ' '/
-                                 DATA UNKNOW/'U', 'N', 'K', 'N', 'O', 'W', 'N', ' '/
-                                 DATA ATLINE/' ', 'a', 't', ' ', 'l', 'i', 'n', 'e', ' '/
-                                 DATA BLANK/' '/, FROM/' ', 'f', 'r', 'o', 'm', ' '/
-                                 DATA DBB/'.', ' ', ' '/, PERSLA/'%', '/'/
-                                 DATA QMARK/'?'/
-                                 !
-                                 IF (MSGLEN .LE. 0) RETURN
-                                 CALL UMACH (2, NOUT)
-                                 MAXTMP = 70
-                                 MOD = 0
-                                 LERTYP = ERTYPE(CALLVL)
-                                 IHDR = HDRFMT(LERTYP)
-                                 IF (IHDR .EQ. 3) THEN
-                                     IF (XXPROC(PROLVL)(1:1).EQ.QMARK .AND. XXLINE(PROLVL).EQ.0) &
-                                         THEN
-                                         IHDR = 1
-                                     END IF
-                                 END IF
-                                 IEND = 0
-                                 IF (IHDR.EQ.1 .AND. ERTYPE(CALLVL).LE.4) THEN
-                                     MSGTMP(1) = BLANK(1)
-                                     IEND = 1
-                                     !                                  CONVERT ERROR CODE INTO CHAR STRING
-                                     CALL C1TIC (ERCODE(CALLVL), STRING, 10, IER)
-                                     !                                  LOCATE START OF NON-BLANK CHARACTERS
-                                     IBEG = I1ERIF(STRING,10,BLANK,1)
-                                     !                                  M1VE IT TO MSGTMP
-                                     CALL M1VE (STRING, IBEG, 10, 10, MSGTMP, IEND+1, &
-                                         IEND+11-IBEG, MAXTMP, IER)
-                                     IEND = IEND + 11 - IBEG
-                                 END IF
-                                 IF (IHDR .NE. 2) THEN
-                                     CALL M1VE (FROM, 1, 6, 6, MSGTMP, IEND+1, IEND+6, MAXTMP, IER)
-                                     IEND = IEND + 6
-                                 END IF
-                                 IF (IHDR .EQ. 3) THEN
-                                     !                                  THIS IS A PROTRAN RUN TIME ERROR MSG.
-                                     !                                  RETRIEVE THE PROCEDURE NAME
-                                     CALL M1VE (XXPROC(PROLVL), 1, XXPLEN(PROLVL), 31, MSGTMP, &
-                                         IEND+1, IEND+XXPLEN(PROLVL), MAXTMP, IER)
-                                     MLOC = IEND + XXPLEN(PROLVL) + 1
-                                     MSGTMP(MLOC) = BLANK(1)
-                                     IEND = IEND + I1DX(MSGTMP(IEND+1),XXPLEN(PROLVL)+1,BLANK,1) - &
-                                         1
-                                     IF (XXLINE(PROLVL) .GT. 0) THEN
-                                         !                                  INSERT ATLINE
-                                         CALL M1VE (ATLINE, 1, 9, 9, MSGTMP, IEND+1, IEND+9, &
-                                             MAXTMP, IER)
-                                         IEND = IEND + 9
-                                         !                                  CONVERT PROTRAN GLOBAL LINE NUMBER
-                                         CALL C1TIC (XXLINE(PROLVL), STRING, 10, IER)
-                                         !                                  LOCATE START OF NON-BLANK CHARACTERS
-                                         IBEG = I1ERIF(STRING,10,BLANK,1)
-                                         !                                  M1VE GLOBAL LINE NUMBER TO MSGTMP
-                                         CALL M1VE (STRING, IBEG, 10, 10, MSGTMP, IEND+1, &
-                                             IEND+11-IBEG, MAXTMP, IER)
-                                         IEND = IEND + 11 - IBEG
-                                     END IF
-                                 ELSE
-                                     !                                  THIS IS EITHER A LIBRARY ERROR MSG
-                                     !                                  OR A PROTRAN PREPROCESSOR ERROR MSG
-                                     IF (IHDR .EQ. 1) THEN
-                                         !                                  THIS IS A LIBRARY ERROR MESSAGE.
-                                         !                                  RETRIEVE ROUTINE NAME
-                                         CALL M1VE (RNAME(CALLVL), 1, 6, 6, MSGTMP, IEND+1, IEND+6, &
-                                             MAXTMP, IER)
-                                         MSGTMP(IEND+7) = BLANK(1)
-                                         IEND = IEND + I1DX(MSGTMP(IEND+1),7,BLANK,1) - 1
-                                     END IF
-                                     !                                  ADD DOT, BLANK, BLANK IF NEEDED
-                                     IF (I1DX(MSGSAV,3,DBB,3) .NE. 1) THEN
-                                         CALL M1VE (DBB, 1, 3, 3, MSGTMP, IEND+1, IEND+3, MAXTMP, &
-                                             IER)
-                                         IEND = IEND + 3
-                                         MOD = 3
-                                     END IF
-                                 END IF
-                                 !                                  MSGTMP AND MSGSAV NOW CONTAIN THE
-                                 !                                   ERROR MESSAGE IN FINAL FORM.
-                                 NCBEG = 59 - IEND - MOD
-                                 ALL = 0
-                                 IBLOC = I1DX(MSGSAV,MSGLEN,PERSLA,2)
-                                 IF (IBLOC.NE.0 .AND. IBLOC.LT.NCBEG) THEN
-                                     LOCM1 = IBLOC - 1
-                                     LOC = IBLOC + 1
-                                 ELSE IF (MSGLEN .LE. NCBEG) THEN
-                                     LOCM1 = MSGLEN
-                                     ALL = 1
-                                 ELSE
-                                     LOC = NCBEG
-                                 !                                  CHECK FOR APPROPRIATE PLACE TO SPLIT
-10                               CONTINUE
-                                 IF (MSGSAV(LOC) .NE. BLANK(1)) THEN
-                                     LOC = LOC - 1
-                                     IF (LOC .GT. 1) GO TO 10
-                                     LOC = NCBEG + 1
-                                 END IF
-                                 LOCM1 = LOC - 1
-                             END IF
-                             !                                  NO BLANKS FOUND IN FIRST NCBEG CHARS
-                             IF (LERTYP.GE.1 .AND. LERTYP.LE.7) THEN
-                                 WRITE (NOUT,99995) (MSGTYP(I,LERTYP),I=1,8), &
-                                     (MSGTMP(I),I=1,IEND), (MSGSAV(I),I=1,LOCM1)
-                             ELSE
-                                 WRITE (NOUT,99995) (UNKNOW(I),I=1,8), (MSGTMP(I),I=1,IEND), &
-                                     (MSGSAV(I),I=1,LOCM1)
-                             END IF
-                             IF (ALL .EQ. 0) THEN
-                                 !                                  PREPARE TO WRITE CONTINUATION OF
-                                 !                                    MESSAGE
-                                 !
-                                 !                                  FIND WHERE TO BREAK MESSAGE
-                                 !                                    LOC = NUMBER OF CHARACTERS OF
-                                 !                                          MESSAGE WRITTEN SO FAR
-20                               LOCX = LOC + 64
-                                 NLOC = LOC + 1
-                                 IBLOC2 = IBLOC
-                                 MAXLOC = MIN0(MSGLEN-LOC,64)
-                                 IBLOC = I1DX(MSGSAV(NLOC),MAXLOC,PERSLA,2)
-                                 IF (MSGSAV(NLOC).EQ.BLANK(1) .AND. IBLOC2.EQ.0) NLOC = NLOC + &
-                                     1
-                                 IF (IBLOC .GT. 0) THEN
-                                     !                                  PAGE BREAK FOUND AT IBLOC
-                                     LOCX = NLOC + IBLOC - 2
-                                     WRITE (NOUT,99996) (MSGSAV(I),I=NLOC,LOCX)
-                                     LOC = NLOC + IBLOC
-                                     GO TO 20
-                                 !                                  DON'T BOTHER LOOKING FOR BLANK TO
-                                 !                                    BREAK AT IF LOCX .GE. MSGLEN
-                                 ELSE IF (LOCX .LT. MSGLEN) THEN
-                                 !                                  CHECK FOR BLANK TO BREAK THE LINE
-30                               CONTINUE
-                                 IF (MSGSAV(LOCX) .EQ. BLANK(1)) THEN
-                                     !                                  BLANK FOUND AT LOCX
-                                     WRITE (NOUT,99996) (MSGSAV(I),I=NLOC,LOCX)
-                                     LOC = LOCX
-                                     GO TO 20
-                                 END IF
-                                 LOCX = LOCX - 1
-                                 IF (LOCX .GT. NLOC) GO TO 30
-                                 LOCX = LOC + 64
-                                 !                                  NO BLANKS FOUND IN NEXT 64 CHARS
-                                 WRITE (NOUT,99996) (MSGSAV(I),I=NLOC,LOCX)
-                                 LOC = LOCX
-                                 GO TO 20
-                             ELSE
-                                 !                                  ALL THE REST WILL FIT ON 1 LINE
-                                 LOCX = MSGLEN
-                                 WRITE (NOUT,99996) (MSGSAV(I),I=NLOC,LOCX)
-                             END IF
-                         END IF
-                         !                                  SET LENGTH OF MSGSAV AND PLEN
-                         !                                    TO SHOW THAT MESSAGE HAS
-                         !                                    ALREADY BEEN PRINTED
-9000                     MSGLEN = 0
-                         PLEN = 1
-                         IF (TRACON(LERTYP).EQ.1 .AND. CALLVL.GT.2) THEN
-                             !                                  INITIATE TRACEBACK
-                             WRITE (NOUT,99997)
-                             DO 9005  J=CALLVL, 1, -1
-                                 IF (J .GT. 1) THEN
-                                     IF (ISUSER(J-1)) THEN
-                                         WRITE (NOUT,99998) RNAME(J), ERTYPE(J), ERCODE(J)
-                                     ELSE
-                                         WRITE (NOUT,99999) RNAME(J), ERTYPE(J), ERCODE(J)
-                                     END IF
-                                 ELSE
-                                     WRITE (NOUT,99998) RNAME(J), ERTYPE(J), ERCODE(J)
-                                 END IF
-9005                         CONTINUE
-                         END IF
-                         !
-                         RETURN
-99995                    FORMAT (/, ' *** ', 8A1, ' ERROR', 59A1)
-99996                    FORMAT (' *** ', 9X, 64A1)
-99997                    FORMAT (14X, 'Here is a traceback of subprogram calls', &
-                             ' in reverse order:', /, 14X, '      Routine    Error ', &
-                             'type    Error code', /, 14X, '      -------    ', &
-                             '----------    ----------')
-99998                    FORMAT (20X, A6, 5X, I6, 8X, I6)
-99999                    FORMAT (20X, A6, 5X, I6, 8X, I6, 4X, '(Called internally)')
-                     END
-                     !-----------------------------------------------------------------------
-                     !  IMSL Name:  E1PSH
-                     !
-                     !  Computer:   pcdsms/SINGLE
-                     !
-                     !  Revised:    March 2, 1984
-                     !
-                     !  Purpose:    To push a subroutine name onto the error control stack.
-                     !
-                     !  Usage:      CALL E1PSH(NAME)
-                     !
-                     !  Arguments:
-                     !     NAME   - A character string of length six specifing the name of
-                     !              the subroutine.  (Input)
-                     !
-                     !  Copyright:  1984 by IMSL, Inc.  All rights reserved.
-                     !
-                     !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                     !              to this code.  No other warranty, expressed or implied,
-                     !              is applicable.
-                     !
-                     !-----------------------------------------------------------------------
-                     !
-                     SUBROUTINE E1PSH (NAME)
-                         !                                  SPECIFICATIONS FOR ARGUMENTS
-                         CHARACTER  NAME*(*)
-                         !                                  SPECIFICATIONS FOR SAVE VARIABLES
-                         INTEGER    IFINIT
-                         SAVE       IFINIT
-                         !                                  SPECIFICATIONS FOR SPECIAL CASES
-                         !                              SPECIFICATIONS FOR COMMON /ERCOM1/
-                         INTEGER    CALLVL, MAXLEV, MSGLEN, ERTYPE(51), ERCODE(51), &
-                             PRINTB(7), STOPTB(7), PLEN, IFERR6, IFERR7, &
-                             IALLOC(51), HDRFMT(7), TRACON(7)
-                         COMMON     /ERCOM1/ CALLVL, MAXLEV, MSGLEN, ERTYPE, ERCODE, &
-                             PRINTB, STOPTB, PLEN, IFERR6, IFERR7, IALLOC, HDRFMT, &
-                             TRACON
-                         SAVE       /ERCOM1/
-                         !                              SPECIFICATIONS FOR COMMON /ERCOM2/
-                         CHARACTER  MSGSAV(255), PLIST(300), RNAME(51)*6
-                         COMMON     /ERCOM2/ MSGSAV, PLIST, RNAME
-                         SAVE       /ERCOM2/
-                         !                              SPECIFICATIONS FOR COMMON /ERCOM3/
-                         DOUBLE PRECISION ERCKSM
-                         COMMON     /ERCOM3/ ERCKSM
-                         SAVE       /ERCOM3/
-                         !                              SPECIFICATIONS FOR COMMON /ERCOM4/
-                         LOGICAL    ISUSER(51)
-                         COMMON     /ERCOM4/ ISUSER
-                         SAVE       /ERCOM4/
-                         !                                  SPECIFICATIONS FOR SUBROUTINES
-                         EXTERNAL   E1INIT, E1MES, E1STI
-                         !                                  SPECIFICATIONS FOR FUNCTIONS
-                         EXTERNAL   I1KST
-                         INTEGER    I1KST
-                         !
-                         DATA IFINIT/0/
-                         !                                  INITIALIZE ERROR TABLE IF NECESSARY
-                         IF (IFINIT .EQ. 0) THEN
-                             CALL E1INIT
-                             IFINIT = 1
-                         END IF
-                         IF (CALLVL .GE. MAXLEV) THEN
-                             CALL E1STI (1, MAXLEV)
-                             CALL E1MES (5, 1, 'Error condition in E1PSH.  Push would '// &
-                                 'cause stack level to exceed %(I1). ')
-                             STOP
-                         ELSE
-                             !                                  STORE ALLOCATION LEVEL
-                             IALLOC(CALLVL) = I1KST(1)
-                             !                                  INCREMENT THE STACK POINTER BY ONE
-                             CALLVL = CALLVL + 1
-                             !                                  PUT SUBROUTINE NAME INTO STACK
-                             RNAME(CALLVL) = NAME
-                             !                                  SET ERROR TYPE AND ERROR CODE
-                             ERTYPE(CALLVL) = 0
-                             ERCODE(CALLVL) = 0
-                         END IF
-                         !
-                         RETURN
-                     END
-                     !-----------------------------------------------------------------------
-                     !  IMSL Name:  E1STI
-                     !
-                     !  Computer:   pcdsms/SINGLE
-                     !
-                     !  Revised:    March 6, 1984
-                     !
-                     !  Purpose:    To store an integer for subsequent use within an error
-                     !              message.
-                     !
-                     !  Usage:      CALL E1STI(II, IVALUE)
-                     !
-                     !  Arguments:
-                     !     II     - Integer specifying the substitution index.  II must be
-                     !              between 1 and 9.  (Input)
-                     !     IVALUE - The integer to be stored.  (Input)
-                     !
-                     !  Copyright:  1984 by IMSL, Inc.  All rights reserved.
-                     !
-                     !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                     !              to this code.  No other warranty, expressed or implied,
-                     !              is applicable.
-                     !
-                     !-----------------------------------------------------------------------
-                     !
-                     SUBROUTINE E1STI (II, IVALUE)
-                         !                                  SPECIFICATIONS FOR ARGUMENTS
-                         INTEGER    II, IVALUE
-                         !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-                         INTEGER    IBEG, IER, ILEN
-                         CHARACTER  ARRAY(14)
-                         !                                  SPECIFICATIONS FOR SAVE VARIABLES
-                         INTEGER    IFINIT
-                         CHARACTER  BLANK(1)
-                         SAVE       BLANK, IFINIT
-                         !                                  SPECIFICATIONS FOR SPECIAL CASES
-                         !                              SPECIFICATIONS FOR COMMON /ERCOM1/
-                         INTEGER    CALLVL, MAXLEV, MSGLEN, ERTYPE(51), ERCODE(51), &
-                             PRINTB(7), STOPTB(7), PLEN, IFERR6, IFERR7, &
-                             IALLOC(51), HDRFMT(7), TRACON(7)
-                         COMMON     /ERCOM1/ CALLVL, MAXLEV, MSGLEN, ERTYPE, ERCODE, &
-                             PRINTB, STOPTB, PLEN, IFERR6, IFERR7, IALLOC, HDRFMT, &
-                             TRACON
-                         SAVE       /ERCOM1/
-                         !                              SPECIFICATIONS FOR COMMON /ERCOM2/
-                         CHARACTER  MSGSAV(255), PLIST(300), RNAME(51)*6
-                         COMMON     /ERCOM2/ MSGSAV, PLIST, RNAME
-                         SAVE       /ERCOM2/
-                         !                              SPECIFICATIONS FOR COMMON /ERCOM3/
-                         DOUBLE PRECISION ERCKSM
-                         COMMON     /ERCOM3/ ERCKSM
-                         SAVE       /ERCOM3/
-                         !                              SPECIFICATIONS FOR COMMON /ERCOM4/
-                         LOGICAL    ISUSER(51)
-                         COMMON     /ERCOM4/ ISUSER
-                         SAVE       /ERCOM4/
-                         !                                  SPECIFICATIONS FOR SUBROUTINES
-                         EXTERNAL   C1TIC, E1INIT, E1INPL
-                         !                                  SPECIFICATIONS FOR FUNCTIONS
-                         EXTERNAL   I1ERIF
-                         INTEGER    I1ERIF
-                         !
-                         DATA BLANK/' '/, IFINIT/0/
-                         !                                  INITIALIZE IF NECESSARY
-                         IF (IFINIT .EQ. 0) THEN
-                             CALL E1INIT
-                             IFINIT = 1
-                         END IF
-                         CALL C1TIC (IVALUE, ARRAY, 14, IER)
-                         IBEG = I1ERIF(ARRAY,14,BLANK,1)
-                         IF (II.GE.1 .AND. II.LE.9 .AND. IER.EQ.0) THEN
-                             ILEN = 15 - IBEG
-                             CALL E1INPL ('I', II, ILEN, ARRAY(IBEG))
-                         END IF
-                         !
-                         RETURN
-                     END
-                     !-----------------------------------------------------------------------
-                     !  IMSL Name:  E1STL
-                     !
-                     !  Computer:   pcdsms/SINGLE
-                     !
-                     !  Revised:    November 8, 1985
-                     !
-                     !  Purpose:    To store a string for subsequent use within an error
-                     !              message.
-                     !
-                     !  Usage:      CALL E1STL(IL,STRING)
-                     !
-                     !  Arguments:
-                     !     IL     - Integer specifying the substitution index.  IL must be
-                     !              between 1 and 9.  (Input)
-                     !     STRING - A character string.  (Input)
-                     !
-                     !  Copyright:  1985 by IMSL, Inc.  All rights reserved.
-                     !
-                     !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                     !              to this code.  No other warranty, expressed or implied,
-                     !              is applicable.
-                     !
-                     !-----------------------------------------------------------------------
-                     !
-                     SUBROUTINE E1STL (IL, STRING)
-                         !                                  SPECIFICATIONS FOR ARGUMENTS
-                         INTEGER    IL
-                         CHARACTER  STRING*(*)
-                         !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-                         INTEGER    I, LEN2
-                         CHARACTER  STRGUP(255)
-                         !                                  SPECIFICATIONS FOR SAVE VARIABLES
-                         INTEGER    IFINIT
-                         SAVE       IFINIT
-                         !                                  SPECIFICATIONS FOR SPECIAL CASES
-                         !                              SPECIFICATIONS FOR COMMON /ERCOM1/
-                         INTEGER    CALLVL, MAXLEV, MSGLEN, ERTYPE(51), ERCODE(51), &
-                             PRINTB(7), STOPTB(7), PLEN, IFERR6, IFERR7, &
-                             IALLOC(51), HDRFMT(7), TRACON(7)
-                         COMMON     /ERCOM1/ CALLVL, MAXLEV, MSGLEN, ERTYPE, ERCODE, &
-                             PRINTB, STOPTB, PLEN, IFERR6, IFERR7, IALLOC, HDRFMT, &
-                             TRACON
-                         SAVE       /ERCOM1/
-                         !                              SPECIFICATIONS FOR COMMON /ERCOM2/
-                         CHARACTER  MSGSAV(255), PLIST(300), RNAME(51)*6
-                         COMMON     /ERCOM2/ MSGSAV, PLIST, RNAME
-                         SAVE       /ERCOM2/
-                         !                              SPECIFICATIONS FOR COMMON /ERCOM3/
-                         DOUBLE PRECISION ERCKSM
-                         COMMON     /ERCOM3/ ERCKSM
-                         SAVE       /ERCOM3/
-                         !                              SPECIFICATIONS FOR COMMON /ERCOM4/
-                         LOGICAL    ISUSER(51)
-                         COMMON     /ERCOM4/ ISUSER
-                         SAVE       /ERCOM4/
-                         !                                  SPECIFICATIONS FOR INTRINSICS
-                         !     INTRINSIC  IABS,LEN,MIN0
-                         INTRINSIC  IABS, LEN, MIN0
-                         INTEGER    IABS, LEN, MIN0
-                         !                                  SPECIFICATIONS FOR SUBROUTINES
-                         EXTERNAL   E1INIT, E1INPL
-                         !
-                         DATA IFINIT/0/
-                         !                                  INITIALIZE IF NECESSARY
-                         IF (IFINIT .EQ. 0) THEN
-                             CALL E1INIT
-                             IFINIT = 1
-                         END IF
-                         LEN2 = LEN(STRING)
-                         LEN2 = MIN0(LEN2,255)
-                         DO 10  I=1, LEN2
-                             STRGUP(I) = STRING(I:I)
-10                       CONTINUE
-                         IF (IABS(IL).GE.1 .AND. IABS(IL).LE.9) THEN
-                             CALL E1INPL ('L', IL, LEN2, STRGUP)
-                         END IF
-                         !
-                         RETURN
-                     END
-                     !-----------------------------------------------------------------------
-                     !  IMSL Name:  E1UCS
-                     !
-                     !  Computer:   pcdsms/SINGLE
-                     !
-                     !  Revised:    March 8, 1984
-                     !
-                     !  Purpose:    To update the checksum number for error messages.
-                     !
-                     !  Usage:      CALL E1UCS
-                     !
-                     !  Arguments:  None
-                     !
-                     !  Copyright:  1984 by IMSL, Inc.  All rights reserved.
-                     !
-                     !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                     !              to this code.  No other warranty, expressed or implied,
-                     !              is applicable.
-                     !
-                     !-----------------------------------------------------------------------
-                     !
-                     SUBROUTINE E1UCS
-                         !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-                         INTEGER    I, IBEG, IBEG2, IEND, ILOC, IPOS, JLOC, NCODE, NLEN
-                         DOUBLE PRECISION DNUM
-                         !                                  SPECIFICATIONS FOR SAVE VARIABLES
-                         DOUBLE PRECISION DMAX
-                         CHARACTER  BLANK(1), COMMA(1), EQUAL(1), LPAR(1)
-                         SAVE       BLANK, COMMA, DMAX, EQUAL, LPAR
-                         !                                  SPECIFICATIONS FOR SPECIAL CASES
-                         !                              SPECIFICATIONS FOR COMMON /ERCOM1/
-                         INTEGER    CALLVL, MAXLEV, MSGLEN, ERTYPE(51), ERCODE(51), &
-                             PRINTB(7), STOPTB(7), PLEN, IFERR6, IFERR7, &
-                             IALLOC(51), HDRFMT(7), TRACON(7)
-                         COMMON     /ERCOM1/ CALLVL, MAXLEV, MSGLEN, ERTYPE, ERCODE, &
-                             PRINTB, STOPTB, PLEN, IFERR6, IFERR7, IALLOC, HDRFMT, &
-                             TRACON
-                         SAVE       /ERCOM1/
-                         !                              SPECIFICATIONS FOR COMMON /ERCOM2/
-                         CHARACTER  MSGSAV(255), PLIST(300), RNAME(51)*6
-                         COMMON     /ERCOM2/ MSGSAV, PLIST, RNAME
-                         SAVE       /ERCOM2/
-                         !                              SPECIFICATIONS FOR COMMON /ERCOM3/
-                         DOUBLE PRECISION ERCKSM
-                         COMMON     /ERCOM3/ ERCKSM
-                         SAVE       /ERCOM3/
-                         !                              SPECIFICATIONS FOR COMMON /ERCOM4/
-                         LOGICAL    ISUSER(51)
-                         COMMON     /ERCOM4/ ISUSER
-                         SAVE       /ERCOM4/
-                         !                                  SPECIFICATIONS FOR INTRINSICS
-                         !     INTRINSIC  DMOD
-                         INTRINSIC  DMOD
-                         DOUBLE PRECISION DMOD
-                         !                                  SPECIFICATIONS FOR SUBROUTINES
-                         EXTERNAL   S1ANUM
-                         !                                  SPECIFICATIONS FOR FUNCTIONS
-                         EXTERNAL   ICASE, I1X
-                         INTEGER    ICASE, I1X
-                         !
-                         DATA BLANK(1)/' '/, COMMA(1)/','/, LPAR(1)/'('/
-                         DATA EQUAL(1)/'='/, DMAX/1.0D+9/
-                         !
-                         IF (MSGLEN .GT. 1) THEN
-                             IPOS = 0
-                             IBEG2 = 1
-10                           IBEG = IBEG2
-                             IEND = MSGLEN
-                             !                                  LOOK FOR BLANK, COMMA, LEFT PAREN.,
-                             !                                  OR EQUAL SIGN
-                             ILOC = I1X(MSGSAV(IBEG),IEND-IBEG+1,BLANK,1)
-                             JLOC = I1X(MSGSAV(IBEG),IEND-IBEG+1,COMMA,1)
-                             IF (ILOC.EQ.0 .OR. (JLOC.GT.0.AND.JLOC.LT.ILOC)) ILOC = JLOC
-                             JLOC = I1X(MSGSAV(IBEG),IEND-IBEG+1,LPAR,1)
-                             IF (ILOC.EQ.0 .OR. (JLOC.GT.0.AND.JLOC.LT.ILOC)) ILOC = JLOC
-                             JLOC = I1X(MSGSAV(IBEG),IEND-IBEG+1,EQUAL,1)
-                             IF (ILOC.EQ.0 .OR. (JLOC.GT.0.AND.JLOC.LT.ILOC)) ILOC = JLOC
-                             IF (ILOC .GE. 1) THEN
-                                 CALL S1ANUM (MSGSAV(IBEG+ILOC), IEND-IBEG-ILOC+1, NCODE, &
-                                     NLEN)
-                                 IF (NCODE.EQ.2 .OR. NCODE.EQ.3) THEN
-                                     !                                  FLOATING POINT NUMBER FOUND.
-                                     !                                  SET POINTERS TO SKIP OVER IT
-                                     IBEG2 = IBEG + ILOC + NLEN
-                                     IF (IBEG2 .LE. MSGLEN) THEN
-                                         CALL S1ANUM (MSGSAV(IBEG2), IEND-IBEG2+1, NCODE, &
-                                             NLEN)
-                                         IF ((MSGSAV(IBEG2).EQ.'+'.OR.MSGSAV(IBEG2).EQ. &
-                                             '-') .AND. NCODE.EQ.1) THEN
-                                             !                                  INTEGER IMMEDIATELY FOLLOWS A REAL AS
-                                             !                                  WITH SOME CDC NOS. LIKE 1.2345678+123
-                                             !                                  SET POINTERS TO SKIP OVER IT
-                                             IBEG2 = IBEG2 + NLEN
-                                         END IF
-                                     END IF
-                                 ELSE
-                                     IBEG2 = IBEG + ILOC
-                                 END IF
-                                 IEND = IBEG + ILOC - 1
-                             END IF
-                             !                                  UPDATE CKSUM USING PART OF MESSAGE
-                             DO 20  I=IBEG, IEND
-                                 IPOS = IPOS + 1
-                                 DNUM = ICASE(MSGSAV(I))
-                                 ERCKSM = DMOD(ERCKSM+DNUM*IPOS,DMAX)
-20                           CONTINUE
-                             !                                  GO BACK FOR MORE IF NEEDED
-                             IF (IEND.LT.MSGLEN .AND. IBEG2.LT.MSGLEN) GO TO 10
-                             !                                  UPDATE CKSUM USING ERROR TYPE
-                             DNUM = ERTYPE(CALLVL)
-                             ERCKSM = DMOD(ERCKSM+DNUM*(IPOS+1),DMAX)
-                             !                                  UPDATE CKSUM USING ERROR CODE
-                             DNUM = ERCODE(CALLVL)
-                             ERCKSM = DMOD(ERCKSM+DNUM*(IPOS+2),DMAX)
-                         END IF
-                         !
-                         RETURN
-                     END
-                     !-----------------------------------------------------------------------
-                     !  IMSL Name:  I1CSTR (Single precision version)
-                     !
-                     !  Computer:   pcdsms/SINGLE
-                     !
-                     !  Revised:    September 10, 1985
-                     !
-                     !  Purpose:    Case insensitive comparison of two character arrays.
-                     !
-                     !  Usage:      I1CSTR(STR1, LEN1, STR2, LEN2)
-                     !
-                     !  Arguments:
-                     !     STR1   - First character array.  (Input)
-                     !     LEN1   - Length of STR1.  (Input)
-                     !     STR2   - Second character array.  (Input)
-                     !     LEN2   - Length of STR2.  (Input)
-                     !     I1CSTR - Integer function.  (Output) Where
-                     !              I1CSTR = -1  if STR1 .LT. STR2,
-                     !              I1CSTR =  0  if STR1 .EQ. STR2,
-                     !              I1CSTR =  1  if STR1 .GT. STR2.
-                     !
-                     !  Remarks:
-                     !  1. If the two arrays, STR1 and STR2,  are of unequal length, the
-                     !     shorter array is considered as if it were extended with blanks
-                     !     to the length of the longer array.
-                     !
-                     !  2. If one or both lengths are zero or negative the I1CSTR output is
-                     !     based on comparison of the lengths.
-                     !
-                     !  GAMS:       N5c
-                     !
-                     !  Chapter:    MATH/LIBRARY Utilities
-                     !
-                     !  Copyright:  1985 by IMSL, Inc.  All Rights Reserved.
-                     !
-                     !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                     !              to this code.  No other warranty, expressed or implied,
-                     !              is applicable.
-                     !
-                     !-----------------------------------------------------------------------
-                     !
-                     INTEGER FUNCTION I1CSTR (STR1, LEN1, STR2, LEN2)
-                         !                                  SPECIFICATIONS FOR ARGUMENTS
-                         INTEGER    LEN1, LEN2
-                         CHARACTER  STR1(LEN1), STR2(LEN2)
-                         !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-                         INTEGER    IC1, IC2, ICB, IS, L, LENM
-                         !                                  SPECIFICATIONS FOR INTRINSICS
-                         !     INTRINSIC  ISIGN,MIN0
-                         INTRINSIC  ISIGN, MIN0
-                         INTEGER    ISIGN, MIN0
-                         !                                  SPECIFICATIONS FOR FUNCTIONS
-                         EXTERNAL   ICASE
-                         INTEGER    ICASE
-                         !
-                         IF (LEN1.GT.0 .AND. LEN2.GT.0) THEN
-                             !                                  COMPARE FIRST LENM CHARACTERS
-                             LENM = MIN0(LEN1,LEN2)
-                             DO 10  L=1, LENM
-                                 IC1 = ICASE(STR1(L))
-                                 IC2 = ICASE(STR2(L))
-                                 IF (IC1 .NE. IC2) THEN
-                                     I1CSTR = ISIGN(1,IC1-IC2)
-                                     RETURN
-                                 END IF
-10                           CONTINUE
-                         END IF
-                         !                                  COMPARISON BASED ON LENGTH OR
-                         !                                  TRAILING BLANKS
-                         IS = LEN1 - LEN2
-                         IF (IS .EQ. 0) THEN
-                             I1CSTR = 0
-                         ELSE
-                             IF (LEN1.LE.0 .OR. LEN2.LE.0) THEN
-                                 !                                  COMPARISON BASED ON LENGTH
-                                 I1CSTR = ISIGN(1,IS)
-                             ELSE
-                                 !                                  COMPARISON BASED ON TRAILING BLANKS
-                                 !                                  TO EXTEND SHORTER ARRAY
-                                 LENM = LENM + 1
-                                 ICB = ICASE(' ')
-                                 IF (IS .GT. 0) THEN
-                                     !                                  EXTEND STR2 WITH BLANKS
-                                     DO 20  L=LENM, LEN1
-                                         IC1 = ICASE(STR1(L))
-                                         IF (IC1 .NE. ICB) THEN
-                                             I1CSTR = ISIGN(1,IC1-ICB)
-                                             RETURN
-                                         END IF
-20                                   CONTINUE
-                                 ELSE
-                                     !                                  EXTEND STR1 WITH BLANKS
-                                     DO 30  L=LENM, LEN2
-                                         IC2 = ICASE(STR2(L))
-                                         IF (ICB .NE. IC2) THEN
-                                             I1CSTR = ISIGN(1,ICB-IC2)
-                                             RETURN
-                                         END IF
-30                                   CONTINUE
-                                 END IF
-                                 !
-                                 I1CSTR = 0
-                             END IF
-                         END IF
-                         !
-                         RETURN
-                     END
-                     !-----------------------------------------------------------------------
-                     !  IMSL Name:  I1DX (Single precision version)
-                     !
-                     !  Computer:   pcdsms/SINGLE
-                     !
-                     !  Revised:    September 9, 1985
-                     !
-                     !  Purpose:    Determine the array subscript indicating the starting
-                     !              element at which a key character sequence begins.
-                     !              (Case-insensitive version)
-                     !
-                     !  Usage:      I1DX(CHRSTR, I1LEN, KEY, KLEN)
-                     !
-                     !  Arguments:
-                     !     CHRSTR - Character array to be searched.  (Input)
-                     !     I1LEN  - Length of CHRSTR.  (Input)
-                     !     KEY    - Character array that contains the key sequence.  (Input)
-                     !     KLEN   - Length of KEY.  (Input)
-                     !     I1DX   - Integer function.  (Output)
-                     !
-                     !  Remarks:
-                     !  1. Returns zero when there is no match.
-                     !
-                     !  2. Returns zero if KLEN is longer than ISLEN.
-                     !
-                     !  3. Returns zero when any of the character arrays has a negative or
-                     !     zero length.
-                     !
-                     !  GAMS:       N5c
-                     !
-                     !  Chapter:    MATH/LIBRARY Utilities
-                     !
-                     !  Copyright:  1985 by IMSL, Inc.  All Rights Reserved.
-                     !
-                     !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                     !              to this code.  No other warranty, expressed or implied,
-                     !              is applicable.
-                     !
-                     !-----------------------------------------------------------------------
-                     !
-                     INTEGER FUNCTION I1DX (CHRSTR, I1LEN, KEY, KLEN)
-                         !                                  SPECIFICATIONS FOR ARGUMENTS
-                         INTEGER    I1LEN, KLEN
-                         CHARACTER  CHRSTR(*), KEY(*)
-                         !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-                         INTEGER    I, II, J
-                         !                                  SPECIFICATIONS FOR FUNCTIONS
-                         EXTERNAL   ICASE, I1CSTR
-                         INTEGER    ICASE, I1CSTR
-                         !
-                         I1DX = 0
-                         IF (KLEN.LE.0 .OR. I1LEN.LE.0) GO TO 9000
-                         IF (KLEN .GT. I1LEN) GO TO 9000
-                         !
-                         I = 1
-                         II = I1LEN - KLEN + 1
-10                       IF (I .LE. II) THEN
-                             IF (ICASE(CHRSTR(I)) .EQ. ICASE(KEY(1))) THEN
-                                 IF (KLEN .NE. 1) THEN
-                                     J = KLEN - 1
-                                     IF (I1CSTR(CHRSTR(I+1),J,KEY(2),J) .EQ. 0) THEN
-                                         I1DX = I
-                                         GO TO 9000
-                                     END IF
-                                 ELSE
-                                     I1DX = I
-                                     GO TO 9000
-                                 END IF
-                             END IF
-                             I = I + 1
-                             GO TO 10
-                         END IF
-                         !
-9000                     RETURN
-                     END
-                     !-----------------------------------------------------------------------
-                     !  IMSL Name:  I1ERIF
-                     !
-                     !  Computer:   pcdsms/SINGLE
-                     !
-                     !  Revised:    March 13, 1984
-                     !
-                     !  Purpose:    Return the position of the first element of a given
-                     !              character array which is not an element of another
-                     !              character array.
-                     !
-                     !  Usage:      I1ERIF(STR1, LEN1, STR2, LEN2)
-                     !
-                     !  Arguments:
-                     !     STR1   - Character array to be searched.  (Input)
-                     !     LEN1   - Length of STR1.  (Input)
-                     !     STR2   - Character array to be searched for.  (Input)
-                     !     LEN2   - Length of STR2.  (Input)
-                     !     I1ERIF - Integer function.  (Output)
-                     !
-                     !  Copyright:  1984 by IMSL, Inc.  All rights reserved.
-                     !
-                     !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                     !              to this code.  No other warranty, expressed or implied,
-                     !              is applicable.
-                     !
-                     !-----------------------------------------------------------------------
-                     !
-                     INTEGER FUNCTION I1ERIF (STR1, LEN1, STR2, LEN2)
-                         !                                  SPECIFICATIONS FOR ARGUMENTS
-                         INTEGER    LEN1, LEN2
-                         CHARACTER  STR1(*), STR2(*)
-                         !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-                         INTEGER    I
-                         !                                  SPECIFICATIONS FOR FUNCTIONS
-                         EXTERNAL   I1X
-                         INTEGER    I1X
-                         !                              FIRST EXECUTABLE STATEMENT
-                         IF (LEN1.LE.0 .OR. LEN2.LE.0) THEN
-                             I1ERIF = 1
-                         ELSE
-                             DO 10  I=1, LEN1
-                                 IF (I1X(STR2,LEN2,STR1(I),1) .EQ. 0) THEN
-                                     I1ERIF = I
-                                     RETURN
-                                 END IF
-10                           CONTINUE
-                             I1ERIF = 0
-                         END IF
-                         !
-                         RETURN
-                     END
-                     !-----------------------------------------------------------------------
-                     !  IMSL Name:  I1KGT
-                     !
-                     !  Computer:   pcdsms/SINGLE
-                     !
-                     !  Revised:    January 17, 1984
-                     !
-                     !  Purpose:    Allocate numerical workspace.
-                     !
-                     !  Usage:      I1KGT(NELMTS,ITYPE)
-                     !
-                     !  Arguments:
-                     !     NELMTS - Number of elements of data type ITYPE to be
-                     !              allocated.  (Input)
-                     !     ITYPE  - Data type of array to be allocated.  (Input)
-                     !                 1 - logical
-                     !                 2 - integer
-                     !                 3 - real
-                     !                 4 - double precision
-                     !                 5 - complex
-                     !                 6 - double complex
-                     !     I1KGT  - Integer function.  (Output)  Returns the index of the
-                     !              first element in the current allocation.
-                     !
-                     !  Remarks:
-                     !  1. On return, the array will occupy
-                     !     WKSP(I1KGT), WKSP(I1KGT+1), ..., WKSP(I1KGT+NELMTS-1) where
-                     !     WKSP is an array of data type ITYPE equivalenced to RWKSP.
-                     !
-                     !  2. If I1KGT is negative, the absolute value of I1KGT is the
-                     !     additional workspace needed for the current allocation.
-                     !
-                     !  3. The allocator reserves the first sixteen integer locations of
-                     !     the stack for its own internal bookkeeping.  These are initialized
-                     !     by the function IWKIN upon the first call to the allocation
-                     !     package.
-                     !
-                     !  4. The use of the first ten integer locations is as follows:
-                     !      WKSP( 1) - LOUT    The number of current allocations
-                     !      WKSP( 2) - LNOW    The current active length of the stack
-                     !      WKSP( 3) - LUSED   The maximum value of WKSP(2) achieved
-                     !                         thus far
-                     !      WKSP( 4) - LBND    The lower bound of permanent storage which
-                     !                         is one numeric storage unit more than the
-                     !                         maximum allowed length of the stack.
-                     !      WKSP( 5) - LMAX    The maximum length of the storage array
-                     !      WKSP( 6) - LALC    The total number of allocations handled by
-                     !                         I1KGT
-                     !      WKSP( 7) - LNEED   The number of numeric storage units by which
-                     !                         the array size must be increased for all past
-                     !                         allocations to succeed
-                     !      WKSP( 8) - LBOOK   The number of numeric storage units used for
-                     !                         bookkeeping
-                     !      WKSP( 9) - LCHAR   The pointer to the portion of the permanent
-                     !                         stack which contains the bookkeeping and
-                     !                         pointers for the character workspace
-                     !                         allocation.
-                     !      WKSP(10) - LLCHAR  The length of the array beginning at LCHAR
-                     !                         set aside for character workspace bookkeeping
-                     !                         and pointers.
-                     !                 NOTE -  If character workspace is not being used,
-                     !                         LCHAR and LLCHAR can be ignored.
-                     !  5. The next six integer locations contain values describing the
-                     !     amount of storage allocated by the allocation system to the
-                     !     various data types.
-                     !      WKSP(11) - Numeric storage units allocated to LOGICAL
-                     !      WKSP(12) - Numeric storage units allocated to INTEGER
-                     !      WKSP(13) - Numeric storage units allocated to REAL
-                     !      WKSP(14) - Numeric storage units allocated to DOUBLE PRECISION
-                     !      WKSP(15) - Numeric storage units allocated to COMPLEX
-                     !      WKSP(16) - Numeric storage units allocated to DOUBLE COMPLEX
-                     !
-                     !  Copyright:  1984 by IMSL, Inc. All Rights Reserved.
-                     !
-                     !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                     !              to this code.  No other warranty, expressed or implied,
-                     !              is applicable.
-                     !
-                     !-----------------------------------------------------------------------
-                     !
-                     INTEGER FUNCTION I1KGT (NELMTS, ITYPE)
-                         !                                  SPECIFICATIONS FOR ARGUMENTS
-                         INTEGER    NELMTS, ITYPE
-                         !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-                         INTEGER    I, IDUMAL, IGAP, ILEFT, IPA, IPA7, ISA, ISA7, &
-                             ISIZE(6), JTYPE, LALC, LBND, LBOOK, LMAX, LNEED, &
-                             LNEED1, LNOW, LOUT, LUSED
-                         !                                  SPECIFICATIONS FOR SAVE VARIABLES
-                         LOGICAL    FIRST
-                         SAVE       FIRST
-                         !                                  SPECIFICATIONS FOR SPECIAL CASES
-                         !                              SPECIFICATIONS FOR COMMON /ERCOM8/
-                         INTEGER    PROLVL, XXLINE(10), XXPLEN(10), ICALOC(10), INALOC(10)
-                         COMMON     /ERCOM8/ PROLVL, XXLINE, XXPLEN, ICALOC, INALOC
-                         SAVE       /ERCOM8/
-                         !                              SPECIFICATIONS FOR COMMON /ERCOM9/
-                         CHARACTER  XXPROC(10)*31
-                         COMMON     /ERCOM9/ XXPROC
-                         SAVE       /ERCOM9/
-                         !                                  SPECIFICATIONS FOR COMMON /WORKSP/
-                         REAL       RWKSP(5000)
-                         REAL       RDWKSP(5000)
-                         DOUBLE PRECISION DWKSP(2500)
-                         COMPLEX    CWKSP(2500)
-                         COMPLEX    CZWKSP(2500)
-                         COMPLEX    *16 ZWKSP(1250)
-                         INTEGER    IWKSP(5000)
-                         LOGICAL    LWKSP(5000)
-                         EQUIVALENCE (DWKSP(1), RWKSP(1))
-                         EQUIVALENCE (CWKSP(1), RWKSP(1)), (ZWKSP(1), RWKSP(1))
-                         EQUIVALENCE (IWKSP(1), RWKSP(1)), (LWKSP(1), RWKSP(1))
-                         EQUIVALENCE (RDWKSP(1), RWKSP(1)), (CZWKSP(1), RWKSP(1))
-                         COMMON     /WORKSP/ RWKSP
-                         !                                  SPECIFICATIONS FOR EQUIVALENCE
-                         EQUIVALENCE (LOUT, IWKSP(1))
-                         EQUIVALENCE (LNOW, IWKSP(2))
-                         EQUIVALENCE (LUSED, IWKSP(3))
-                         EQUIVALENCE (LBND, IWKSP(4))
-                         EQUIVALENCE (LMAX, IWKSP(5))
-                         EQUIVALENCE (LALC, IWKSP(6))
-                         EQUIVALENCE (LNEED, IWKSP(7))
-                         EQUIVALENCE (LBOOK, IWKSP(8))
-                         EQUIVALENCE (ISIZE(1), IWKSP(11))
-                         !                                  SPECIFICATIONS FOR INTRINSICS
-                         !     INTRINSIC  IABS,MAX0,MOD
-                         INTRINSIC  IABS, MAX0, MOD
-                         INTEGER    IABS, MAX0, MOD
-                         !                                  SPECIFICATIONS FOR SUBROUTINES
-                         EXTERNAL   E1MES, E1POP, E1POS, E1PSH, E1STI, IWKIN
-                         !                                  SPECIFICATIONS FOR FUNCTIONS
-                         EXTERNAL   I1KQU
-                         INTEGER    I1KQU
-                         !
-                         DATA FIRST/.TRUE./
-                         !
-                         CALL E1PSH ('I1KGT ')
-                         !
-                         IF (FIRST) THEN
-                             !                                  INITIALIZE WORKSPACE IF NEEDED
-                             FIRST = .FALSE.
-                             CALL IWKIN (0)
-                         END IF
-                         !                                  NUMBER OF ELEMENTS LESS THAN 0
-                         IF (NELMTS .LT. 0) THEN
-                             CALL E1STI (1, NELMTS)
-                             CALL E1MES (5, 2, 'Number of elements is not positive.%/'// &
-                                 'NELMTS = %(I1).')
-                             CALL E1POP ('I1KGT ')
-                             GO TO 9000
-                         END IF
-                         !                                  ILLEGAL DATA TYPE REQUESTED
-                         IF (ITYPE.EQ.0 .OR. IABS(ITYPE).GE.7) THEN
-                             CALL E1MES (5, 3, 'Illegal data type requested.')
-                             CALL E1POP ('I1KGT ')
-                             GO TO 9000
-                         END IF
-                         !                                  BOOKKEEPING OVERWRITTEN
-                         IF (LNOW.LT.LBOOK .OR. LNOW.GT.LUSED .OR. LUSED.GT.LMAX .OR. &
-                             LNOW.GE.LBND .OR. LOUT.GT.LALC) THEN
-                             CALL E1MES (5, 4, 'One or more of the first eight '// &
-                                 'bookkeeping locations in IWKSP have been '// &
-                                 'overwritten.')
-                             CALL E1POP ('I1KGT ')
-                             GO TO 9000
-                         END IF
-                         !
-                         CALL E1POP ('I1KGT ')
-                         !                                  DETERMINE NUMBER OF LOCATIONS STILL
-                         !                                  AVAILABLE FOR DATA TYPE ITYPE
-                         !                                  NOTE: I1KQU ALLOWS FOR 2 INTEGER
-                         !                                        POINTERS WHICH MUST BE HANDLED
-                         !                                        ARTIFICIALLY IF ILEFT = 0.
-                         ILEFT = I1KQU(IABS(ITYPE))
-                         !
-                         IF (ITYPE .GT. 0) THEN
-                             !                                  RELEASABLE STORAGE
-                             IF (ILEFT .GE. NELMTS) THEN
-                                 I1KGT = (LNOW*ISIZE(2)-1)/ISIZE(ITYPE) + 2
-                                 I = ((I1KGT-1+NELMTS)*ISIZE(ITYPE)-1)/ISIZE(2) + 3
-                                 !                                  IWKSP(I-1) CONTAINS THE DATA TYPE FOR
-                                 !                                  THIS ALLOCATION. IWKSP(I) CONTAINS
-                                 !                                  LNOW FOR THE PREVIOUS ALLOCATION.
-                                 IWKSP(I-1) = ITYPE
-                                 IWKSP(I) = LNOW
-                                 LOUT = LOUT + 1
-                                 LALC = LALC + 1
-                                 LNOW = I
-                                 LUSED = MAX0(LUSED,LNOW)
-                                 LNEED = 0
-                             ELSE
-                                 !                                  RELEASABLE STORAGE WAS REQUESTED
-                                 !                                  BUT THE STACK WOULD OVERFLOW.
-                                 !                                  THEREFORE, ALLOCATE RELEASABLE
-                                 !                                  SPACE THROUGH THE END OF THE STACK
-                                 IF (LNEED .EQ. 0) THEN
-                                     IDUMAL = (LNOW*ISIZE(2)-1)/ISIZE(ITYPE) + 2
-                                     I = ((IDUMAL-1+ILEFT)*ISIZE(ITYPE)-1)/ISIZE(2) + 3
-                                     !                                  ADVANCE COUNTERS AND STORE POINTERS
-                                     !                                  IF THERE IS ROOM TO DO SO
-                                     IF (I .LT. LBND) THEN
-                                         !                                  IWKSP(I-1) CONTAINS THE DATA TYPE FOR
-                                         !                                  THIS ALLOCATION. IWKSP(I) CONTAINS
-                                         !                                  LNOW FOR THE PREVIOUS ALLOCATION.
-                                         IWKSP(I-1) = ITYPE
-                                         IWKSP(I) = LNOW
-                                         LOUT = LOUT + 1
-                                         LALC = LALC + 1
-                                         LNOW = I
-                                         LUSED = MAX0(LUSED,LNOW)
-                                     END IF
-                                 END IF
-                                 !                                  CALCULATE AMOUNT NEEDED TO ACCOMODATE
-                                 !                                  THIS ALLOCATION REQUEST
-                                 LNEED1 = (NELMTS-ILEFT)*ISIZE(ITYPE)
-                                 IF (ILEFT .EQ. 0) THEN
-                                     IGAP = ISIZE(ITYPE) - MOD(LNOW+LNEED,ISIZE(ITYPE))
-                                     IF (IGAP .EQ. ISIZE(ITYPE)) IGAP = 0
-                                     LNEED1 = LNEED1 + 2*ISIZE(2) + IGAP
-                                 END IF
-                                 !                                  MODIFY LNEED ACCORDING TO THE SIZE
-                                 !                                  OF THE BASE BEING USED (D.P. HERE)
-                                 LNEED = LNEED + ((LNEED1+ISIZE(3)-1)/ISIZE(3))
-                                 !                                  SINCE CURRENT ALLOCATION IS ILLEGAL,
-                                 !                                  RETURN THE NEGATIVE OF THE ADDITIONAL
-                                 !                                  AMOUNT NEEDED TO MAKE IT LEGAL
-                                 I1KGT = -LNEED
-                             END IF
-                         ELSE
-                             !                                  PERMANENT STORAGE
-                             IF (ILEFT .GE. NELMTS) THEN
-                                 JTYPE = -ITYPE
-                                 I1KGT = (LBND*ISIZE(2)-1)/ISIZE(JTYPE) + 1 - NELMTS
-                                 I = ((I1KGT-1)*ISIZE(JTYPE))/ISIZE(2) - 1
-                                 !                                  IWKSP(I) CONTAINS LBND FOR PREVIOUS
-                                 !                                  PERMANENT STORAGE ALLOCATION.
-                                 !                                  IWKSP(I+1) CONTAINS THE DATA TYPE FOR
-                                 !                                  THIS ALLOCATION.
-                                 IWKSP(I) = LBND
-                                 IWKSP(I+1) = JTYPE
-                                 LALC = LALC + 1
-                                 LBND = I
-                                 LNEED = 0
-                             ELSE
-                                 !                                  PERMANENT STORAGE WAS REQUESTED
-                                 !                                  BUT THE STACK WOULD OVERFLOW,
-                                 !                                  THEREFORE, ALLOCATE RELEASABLE
-                                 !                                  SPACE THROUGH THE END OF THE STACK
-                                 IF (LNEED .EQ. 0) THEN
-                                     JTYPE = -ITYPE
-                                     IDUMAL = (LNOW*ISIZE(2)-1)/ISIZE(JTYPE) + 2
-                                     I = ((IDUMAL-1+ILEFT)*ISIZE(JTYPE)-1)/ISIZE(2) + 3
-                                     !                                  ADVANCE COUNTERS AND STORE POINTERS
-                                     !                                  IF THERE IS ROOM TO DO SO
-                                     IF (I .LT. LBND) THEN
-                                         !                                  IWKSP(I-1) CONTAINS THE DATA TYPE FOR
-                                         !                                  THIS ALLOCATION. IWKSP(I) CONTAINS
-                                         !                                  LNOW FOR THE PREVIOUS ALLOCATION.
-                                         IWKSP(I-1) = JTYPE
-                                         IWKSP(I) = LNOW
-                                         LOUT = LOUT + 1
-                                         LALC = LALC + 1
-                                         LNOW = I
-                                         LUSED = MAX0(LUSED,LNOW)
-                                     END IF
-                                 END IF
-                                 !                                  CALCULATE AMOUNT NEEDED TO ACCOMODATE
-                                 !                                  THIS ALLOCATION REQUEST
-                                 LNEED1 = (NELMTS-ILEFT)*ISIZE(-ITYPE)
-                                 IF (ILEFT .EQ. 0) THEN
-                                     IGAP = ISIZE(-ITYPE) - MOD(LNOW+LNEED,ISIZE(-ITYPE))
-                                     IF (IGAP .EQ. ISIZE(-ITYPE)) IGAP = 0
-                                     LNEED1 = LNEED1 + 2*ISIZE(2) + IGAP
-                                 END IF
-                                 !                                  MODIFY LNEED ACCORDING TO THE SIZE
-                                 !                                  OF THE BASE BEING USED (D.P. HERE)
-                                 LNEED = LNEED + ((LNEED1+ISIZE(3)-1)/ISIZE(3))
-                                 !                                  SINCE CURRENT ALLOCATION IS ILLEGAL,
-                                 !                                  RETURN THE NEGATIVE OF THE ADDITIONAL
-                                 !                                  AMOUNT NEEDED TO MAKE IT LEGAL
-                                 I1KGT = -LNEED
-                             END IF
-                         END IF
-                         !                                  STACK OVERFLOW - UNRECOVERABLE ERROR
-9000                     IF (LNEED .GT. 0) THEN
-                             CALL E1POS (-5, IPA, ISA)
-                             CALL E1POS (5, 0, 0)
-                             CALL E1POS (-7, IPA7, ISA7)
-                             CALL E1POS (7, 0, 0)
-                             CALL E1PSH ('I1KGT ')
-                             CALL E1STI (1, LNEED+(LMAX/ISIZE(3)))
-                             IF (XXLINE(PROLVL).GE.1 .AND. XXLINE(PROLVL).LE.999) THEN
-                                 CALL E1MES (7, 1, 'Insufficient workspace for current '// &
-                                     'allocation(s).  Correct by inserting the '// &
-                                     'following PROTRAN line: $OPTIONS;WORKSPACE=%'// &
-                                     '(I1)')
-                             ELSE
-                                 CALL E1MES (5, 5, 'Insufficient workspace for current '// &
-                                     'allocation(s). Correct by calling IWKIN '// &
-                                     'from main program with the three following '// &
-                                     'statements:  (REGARDLESS OF PRECISION)%/'// &
-                                     '      COMMON /WORKSP/  RWKSP%/      REAL '// &
-                                     'RWKSP(%(I1))%/      CALL IWKIN(%(I1))')
-                             END IF
-                             CALL E1POP ('I1KGT ')
-                             CALL E1POS (5, IPA, ISA)
-                             CALL E1POS (7, IPA7, ISA7)
-                         END IF
-                         !
-                         RETURN
-                     END
-                     !-----------------------------------------------------------------------
-                     !  IMSL Name:  I1KQU
-                     !
-                     !  Computer:   pcdsms/SINGLE
-                     !
-                     !  Revised:    January 17, 1984
-                     !
-                     !  Purpose:    Return number of elements of data type ITYPE that
-                     !              remain to be allocated in one request.
-                     !
-                     !  Usage:      I1KQU(ITYPE)
-                     !
-                     !  Arguments:
-                     !     ITYPE  - Type of storage to be checked (Input)
-                     !                 1 - logical
-                     !                 2 - integer
-                     !                 3 - real
-                     !                 4 - double precision
-                     !                 5 - complex
-                     !                 6 - double complex
-                     !     I1KQU  - Integer function. (Output) Returns number of elements
-                     !              of data type ITYPE remaining in the stack.
-                     !
-                     !  Copyright:  1983 by IMSL, Inc.  All Rights Reserved
-                     !
-                     !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                     !              to this code.  No other warranty, expressed or implied,
-                     !              is applicable.
-                     !
-                     !-----------------------------------------------------------------------
-                     !
-                     INTEGER FUNCTION I1KQU (ITYPE)
-                         !                                  SPECIFICATIONS FOR ARGUMENTS
-                         INTEGER    ITYPE
-                         !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-                         INTEGER    ISIZE(6), LALC, LBND, LBOOK, LMAX, LNEED, LNOW, LOUT, &
-                             LUSED
-                         !                                  SPECIFICATIONS FOR SAVE VARIABLES
-                         LOGICAL    FIRST
-                         SAVE       FIRST
-                         !                                  SPECIFICATIONS FOR SPECIAL CASES
-                         !                                  SPECIFICATIONS FOR COMMON /WORKSP/
-                         REAL       RWKSP(5000)
-                         REAL       RDWKSP(5000)
-                         DOUBLE PRECISION DWKSP(2500)
-                         COMPLEX    CWKSP(2500)
-                         COMPLEX    CZWKSP(2500)
-                         COMPLEX    *16 ZWKSP(1250)
-                         INTEGER    IWKSP(5000)
-                         LOGICAL    LWKSP(5000)
-                         EQUIVALENCE (DWKSP(1), RWKSP(1))
-                         EQUIVALENCE (CWKSP(1), RWKSP(1)), (ZWKSP(1), RWKSP(1))
-                         EQUIVALENCE (IWKSP(1), RWKSP(1)), (LWKSP(1), RWKSP(1))
-                         EQUIVALENCE (RDWKSP(1), RWKSP(1)), (CZWKSP(1), RWKSP(1))
-                         COMMON     /WORKSP/ RWKSP
-                         !                                  SPECIFICATIONS FOR EQUIVALENCE
-                         EQUIVALENCE (LOUT, IWKSP(1))
-                         EQUIVALENCE (LNOW, IWKSP(2))
-                         EQUIVALENCE (LUSED, IWKSP(3))
-                         EQUIVALENCE (LBND, IWKSP(4))
-                         EQUIVALENCE (LMAX, IWKSP(5))
-                         EQUIVALENCE (LALC, IWKSP(6))
-                         EQUIVALENCE (LNEED, IWKSP(7))
-                         EQUIVALENCE (LBOOK, IWKSP(8))
-                         EQUIVALENCE (ISIZE(1), IWKSP(11))
-                         !                                  SPECIFICATIONS FOR INTRINSICS
-                         !     INTRINSIC  MAX0
-                         INTRINSIC  MAX0
-                         INTEGER    MAX0
-                         !                                  SPECIFICATIONS FOR SUBROUTINES
-                         EXTERNAL   E1MES, E1POP, E1PSH, IWKIN
-                         !
-                         DATA FIRST/.TRUE./
-                         !
-                         CALL E1PSH ('I1KQU ')
-                         !
-                         IF (FIRST) THEN
-                             !                                  INITIALIZE WORKSPACE IF NEEDED
-                             FIRST = .FALSE.
-                             CALL IWKIN (0)
-                         END IF
-                         !                                  BOOKKEEPING OVERWRITTEN
-                         IF (LNOW.LT.LBOOK .OR. LNOW.GT.LUSED .OR. LUSED.GT.LMAX .OR. &
-                             LNOW.GE.LBND .OR. LOUT.GT.LALC) THEN
-                             CALL E1MES (5, 7, 'One or more of the first eight '// &
-                                 'bookkeeping locations in IWKSP have been '// &
-                                 'overwritten.')
-                         ELSE IF (ITYPE.LE.0 .OR. ITYPE.GE.7) THEN
-                             !                                  ILLEGAL DATA TYPE REQUESTED
-                             CALL E1MES (5, 8, 'Illegal data type requested.')
-                         ELSE
-                             !                                  THIS CALCULATION ALLOWS FOR THE
-                             !                                  TWO POINTER LOCATIONS IN THE STACK
-                             !                                  WHICH ARE ASSIGNED TO EACH ALLOCATION
-                             I1KQU = MAX0(((LBND-3)*ISIZE(2))/ISIZE(ITYPE)-(LNOW*ISIZE(2)- &
-                                 1)/ISIZE(ITYPE)-1,0)
-                         END IF
-                         !
-                         CALL E1POP ('I1KQU ')
-                         RETURN
-                     END
-                     !-----------------------------------------------------------------------
-                     !  IMSL Name:  I1KRL
-                     !
-                     !  Computer:   pcdsms/SINGLE
-                     !
-                     !  Revised:    August 9, 1983
-                     !
-                     !  Purpose:    Deallocate the last N allocations made in the workspace.
-                     !              stack by I1KGT
-                     !
-                     !  Usage:      CALL I1KRL(N)
-                     !
-                     !  Arguments:
-                     !     N      - Number of allocations to be released top down (Input)
-                     !
-                     !  Copyright:  1983 by IMSL, Inc.  All Rights Reserved
-                     !
-                     !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                     !              to this code.  No other warranty, expressed or implied,
-                     !              is applicable.
-                     !
-                     !-----------------------------------------------------------------------
-                     !
-                     SUBROUTINE I1KRL (N)
-                         !                                  SPECIFICATIONS FOR ARGUMENTS
-                         INTEGER    N
-                         !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-                         INTEGER    I, IN, LALC, LBND, LBOOK, LMAX, LNEED, LNOW, LOUT, &
-                             LUSED, NDX, NEXT
-                         !                                  SPECIFICATIONS FOR SAVE VARIABLES
-                         LOGICAL    FIRST
-                         SAVE       FIRST
-                         !                                  SPECIFICATIONS FOR SPECIAL CASES
-                         !                                  SPECIFICATIONS FOR COMMON /WORKSP/
-                         REAL       RWKSP(5000)
-                         REAL       RDWKSP(5000)
-                         DOUBLE PRECISION DWKSP(2500)
-                         COMPLEX    CWKSP(2500)
-                         COMPLEX    CZWKSP(2500)
-                         COMPLEX    *16 ZWKSP(1250)
-                         INTEGER    IWKSP(5000)
-                         LOGICAL    LWKSP(5000)
-                         EQUIVALENCE (DWKSP(1), RWKSP(1))
-                         EQUIVALENCE (CWKSP(1), RWKSP(1)), (ZWKSP(1), RWKSP(1))
-                         EQUIVALENCE (IWKSP(1), RWKSP(1)), (LWKSP(1), RWKSP(1))
-                         EQUIVALENCE (RDWKSP(1), RWKSP(1)), (CZWKSP(1), RWKSP(1))
-                         COMMON     /WORKSP/ RWKSP
-                         !                                  SPECIFICATIONS FOR EQUIVALENCE
-                         EQUIVALENCE (LOUT, IWKSP(1))
-                         EQUIVALENCE (LNOW, IWKSP(2))
-                         EQUIVALENCE (LUSED, IWKSP(3))
-                         EQUIVALENCE (LBND, IWKSP(4))
-                         EQUIVALENCE (LMAX, IWKSP(5))
-                         EQUIVALENCE (LALC, IWKSP(6))
-                         EQUIVALENCE (LNEED, IWKSP(7))
-                         EQUIVALENCE (LBOOK, IWKSP(8))
-                         !                                  SPECIFICATIONS FOR SUBROUTINES
-                         EXTERNAL   E1MES, E1STI, IWKIN
-                         !
-                         DATA FIRST/.TRUE./
-                         !
-                         IF (FIRST) THEN
-                             !                                  INITIALIZE WORKSPACE IF NEEDED
-                             FIRST = .FALSE.
-                             CALL IWKIN (0)
-                         END IF
-                         !                                  CALLING I1KRL(0) WILL CONFIRM
-                         !                                  INTEGRITY OF SYSTEM AND RETURN
-                         IF (N .LT. 0) THEN
-                             CALL E1MES (5, 10, 'Error from subroutine I1KRL:  Attempt'// &
-                                 ' to release a negative number of workspace'// &
-                                 ' allocations. ')
-                             GO TO 9000
-                         END IF
-                         !                                  BOOKKEEPING OVERWRITTEN
-                         IF (LNOW.LT.LBOOK .OR. LNOW.GT.LUSED .OR. LUSED.GT.LMAX .OR. &
-                             LNOW.GE.LBND .OR. LOUT.GT.LALC) THEN
-                             CALL E1MES (5, 11, 'Error from subroutine I1KRL:  One or '// &
-                                 'more of the first eight bookkeeping locations '// &
-                                 'in IWKSP have been overwritten.  ')
-                             GO TO 9000
-                         END IF
-                         !                                  CHECK ALL THE POINTERS IN THE
-                         !                                  PERMANENT STORAGE AREA.  THEY MUST
-                         !                                  BE MONOTONE INCREASING AND LESS THAN
-                         !                                  OR EQUAL TO LMAX, AND THE INDEX OF
-                         !                                  THE LAST POINTER MUST BE LMAX+1.
-                         NDX = LBND
-                         IF (NDX .NE. LMAX+1) THEN
-                             DO 10  I=1, LALC
-                                 NEXT = IWKSP(NDX)
-                                 IF (NEXT .EQ. LMAX+1) GO TO 20
-                                 !
-                                 IF (NEXT.LE.NDX .OR. NEXT.GT.LMAX) THEN
-                                     CALL E1MES (5, 12, 'Error from subroutine I1KRL:  '// &
-                                         'A pointer in permanent storage has been '// &
-                                         ' overwritten. ')
-                                     GO TO 9000
-                                 END IF
-                                 NDX = NEXT
-10                           CONTINUE
-                             CALL E1MES (5, 13, 'Error from subroutine I1KRL:  A '// &
-                                 'pointer in permanent storage has been '// &
-                                 'overwritten. ')
-                             GO TO 9000
-                         END IF
-20                       IF (N .GT. 0) THEN
-                             DO 30  IN=1, N
-                                 IF (LNOW .LE. LBOOK) THEN
-                                     CALL E1MES (5, 14, 'Error from subroutine I1KRL:  '// &
-                                         'Attempt to release a nonexistant '// &
-                                         'workspace  allocation. ')
-                                     GO TO 9000
-                                 ELSE IF (IWKSP(LNOW).LT.LBOOK .OR. IWKSP(LNOW).GE.LNOW-1) &
-                                     THEN
-                                     !                                  CHECK TO MAKE SURE THE BACK POINTERS
-                                     !                                  ARE MONOTONE.
-                                     CALL E1STI (1, LNOW)
-                                     CALL E1MES (5, 15, 'Error from subroutine I1KRL:  '// &
-                                         'The pointer at IWKSP(%(I1)) has been '// &
-                                         'overwritten.  ')
-                                     GO TO 9000
-                                 ELSE
-                                     LOUT = LOUT - 1
-                                     LNOW = IWKSP(LNOW)
-                                 END IF
-30                           CONTINUE
-                         END IF
-                         !
-9000                     RETURN
-                     END
-                     !-----------------------------------------------------------------------
-                     !  IMSL Name:  I1KST
-                     !
-                     !  Computer:   pcdsms/SINGLE
-                     !
-                     !  Revised:    August 9, 1983
-                     !
-                     !  Purpose:    Return control information about the workspace stack.
-                     !
-                     !  Usage:      I1KST(NFACT)
-                     !
-                     !  Arguments:
-                     !     NFACT  - Integer value between 1 and 6 inclusive returns the
-                     !                 following information: (Input)
-                     !                   NFACT = 1 - LOUT: number of current allocations
-                     !                               excluding permanent storage. At the
-                     !                               end of a run, there should be no
-                     !                               active allocations.
-                     !                   NFACT = 2 - LNOW: current active length
-                     !                   NFACT = 3 - LTOTAL: total storage used thus far
-                     !                   NFACT = 4 - LMAX: maximum storage allowed
-                     !                   NFACT = 5 - LALC: total number of allocations made
-                     !                               by I1KGT thus far
-                     !                   NFACT = 6 - LNEED: number of numeric storage units
-                     !                               by which the stack size must be
-                     !                               increased for all past allocations
-                     !                               to succeed
-                     !     I1KST  - Integer function. (Output) Returns a workspace stack
-                     !              statistic according to value of NFACT.
-                     !
-                     !  Copyright:  1983 by IMSL, Inc.  All Rights Reserved
-                     !
-                     !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                     !              to this code.  No other warranty, expressed or implied,
-                     !              is applicable.
-                     !
-                     !-----------------------------------------------------------------------
-                     !
-                     INTEGER FUNCTION I1KST (NFACT)
-                         !                                  SPECIFICATIONS FOR ARGUMENTS
-                         INTEGER    NFACT
-                         !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-                         INTEGER    ISTATS(7)
-                         !                                  SPECIFICATIONS FOR SAVE VARIABLES
-                         LOGICAL    FIRST
-                         SAVE       FIRST
-                         !                                  SPECIFICATIONS FOR SPECIAL CASES
-                         !                                  SPECIFICATIONS FOR COMMON /WORKSP/
-                         REAL       RWKSP(5000)
-                         REAL       RDWKSP(5000)
-                         DOUBLE PRECISION DWKSP(2500)
-                         COMPLEX    CWKSP(2500)
-                         COMPLEX    CZWKSP(2500)
-                         COMPLEX    *16 ZWKSP(1250)
-                         INTEGER    IWKSP(5000)
-                         LOGICAL    LWKSP(5000)
-                         EQUIVALENCE (DWKSP(1), RWKSP(1))
-                         EQUIVALENCE (CWKSP(1), RWKSP(1)), (ZWKSP(1), RWKSP(1))
-                         EQUIVALENCE (IWKSP(1), RWKSP(1)), (LWKSP(1), RWKSP(1))
-                         EQUIVALENCE (RDWKSP(1), RWKSP(1)), (CZWKSP(1), RWKSP(1))
-                         COMMON     /WORKSP/ RWKSP
-                         !                                  SPECIFICATIONS FOR EQUIVALENCE
-                         EQUIVALENCE (ISTATS(1), IWKSP(1))
-                         !                                  SPECIFICATIONS FOR SUBROUTINES
-                         EXTERNAL   E1MES, IWKIN
-                         !
-                         DATA FIRST/.TRUE./
-                         !
-                         IF (FIRST) THEN
-                             !                                  INITIALIZE WORKSPACE IF NEEDED
-                             FIRST = .FALSE.
-                             CALL IWKIN (0)
-                         END IF
-                         !
-                         IF (NFACT.LE.0 .OR. NFACT.GE.7) THEN
-                             CALL E1MES (5, 9, 'Error from subroutine I1KST:  Argument'// &
-                                 ' for I1KST must be between 1 and 6 inclusive.')
-                         ELSE IF (NFACT .EQ. 1) THEN
-                             !                                  LOUT
-                             I1KST = ISTATS(1)
-                         ELSE IF (NFACT .EQ. 2) THEN
-                             !                                  LNOW + PERMANENT
-                             I1KST = ISTATS(2) + (ISTATS(5)-ISTATS(4)+1)
-                         ELSE IF (NFACT .EQ. 3) THEN
-                             !                                  LUSED + PERMANENT
-                             I1KST = ISTATS(3) + (ISTATS(5)-ISTATS(4)+1)
-                         ELSE IF (NFACT .EQ. 4) THEN
-                             !                                  LMAX
-                             I1KST = ISTATS(5)
-                         ELSE IF (NFACT .EQ. 5) THEN
-                             !                                  LALC
-                             I1KST = ISTATS(6)
-                         ELSE IF (NFACT .EQ. 6) THEN
-                             !                                  LNEED
-                             I1KST = ISTATS(7)
-                         END IF
-                         !
-                         RETURN
-                     END
-                     !-----------------------------------------------------------------------
-                     !  IMSL Name:  I1X (Single precision version)
-                     !
-                     !  Computer:   pcdsms/SINGLE
-                     !
-                     !  Revised:    August 30, 1985
-                     !
-                     !  Purpose:    Determine the array subscript indicating the starting
-                     !              element at which a key character sequence begins.
-                     !              (Case-sensitive version)
-                     !
-                     !  Usage:      I1X(CHRSTR, I1LEN, KEY, KLEN)
-                     !
-                     !  Arguments:
-                     !     CHRSTR - Character array to be searched.  (Input)
-                     !     I1LEN  - Length of CHRSTR.  (Input)
-                     !     KEY    - Character array that contains the key sequence.  (Input)
-                     !     KLEN   - Length of KEY.  (Input)
-                     !     I1X    - Integer function.  (Output)
-                     !
-                     !  Remarks:
-                     !  1. Returns zero when there is no match.
-                     !
-                     !  2. Returns zero if KLEN is longer than ISLEN.
-                     !
-                     !  3. Returns zero when any of the character arrays has a negative or
-                     !     zero length.
-                     !
-                     !  GAMS:       N5c
-                     !
-                     !  Chapter:    MATH/LIBRARY Utilities
-                     !
-                     !  Copyright:  1985 by IMSL, Inc.  All Rights Reserved.
-                     !
-                     !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                     !              to this code.  No other warranty, expressed or implied,
-                     !              is applicable.
-                     !
-                     !-----------------------------------------------------------------------
-                     !
-                     INTEGER FUNCTION I1X (CHRSTR, I1LEN, KEY, KLEN)
-                         !                                  SPECIFICATIONS FOR ARGUMENTS
-                         INTEGER    I1LEN, KLEN
-                         CHARACTER  CHRSTR(*), KEY(*)
-                         !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-                         INTEGER    I, II, J
-                         !
-                         I1X = 0
-                         IF (KLEN.LE.0 .OR. I1LEN.LE.0) GO TO 9000
-                         IF (KLEN .GT. I1LEN) GO TO 9000
-                         !
-                         I = 1
-                         II = I1LEN - KLEN + 1
-10                       IF (I .LE. II) THEN
-                             IF (CHRSTR(I) .EQ. KEY(1)) THEN
-                                 DO 20  J=2, KLEN
-                                     IF (CHRSTR(I+J-1) .NE. KEY(J)) GO TO 30
-20                               CONTINUE
-                                 I1X = I
-                                 GO TO 9000
-30                           CONTINUE
-                         END IF
-                         I = I + 1
-                         GO TO 10
-                     END IF
-                     !
-9000                 RETURN
-                 END
-                 !-----------------------------------------------------------------------
-                 !  IMSL Name:  IACHAR (Single precision version)
-                 !
-                 !  Computer:   pcdsms/SINGLE
-                 !
-                 !  Revised:    September 9, 1985
-                 !
-                 !  Purpose:    Return the integer ASCII value of a character argument.
-                 !
-                 !  Usage:      IACHAR(CH)
-                 !
-                 !  Arguments:
-                 !     CH     - Character argument for which the integer ASCII value
-                 !              is desired.  (Input)
-                 !     IACHAR - Integer ASCII value for CH.  (Output)
-                 !              The character CH is in the IACHAR-th position of the
-                 !              ASCII collating sequence.
-                 !
-                 !  GAMS:       N3
-                 !
-                 !  Chapter:    MATH/LIBRARY Utilities
-                 !              STAT/LIBRARY Utilities
-                 !
-                 !  Copyright:  1986 by IMSL, Inc.  All Rights Reserved.
-                 !
-                 !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                 !              to this code.  No other warranty, expressed or implied,
-                 !              is applicable.
-                 !
-                 !-----------------------------------------------------------------------
-                 !
-                 INTEGER FUNCTION IACHAR (CH)
-                     !                                  SPECIFICATIONS FOR ARGUMENTS
-                     CHARACTER  CH
-                     !                                  SPECIFICATIONS FOR SAVE VARIABLES
-                     IACHAR = ICHAR(CH)
-                     RETURN
-                 END
-                 !-----------------------------------------------------------------------
-                 !  IMSL Name:  ICASE (Single precision version)
-                 !
-                 !  Computer:   pcdsms/SINGLE
-                 !
-                 !  Revised:    September 9, 1985
-                 !
-                 !  Purpose:    Convert from character to the integer ASCII value without
-                 !              regard to case.
-                 !
-                 !  Usage:      ICASE(CH)
-                 !
-                 !  Arguments:
-                 !     CH     - Character to be converted.  (Input)
-                 !     ICASE  - Integer ASCII value for CH without regard to the case
-                 !              of CH.  (Output)
-                 !              ICASE returns the same value as IMSL routine IACHAR for
-                 !              all but lowercase letters.  For these, it returns the
-                 !              IACHAR value for the corresponding uppercase letter.
-                 !
-                 !  GAMS:       N3
-                 !
-                 !  Chapter:    MATH/LIBRARY Utilities
-                 !              STAT/LIBRARY Utilities
-                 !
-                 !  Copyright:  1986 by IMSL, Inc.  All Rights Reserved.
-                 !
-                 !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                 !              to this code.  No other warranty, expressed or implied,
-                 !              is applicable.
-                 !
-                 !-----------------------------------------------------------------------
-                 !
-                 INTEGER FUNCTION ICASE (CH)
-                     !                                  SPECIFICATIONS FOR ARGUMENTS
-                     CHARACTER  CH
-                     !                                  SPECIFICATIONS FOR FUNCTIONS
-                     EXTERNAL   IACHAR
-                     INTEGER    IACHAR
-                     !
-                     ICASE = IACHAR(CH)
-                     IF (ICASE.GE.97 .AND. ICASE.LE.122) ICASE = ICASE - 32
-                     !
-                     RETURN
-                 END
-                 !-----------------------------------------------------------------------
-                 !  IMSL Name:  IMACH (Single precision version)
-                 !
-                 !  Computer:   pcdsms/SINGLE
-                 !
-                 !  Revised:    March 26, 1984
-                 !
-                 !  Purpose:    Retrieve integer machine constants.
-                 !
-                 !  Usage:      IMACH(N)
-                 !
-                 !  Arguments:
-                 !     N      - Index of desired constant.  (Input)
-                 !     IMACH  - Machine constant.  (Output)
-                 !
-                 !  Remark:
-                 !     Following is a description of the assorted integer machine
-                 !     constants.
-                 !
-                 !     Words
-                 !
-                 !        IMACH( 1) = Number of bits per integer storage unit.
-                 !        IMACH( 2) = Number of characters per integer storage unit.
-                 !
-                 !     Integers
-                 !
-                 !        Assume integers are represented in the S-DIGIT, BASE-A form
-                 !        SIGN ( X(S-1)*A**(S-1) + ... + X(1)*A + X(0) )
-                 !        where 0 .LE. X(I) .LT. A for I=0,...,S-1.  Then
-                 !
-                 !        IMACH( 3) = A, the base.
-                 !        IMACH( 4) = S, number of BASE-A digits.
-                 !        IMACH( 5) = A**S - 1, largest magnitude.
-                 !
-                 !     Floating-point numbers
-                 !
-                 !        Assume floating-point numbers are represented in the T-DIGIT,
-                 !        BASE-B form SIGN (B**E)*( (X(1)/B) + ... + (X(T)/B**T) )
-                 !        where 0 .LE. X(I) .LT. B for I=1,...,T,
-                 !        0 .LT. X(1), and EMIN .LE. E .LE. EMAX.  Then
-                 !
-                 !        IMACH( 6) = B, the base.
-                 !
-                 !        Single precision
-                 !
-                 !           IMACH( 7) = T, number of BASE-B digits.
-                 !           IMACH( 8) = EMIN, smallest exponent E.
-                 !           IMACH( 9) = EMAX, largest exponent E.
-                 !
-                 !        Double precision
-                 !
-                 !           IMACH(10) = T, number of BASE-B digits.
-                 !           IMACH(11) = EMIN, smallest exponent E.
-                 !           IMACH(12) = EMAX, largest exponent E.
-                 !
-                 !  GAMS:       R1
-                 !
-                 !  Chapters:   MATH/LIBRARY Reference Material
-                 !              STAT/LIBRARY Reference Material
-                 !              SFUN/LIBRARY Reference Material
-                 !
-                 !  Copyright:  1984 by IMSL, Inc.  All Rights Reserved.
-                 !
-                 !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                 !              to this code.  No other warranty, expressed or implied,
-                 !              is applicable.
-                 !
-                 !-----------------------------------------------------------------------
-                 !
-                 INTEGER FUNCTION IMACH (N)
-                     !                                  SPECIFICATIONS FOR ARGUMENTS
-                     INTEGER    N
-                     !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-                     INTEGER    NOUT
-                     !                                  SPECIFICATIONS FOR SAVE VARIABLES
-                     INTEGER    IMACHV(12)
-                     SAVE       IMACHV
-                     !                                  SPECIFICATIONS FOR SUBROUTINES
-                     EXTERNAL   UMACH
-                     !                                  DEFINE CONSTANTS
-                     DATA IMACHV(1)/32/
-                     DATA IMACHV(2)/4/
-                     DATA IMACHV(3)/2/
-                     DATA IMACHV(4)/31/
-                     DATA IMACHV(5)/2147483647/
-                     DATA IMACHV(6)/2/
-                     DATA IMACHV(7)/24/
-                     DATA IMACHV(8)/-125/
-                     DATA IMACHV(9)/128/
-                     DATA IMACHV(10)/53/
-                     DATA IMACHV(11)/-1021/
-                     DATA IMACHV(12)/1024/
-                     !
-                     IF (N.LT.1 .OR. N.GT.12) THEN
-                         !                                  ERROR.  INVALID RANGE FOR N.
-                         CALL UMACH (2, NOUT)
-                         WRITE (NOUT,99999) N
-99999                    FORMAT (/, ' *** TERMINAL ERROR 5 from IMACH.  The argument', &
-                             /, ' ***          must be between 1 and 12 inclusive.' &
-                             , /, ' ***          N = ', I6, '.', /)
-                         IMACH = 0
-                         STOP
-                     !
-                     ELSE
-                         IMACH = IMACHV(N)
-                     END IF
-                     !
-                     RETURN
-                 END
-                 !-----------------------------------------------------------------------
-                 !  IMSL Name:  IWKIN (Single precision version)
-                 !
-                 !  Computer:   pcdsms/SINGLE
-                 !
-                 !  Revised:    January 17, 1984
-                 !
-                 !  Purpose:    Initialize bookkeeping locations describing the
-                 !              workspace stack.
-                 !
-                 !  Usage:      CALL IWKIN (NSU)
-                 !
-                 !  Argument:
-                 !     NSU    - Number of numeric storage units to which the workspace
-                 !              stack is to be initialized
-                 !
-                 !  GAMS:       N4
-                 !
-                 !  Chapters:   MATH/LIBRARY Reference Material
-                 !              STAT/LIBRARY Reference Material
-                 !
-                 !  Copyright:  1984 by IMSL, Inc.  All Rights Reserved.
-                 !
-                 !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                 !              to this code.  No other warranty, expressed or implied,
-                 !              is applicable.
-                 !
-                 !-----------------------------------------------------------------------
-                 !
-                 SUBROUTINE IWKIN (NSU)
-                     !                                  SPECIFICATIONS FOR ARGUMENTS
-                     INTEGER    NSU
-                     !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-                     INTEGER    ISIZE(6), LALC, LBND, LBOOK, LMAX, LNEED, LNOW, LOUT, &
-                         LUSED, MELMTS, MTYPE
-                     !                                  SPECIFICATIONS FOR SAVE VARIABLES
-                     LOGICAL    FIRST
-                     SAVE       FIRST
-                     !                                  SPECIFICATIONS FOR SPECIAL CASES
-                     !                                  SPECIFICATIONS FOR COMMON /WORKSP/
-                     REAL       RWKSP(5000)
-                     REAL       RDWKSP(5000)
-                     DOUBLE PRECISION DWKSP(2500)
-                     COMPLEX    CWKSP(2500)
-                     COMPLEX    CZWKSP(2500)
-                     COMPLEX    *16 ZWKSP(1250)
-                     INTEGER    IWKSP(5000)
-                     LOGICAL    LWKSP(5000)
-                     EQUIVALENCE (DWKSP(1), RWKSP(1))
-                     EQUIVALENCE (CWKSP(1), RWKSP(1)), (ZWKSP(1), RWKSP(1))
-                     EQUIVALENCE (IWKSP(1), RWKSP(1)), (LWKSP(1), RWKSP(1))
-                     EQUIVALENCE (RDWKSP(1), RWKSP(1)), (CZWKSP(1), RWKSP(1))
-                     COMMON     /WORKSP/ RWKSP
-                     !                                  SPECIFICATIONS FOR EQUIVALENCE
-                     EQUIVALENCE (LOUT, IWKSP(1))
-                     EQUIVALENCE (LNOW, IWKSP(2))
-                     EQUIVALENCE (LUSED, IWKSP(3))
-                     EQUIVALENCE (LBND, IWKSP(4))
-                     EQUIVALENCE (LMAX, IWKSP(5))
-                     EQUIVALENCE (LALC, IWKSP(6))
-                     EQUIVALENCE (LNEED, IWKSP(7))
-                     EQUIVALENCE (LBOOK, IWKSP(8))
-                     EQUIVALENCE (ISIZE(1), IWKSP(11))
-                     !                                  SPECIFICATIONS FOR INTRINSICS
-                     !     INTRINSIC  MAX0
-                     INTRINSIC  MAX0
-                     INTEGER    MAX0
-                     !                                  SPECIFICATIONS FOR SUBROUTINES
-                     EXTERNAL   E1MES, E1STI
-                     !
-                     DATA FIRST/.TRUE./
-                     !
-                     IF (.NOT.FIRST) THEN
-                         IF (NSU .NE. 0) THEN
-                             CALL E1STI (1, LMAX)
-                             CALL E1MES (5, 100, 'Error from subroutine IWKIN:  '// &
-                                 'Workspace stack has previously been '// &
-                                 'initialized to %(I1). Correct by making the '// &
-                                 'call to IWKIN the first executable '// &
-                                 'statement in the main program.  ')
-                             !
-                             STOP
-                         !
-                         ELSE
-                             RETURN
-                         END IF
-                     END IF
-                     !
-                     IF (NSU .EQ. 0) THEN
-                         !                                  IF NSU=0 USE DEFAULT SIZE 5000
-                         MELMTS = 5000
-                     ELSE
-                         MELMTS = NSU
-                     END IF
-                     !                                  NUMBER OF ITEMS .LT. 0
-                     IF (MELMTS .LE. 0) THEN
-                         CALL E1STI (1, MELMTS)
-                         CALL E1MES (5, 1, 'Error from subroutine IWKIN:  Number '// &
-                             'of numeric storage units is not positive. NSU '// &
-                             '= %(I1) ')
-                     ELSE
-                         !
-                         FIRST = .FALSE.
-                         !                                  HERE TO INITIALIZE
-                         !
-                         !                                  SET DATA SIZES APPROPRIATE FOR A
-                         !                                  STANDARD CONFORMING FORTRAN SYSTEM
-                         !                                  USING THE FORTRAN
-                         !                                  *NUMERIC STORAGE UNIT* AS THE
-                         !                                  MEASURE OF SIZE.
-                         !
-                         !                                  TYPE IS REAL
-                         MTYPE = 3
-                         !                                  LOGICAL
-                         ISIZE(1) = 1
-                         !                                  INTEGER
-                         ISIZE(2) = 1
-                         !                                  REAL
-                         ISIZE(3) = 1
-                         !                                  DOUBLE PRECISION
-                         ISIZE(4) = 2
-                         !                                  COMPLEX
-                         ISIZE(5) = 2
-                         !                                  DOUBLE COMPLEX
-                         ISIZE(6) = 4
-                         !                                  NUMBER OF WORDS USED FOR BOOKKEEPING
-                         LBOOK = 16
-                         !                                  CURRENT ACTIVE LENGTH OF THE STACK
-                         LNOW = LBOOK
-                         !                                  MAXIMUM VALUE OF LNOW ACHIEVED THUS
-                         !                                  FAR
-                         LUSED = LBOOK
-                         !                                  MAXIMUM LENGTH OF THE STORAGE ARRAY
-                         LMAX = MAX0(MELMTS,((LBOOK+2)*ISIZE(2)+ISIZE(3)-1)/ISIZE(3))
-                         !                                  LOWER BOUND OF THE PERMANENT STORAGE
-                         !                                  WHICH IS ONE WORD MORE THAN THE
-                         !                                  MAXIMUM ALLOWED LENGTH OF THE STACK
-                         LBND = LMAX + 1
-                         !                                  NUMBER OF CURRENT ALLOCATIONS
-                         LOUT = 0
-                         !                                  TOTAL NUMBER OF ALLOCATIONS MADE
-                         LALC = 0
-                         !                                  NUMBER OF WORDS BY WHICH THE ARRAY
-                         !                                  SIZE MUST BE INCREASED FOR ALL PAST
-                         !                                  ALLOCATIONS TO SUCCEED
-                         LNEED = 0
-                     END IF
-                     !
-                     RETURN
-                 END
-                 !-----------------------------------------------------------------------
-                 !  IMSL Name:  M1VE
-                 !
-                 !  Computer:   pcdsms/SINGLE
-                 !
-                 !  Revised:    March 5, 1984
-                 !
-                 !  Purpose:    Move a subset of one character array to another.
-                 !
-                 !  Usage:      CALL M1VE(INSTR, INBEG, INEND, INLEN, OUTSTR, OUTBEG,
-                 !                         OUTEND, OUTLEN, IER)
-                 !
-                 !  Arguments:
-                 !     INSTR  - Source character array.  (Input)
-                 !     INBEG  - First element of INSTR to be moved.  (Input)
-                 !     INEND  - Last element of INSTR to be moved.  (Input)
-                 !              The source subset is INSTR(INBEG),...,INSTR(INEND).
-                 !     INLEN  - Length of INSTR.  (Input)
-                 !     OUTSTR - Destination character array.  (Output)
-                 !     IUTBEG - First element of OUTSTR destination.  (Input)
-                 !     IUTEND - Last element of OUTSTR  destination.  (Input)
-                 !              The destination subset is OUTSRT(IUTBEG),...,
-                 !              OUTSTR(IUTEND).
-                 !     IUTLEN - Length of OUTSTR.  (Input)
-                 !     IER    - Completion code.  (Output)
-                 !              IER = -2  indicates that the input parameters, INBEG,
-                 !                        INEND, INLEN, IUTBEG, IUTEND are not
-                 !                        consistent.  One of the conditions
-                 !                        INBEG.GT.0, INEND.GE.INBEG, INLEN.GE.INEND,
-                 !                        IUTBEG.GT.0, or IUTEND.GE.IUTBEG is not
-                 !                        satisfied.
-                 !              IER = -1  indicates that the length of OUTSTR is
-                 !                        insufficient to hold the subset of INSTR.
-                 !                        That is, IUTLEN is less than IUTEND.
-                 !              IER =  0  indicates normal completion
-                 !              IER >  0  indicates that the specified subset of OUTSTR,
-                 !                        OUTSTR(IUTBEG),...,OUTSTR(IUTEND) is not long
-                 !                        enough to hold the subset INSTR(INBEG),...,
-                 !                        INSTR(INEND) of INSTR.  IER is set to the
-                 !                        number of characters that were not moved.
-                 !
-                 !  Remarks:
-                 !  1. If the subset of OUTSTR is longer than the subset of INSTR,
-                 !     trailing blanks are moved to OUTSTR.
-                 !  2. If the subset of INSTR is longer than the subset of OUTSTR,
-                 !     the shorter subset is moved to OUTSTR and IER is set to the number
-                 !     of characters that were not moved to OUTSTR.
-                 !  3. If the length of OUTSTR is insufficient to hold the subset,
-                 !     IER is set to -2 and nothing is moved.
-                 !
-                 !  Copyright:  1984 by IMSL, Inc.  All rights reserved.
-                 !
-                 !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                 !              to this code.  No other warranty, expressed or implied,
-                 !              is applicable.
-                 !
-                 !-----------------------------------------------------------------------
-                 !
-                 SUBROUTINE M1VE (INSTR, INBEG, INEND, INLEN, OUTSTR, IUTBEG, &
-                     IUTEND, IUTLEN, IER)
-                     !                                  SPECIFICATIONS FOR ARGUMENTS
-                     INTEGER    INBEG, INEND, INLEN, IUTBEG, IUTEND, IUTLEN, IER
-                     CHARACTER  INSTR(*), OUTSTR(*)
-                     !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-                     INTEGER    IUTLAS, KI, KO
-                     !                                  SPECIFICATIONS FOR SAVE VARIABLES
-                     CHARACTER  BLANK
-                     SAVE       BLANK
-                     !                                  SPECIFICATIONS FOR INTRINSICS
-                     !     INTRINSIC  MIN0
-                     INTRINSIC  MIN0
-                     INTEGER    MIN0
-                     !
-                     DATA BLANK/' '/
-                     !                                  CHECK INBEG, INEND, INLEN, IUTBEG,
-                     !                                  AND IUTEND
-                     !
-                     IF (INBEG.LE.0 .OR. INEND.LT.INBEG .OR. INLEN.LT.INEND .OR. &
-                         IUTBEG.LE.0 .OR. IUTEND.LT.IUTBEG) THEN
-                         IER = -2
-                         RETURN
-                     ELSE IF (IUTLEN .LT. IUTEND) THEN
-                         IER = -1
-                         RETURN
-                     END IF
-                     !                                  DETERMINE LAST CHARACTER TO M1VE
-                     IUTLAS = IUTBEG + MIN0(INEND-INBEG,IUTEND-IUTBEG)
-                     !                                  M1VE CHARACTERS
-                     KI = INBEG
-                     DO 10  KO=IUTBEG, IUTLAS
-                         OUTSTR(KO) = INSTR(KI)
-                         KI = KI + 1
-10                   CONTINUE
-                     !                                   SET IER TO NUMBER OF CHARACTERS THAT
-                     !                                   WHERE NOT MOVED
-                     IER = KI - INEND - 1
-                     !                                   APPEND BLANKS IF NECESSARY
-                     DO 20  KO=IUTLAS + 1, IUTEND
-                         OUTSTR(KO) = BLANK
-20                   CONTINUE
-                     !
-                     RETURN
-                 END
-                 !-----------------------------------------------------------------------
-                 !  IMSL Name:  M1VECH
-                 !
-                 !  Computer:   pcdsms/SINGLE
-                 !
-                 !  Revised:    December 31, 1984
-                 !
-                 !  Purpose:    Character substring assignment.
-                 !
-                 !  Usage:      CALL M1VECH (STR1, LEN1, STR2, LEN2)
-                 !
-                 !  Arguments:
-                 !     STR1   - Source substring.  (Input)
-                 !              The source substring is STR1(1:LEN1).
-                 !     LEN1   - Length of STR1.  (Input)
-                 !     STR2   - Destination substring.  (Output)
-                 !              The destination substring is STR2(1:LEN2).
-                 !     LEN2   - Length of STR2.  (Input)
-                 !
-                 !  Copyright:  1984 by IMSL, Inc.  All rights reserved.
-                 !
-                 !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                 !              to this code.  No other warranty, expressed or implied,
-                 !              is applicable.
-                 !
-                 !-----------------------------------------------------------------------
-                 !
-                 SUBROUTINE M1VECH (STR1, LEN1, STR2, LEN2)
-                     !                                  SPECIFICATIONS FOR ARGUMENTS
-                     INTEGER    LEN1, LEN2
-                     CHARACTER  STR1*(*), STR2*(*)
-                     !
-                     STR2(1:LEN2) = STR1(1:LEN1)
-                     !
-                     RETURN
-                 END
-                 !-----------------------------------------------------------------------
-                 !  IMSL Name:  N1RGB
-                 !
-                 !  Computer:   pcdsms/SINGLE
-                 !
-                 !  Revised:    March 2, 1984
-                 !
-                 !  Purpose:    Return a positive number as a flag to indicated that a
-                 !              stop should occur due to one or more global errors.
-                 !
-                 !  Usage:      N1RGB(IDUMMY)
-                 !
-                 !  Arguments:
-                 !     IDUMMY - Integer scalar dummy argument.
-                 !
-                 !  Copyright:  1984 by IMSL, Inc.  All rights reserved.
-                 !
-                 !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                 !              to this code.  No other warranty, expressed or implied,
-                 !              is applicable.
-                 !
-                 !-----------------------------------------------------------------------
-                 !
-                 INTEGER FUNCTION N1RGB (IDUMMY)
-                     !                                  SPECIFICATIONS FOR ARGUMENTS
-                     INTEGER    IDUMMY
-                     !                                  SPECIFICATIONS FOR SPECIAL CASES
-                     !                              SPECIFICATIONS FOR COMMON /ERCOM1/
-                     INTEGER    CALLVL, MAXLEV, MSGLEN, ERTYPE(51), ERCODE(51), &
-                         PRINTB(7), STOPTB(7), PLEN, IFERR6, IFERR7, &
-                         IALLOC(51), HDRFMT(7), TRACON(7)
-                     COMMON     /ERCOM1/ CALLVL, MAXLEV, MSGLEN, ERTYPE, ERCODE, &
-                         PRINTB, STOPTB, PLEN, IFERR6, IFERR7, IALLOC, HDRFMT, &
-                         TRACON
-                     SAVE       /ERCOM1/
-                     !                              SPECIFICATIONS FOR COMMON /ERCOM2/
-                     CHARACTER  MSGSAV(255), PLIST(300), RNAME(51)*6
-                     COMMON     /ERCOM2/ MSGSAV, PLIST, RNAME
-                     SAVE       /ERCOM2/
-                     !                              SPECIFICATIONS FOR COMMON /ERCOM3/
-                     DOUBLE PRECISION ERCKSM
-                     COMMON     /ERCOM3/ ERCKSM
-                     SAVE       /ERCOM3/
-                     !                              SPECIFICATIONS FOR COMMON /ERCOM4/
-                     LOGICAL    ISUSER(51)
-                     COMMON     /ERCOM4/ ISUSER
-                     SAVE       /ERCOM4/
-                     !                                  INITIALIZE FUNCTION
-                     N1RGB = 0
-                     !                                  CHECK FOR GLOBAL ERROR TYPE 6
-                     IF (IFERR6 .GT. 0) THEN
-                         N1RGB = STOPTB(6)
-                         IFERR6 = 0
-                     END IF
-                     !                                  CHECK FOR GLOBAL ERROR TYPE 7
-                     IF (IFERR7 .GT. 0) THEN
-                         N1RGB = STOPTB(7)
-                         IFERR7 = 0
-                     END IF
-                     !
-                     RETURN
-                 END
-                 !-----------------------------------------------------------------------
-                 !  IMSL Name:  N1RTY
-                 !
-                 !  Computer:   pcdsms/SINGLE
-                 !
-                 !  Revised:    March 6, 1984
-                 !
-                 !  Purpose:    Retrieve an error type.
-                 !
-                 !  Usage:      N1RTY(IOPT)
-                 !
-                 !  Arguments:
-                 !     IOPT   - Integer specifying the level.  (Input)
-                 !              If IOPT=0 the error type for the current level is
-                 !              returned.  If IOPT=1 the error type for the most
-                 !              recently called routine (last pop) is returned.
-                 !
-                 !  Copyright:  1984 by IMSL, Inc.  All rights reserved.
-                 !
-                 !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                 !              to this code.  No other warranty, expressed or implied,
-                 !              is applicable.
-                 !
-                 !-----------------------------------------------------------------------
-                 !
-                 INTEGER FUNCTION N1RTY (IOPT)
-                     !                                  SPECIFICATIONS FOR ARGUMENTS
-                     INTEGER    IOPT
-                     !                                  SPECIFICATIONS FOR SPECIAL CASES
-                     !                              SPECIFICATIONS FOR COMMON /ERCOM1/
-                     INTEGER    CALLVL, MAXLEV, MSGLEN, ERTYPE(51), ERCODE(51), &
-                         PRINTB(7), STOPTB(7), PLEN, IFERR6, IFERR7, &
-                         IALLOC(51), HDRFMT(7), TRACON(7)
-                     COMMON     /ERCOM1/ CALLVL, MAXLEV, MSGLEN, ERTYPE, ERCODE, &
-                         PRINTB, STOPTB, PLEN, IFERR6, IFERR7, IALLOC, HDRFMT, &
-                         TRACON
-                     SAVE       /ERCOM1/
-                     !                              SPECIFICATIONS FOR COMMON /ERCOM2/
-                     CHARACTER  MSGSAV(255), PLIST(300), RNAME(51)*6
-                     COMMON     /ERCOM2/ MSGSAV, PLIST, RNAME
-                     SAVE       /ERCOM2/
-                     !                              SPECIFICATIONS FOR COMMON /ERCOM3/
-                     DOUBLE PRECISION ERCKSM
-                     COMMON     /ERCOM3/ ERCKSM
-                     SAVE       /ERCOM3/
-                     !                              SPECIFICATIONS FOR COMMON /ERCOM4/
-                     LOGICAL    ISUSER(51)
-                     COMMON     /ERCOM4/ ISUSER
-                     SAVE       /ERCOM4/
-                     !                                  SPECIFICATIONS FOR SUBROUTINES
-                     EXTERNAL   E1PRT, M1VECH
-                     !
-                     IF (IOPT.NE.0 .AND. IOPT.NE.1) THEN
-                         ERTYPE(CALLVL) = 5
-                         ERCODE(CALLVL) = 1
-                         MSGLEN = 47
-                         CALL M1VECH ('.  The argument passed to N1RTY must be 0 or '// &
-                             '1. ', MSGLEN, MSGSAV, MSGLEN)
-                         CALL E1PRT
-                         STOP
-                     ELSE
-                         N1RTY = ERTYPE(CALLVL+IOPT)
-                     END IF
-                     !
-                     RETURN
-                 END
-                 !-----------------------------------------------------------------------
-                 !  IMSL Name:  S1ANUM
-                 !
-                 !  Computer:   pcdsms/SINGLE
-                 !
-                 !  Revised:    March 28, 1984
-                 !
-                 !  Purpose:    Scan a token and identify it as follows: integer, real
-                 !              number (single/double), FORTRAN relational operator,
-                 !              FORTRAN logical operator, or FORTRAN logical constant.
-                 !
-                 !  Usage:      CALL S1ANUM(INSTR, SLEN, CODE, OLEN)
-                 !
-                 !  Arguments:
-                 !     INSTR  - Character string to be scanned.  (Input)
-                 !     SLEN   - Length of INSTR.  (Input)
-                 !     CODE   - Token code.  (Output)  Where
-                 !                 CODE =  0  indicates an unknown token,
-                 !                 CODE =  1  indicates an integer number,
-                 !                 CODE =  2  indicates a (single precision) real number,
-                 !                 CODE =  3  indicates a (double precision) real number,
-                 !                 CODE =  4  indicates a logical constant (.TRUE. or
-                 !                               .FALSE.),
-                 !                 CODE =  5  indicates the relational operator .EQ.,
-                 !                 CODE =  6  indicates the relational operator .NE.,
-                 !                 CODE =  7  indicates the relational operator .LT.,
-                 !                 CODE =  8  indicates the relational operator .LE.,
-                 !                 CODE =  9  indicates the relational operator .GT.,
-                 !                 CODE = 10  indicates the relational operator .GE.,
-                 !                 CODE = 11  indicates the logical operator .AND.,
-                 !                 CODE = 12  indicates the logical operator .OR.,
-                 !                 CODE = 13  indicates the logical operator .EQV.,
-                 !                 CODE = 14  indicates the logical operator .NEQV.,
-                 !                 CODE = 15  indicates the logical operator .NOT..
-                 !     OLEN   - Length of the token as counted from the first character
-                 !              in INSTR.  (Output)  OLEN returns a zero for an unknown
-                 !              token (CODE = 0).
-                 !
-                 !  Remarks:
-                 !  1. Blanks are considered significant.
-                 !  2. Lower and upper case letters are not significant.
-                 !
-                 !  Copyright:  1984 by IMSL, Inc.  All rights reserved.
-                 !
-                 !  Warranty:   IMSL warrants only that IMSL testing has been applied
-                 !              to this code.  No other warranty, expressed or implied,
-                 !              is applicable.
-                 !
-                 !-----------------------------------------------------------------------
-                 !
-                 SUBROUTINE S1ANUM (INSTR, SLEN, CODE, OLEN)
-                     !                                  SPECIFICATIONS FOR ARGUMENTS
-                     INTEGER    SLEN, CODE, OLEN
-                     CHARACTER  INSTR(*)
-                     !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-                     INTEGER    I, IBEG, IIBEG, J
-                     LOGICAL    FLAG
-                     CHARACTER  CHRSTR(6)
-                     !                                  SPECIFICATIONS FOR SAVE VARIABLES
-                     INTEGER    TABPTR(16), TDCNST, TICNST, TOKEN(13), TRCNST, TZERR
-                     CHARACTER  DIGIT(10), LETTER(52), MINUS, PERIOD, PLUS, TABLE(38)
-                     SAVE       DIGIT, LETTER, MINUS, PERIOD, PLUS, TABLE, TABPTR, &
-                         TDCNST, TICNST, TOKEN, TRCNST, TZERR
-                     !                                  SPECIFICATIONS FOR FUNCTIONS
-                     EXTERNAL   I1X, I1CSTR
-                     INTEGER    I1X, I1CSTR
-                     !
-                     DATA TOKEN/5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 4, 4/
-                     DATA TABLE/'D', 'E', 'E', 'Q', 'N', 'E', 'L', 'T', 'L', &
-                         'E', 'G', 'T', 'G', 'E', 'A', 'N', 'D', 'O', 'R', &
-                         'E', 'Q', 'V', 'N', 'E', 'Q', 'V', 'N', 'O', 'T', &
-                         'T', 'R', 'U', 'E', 'F', 'A', 'L', 'S', 'E'/
-                     DATA TABPTR/1, 2, 3, 5, 7, 9, 11, 13, 15, 18, 20, 23, 27, 30, &
-                         34, 39/
-                     DATA DIGIT/'0', '1', '2', '3', '4', '5', '6', '7', '8', &
-                         '9'/
-                     DATA LETTER/'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', &
-                         'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', &
-                         'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', &
-                         'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', &
-                         'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', &
-                         'x', 'y', 'z'/
-                     DATA PERIOD/'.'/, PLUS/'+'/, MINUS/'-'/
-                     DATA TZERR/0/, TICNST/1/
-                     DATA TRCNST/2/, TDCNST/3/
-                     !
-                     IF (SLEN .LE. 0) THEN
-                         CODE = 0
-                         OLEN = 0
-                         RETURN
-                     END IF
-                     !                                  STATE 0 - ASSUME ERROR TOKEN
-                     IBEG = 1
-                     CODE = TZERR
-                     !                                  CHECK SIGN
-                     IF (INSTR(IBEG).EQ.MINUS .OR. INSTR(IBEG).EQ.PLUS) THEN
-                         FLAG = .TRUE.
-                         IIBEG = IBEG
-                         IBEG = IBEG + 1
-                     ELSE
-                         FLAG = .FALSE.
-                     END IF
-                     !                                  STATE 1 - ASSUME INTEGER CONSTANT
-                     IF (I1X(DIGIT,10,INSTR(IBEG),1) .NE. 0) THEN
-                         CODE = TICNST
-                         IIBEG = IBEG
-                         IBEG = IBEG + 1
-                         !
-10                       IF (IBEG .LE. SLEN) THEN
-                             !
-                             IF (I1X(DIGIT,10,INSTR(IBEG),1) .NE. 0) THEN
-                                 IIBEG = IBEG
-                                 IBEG = IBEG + 1
-                                 GO TO 10
-                             !
-                             END IF
-                         !
-                         ELSE
-                             GO TO 80
-                         !
-                         END IF
-                         !
-                         IF (INSTR(IBEG) .NE. PERIOD) GO TO 80
-                     END IF
-                     !                                  STATE 2 - ASSUME REAL CONSTANT
-                     IF (CODE .EQ. TICNST) THEN
-                         CODE = TRCNST
-                         IIBEG = IBEG
-                         IBEG = IBEG + 1
-                         IF (IBEG .GT. SLEN) GO TO 80
-                     ELSE IF (INSTR(IBEG).EQ.PERIOD .AND. SLEN.GE.2) THEN
-                         IF (I1X(DIGIT,10,INSTR(IBEG+1),1) .NE. 0) THEN
-                             CODE = TRCNST
-                             IIBEG = IBEG + 1
-                             IBEG = IBEG + 2
-                             IF (IBEG .GT. SLEN) GO TO 80
-                         END IF
-                     END IF
-                     !
-                     IF (I1X(DIGIT,10,INSTR(IBEG),1) .NE. 0) THEN
-                         CODE = TRCNST
-                         IIBEG = IBEG
-                         IBEG = IBEG + 1
-                         !
-20                       IF (IBEG .LE. SLEN) THEN
-                             !
-                             IF (I1X(DIGIT,10,INSTR(IBEG),1) .NE. 0) THEN
-                                 IIBEG = IBEG
-                                 IBEG = IBEG + 1
-                                 GO TO 20
-                             !
-                             END IF
-                         !
-                         ELSE
-                             GO TO 80
-                         !
-                         END IF
-                     !
-                     END IF
-                     !
-                     IF (CODE .EQ. TZERR) THEN
-                         IF (INSTR(IBEG) .NE. PERIOD) GO TO 80
-                         IBEG = IBEG + 1
-                         IF (IBEG .GT. SLEN) GO TO 80
-                     END IF
-                     !
-                     IF (I1X(LETTER,52,INSTR(IBEG),1) .EQ. 0) GO TO 80
-                     CHRSTR(1) = INSTR(IBEG)
-                     !
-                     DO 30  I=2, 6
-                         IBEG = IBEG + 1
-                         IF (IBEG .GT. SLEN) GO TO 80
-                         IF (I1X(LETTER,52,INSTR(IBEG),1) .EQ. 0) GO TO 40
-                         CHRSTR(I) = INSTR(IBEG)
-30                   CONTINUE
-                     !
-                     GO TO 80
-                 !
-40               CONTINUE
-                 !
-                 DO 50  J=1, 15
-                     IF (I1CSTR(CHRSTR,I-1,TABLE(TABPTR(J)),TABPTR(J+1)-TABPTR(J)) &
-                         .EQ. 0) GO TO 60
-50               CONTINUE
-                 !
-                 GO TO 80
-                 !                                  STATE 4 - LOGICAL OPERATOR
-60               IF (J .GT. 2) THEN
-                     !
-                     IF (CODE .EQ. TRCNST) THEN
-                         !
-                         IF (INSTR(IBEG) .EQ. PERIOD) THEN
-                             CODE = TICNST
-                             IIBEG = IIBEG - 1
-                         END IF
-                         !
-                         GO TO 80
-                     !
-                     ELSE IF (INSTR(IBEG) .NE. PERIOD) THEN
-                         GO TO 80
-                     !
-                     ELSE IF (FLAG) THEN
-                         GO TO 80
-                     !
-                     ELSE
-                         CODE = TOKEN(J-2)
-                         IIBEG = IBEG
-                         GO TO 80
-                     !
-                     END IF
-                 !
-                 END IF
-                 !                                  STATE 5 - DOUBLE PRECISION CONSTANT
-                 IF (CODE .NE. TRCNST) GO TO 80
-                 IF (INSTR(IBEG).EQ.MINUS .OR. INSTR(IBEG).EQ.PLUS) IBEG = IBEG + &
-                     1
-                 IF (IBEG .GT. SLEN) GO TO 80
-                 !
-                 IF (I1X(DIGIT,10,INSTR(IBEG),1) .EQ. 0) THEN
-                     GO TO 80
-                 !
-                 ELSE
-                     IIBEG = IBEG
-                     IBEG = IBEG + 1
-                     !
-70                   IF (IBEG .LE. SLEN) THEN
-                         !
-                         IF (I1X(DIGIT,10,INSTR(IBEG),1) .NE. 0) THEN
-                             IIBEG = IBEG
-                             IBEG = IBEG + 1
-                             GO TO 70
-                         !
-                         END IF
-                     !
-                     END IF
-                 !
-                 END IF
-                 !
-                 IF (J .EQ. 1) CODE = TDCNST
-             !
-80           CONTINUE
-             !
-             IF (CODE .EQ. TZERR) THEN
-                 OLEN = 0
-             !
-             ELSE
-                 OLEN = IIBEG
-             END IF
-             !
-             RETURN
-         END
-         !-----------------------------------------------------------------------
-         !  IMSL Name:  UMACH (Single precision version)
-         !
-         !  Computer:   pcdsms/SINGLE
-         !
-         !  Revised:    March 21, 1984
-         !
-         !  Purpose:    Set or retrieve input or output device unit numbers.
-         !
-         !  Usage:      CALL UMACH (N, NUNIT)
-         !
-         !  Arguments:
-         !     N      - Index of desired unit.  (Input)
-         !              The values of N are defined as follows:
-         !              N = 1, corresponds to the standard input unit.
-         !              N = 2, corresponds to the standard output unit.
-         !     NUNIT  - I/O unit.  (Input or Output)
-         !              If the value of N is negative, the unit corresponding
-         !              to the index is reset to the value given in NUNIT.
-         !              Otherwise, the value corresponding to the index is
-         !              returned in NUNIT.
-         !
-         !  GAMS:       R1
-         !
-         !  Chapters:   MATH/LIBRARY Reference Material
-         !              STAT/LIBRARY Reference Material
-         !              SFUN/LIBRARY Reference Material
-         !
-         !  Copyright:  1984 by IMSL, Inc.  All Rights Reserved.
-         !
-         !  Warranty:   IMSL warrants only that IMSL testing has been applied
-         !              to this code.  No other warranty, expressed or implied,
-         !              is applicable.
-         !
-         !-----------------------------------------------------------------------
-         !
-         SUBROUTINE UMACH (N, NUNIT)
-             !                                  SPECIFICATIONS FOR ARGUMENTS
-             INTEGER    N, NUNIT
-             !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-             INTEGER    NN, NOUT
-             !                                  SPECIFICATIONS FOR SAVE VARIABLES
-             INTEGER    UNIT(2)
-             SAVE       UNIT
-             !                                  SPECIFICATIONS FOR INTRINSICS
-             !     INTRINSIC  IABS
-             INTRINSIC  IABS
-             INTEGER    IABS
-             !
-             DATA UNIT(1)/5/
-             DATA UNIT(2)/6/
-             !
-             NN = IABS(N)
-             IF (NN.NE.1 .AND. NN.NE.2) THEN
-                 !                                  ERROR.  INVALID RANGE FOR N.
-                 NOUT = UNIT(2)
-                 WRITE (NOUT,99999) NN
-99999            FORMAT (/, ' *** TERMINAL ERROR 5 from UMACH.  The absolute', &
-                     /, ' ***          value of the index variable must be' &
-                     , /, ' ***          1 or 2.  IABS(N) = ', I6, &
-                     '.', /)
-                 STOP
-             !                                  CHECK FOR RESET OR RETRIEVAL
-             ELSE IF (N .LT. 0) THEN
-                 !                                  RESET
-                 UNIT(NN) = NUNIT
-             ELSE
-                 !                                  RETRIEVE
-                 NUNIT = UNIT(N)
-             END IF
-             !
-             RETURN
-         END
+implicit none
 
-         !-----------------------------------------------------------------------
-         !  IMSL Name:  C1TCI
-         !
-         !  Computer:   pcdsms/SINGLE
-         !
-         !  Revised:    August 13, 1984
-         !
-         !  Purpose:    Convert character string into corresponding integer
-         !              form.
-         !
-         !  Usage:      CALL C1TCI (CHRSTR, SLEN, NUM, IER)
-         !
-         !  Arguments:
-         !   CHRSTR  - Character array that contains the number description.
-         !             (Input)
-         !   SLEN    - Length of the character array.  (Input)
-         !   NUM     - The answer.  (Output)
-         !   IER     - Completion code.  (Output)  Where
-         !                IER =-2  indicates that the number is too large to
-         !                         be converted;
-         !                IER =-1  indicates that SLEN <= 0;
-         !                IER = 0  indicates normal completion;
-         !                IER > 0  indicates that the input string contains a
-         !                         nonnumeric character.  IER is the index of
-         !                         the first nonnumeric character in CHRSTR.
-         !
-         !  Copyright:  1984 by IMSL, Inc.  All rights reserved.
-         !
-         !  Warranty:   IMSL warrants only that IMSL testing has been applied
-         !              to this code.  No other warranty, expressed or implied,
-         !              is applicable.
-         !
-         !-----------------------------------------------------------------------
-         !
-         SUBROUTINE C1TCI (CHRSTR, SLEN, NUM, IER)
-             !                                  SPECIFICATIONS FOR ARGUMENTS
-             INTEGER    SLEN, NUM, IER
-             CHARACTER  CHRSTR(*)
-             !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-             INTEGER    COUNT, I, IMACH5, J, N, S, SIGN
-             CHARACTER  ZERO
-             !                                  SPECIFICATIONS FOR SAVE VARIABLES
-             CHARACTER  BLANK, DIGIT*10, MINUS, PLUS
-             SAVE       BLANK, DIGIT, MINUS, PLUS
-             !                                  SPECIFICATIONS FOR EQUIVALENCE
-             EQUIVALENCE (DIGIT, ZERO)
-             !                                  SPECIFICATIONS FOR INTRINSICS
-             !     INTRINSIC  INDEX
-             INTRINSIC  INDEX
-             INTEGER    INDEX
-             !                                  SPECIFICATIONS FOR FUNCTIONS
-             EXTERNAL   IMACH
-             INTEGER    IMACH
-             !
-             DATA DIGIT/'0123456789'/
-             DATA BLANK/' '/, MINUS/'-'/, PLUS/'+'/
-             !
-             !                                  CHECK SLEN
-             NUM = 0
-             IF (SLEN .LE. 0) THEN
-                 IER = -1
-                 GO TO 50
-             END IF
-             !                                  HANDLE LEADING BLANKS
-             SIGN = 1
-             I = 1
-10           IF (I .LE. SLEN) THEN
-                 IF (CHRSTR(I) .EQ. BLANK) THEN
-                     I = I + 1
-                     GO TO 10
-                 END IF
-             ELSE
-                 IER = 1
-                 GO TO 50
-             END IF
-             !                                  CHECK FOR SIGN, IF ANY
-             S = I
-             IF (CHRSTR(I) .EQ. MINUS) THEN
-                 SIGN = -1
-                 I = I + 1
-             ELSE IF (CHRSTR(I) .EQ. PLUS) THEN
-                 I = I + 1
-             END IF
-20           IF (I .LE. SLEN) THEN
-                 IF (CHRSTR(I) .EQ. BLANK) THEN
-                     I = I + 1
-                     GO TO 20
-                 END IF
-             ELSE
-                 IER = S
-                 GO TO 50
-             END IF
-             !                                  SKIP LEADING ZERO
-             J = I
-30           IF (I .LE. SLEN) THEN
-                 IF (CHRSTR(I) .EQ. ZERO) THEN
-                     I = I + 1
-                     GO TO 30
-                 END IF
-             ELSE
-                 IER = 0
-                 GO TO 50
-             END IF
-             !                                  CHECK FIRST NONBLANK CHARACTER
-             COUNT = 0
-             !                                  CHECK NUMERIC CHARACTERS
-             IMACH5 = IMACH(5)
-40           N = INDEX(DIGIT,CHRSTR(I))
-             IF (N .NE. 0) THEN
-                 COUNT = COUNT + 1
-                 IF (NUM .GT. ((IMACH5-N)+1)/10) THEN
-                     IER = -2
-                     GO TO 50
-                 ELSE
-                     NUM = NUM*10 - 1 + N
-                     I = I + 1
-                     IF (I .LE. SLEN) GO TO 40
-                 END IF
-             END IF
-             !
-             IF (COUNT .EQ. 0) THEN
-                 IF (I .GT. J) THEN
-                     IER = I
-                 ELSE
-                     IER = S
-                 END IF
-             ELSE IF (I .GT. SLEN) THEN
-                 NUM = SIGN*NUM
-                 IER = 0
-             ELSE
-                 NUM = SIGN*NUM
-                 IER = I
-             END IF
-         !
-50       CONTINUE
-         RETURN
-     END
-     !-----------------------------------------------------------------------
-     !  IMSL Name:  C1TIC
-     !
-     !  Computer:   pcdsms/SINGLE
-     !
-     !  Revised:    March 9, 1984
-     !
-     !  Purpose:    Convert an integer to its corresponding character form.
-     !              (Right justified)
-     !
-     !  Usage:      CALL C1TIC(NUM, CHRSTR, SLEN, IER)
-     !
-     !  Arguments:
-     !     NUM    - Integer number.  (Input)
-     !     CHRSTR - Character array that receives the result.  (Output)
-     !     SLEN   - Length of the character array.  (Input)
-     !     IER    - Completion code.  (Output) Where
-     !                 IER < 0  indicates that SLEN <= 0,
-     !                 IER = 0  indicates normal completion,
-     !                 IER > 0  indicates that the character array is too
-     !                       small to hold the complete number.  IER
-     !                       indicates how many significant digits are
-     !                       being truncated.
-     !
-     !  Remarks:
-     !  1. The character array is filled in a right justified manner.
-     !  2. Leading zeros are replaced by blanks.
-     !  3. Sign is inserted only for negative number.
-     !
-     !  Copyright:  1984 by IMSL, Inc.  All rights reserved.
-     !
-     !  Warranty:   IMSL warrants only that IMSL testing has been applied
-     !              to this code.  No other warranty, expressed or implied,
-     !              is applicable.
-     !
-     !-----------------------------------------------------------------------
-     !
-     SUBROUTINE C1TIC (NUM, CHRSTR, SLEN, IER)
-         !                                  SPECIFICATIONS FOR ARGUMENTS
-         INTEGER    NUM, SLEN, IER
-         CHARACTER  CHRSTR(*)
-         !                                  SPECIFICATIONS FOR LOCAL VARIABLES
-         INTEGER    I, J, K, L
-         !                                  SPECIFICATIONS FOR SAVE VARIABLES
-         CHARACTER  BLANK(1), DIGIT(10), MINUS(1)
-         SAVE       BLANK, DIGIT, MINUS
-         !                                  SPECIFICATIONS FOR INTRINSICS
-         !     INTRINSIC  IABS
-         INTRINSIC  IABS
-         INTEGER    IABS
-         !                                  SPECIFICATIONS FOR SUBROUTINES
-         EXTERNAL   M1VE
-         !
-         DATA DIGIT/'0', '1', '2', '3', '4', '5', '6', '7', '8', &
-             '9'/
-         DATA BLANK/' '/, MINUS/'-'/
-         !                                  CHECK SLEN
-         IF (SLEN .LE. 0) THEN
-             IER = -1
-             RETURN
-         END IF
-         !                                  THE NUMBER IS ZERO
-         IF (NUM .EQ. 0) THEN
-             CALL M1VE (BLANK, 1, 1, 1, CHRSTR, 1, SLEN-1, SLEN, I)
-             CHRSTR(SLEN) = DIGIT(1)
-             IER = 0
-             RETURN
-         END IF
-         !                                  CONVERT NUMBER DIGIT BY DIGIT TO
-         !                                  CHARACTER FORM
-         J = SLEN
-         K = IABS(NUM)
-10       IF (K.GT.0 .AND. J.GE.1) THEN
-             L = K
-             K = K/10
-             L = L - K*10
-             CHRSTR(J) = DIGIT(L+1)
-             J = J - 1
-             GO TO 10
-         END IF
-         !
-20       IF (K .EQ. 0) THEN
-             IF (NUM .LT. 0) THEN
-                 CALL M1VE (MINUS, 1, 1, 1, CHRSTR, J, J, SLEN, I)
-                 IF (I .NE. 0) THEN
-                     IER = 1
-                     RETURN
-                 END IF
-                 J = J - 1
-             END IF
-             IER = 0
-             CALL M1VE (BLANK, 1, 1, 1, CHRSTR, 1, J, SLEN, I)
-             RETURN
-         END IF
-         !                                  DETERMINE THE NUMBER OF SIGNIFICANT
-         !                                  DIGITS BEING TRUNCATED
-         I = 0
-30       IF (K .GT. 0) THEN
-             K = K/10
-             I = I + 1
-             GO TO 30
-         END IF
-         !
-         IF (NUM .LT. 0) I = I + 1
-         IER = I
-         !
-         RETURN
-     END
+private
+
+public :: setup, range_integrate, step_integrate, interpolate, &
+          global_error, statistics, reset_t_end, collect_garbage,  &
+          set_stop_on_fatal, get_saved_fatal
+!starta!
+public :: rk_comm_real_1d
+type rk_comm_real_1d
+
+!private
+_REAL_ :: t, t_old, t_start, t_end, dir                       !indep!
+_REAL_ :: h, h_old, h_start, h_average                        !indep!
+_REAL_ :: tol
+integer :: f_count, full_f_count, step_count, bad_step_count
+logical :: at_t_start, at_t_end
+
+
+_REAL_, dimension(:), pointer :: thresh, weights, ymax        !shp-dep!
+
+_REAL_, dimension(:), pointer :: scratch, y, yp, y_new        !dep!
+_REAL_, dimension(:), pointer :: y_old, yp_old, v0, v1        !dep!
+_REAL_, dimension(:), pointer :: err_estimates, v2, v3        !dep!
+_REAL_, dimension(:), pointer ::  vtemp                       !dep!
+_REAL_, dimension(:,:), pointer :: stages                     !dep!
+
+_REAL_ :: a(13,13), b(13), c(13), bhat(13), r(11,6), e(7)
+integer :: ptr(13), no_of_stages, rk_method, intrp_degree
+logical :: intrp_able, intrp_needs_stages
+
+_REAL_ :: toosml, cost, safety, expon, stability_radius, tan_angle, &
+    rs, rs1, rs2, rs3, rs4
+integer :: order, last_stage, max_stiff_iters, no_of_ge_steps
+logical :: fsal
+
+_REAL_ :: ge_max_contrib
+_REAL_ :: t_ge_max_contrib                                    !indep!
+integer :: ge_f_count
+_REAL_, dimension(:), pointer :: ge_assess                    !shp-dep!
+
+_REAL_, dimension(:), pointer :: ge_y, ge_yp, ge_y_new        !dep!
+_REAL_, dimension(:), pointer :: ge_err_estimates             !dep!
+_REAL_, dimension(:,:), pointer :: ge_stages                  !dep!
+
+logical :: erason, erasfl
+
+_REAL_ :: mcheps, dwarf, round_off, sqrrmc, cubrmc, sqtiny
+integer :: outch
+
+logical :: print_message, use_range
+
+character(len=80) :: rec(10)
+
+_REAL_ :: tlast, range_t_end                                  !indep!
+
+_REAL_, dimension(:), pointer :: xstage, ytemp                !dep!
+_REAL_, dimension(:,:), pointer :: p                          !dep!
+
+integer :: stiff_bad_step_count, hit_t_end_count
+_REAL_ :: errold
+logical :: chkeff, phase2
+
+integer, dimension(7) :: save_states
+
+logical :: stop_on_fatal, saved_fatal_err
+
+end type rk_comm_real_1d
+!enda!
+interface setup
+   module procedure setup_r1
+end interface
+interface range_integrate
+   module procedure range_integrate_r1
+end interface
+interface step_integrate
+   module procedure step_integrate_r1
+end interface
+interface statistics
+   module procedure statistics_r1
+end interface
+interface global_error
+   module procedure global_error_r1
+end interface
+interface reset_t_end
+   module procedure reset_t_end_r1
+end interface
+interface interpolate
+   module procedure interpolate_r1
+end interface
+interface set_stop_on_fatal
+   module procedure set_stop_on_fatal_r1
+end interface
+interface get_saved_fatal
+   module procedure get_saved_fatal_r1
+end interface
+interface collect_garbage
+   module procedure collect_garbage_r1
+end interface
+
+contains
+!startb!
+subroutine machine_const(round_off,sqrrmc,cubrmc,sqtiny,outch)
+!
+! Part of rksuite_90 v1.0 (Aug 1994)
+!         software for initial value problems in ODEs
+!
+! Authors: R.W. Brankin (NAG Ltd., Oxford, England)
+!          I. Gladwell  (Math Dept., SMU, Dallas, TX, USA)
+!          see main doc for contact details
+!
+_REAL_, intent(out) :: round_off, sqrrmc, cubrmc, sqtiny
+integer, intent(out) :: outch
+!
+_REAL_ :: dummy
+_REAL_, parameter :: third=1.0d0/3.0d0, ten=10.0d0
+!
+outch = 6
+!
+round_off = ten*epsilon(dummy)
+sqrrmc = sqrt(epsilon(dummy))
+cubrmc = epsilon(dummy)**third
+sqtiny = sqrt(tiny(dummy))
+!
+end subroutine machine_const
+
+subroutine method_const(rk_method, a, b, c, bhat, r, e, ptr, no_of_stages, &
+                        intrp_degree, intrp_able, intrp_needs_stages, &
+                        cost, safety, expon, stability_radius, &
+                        tan_angle, rs, rs1, rs2, rs3, rs4, order, last_stage, &
+                        max_stiff_iters, no_of_ge_steps, fsal, cdiff)
+!
+! Part of rksuite_90 v1.0 (Aug 1994)
+!         software for initial value problems in ODEs
+!
+! Authors: R.W. Brankin (NAG Ltd., Oxford, England)
+!          I. Gladwell  (Math Dept., SMU, Dallas, TX, USA)
+!          see main doc for contact details
+!
+integer, intent(in) :: rk_method
+_REAL_, intent(out) :: a(13,13), b(13), c(13), bhat(13), r(11,6), e(7)
+integer, intent(out) :: ptr(13), no_of_stages, intrp_degree
+logical, intent(out) :: intrp_able, intrp_needs_stages
+
+_REAL_, intent(out) :: cost, safety, expon, stability_radius, &
+    tan_angle, rs, rs1, rs2, rs3, rs4, cdiff
+integer, intent(out) :: order, last_stage, max_stiff_iters, no_of_ge_steps
+logical, intent(out) :: fsal
+!
+integer :: i
+_REAL_, parameter :: fivepc=0.05d0,  one=1.0d0, two=2.0d0, &
+   fifty=50.0d0
+!
+select case (rk_method)
+case(1)
+!
+!  METHD = 1.
+!    This pair is from "A 3(2) Pair of Runge-Kutta Formulas" by P. Bogacki
+!    and L.F. Shampine, Appl. Math. Lett., 2, pp. 321-325, 1989.  The authors
+!    are grateful to P. Bogacki for his assistance in implementing the pair.
+!
+   no_of_stages = 4; fsal = .true.; order = 2
+   tan_angle = 8.9d0; stability_radius = 2.3d0
+   safety = 0.8d0; intrp_able = .true.; intrp_degree = 3
+   intrp_needs_stages = .false.; no_of_ge_steps = 3
+!
+   ptr(1:4) = (/ 0, 1, 2, 3 /)
+!
+   a(2,1) = 1.0d0/2.0d0
+   a(3,1) = 0.0d0
+   a(3,2) = 3.0d0/4.0d0
+   a(4,1) = 2.0d0/9.0d0
+   a(4,2) = 1.0d0/3.0d0
+   a(4,3) = 4.0d0/9.0d0
+!
+!  The coefficients BHAT refer to the formula used to advance the
+!  integration, here the one of order 3.  The coefficients B refer
+!  to the other formula, here the one of order 2. For this pair, BHAT
+!  is not needed since FSAL = .TRUE.
+!
+   b(1) = 7.0d0/24.0d0
+   b(2) = 1.0d0/4.0d0
+   b(3) = 1.0d0/3.0d0
+   b(4) = 1.0d0/8.0d0
+!
+   c(1) = 0.0d0
+   c(2) = 1.0d0/2.0d0
+   c(3) = 3.0d0/4.0d0
+   c(4) = 1.0d0
+!
+case (2)
+!
+!  METHD = 2
+!    This pair is from "An Efficient Runge-Kutta (4,5) Pair" by P. Bogacki
+!    and L.F. Shampine, Rept. 89-20, Math. Dept., Southern Methodist
+!    University, Dallas, Texas, USA, 1989.  The authors are grateful to
+!    P. Bogacki for his assistance in implementing the pair.  Shampine and
+!    Bogacki subsequently modified the formula to enhance the reliability of
+!    the pair.  The original fourth order formula is used in an estimate of
+!    the local error.  If the step fails, the computation is broken off.  If
+!    the step is acceptable, the first evaluation of the next step is done,
+!    i.e., the pair is implemented as FSAL and the local error of the step
+!    is again estimated with a fourth order formula using the additional data.
+!    The step must succeed with both estimators to be accepted.  When the
+!    second estimate is formed, it is used for the subsequent adjustment of
+!    the step size because it is of higher quality.  The two fourth order
+!    formulas are well matched to leading order, and only exceptionally do
+!    the estimators disagree -- problems with discontinuous coefficients are
+!    handled more reliably by using two estimators as is global error
+!    estimation.
+!
+   no_of_stages = 8; fsal = .true.; order = 4
+   tan_angle = 5.2d0; stability_radius = 3.9d0
+   safety = 0.8d0; intrp_able = .true.
+   intrp_needs_stages = .true.; intrp_degree = 6
+   no_of_ge_steps = 2
+!
+   ptr(1:8) = (/ 0, 1, 2, 3, 4, 5, 6, 7 /)
+!
+   a(2,1) = 1.0d0/6.0d0
+   a(3,1) = 2.0d0/27.0d0
+   a(3,2) = 4.0d0/27.0d0
+   a(4,1) = 183.0d0/1372.0d0
+   a(4,2) = -162.0d0/343.0d0
+   a(4,3) = 1053.0d0/1372.0d0
+   a(5,1) = 68.0d0/297.0d0
+   a(5,2) = -4.0d0/11.0d0
+   a(5,3) = 42.0d0/143.0d0
+   a(5,4) = 1960.0d0/3861.0d0
+   a(6,1) = 597.0d0/22528.0d0
+   a(6,2) = 81.0d0/352.0d0
+   a(6,3) = 63099.0d0/585728.0d0
+   a(6,4) = 58653.0d0/366080.0d0
+   a(6,5) = 4617.0d0/20480.0d0
+   a(7,1) = 174197.0d0/959244.0d0
+   a(7,2) = -30942.0d0/79937.0d0
+   a(7,3) = 8152137.0d0/19744439.0d0
+   a(7,4) = 666106.0d0/1039181.0d0
+   a(7,5) = -29421.0d0/29068.0d0
+   a(7,6) = 482048.0d0/414219.0d0
+   a(8,1) = 587.0d0/8064.0d0
+   a(8,2) = 0.0d0
+   a(8,3) = 4440339.0d0/15491840.0d0
+   a(8,4) = 24353.0d0/124800.0d0
+   a(8,5) = 387.0d0/44800.0d0
+   a(8,6) = 2152.0d0/5985.0d0
+   a(8,7) = 7267.0d0/94080.0d0
+!
+!  The coefficients B refer to the formula of order 4.
+!
+   b(1) = 2479.0d0/34992.0d0
+   b(2) = 0.0d0
+   b(3) = 123.0d0/416.0d0
+   b(4) = 612941.0d0/3411720.0d0
+   b(5) = 43.0d0/1440.0d0
+   b(6) = 2272.0d0/6561.0d0
+   b(7) = 79937.0d0/1113912.0d0
+   b(8) = 3293.0d0/556956.0d0
+!
+!  The coefficients E refer to an estimate of the local error based on
+!  the first formula of order 4.  It is the difference of the fifth order
+!  result, here located in A(8,:), and the fourth order result.  By
+!  construction both E(2) and E(7) are zero.
+!
+   e(1) = -3.0d0/1280.0d0
+   e(2) = 0.0d0
+   e(3) = 6561.0d0/632320.0d0
+   e(4) = -343.0d0/20800.0d0
+   e(5) = 243.0d0/12800.0d0
+   e(6) = -1.0d0/95.0d0
+   e(7) = 0.0d0
+!
+   c(1) = 0.0d0
+   c(2) = 1.0d0/6.0d0
+   c(3) = 2.0d0/9.0d0
+   c(4) = 3.0d0/7.0d0
+   c(5) = 2.0d0/3.0d0
+   c(6) = 3.0d0/4.0d0
+   c(7) = 1.0d0
+   c(8) = 1.0d0
+!
+!  To do interpolation with this pair, some extra stages have to be computed.
+!  The following additional A and C coefficients are for this purpose.
+!  In addition there is an array R that plays a role for interpolation
+!  analogous to that of BHAT for the basic step.
+!
+   c(9) = 1.0d0/2.0d0
+   c(10) = 5.0d0/6.0d0
+   c(11) = 1.0d0/9.0d0
+!
+   a(9,1) = 455.0d0/6144.0d0
+   a(10,1) = -837888343715.0d0/13176988637184.0d0
+   a(11,1) = 98719073263.0d0/1551965184000.0d0
+   a(9,2) = 0.0d0
+   a(10,2) = 30409415.0d0/52955362.0d0
+   a(11,2) = 1307.0d0/123552.0d0
+   a(9,3) = 10256301.0d0/35409920.0d0
+   a(10,3) = -48321525963.0d0/759168069632.0d0
+   a(11,3) = 4632066559387.0d0/70181753241600.0d0
+   a(9,4) = 2307361.0d0/17971200.0d0
+   a(10,4) = 8530738453321.0d0/197654829557760.0d0
+   a(11,4) = 7828594302389.0d0/382182512025600.0d0
+   a(9,5) = -387.0d0/102400.0d0
+   a(10,5) = 1361640523001.0d0/1626788720640.0d0
+   a(11,5) = 40763687.0d0/11070259200.0d0
+   a(9,6) = 73.0d0/5130.0d0
+   a(10,6) = -13143060689.0d0/38604458898.0d0
+   a(11,6) = 34872732407.0d0/224610586200.0d0
+   a(9,7) = -7267.0d0/215040.0d0
+   a(10,7) = 18700221969.0d0/379584034816.0d0
+   a(11,7) = -2561897.0d0/30105600.0d0
+   a(9,8) = 1.0d0/32.0d0
+   a(10,8) = -5831595.0d0/847285792.0d0
+   a(11,8) = 1.0d0/10.0d0
+   a(10,9) = -5183640.0d0/26477681.0d0
+   a(11,9) = -1.0d0/10.0d0
+   a(11,10) = -1403317093.0d0/11371610250.0d0
+!
+   r(1:11,1) = 0.0d0; r(2,1:6) = 0.0d0
+   r(1,6) = -12134338393.0d0/1050809760.0d0
+   r(1,5) = -1620741229.0d0/50038560.0d0
+   r(1,4) = -2048058893.0d0/59875200.0d0
+   r(1,3) = -87098480009.0d0/5254048800.0d0
+   r(1,2) = -11513270273.0d0/3502699200.0d0
+!
+   r(3,6) = -33197340367.0d0/1218433216.0d0
+   r(3,5) = -539868024987.0d0/6092166080.0d0
+   r(3,4) = -39991188681.0d0/374902528.0d0
+   r(3,3) = -69509738227.0d0/1218433216.0d0
+   r(3,2) = -29327744613.0d0/2436866432.0d0
+!
+   r(4,6) = -284800997201.0d0/19905339168.0d0
+   r(4,5) = -7896875450471.0d0/165877826400.0d0
+   r(4,4) = -333945812879.0d0/5671036800.0d0
+   r(4,3) = -16209923456237.0d0/497633479200.0d0
+   r(4,2) = -2382590741699.0d0/331755652800.0d0
+!
+   r(5,6) = -540919.0d0/741312.0d0
+   r(5,5) = -103626067.0d0/43243200.0d0
+   r(5,4) = -633779.0d0/211200.0d0
+   r(5,3) = -32406787.0d0/18532800.0d0
+   r(5,2) = -36591193.0d0/86486400.0d0
+!
+   r(6,6) = 7157998304.0d0/374350977.0d0
+   r(6,5) = 30405842464.0d0/623918295.0d0
+   r(6,4) = 183022264.0d0/5332635.0d0
+   r(6,3) = -3357024032.0d0/1871754885.0d0
+   r(6,2) = -611586736.0d0/89131185.0d0
+!
+   r(7,6) = -138073.0d0/9408.0d0
+   r(7,5) = -719433.0d0/15680.0d0
+   r(7,4) = -1620541.0d0/31360.0d0
+   r(7,3) = -385151.0d0/15680.0d0
+   r(7,2) = -65403.0d0/15680.0d0
+!
+   r(8,6) = 1245.0d0/64.0d0
+   r(8,5) = 3991.0d0/64.0d0
+   r(8,4) = 4715.0d0/64.0d0
+   r(8,3) = 2501.0d0/64.0d0
+   r(8,2) = 149.0d0/16.0d0
+   r(8,1) = 1.0d0
+!
+   r(9,6) = 55.0d0/3.0d0
+   r(9,5) = 71.0d0
+   r(9,4) = 103.0d0
+   r(9,3) = 199.0d0/3.0d0
+   r(9,2) = 16.0d0
+!
+   r(10,6) = -1774004627.0d0/75810735.0d0
+   r(10,5) = -1774004627.0d0/25270245.0d0
+   r(10,4) = -26477681.0d0/359975.0d0
+   r(10,3) = -11411880511.0d0/379053675.0d0
+   r(10,2) = -423642896.0d0/126351225.0d0
+!
+   r(11,6) = 35.0d0
+   r(11,5) = 105.0d0
+   r(11,4) = 117.0d0
+   r(11,3) = 59.0d0
+   r(11,2) = 12.0d0
+!
+case (3)
+!
+!  METHD = 3
+!    This pair is from "High Order Embedded Runge-Kutta Formulae" by P.J.
+!    Prince and J.R. Dormand, J. Comp. Appl. Math.,7, pp. 67-75, 1981.  The
+!    authors are grateful to P. Prince and J. Dormand for their assistance in
+!    implementing the pair.
+!
+   no_of_stages = 13; fsal = .false.; order = 7
+   tan_angle = 11.0d0; stability_radius = 5.2d0
+   safety = 0.8d0; intrp_able = .false.
+   intrp_needs_stages = .false.; intrp_degree = 0
+   no_of_ge_steps = 2
+!
+   ptr(1:13) = (/ 0, 1, 2, 1, 3, 2, 4, 5, 6, 7, 8, 9, 1 /)
+!
+   a(2,1) = 5.55555555555555555555555555556e-2
+   a(3,1) = 2.08333333333333333333333333333e-2
+   a(3,2) = 6.25e-2
+   a(4,1) = 3.125e-2
+   a(4,2) = 0.0d0
+   a(4,3) = 9.375e-2
+   a(5,1) = 3.125e-1
+   a(5,2) = 0.0d0
+   a(5,3) = -1.171875d0
+   a(5,4) = 1.171875d0
+   a(6,1) = 3.75e-2
+   a(6,2) = 0.0d0
+   a(6,3) = 0.0d0
+   a(6,4) = 1.875e-1
+   a(6,5) = 1.5e-1
+   a(7,1) = 4.79101371111111111111111111111e-2
+   a(7,2) = 0.0d0
+   a(7,3) = 0.0d0
+   a(7,4) = 1.12248712777777777777777777778e-1
+   a(7,5) = -2.55056737777777777777777777778e-2
+   a(7,6) = 1.28468238888888888888888888889e-2
+   a(8,1) = 1.6917989787292281181431107136e-2
+   a(8,2) = 0.0d0
+   a(8,3) = 0.0d0
+   a(8,4) = 3.87848278486043169526545744159e-1
+   a(8,5) = 3.59773698515003278967008896348e-2
+   a(8,6) = 1.96970214215666060156715256072e-1
+   a(8,7) = -1.72713852340501838761392997002e-1
+   a(9,1) = 6.90957533591923006485645489846e-2
+   a(9,2) = 0.0d0
+   a(9,3) = 0.0d0
+   a(9,4) = -6.34247976728854151882807874972e-1
+   a(9,5) = -1.61197575224604080366876923982e-1
+   a(9,6) = 1.38650309458825255419866950133e-1
+   a(9,7) = 9.4092861403575626972423968413e-1
+   a(9,8) = 2.11636326481943981855372117132e-1
+   a(10,1) = 1.83556996839045385489806023537e-1
+   a(10,2) = 0.0d0
+   a(10,3) = 0.0d0
+   a(10,4) = -2.46876808431559245274431575997d0
+   a(10,5) = -2.91286887816300456388002572804e-1
+   a(10,6) = -2.6473020233117375688439799466e-2
+   a(10,7) = 2.84783876419280044916451825422d0
+   a(10,8) = 2.81387331469849792539403641827e-1
+   a(10,9) = 1.23744899863314657627030212664e-1
+   a(11,1) = -1.21542481739588805916051052503d0
+   a(11,2) = 0.0d0
+   a(11,3) = 0.0d0
+   a(11,4) = 1.66726086659457724322804132886e1
+   a(11,5) = 9.15741828416817960595718650451e-1
+   a(11,6) = -6.05660580435747094755450554309d0
+   a(11,7) = -1.60035735941561781118417064101e1
+   a(11,8) = 1.4849303086297662557545391898e1
+   a(11,9) = -1.33715757352898493182930413962e1
+   a(11,10) = 5.13418264817963793317325361166d0
+   a(12,1) = 2.58860916438264283815730932232e-1
+   a(12,2) = 0.0d0
+   a(12,3) = 0.0d0
+   a(12,4) = -4.77448578548920511231011750971d0
+   a(12,5) = -4.3509301377703250944070041181e-1
+   a(12,6) = -3.04948333207224150956051286631d0
+   a(12,7) = 5.57792003993609911742367663447d0
+   a(12,8) = 6.15583158986104009733868912669d0
+   a(12,9) = -5.06210458673693837007740643391d0
+   a(12,10) = 2.19392617318067906127491429047d0
+   a(12,11) = 1.34627998659334941535726237887e-1
+   a(13,1) = 8.22427599626507477963168204773e-1
+   a(13,2) = 0.0d0
+   a(13,3) = 0.0d0
+   a(13,4) = -1.16586732572776642839765530355e1
+   a(13,5) = -7.57622116690936195881116154088e-1
+   a(13,6) = 7.13973588159581527978269282765e-1
+   a(13,7) = 1.20757749868900567395661704486e1
+   a(13,8) = -2.12765911392040265639082085897d0
+   a(13,9) = 1.99016620704895541832807169835d0
+   a(13,10) = -2.34286471544040292660294691857e-1
+   a(13,11) = 1.7589857770794226507310510589e-1
+   a(13,12) = 0.0d0
+!
+!  The coefficients BHAT refer to the formula used to advance the
+!  integration, here the one of order 8.  The coefficients B refer
+!  to the other formula, here the one of order 7.
+!
+   bhat(1) = 4.17474911415302462220859284685e-2
+   bhat(2) = 0.0d0
+   bhat(3) = 0.0d0
+   bhat(4) = 0.0d0
+   bhat(5) = 0.0d0
+   bhat(6) = -5.54523286112393089615218946547e-2
+   bhat(7) = 2.39312807201180097046747354249e-1
+   bhat(8) = 7.0351066940344302305804641089e-1
+   bhat(9) = -7.59759613814460929884487677085e-1
+   bhat(10) = 6.60563030922286341461378594838e-1
+   bhat(11) = 1.58187482510123335529614838601e-1
+   bhat(12) = -2.38109538752862804471863555306e-1
+   bhat(13) = 2.5e-1
+!
+   b(1) = 2.9553213676353496981964883112e-2
+   b(2) = 0.0d0
+   b(3) = 0.0d0
+   b(4) = 0.0d0
+   b(5) = 0.0d0
+   b(6) = -8.28606276487797039766805612689e-1
+   b(7) = 3.11240900051118327929913751627e-1
+   b(8) = 2.46734519059988698196468570407d0
+   b(9) = -2.54694165184190873912738007542d0
+   b(10) = 1.44354858367677524030187495069d0
+   b(11) = 7.94155958811272872713019541622e-2
+   b(12) = 4.44444444444444444444444444445e-2
+   b(13) = 0.0d0
+!
+   c(1) = 0.0d0
+   c(2) = 5.55555555555555555555555555556e-2
+   c(3) = 8.33333333333333333333333333334e-2
+   c(4) = 1.25e-1
+   c(5) = 3.125e-1
+   c(6) = 3.75e-1
+   c(7) = 1.475e-1
+   c(8) = 4.65e-1
+   c(9) = 5.64865451382259575398358501426e-1
+   c(10) = 6.5e-1
+   c(11) = 9.24656277640504446745013574318e-1
+   c(12) = 1.0d0
+   c(13) = c(12)
+!
+end select
+!
+!  The definitions of all pairs come here for the calculation of
+!  LAST_STAGE - the position of the last evaluated stage in a method
+!  RS1, RS2, RS3, RS4 - minimum and maximum rations used is step selection
+!  COST - the cost of a step
+!  MAX_STIFF_ITERS - the number of iterations permitted in stiffness detection
+!     There are at most Q = 3 function calls per iteration. MAX_STIFF_ITERS
+!     is determined so that  Q*MAX_STIFF_ITERS <= 5% of the cost of
+!     50 steps and 1 <= MAX_STIFF_ITERS <= 8. This limits the number of
+!     function calls in each diagnosis of stiffness to 24.
+!  EXPON - an exponent for use in step slection
+!  CDIFF - a coefficent used in determining the minimum permissible step
+!
+last_stage = ptr(no_of_stages)
+if (fsal) then
+   cost = real(no_of_stages-1)
+else
+   cost = real(no_of_stages)
+end if
+!
+max_stiff_iters = min(8,max(1,int(fivepc*cost*fifty)))
+!
+expon = one/(order+one)
+!
+!     In calculating CDIFF it is assumed that there will be a non-zero
+!     difference |C(I) - C(J)| less than one. If C(I) = C(J) for any I not
+!     equal to J, they should be made precisely equal by assignment.
+!
+cdiff = one
+do i = 1, no_of_stages - 1
+   cdiff = min( cdiff, minval( &
+  abs((c(i)-c(i+1:no_of_stages))), &
+       mask=(c(i)-c(i+1:no_of_stages)/=0)) )
+end do
+!
+rs = two; rs1 = one/rs; rs2 = rs**2
+rs3 = rs*rs2; rs4 = one/rs3
+!
+end subroutine method_const
+!endb!
+!startc!
+subroutine setup_r1(comm,t_start,y_start,t_end,tolerance,thresholds, &
+                    method,task,error_assess,h_start,message)
+!
+! Part of rksuite_90 v1.0 (Aug 1994)
+!         software for initial value problems in ODEs
+!
+! Authors: R.W. Brankin (NAG Ltd., Oxford, England)
+!          I. Gladwell  (Math Dept., SMU, Dallas, TX, USA)
+!          see main doc for contact details
+!
+_REAL_, intent(in) :: t_end, t_start                          !indep!
+_REAL_, intent(in) :: tolerance
+_REAL_, dimension(:), intent(in) :: y_start                   !dep!
+_REAL_, dimension(:), intent(in) :: thresholds                !shp-dep!
+type(rk_comm_real_1d) :: comm
+_REAL_, intent(in), optional :: h_start                       !indep!
+logical, intent(in), optional :: error_assess, message
+character(len=*), intent(in), optional :: task, method
+!
+character(len=*), parameter :: srname="SETUP"
+!
+_REAL_ :: hmin                                                !indep!
+_REAL_ :: cdiff
+integer :: ier, nrec, tr_dim_of_stages
+logical :: legalt
+character(len=1) :: task1, method1
+!
+integer, parameter :: not_ready=-1, fatal=911, just_fine=1
+_REAL_, parameter :: zero=0.0d0, pt01=0.01d0, fivepc=0.05d0, &
+   third=1.0d0/3.0d0, one=1.0d0, two=2.0d0, ten=10.0d0, fifty=50.0d0
+!
+ier = just_fine; nrec = 0
+!
+!  Clear previous state of the suite.
+!
+call setup_global_stuff
+nullify(comm%thresh, comm%err_estimates, comm%weights, comm%y_old, &
+   comm%scratch, &
+   comm%y, comm%yp, comm%y_new, comm%yp_old, comm%stages, comm%ge_y, &
+   comm%ge_yp, comm%ge_err_estimates, comm%ge_assess, comm%ge_y_new, &
+   comm%ge_stages, comm%v0, comm%v1, comm%v2, comm%v3, comm%vtemp, &
+   comm%xstage, comm%ytemp, comm%p)
+!
+!  Fetch output channel and machine constants;
+!
+call machine_const(comm%round_off,comm%sqrrmc,comm%cubrmc,comm%sqtiny, &
+                   comm%outch)
+!
+body: do
+!
+!  Check for valid shape
+   if (size(shape(y_start))>0) then
+      if (any(shape(y_start)==0)) then
+         ier = fatal; nrec = 2; write (comm%rec,"(a)") &
+" ** An extent of Y_START has zero length. This is not permitted."
+         exit body
+      end if
+   end if
+!
+!  Check and process non-trivial optional arguments
+   if (present(task)) then
+      task1 = task(1:1); comm%use_range = task1 == "R" .or. task1 == "r"
+      legalt = comm%use_range  .or.  task1 == "S" .or. task1 == "s"
+      if (.not.legalt) then
+         ier = fatal; nrec = 2; write (comm%rec,"(a,a,a/a)") &
+" ** You have set the first character of TASK to be '",TASK1,"'.", &
+" ** It must be one of 'R','r','S' or 's'."
+         exit body
+      end if
+   end if
+   if (present(method)) then
+      method1 = method(1:1)
+      select case (method1)
+      case("L","l"); comm%rk_method = 1
+      case("M","m"); comm%rk_method = 2
+      case("H","h"); comm%rk_method = 3
+      case default
+         ier = fatal; nrec = 2; write (comm%rec,"(a,a,a/a)") &
+" ** You have set the first character of METHOD to be '",METHOD1,"'.", &
+" ** It must be one of 'L','l','M','m','H' or 'h'."
+         exit body
+      end select
+   end if
+   if (present(message)) comm%print_message = message
+!
+! Check consistency of array arguments
+!
+   if (any(shape(y_start)/=shape(thresholds))) then
+      ier = fatal; nrec = 1; write (comm%rec,"(a)") &
+" ** The shapes of Y_START and THRESHOLDS are not consistent."
+      exit body
+   end if
+!
+! Check and process compulsory arguments
+   if (t_start == t_end) then
+      ier = fatal; nrec = 1; write (comm%rec,"(a,e13.5,a)") &
+" ** You have set T_START = T_END = ",T_START,"."
+      exit body
+   else
+      comm%t_end = t_end; comm%t_start = t_start
+      comm%t_old = t_start; comm%t = t_start
+      comm%dir = sign(one,t_end-t_start)
+   end if
+   if ((tolerance > pt01) .or. (tolerance < comm%round_off)) then
+      ier = fatal; nrec = 2; write (comm%rec,"(a,e13.5,a/a,e13.5,a)") &
+" ** You have set TOLERANCE = ",tolerance," which is not permitted. The", &
+" ** range of permitted values is (",comm%round_off,",0.01)."
+      exit body
+   else
+      comm%tol = tolerance
+   end if
+   if (minval(thresholds) < comm%sqtiny) then                        !spec-ar!
+      ier = fatal; nrec = 2; write (comm%rec,"(a/a,e13.5,a)") &
+" ** You have set a component of THRESHOLDS to be less than the permitted", &
+" ** minimum,",comm%sqtiny,"."
+      exit body
+   end if
+!
+!  Set formula definitions and characteristics
+   call method_const(comm%rk_method, comm%a, comm%b, comm%c, comm%bhat, &
+        comm%r, comm%e, comm%ptr, comm%no_of_stages, comm%intrp_degree, &
+        comm%intrp_able, comm%intrp_needs_stages,  comm%cost, &
+        comm%safety, comm%expon, comm%stability_radius, comm%tan_angle, &
+        comm%rs, comm%rs1, comm%rs2, comm%rs3, comm%rs4, comm%order, &
+        comm%last_stage, comm%max_stiff_iters, comm%no_of_ge_steps, comm%fsal,&
+        cdiff)
+!
+   tr_dim_of_stages = maxval(comm%ptr(2:comm%no_of_stages))
+   comm%toosml = comm%round_off/cdiff
+!
+!  In STEP_INTEGRATE the first step taken will have magnitude H.  If
+!  H_START = ABS(H_START) is not equal to zero, H = H_START.  If H_START is
+!  equal to zero, the code is to find an on-scale initial step size H.  To
+!  start this process, H is set here to an upper bound on the first step
+!  size that reflects the scale of the independent variable.
+!  RANGE_INTEGRATE has some additional information, namely the first output
+!  point, that is used to refine this bound in STEP_INTEGRATE when called
+!  from RANGE_INTEGRATE.  If H_START is not zero, but it is either too big
+!  or too small, the input H_START is ignored and H_START is set to zero to
+!  activate the automatic determination of an on-scale initial step size.
+!  
+   hmin = max(comm%sqtiny,comm%toosml*max(abs(t_start),abs(t_end)))
+   if (abs(t_end-t_start) < hmin) then
+      ier = fatal; nrec = 4; write (comm%rec,"(a/a/a,e13.5,a/a,e13.5,a)") &
+" ** You have set values for T_END and T_START that are not clearly", &
+" ** distinguishable for the method and the precision of the computer", &
+" ** being used. ABS(T_END-T_START) is ",ABS(T_END-T_START)," but should be", &
+" **  at least ",hmin,"."
+     exit body
+   end if
+   if (present(h_start)) comm%h_start = abs(h_start)
+   if (comm%h_start > abs(t_end-t_start) .or. comm%h_start < hmin) &
+      comm%h_start = zero
+   if (comm%h_start == zero) then
+      comm%h = max(abs(t_end-t_start)/comm%rs3,hmin)
+   else
+      comm%h = comm%h_start
+   end if
+!
+!  Allocate a number of arrays using pointers.
+!
+   allocate(comm%thresh(size(y_start,1)), &                          !alloc!
+            comm%err_estimates(size(y_start,1)), &                   !alloc!
+            comm%weights(size(y_start,1)), &                         !alloc!
+            comm%y_old(size(y_start,1)), &                           !alloc!
+            comm%scratch(size(y_start,1)), &                         !alloc!
+            comm%y(size(y_start,1)), &                               !alloc!
+            comm%yp(size(y_start,1)), &                              !alloc!
+            comm%stages(size(y_start,1),tr_dim_of_stages), &         !alloc!
+            comm%ymax(size(y_start,1)),stat=ier)                     !alloc!
+   if (ier /= 0) then
+      ier = fatal; nrec = 1 ; write (comm%rec,"(a)") &
+" ** Not enough storage available to create workspace required internally."
+      exit body
+   else
+      comm%y = y_start; comm%ymax = abs(y_start) 
+      comm%thresh = thresholds;
+      comm%y_new => comm%scratch; comm%yp_old => comm%scratch
+      comm%v0 => comm%err_estimates; comm%vtemp => comm%scratch
+      comm%v1 => comm%stages(:,1); comm%v2 => comm%stages(:,2)
+      comm%v3 => comm%stages(:,3)
+   end if
+!
+!  Pre-allocate storage for interpolation if the TASK = `R' was specified. 
+!
+   if (comm%use_range) then
+      if (comm%intrp_able) then
+         if (comm%rk_method==1) then
+            comm%p => comm%stages(:,1:2)
+         else if (comm%rk_method==2) then
+            allocate(comm%p(size(y_start,1),5), &                    !alloc!
+                     comm%ytemp(size(y_start,1)), &                  !alloc!
+                     comm%xstage(size(y_start,1)),stat=ier)          !alloc!
+            if (ier /= 0) then
+               ier = fatal; nrec = 1 ; write (comm%rec,"(a)") &
+" ** Not enough storage available to create workspace required internally."
+               exit body
+            end if
+         end if
+      end if
+   end if
+!
+!  Initialise state and allocate storage for global error assessment
+!
+   comm%t_ge_max_contrib = t_start
+   if (present(error_assess)) comm%erason = error_assess
+   if (comm%erason) then
+!
+!  Storage is required for the stages of a secondary integration. The
+!  stages of the primary intergration can only be overwritten in the
+!  cases where there is no interpolant or the interpolant does not
+!  require information about the stages (e.g. METHOD 'H' and METHOD 'L',
+!  respectively).
+      if (.not.comm%intrp_needs_stages) then
+         comm%ge_stages => comm%stages
+      else
+         allocate(comm%ge_stages(size(y_start,1),tr_dim_of_stages),stat=ier) !alloc!
+         if (ier /= 0) then
+            ier = fatal; nrec = 1 ; write (comm%rec,"(a)") &
+" ** Not enough storage available to create workspace required internally."
+            exit body
+         end if
+      end if
+      allocate(comm%ge_y(size(y_start,1)), &                         !alloc!
+               comm%ge_yp(size(y_start,1)), &                        !alloc!
+               comm%ge_err_estimates(size(y_start,1)), &             !alloc!
+               comm%ge_assess(size(y_start,1)), &                    !alloc!
+               comm%ge_y_new(size(y_start,1)),stat=ier)              !alloc!
+      if (ier /= 0) then
+         ier = fatal; nrec = 1 ; write (comm%rec,"(a)") &
+" ** Not enough storage available to create workspace required internally."
+         exit body
+      else
+         comm%ge_assess = 0.0d0; comm%ge_y = y_start
+      end if
+   end if
+   exit body
+end do body
+!
+call rkmsg_r1(ier,srname,nrec,comm)
+!
+contains
+
+subroutine setup_global_stuff
+!
+comm%h_start=0.0d0; comm%h_old=0.0d0
+comm%f_count=0; comm%full_f_count=0; comm%step_count=0; comm%bad_step_count=0
+comm%at_t_start=.true.;  comm%at_t_end=.false.
+comm%rk_method=2; 
+comm%ge_max_contrib=0.0d0; comm%ge_f_count=0
+comm%erason=.false.;  comm%erasfl=.false.
+comm%print_message=.true.;  comm%use_range=.true.
+comm%stiff_bad_step_count=0;  comm%hit_t_end_count=0
+comm%errold=0.0d0;  comm%h_average=0.0d0
+comm%chkeff=.false.;  comm%phase2=.true.
+comm%save_states(1:7)=not_ready
+comm%stop_on_fatal=.true.;  comm%saved_fatal_err=.false.
+!
+end subroutine setup_global_stuff
+
+end subroutine setup_r1
+
+
+subroutine collect_garbage_r1(comm)
+!
+! Part of rksuite_90 v1.0 (Aug 1994)
+!         software for initial value problems in ODEs
+! Modified by I.Gladwell (Aug 2002)
+!
+! Authors: R.W. Brankin (NAG Ltd., Oxford, England)
+!          I. Gladwell  (Math Dept., SMU, Dallas, TX, USA)
+!          see main doc for contact details
+!
+type(rk_comm_real_1d) :: comm
+!
+if (associated(comm%thresh)) then
+   deallocate(comm%thresh); nullify(comm%thresh)
+end if
+if (associated(comm%y)) then
+   deallocate(comm%y); nullify(comm%y)
+end if
+if (associated(comm%yp)) then
+   deallocate(comm%yp); nullify(comm%yp)
+end if
+if (associated(comm%ymax)) then
+   deallocate(comm%ymax); nullify(comm%ymax)
+end if
+if (associated(comm%scratch)) then
+   deallocate(comm%scratch); nullify(comm%scratch)
+   nullify(comm%y_new); nullify(comm%yp_old); nullify(comm%vtemp)
+end if
+if (associated(comm%weights)) then
+   deallocate(comm%weights); nullify(comm%weights)
+end if
+if (associated(comm%ytemp)) then
+   deallocate(comm%ytemp); nullify(comm%ytemp)
+end if
+if (associated(comm%y_old)) then
+   deallocate(comm%y_old); nullify(comm%y_old)
+end if
+if (associated(comm%err_estimates)) then
+   deallocate(comm%err_estimates); nullify(comm%err_estimates)
+   nullify(comm%v0)
+end if
+if (associated(comm%p,comm%stages(:,1:2))) then
+   nullify(comm%p)
+end if
+if (associated(comm%ge_stages,comm%stages)) then
+   deallocate(comm%stages); nullify(comm%stages); nullify(comm%ge_stages);
+   nullify(comm%v1,comm%v2,comm%v3)
+else if (associated(comm%ge_stages)) then
+   deallocate(comm%ge_stages); nullify(comm%ge_stages)
+end if
+if (associated(comm%ge_y_new)) then
+   deallocate(comm%ge_y_new); nullify(comm%ge_y_new)
+end if
+if (associated(comm%ge_assess)) then
+   deallocate(comm%ge_assess); nullify(comm%ge_assess)
+end if
+if (associated(comm%ge_err_estimates)) then
+   deallocate(comm%ge_err_estimates); nullify(comm%ge_err_estimates)
+end if
+if (associated(comm%ge_yp)) then
+   deallocate(comm%ge_yp); nullify(comm%ge_yp)
+end if
+if (associated(comm%ge_y)) then
+   deallocate(comm%ge_y); nullify(comm%ge_y)
+end if
+if (associated(comm%xstage)) then
+   deallocate(comm%xstage); nullify(comm%xstage)
+end if
+if (associated(comm%p)) then
+   deallocate(comm%p); nullify(comm%p)
+end if
+if (associated(comm%stages)) then
+  deallocate(comm%stages); nullify(comm%stages)
+end if
+!
+end subroutine collect_garbage_r1
+recursive subroutine range_integrate_r1(comm,f,t_want,t_got,y_got,yderiv_got, &
+                                        flag)
+!
+! Part of rksuite_90 v1.0 (Aug 1994)
+!         software for initial value problems in ODEs
+!
+! Authors: R.W. Brankin (NAG Ltd., Oxford, England)
+!          I. Gladwell  (Math Dept., SMU, Dallas, TX, USA)
+!          see main doc for contact details
+!
+_REAL_, intent(in) :: t_want                                  !indep!
+_REAL_, intent(out) :: t_got                                  !indep!
+_REAL_, dimension(:), intent(out) :: y_got, yderiv_got        !dep!
+integer, intent(out), optional :: flag
+type(rk_comm_real_1d), intent(inout) :: comm
+!
+interface 
+   subroutine f(t,y,yp)
+      _REAL_, intent(in) :: t                                 !indep!
+      _REAL_, dimension(:), intent(in) :: y                   !dep!
+      _REAL_, dimension(:), intent(out) :: yp             !dep!
+   end subroutine
+   
+   !function f(t,y)
+   !   _REAL_, intent(in) :: t                                 !indep!
+   !   _REAL_, dimension(:), intent(in) :: y                   !dep!
+   !   _REAL_, dimension(size(y,1)) :: f                       !dep!
+   !end function f
+end interface
+!
+character(len=*), parameter :: srname="RANGE_INTEGRATE"
+!
+_REAL_ :: hmin, t_now                                         !indep!
+integer :: step_flag, ier, nrec, state
+logical :: goback, baderr
+!
+integer, parameter :: not_ready=-1, usable=-2, fatal=911, catastrophe=912, &
+   just_fine=1
+logical, parameter :: tell=.false., ask=.true.
+_REAL_, parameter :: zero=0.0d0
+!
+ier = just_fine; nrec = 0
+goback = .false.; baderr = .false.
+body: do
+!
+!  Is it permissible to call RANGE_INTEGRATE?
+!
+   state = get_saved_state_r1("SETUP",comm%save_states)
+   if (state==fatal) then
+      ier = catastrophe; nrec = 1; write (comm%rec,"(a)") &
+" ** A catastrophic error has already been detected elsewhere."
+      exit body
+   end if
+   if (state==not_ready) then
+      ier = fatal; nrec = 1; write (comm%rec,"(a)") &
+" ** You have not called SETUP, so you cannot use RANGE_INTEGRATE."
+      exit body
+   end if
+   if (.not.comm%use_range) then
+      ier = fatal; nrec = 2; write (comm%rec,"(a/a)") &
+" ** You have called RANGE_INTEGRATE after you specified in SETUP that you",&
+" ** were going to use STEP_INTEGRATE. This is not permitted."
+      exit body
+   end if
+   state = get_saved_state_r1(srname,comm%save_states)
+   if (state==5 .or. state==6) then
+      ier = fatal; nrec = 1; write (comm%rec,"(a/a)") &
+" ** This routine has already returned with a hard failure. You must call",&
+" ** SETUP to start another problem."
+      exit body
+   end if
+   state = usable
+   call set_saved_state_r1(srname,state,comm)
+!
+   if (comm%at_t_start) then
+!
+!  First call.
+!
+!  A value of T_END is specified in SETUP. When INTRP_ABLE = .FALSE., as with
+!  METHOD = 'H', output is obtained at the specified T_WANT by resetting T_END
+!  to T_WANT.  At this point, before the integration gets started, this can
+!  be done with a simple assignment.  Later it is done with a call to 
+!  RESET_T_END. The original T_END is saved in RANGE_T_END.
+!
+      comm%range_t_end = comm%t_end
+      if (.not.comm%intrp_able) comm%t_end = t_want
+!
+!  The last T_GOT returned is in the variable TLAST. T records how far the 
+!  integration has advanced towards the specified T_END.  When output is 
+!  obtained by interpolation, the integration goes past the T_GOT returned 
+!  (T is closer to the specified T_END than T_GOT).
+      comm%tlast = comm%t_start; t_got = comm%t_start
+!
+!  If the code is to find an on-scale initial step size H, a bound was placed
+!  on H in SETUP.  Here the first output point is used to refine this bound.
+      if (comm%h_start==zero) then
+         comm%h = min(abs(comm%h),abs(t_want-comm%t_start))
+         hmin = max(comm%sqtiny,comm%toosml* &
+                    max(abs(comm%t_start),abs(comm%t_end)))
+         comm%h = max(comm%h,hmin)
+      end if
+!
+   else
+!
+!  Subsequent call.
+!
+      if (comm%tlast==comm%range_t_end) then
+         ier = fatal; nrec = 3; write (comm%rec,"(a/a/a)") &
+" ** You have called RANGE_INTEGRATE after reaching T_END. (Your last call",&
+" ** to RANGE_INTEGRATE  resulted in T_GOT = T_END.)  To start a new",&
+" ** problem, you will need to call SETUP."
+         exit body
+      end if
+!
+   end if
+!
+!  Check for valid T_WANT.
+!
+   if (comm%dir*(t_want-comm%tlast)<=zero) then
+      ier = fatal; nrec = 3; write (comm%rec,"(a/a/a)") &
+" ** You have made a call to RANGE_INTEGRATE with a T_WANT that does not lie",&
+" ** between the previous value of T_GOT (T_START on the first call) and",&
+" ** T_END. This is not permitted. Check your program carefully."
+      exit body
+   end if
+   if (comm%dir*(t_want-comm%range_t_end)>zero) then
+      hmin = max(comm%sqtiny,comm%toosml* &
+             max(abs(t_want),abs(comm%range_t_end)))
+      if (abs(t_want-comm%range_t_end)<hmin) then
+         ier = fatal; nrec = 4; write (comm%rec,"(a/a/a/a)") &
+" ** You have made a call to RANGE_INTEGRATE with a T_WANT that does not lie",&
+" ** between the previous value of T_GOT (T_START on the first call) and",&
+" ** T_END. This is not permitted. T_WANT is very close to T_END, so you may",&
+" ** have meant to set it to be T_END exactly.  Check your program carefully."
+      else
+         ier = fatal; nrec = 3; write (comm%rec,"(a/a/a/a)") &
+" ** You have made a call to RANGE_INTEGRATE with a T_WANT that does not lie",&
+" ** between the previous value of T_GOT (T_START on the first call) and",&
+" ** T_END. This is not permitted. Check your program carefully."
+      end if
+      exit body
+   end if
+   if (.not.comm%intrp_able) then
+      hmin = max(comm%sqtiny,comm%toosml*max(abs(comm%tlast),abs(t_want)))
+      if (abs(t_want-comm%tlast)<hmin) then
+         ier = fatal; nrec = 4; write (comm%rec,"(a/a/a/a,e13.5,a)") &
+" ** You have made a call to RANGE_INTEGRATE with a T_WANT that is not",&
+" ** sufficiently different from the last value of T_GOT (T_START on the",&
+" ** first call). When using METHOD = 'H', it must differ by at least ",&
+" ** ",HMIN,"."
+         exit body
+      end if
+!
+!  We have a valid T_WANT. There is no interpolation with this METHOD and
+!  therefore we step to T_WANT exactly by resetting T_END with a call to 
+!  RESET_T_END. On the first step this matter is handled differently as
+!  explained above.
+!
+      if (.not.comm%at_t_start) then
+         call reset_t_end(comm,t_want)
+         baderr = get_saved_fatal_r1(comm)
+         if (baderr) exit body
+      end if
+   end if
+!
+!  Process output, decide whether to take another step.
+!
+   proceed: do
+!
+      if (comm%intrp_able) then
+!
+!  Interpolation is possible with this METHOD.  The integration has
+!  already reached T. If this is past T_WANT, GOBACK is set .TRUE. and
+!  the answers are obtained by interpolation.
+!
+         goback = comm%dir*(comm%t-t_want) >= zero
+         if (goback) then
+            call interpolate(comm,f,t_want,y_got,yderiv_got)
+            baderr = get_saved_fatal_r1(comm)
+            if (baderr) exit body
+            t_got = t_want
+         end if
+      else
+!
+!  Interpolation is not possible with this METHOD, so output is obtained
+!  by integrating to T_WANT = T_END.  Both Y_GOT and YDERIV_GOT are then 
+!  already loaded with the solution at T_WANT by STEP_INTEGRATE.
+!
+         goback = comm%t == t_want
+         if (goback) t_got = t_want
+      end if
+!
+!  If done, go to the exit point.
+      if (goback) exit body
+!
+!  Take a step with STEP_INTEGRATE in the direction of T_END.  On exit, the
+!  solution is advanced to T_NOW.  The approximate solution at T_NOW is
+!  available in Y_GOT.  If output is obtained by stepping to the end (T_NOW
+!  = T_WANT = T_END), Y_GOT can be returned directly.  If output is
+!  obtained by interpolation, the subroutine INTERPOLATE that does this uses
+!  the values in COMM for its computations and places the approximate solution
+!  at T_WANT in the arrays Y_GOT,YDERIV_GOT for return to the calling
+!  program. T_NOW is output from STEP_INTEGRATE and is actually a copy of T
+!  from inside COMM.
+
+      call step_integrate(comm,f,t_now,y_got,yderiv_got,step_flag)
+      ier = step_flag 
+!  
+!  A successful step by STEP_INTEGRATE is indicated by step_flag= 1.
+!
+      select case(step_flag)
+         case(1); cycle proceed
+         case(2); nrec = 4; write (comm%rec,"(a/a/a/a)") &
+" ** The last message was produced on a call to STEP_INTEGRATE from",&
+" ** RANGE_INTEGRATE. In RANGE_INTAGRATE the appropriate action is to",&
+" ** change to METHOD = 'M', or, if insufficient memory is available,",&
+" ** to METHOD = 'L'. "
+         case(3:6); nrec = 2; write (comm%rec,"(a)") &
+" ** The last message was produced on a call to STEP_INTEGRATE from",&
+" ** RANGE_INTEGRATE."
+         case default; baderr = .true.
+      end select
+      t_got = comm%t; exit body
+   end do proceed
+!
+end do body
+!
+if (baderr) then
+   ier = fatal; nrec = 3; write (comm%rec,"(a/a/a)") &
+" ** An internal call by RANGE_INTEGRATE to a subroutine resulted in an",&
+" ** error that should not happen. Check your program carefully for array",&
+" ** sizes, correct number of arguments, type mismatches ... ."
+end if
+!
+comm%tlast = t_got
+!
+!  All exits are done here after a call to RKMSG_R1 to report
+!  what happened
+!
+call rkmsg_r1(ier,srname,nrec,comm,flag)
+!
+end subroutine range_integrate_r1
+
+recursive subroutine step_integrate_r1(comm,f,t_now,y_now,yderiv_now,flag)
+!
+! Part of rksuite_90 v1.0 (Aug 1994)
+!         software for initial value problems in ODEs
+!
+! Authors: R.W. Brankin (NAG Ltd., Oxford, England)
+!          I. Gladwell  (Math Dept., SMU, Dallas, TX, USA)
+!          see main doc for contact details
+!
+_REAL_, intent(out) :: t_now                                  !indep!
+integer, intent(out), optional :: flag
+type(rk_comm_real_1d), intent(inout) :: comm
+_REAL_, dimension(:), intent(out) :: y_now, yderiv_now        !dep!
+interface
+   subroutine f(t,y,yp)
+      _REAL_, intent(in) :: t                                 !indep!
+      _REAL_, dimension(:), intent(in) :: y                   !dep!
+      _REAL_, dimension(:), intent(out) :: yp             !dep!
+   end subroutine
+   
+   !function f(t,y)
+   !   _REAL_, intent(in) :: t                                 !indep!
+   !   _REAL_, dimension(:), intent(in) :: y                   !dep!
+   !   _REAL_, dimension(size(y,1)) :: f                       !dep!
+   !end function f
+end interface
+!
+character(len=*), parameter :: srname="STEP_INTEGRATE"
+!
+_REAL_ :: hmin, htry                                          !indep!
+_REAL_ :: alpha, beta, err, tau, t1, t2, ypnorm, extra_wk
+integer :: ier, nrec, state
+logical :: failed, phase1, phase3, toomch, sure_stiff
+!
+integer, parameter :: not_ready=-1, usable=-2, fatal=911, catastrophe=912, &
+    max_f_count=5000, just_fine=1
+logical, parameter :: tell=.false., ask=.true.
+_REAL_,parameter :: zero=0.0d0, pt1=0.1d0, pt9=0.9d0, one=1.0d0, &
+   two=2.0d0, hundrd=100.0d0
+!
+ier = just_fine; nrec = 0
+!
+!  Is it permissible to call STEP_INTEGRATE?
+!
+body: do
+   state = get_saved_state_r1("SETUP",comm%save_states)
+   if (state==fatal) then
+      ier = catastrophe; nrec = 1; write (comm%rec,"(a)") &
+" ** A catastrophic error has already been detected elsewhere."
+      exit body
+   end if
+   if (state==not_ready) then
+      ier = fatal; nrec = 1; write (comm%rec,"(a)") &
+" ** You have not called SETUP, so you cannot use STEP_INTEGRATE."
+     exit body
+   end if
+   if (comm%use_range) then
+      if (get_saved_state_r1("RANGE_INTEGRATE",comm%save_states)/=usable) then
+         ier = fatal; nrec = 2; write (comm%rec,"(a/a)") &
+" ** You have called STEP_INTEGRATE after you specified in SETUP that you", &
+" ** were going to use RANGE_INTEGRATE. This is not permitted."
+         comm%use_range = .false.
+         exit body
+      end if
+   end if
+   state = get_saved_state_r1(srname,comm%save_states)
+   if (state==5 .or. state==6) then
+      ier = fatal; nrec = 3; write (comm%rec,"(a/a/a)") &
+" ** STEP_INTEGRATE has already returned with a flag value of 5 or 6. You",&
+" ** cannot continue integrating this problem. You must call SETUP to start ",&
+" ** another problem."
+      exit body
+   end if
+!
+   if (comm%at_t_start) then
+!
+      call f(comm%t,comm%y,comm%yp); comm%f_count = comm%f_count + 1
+      if (comm%erason) comm%ge_yp = comm%yp
+!
+!  The weights for the control of the error depend on the size of the
+!  solution at the beginning and at the end of the step. On the first
+!  step we do not have all this information. Whilst determining the
+!  initial step size we initialize each component of WEIGHTS to the
+!  larger of the corresponding component of both abs(Y) and the threshold.
+!
+      comm%weights = max(abs(comm%y),comm%thresh)
+!  
+!  If H_START is equal to zero, the code is to find an on-scale initial
+!  step size H.  STEP_INTEGRATE has an elaborate scheme of three phases for
+!  finding such an H, and some preparations are made earlier.  In SETUP an
+!  upper bound is placed on H that reflects the scale of the independent
+!  variable.  RANGE_INTEGRATE, when used, refines this bound using the
+!  first output point.  Here in STEP_INTEGRATE PHASE1 applies a rule of
+!  thumb based on the error control, the order of the the formula, and the
+!  size of the initial slope to get a crude approximation to an on-scale H.
+!  PHASE2 may reduce H in the course of taking the first step.  PHASE3
+!  repeatedly adjusts H and retakes the first step until H is on scale.
+!  
+!  A guess for the magnitude of the first step size H can be provided to SETUP
+!  as H_START.  If it is too big or too small, it is ignored and the automatic
+!  determination of an on-scale initial step size is activated.  If it is
+!  acceptable, H is set to H_START in SETUP.  Even when H is supplied to
+!  STEP_INTEGRATE, PHASE3 of the scheme for finding an on-scale initial step 
+!  size is made active so that the code can deal with a bad guess.
+!
+      phase1 = comm%h_start == zero; comm%phase2 = phase1; phase3 = .true.
+      if (phase1) then
+         comm%h = abs(comm%h)
+         ypnorm = max(zero, &
+             maxval(abs(comm%yp)/comm%weights,mask=comm%y/=zero))    !spec-ar1!
+         tau = comm%tol**comm%expon
+         if (comm%h*ypnorm > tau) comm%h = tau/ypnorm
+         hmin = max(comm%sqtiny,comm%toosml* &
+                                max(abs(comm%t_start),abs(comm%t_end)))
+         comm%h = comm%dir*max(comm%h,hmin)
+         phase1 = .false.
+      end if
+!
+   else
+!
+! Continuation call
+!
+      if (comm%at_t_end) then
+         ier = fatal; nrec = 3; write (comm%rec,"(a,e13.5,a/a/a)") &
+" ** You have already reached T_END ( = ",comm%t_end, "). To integrate",&
+" ** furhter with the same problem you must call the routine RESET_T_END",&
+" ** with a new value of T_END."
+         exit body
+      end if
+   end if
+!
+!  Begin computation of a step here.
+!
+   failed = .false.
+!
+   take_step: do
+!
+      comm%h = sign(abs(comm%h),comm%dir)
+!
+!  Reduce the step size if necessary so that the code will not step
+!  past T_END.  "Look ahead" to prevent unnecessarily small step sizes.
+!
+      comm%at_t_end = comm%dir*((comm%t+comm%h)-comm%t_end) >= zero
+      if (comm%at_t_end) then
+         comm%h = comm%t_end - comm%t
+      else if (comm%dir*((comm%t+two*comm%h)-comm%t_end) >= zero) then
+         comm%h = (comm%t_end-comm%t)/two
+      end if
+!
+!  When the integrator is at T and attempts a step of H, the function
+!  defining the differential equations will be evaluated at a number of
+!  arguments between T and T+H.  If H is too small, these arguments cannot
+!  be clearly distinguished in the precision available.
+!
+      hmin = max(comm%sqtiny,comm%toosml*max(abs(comm%t),abs(comm%t+comm%h)))
+      if (abs(comm%h)<hmin) then
+         ier = 5; nrec = 3; write (comm%rec,"(a/a,e13.5,a,e13.5,a/a)") &
+" ** In order to satisfy your error requirements STEP_INTEGRATE would have",&
+" ** to use a step size of ",comm%H," at T_NOW = ",comm%T," This is too",&
+" ** small for the machine precision."
+         exit body
+      end if
+!
+!  Monitor the impact of output on the efficiency of the integration.
+!
+      if (comm%chkeff) then
+         comm%hit_t_end_count = comm%hit_t_end_count + 1
+         if (comm%hit_t_end_count>=100 .and. &
+             comm%hit_t_end_count>=comm%step_count/3) then
+            ier = 2; nrec = 5; write (comm%rec,"(a/a/a/a/a)") &
+" ** More than 100 output points have been obtained by integrating to T_END.",&
+" ** They have been sufficiently close to one another that the efficiency",&
+" ** of the integration has been degraded. It would probably be (much) more",&
+" ** efficient to obtain output by interpolating with INTERPOLATE (after",&
+" ** changing to METHOD='M' if you are using METHOD = 'H')."
+            comm%hit_t_end_count = 0; exit body
+         end if
+      end if
+!
+!  Check for stiffness and for too much work.  Stiffness can be
+!  checked only after a successful step.
+!
+      if (.not.failed) then
+!
+!  Check for too much work.
+         toomch = comm%f_count > max_f_count
+         if (toomch) then
+            ier = 3; nrec = 3; write (comm%rec,"(a,i6,a/a/a)") &
+" ** Approximately ",max_f_count," function evaluations have been used to",&
+" ** compute the solution since the integration started or since this", &
+" ** message was last printed."
+!
+!  After this warning message, F_COUNT is reset to permit the integration
+!  to continue.  The total number of function evaluations in the primary
+!  integration is FULL_F_COUNT + F_COUNT
+!
+            comm%full_f_count = comm%full_f_count + comm%f_count
+            comm%f_count = 0
+         end if
+!
+!  Check for stiffness.  If stiffness is detected, the message about too
+!  much work is augmented inside STIFF to explain that it is due to
+!  stiffness.
+!
+         call stiff_r1(comm,f,toomch,sure_stiff)
+         if (sure_stiff) then
+!
+!  Predict how much extra work will be needed to reach TND.
+            extra_wk = (comm%cost*abs((comm%t_end-comm%t)/comm%h_average)) / &
+                     real(comm%full_f_count+comm%f_count)
+            ier = 4; nrec = nrec + 4 
+            write (comm%rec(nrec-3:nrec),"(a/a,e13.5,a/a/a)") &
+" ** Your problem has been diagnosed as stiff.  If the  situation persists,",&
+" ** it will cost roughly ",extra_wk," times as much to reach T_END as it", &
+" ** has cost to reach T_NOW. You should probably change to a code intended",&
+" ** for stiff problems."
+         end if
+         if (ier/=just_fine) exit body
+      end if
+!
+!  Take a step.  Whilst finding an on-scale H (PHASE2 = .TRUE.), the input
+!  value of H might be reduced (repeatedly), but it will not be reduced
+!  below HMIN.  The local error is estimated, a weight vector is formed,
+!  and a weighted maximum norm, ERR, of the local error is returned.
+!  The presence of the optional argument PHASE2 in the call to STEP 
+!  indicates that this is the primary integration.
+!
+!  H is used by both STEP_INTEGRATE and STEP. Since it may be changed inside 
+!  STEP, a local copy is made.
+!
+      htry = comm%h
+      call step_r1(comm,f,comm%t,comm%y,comm%yp,comm%stages,comm%tol,htry, &
+                   comm%y_new,comm%err_estimates,err,hmin,comm%phase2)
+      comm%h = htry
+!
+!  Compare the norm of the local error to the tolerance.
+!
+      if (err > comm%tol) then
+!
+!  Failed step.  Reduce the step size and try again.
+!
+!  First step:  Terminate PHASE3 of the search for an on-scale step size.
+!               The step size is not on scale, so ERR may not be accurate;
+!               reduce H by a fixed factor.  Failed attempts to take the
+!               first step are not counted.
+!  Later step:  Use ERR to compute an "optimal" reduction of H.  More than
+!               one failure indicates a difficulty with the problem and an
+!               ERR that may not be accurate, so reduce H by a fixed factor.
+!
+         if (comm%at_t_start) then
+            phase3 = .false.; alpha = comm%rs1
+         else
+            comm%bad_step_count = comm%bad_step_count + 1
+            comm%stiff_bad_step_count = comm%stiff_bad_step_count + 1
+            if (failed) then
+               alpha = comm%rs1
+            else
+               alpha = comm%safety*(comm%tol/err)**comm%expon
+               alpha = max(alpha,comm%rs1)
+            end if
+         end if
+         comm%h = alpha*comm%h; failed = .true.; cycle take_step
+      end if
+!
+!  Successful step.
+!
+!  Predict a step size appropriate for the next step.  After the first
+!  step the prediction can be refined using an idea of H.A. Watts that
+!  takes account of how well the prediction worked on the previous step.
+!
+      beta = (err/comm%tol)**comm%expon
+      if (.not.comm%at_t_start) then
+         t1 = (err**comm%expon)/comm%h
+         t2 = (comm%errold**comm%expon)/comm%h_old
+         if (t1<t2*hundrd .and. t2<t1*hundrd) beta = beta*(t1/t2)
+      end if
+      alpha = comm%rs3
+      if (comm%safety < beta*alpha) alpha = comm%safety/beta
+!
+!  On the first step a search is made for an on-scale step size.  PHASE2
+!  of the scheme comes to an end here because a step size has been found
+!  that is both successful and has a credible local error estimate. Except
+!  in the special case that the first step is also the last, the step is
+!  repeated in PHASE3 as long as an increase greater than RS2 appears
+!  possible.  An increase as big as RS3 is permitted.  A step failure
+!  terminates PHASE3.
+!
+      if (comm%at_t_start) then
+         comm%phase2 = .false.
+         phase3 = phase3 .and. .not. comm%at_t_end .and. (alpha > comm%rs2)
+         if (phase3) then
+            comm%h = alpha*comm%h; cycle take_step
+         end if
+      end if
+!
+!  After getting on scale, step size changes are more restricted.
+!
+      alpha = min(alpha,comm%rs)
+      if (failed) alpha = min(alpha,one)
+      alpha = max(alpha,comm%rs1)
+      comm%h_old = comm%h; comm%h = alpha*comm%h
+!
+!  For the diagnosis of stiffness, an average accepted step size, H_AVERAGE,
+!  must be computed.
+!
+      if (comm%at_t_start) then
+         comm%h_average = comm%h_old
+      else
+         comm%h_average = pt9*comm%h_average + pt1*comm%h_old
+      end if
+!
+      comm%at_t_start = .false.; comm%errold = err; comm%t_old = comm%t
+!
+!  Take care that T is set to precisely T_END when the end of the
+!  integration is reached.
+!
+      if (comm%at_t_end) then
+         comm%t = comm%t_end
+      else
+         comm%t = comm%t + comm%h_old
+      end if
+!
+!  Increment counter on accepted steps.  Note that successful steps
+!  that are repeated whilst getting on scale are not counted.
+!
+      comm%step_count = comm%step_count + 1
+!
+!  Advance the current solution and its derivative. Note that the previous
+!  derivative will overwrite Y_NEW (see pointer assignments in SETUP).
+!
+      comm%y_old = comm%y; comm%y = comm%y_new
+      comm%yp_old = comm%yp
+!
+      if (comm%fsal) then
+!
+!  When FSAL = .TRUE., YP is the last stage of the step.
+!
+        comm%yp = comm%stages(:,comm%last_stage) 
+      else
+!
+!  Call F to evaluate YP.
+!
+         call f(comm%t,comm%y,comm%yp); comm%f_count = comm%f_count + 1
+      end if
+!
+!  If global error assessment is desired, advance the secondary
+!  integration from TOLD to T.
+!
+      if (comm%erason) then
+         call truerr_r1(comm,f,ier)
+         if (ier==6) then
+!
+!  The global error estimating procedure has broken down. Treat it as a
+!  failed step. The solution and derivative are reset to their values at
+!  the beginning of the step since the last valid error assessment refers
+!  to them.
+!
+            comm%step_count = comm%step_count - 1; comm%erasfl = .true.
+            comm%at_t_end = .false.
+            comm%t = comm%t_old; comm%h = comm%h_old
+            comm%y = comm%y_old; comm%yp = comm%yp_old
+            if (comm%step_count > 0) then
+               nrec = 2; write (comm%rec,"(a/a,e13.5/a)") &
+" ** The global error assessment may not be reliable for T past ",&
+" ** T_NOW = ",comm%t,". The integration is being terminated."
+               exit body
+            else
+               nrec = 2; write (comm%rec,"(a/a)") &
+" ** The global error assessment algorithm failed at the start of the ",&
+" ** integration.  The integration is being terminated."
+               exit body
+            end if
+         end if
+      end if
+      exit take_step
+   end do take_step
+   exit body
+end do body
+!
+!  Exit point for STEP_INTEGRATE
+!  Set the output variables and flag that interpolation is permitted
+!
+if (ier < fatal) then
+   t_now = comm%t; comm%at_t_end = t_now == comm%t_end
+   comm%chkeff = comm%at_t_end;
+   y_now = comm%y; yderiv_now = comm%yp
+   comm%ymax = max(abs(comm%y),comm%ymax)
+   if (ier==just_fine) then
+      state = usable; call set_saved_state_r1("INTERPOLATE",state,comm)
+   end if
+end if
+!
+!  Call RKMSG_R1 to report what happened and set FLAG.
+!
+call rkmsg_r1(ier,srname,nrec,comm,flag)
+!
+end subroutine step_integrate_r1
+
+
+subroutine truerr_r1(comm,f,ier)
+!
+! Part of rksuite_90 v1.0 (Aug 1994)
+!         software for initial value problems in ODEs
+!
+! Authors: R.W. Brankin (NAG Ltd., Oxford, England)
+!          I. Gladwell  (Math Dept., SMU, Dallas, TX, USA)
+!          see main doc for contact details
+!
+type(rk_comm_real_1d), intent(inout) :: comm
+integer, intent(inout) :: ier
+!
+interface
+   subroutine f(t,y,yp)
+      _REAL_, intent(in) :: t                                 !indep!
+      _REAL_, dimension(:), intent(in) :: y                   !dep!
+      _REAL_, dimension(:), intent(out) :: yp             !dep!
+   end subroutine
+   
+   !function f(t,y)
+   !   _REAL_, intent(in) :: t                                 !indep!
+   !   _REAL_, dimension(:), intent(in) :: y                   !dep!
+   !   _REAL_, dimension(size(y,1)) :: f                       !dep!
+   !end function f
+end interface
+!
+_REAL_ :: hmin, hsec                                          !indep!
+_REAL_ :: diff, errmax, mxerlc, tsec, ge_err, ge_test1, ge_test2
+integer :: istep, level
+!
+integer, parameter :: just_fine=1
+_REAL_, parameter :: pt1=0.1d0, ten=10.0d0
+_REAL_, dimension(:,:), pointer :: ge_stages                  !dep!
+_REAL_, dimension(:), pointer :: ge_y, ge_yp, ge_y_new        !dep!
+_REAL_, dimension(:), pointer :: ge_err_estimates, y          !dep!
+_REAL_, dimension(:), pointer :: ge_assess, weights           !shp-dep!
+!
+ge_stages => comm%ge_stages
+ge_y => comm%ge_y
+ge_yp => comm%ge_yp
+ge_y_new => comm%ge_y_new
+ge_err_estimates => comm%ge_err_estimates
+ge_assess => comm%ge_assess
+y => comm%y
+weights => comm%weights
+!
+tsec = comm%t - comm%h_old
+hsec = comm%h_old/real(comm%no_of_ge_steps)
+hmin = max(comm%sqtiny,comm%toosml*max(abs(tsec),abs(comm%t)))
+body: do
+   if (abs(hsec)<hmin) then
+      ier = 6; exit body
+   end if
+   ge_test1 = comm%tol/real(comm%no_of_ge_steps)
+   ge_test2 = comm%tol/ten; level = 0
+!
+!  The subroutine STEP is used to take a step.
+!
+!  Perform secondary integration.
+!
+   do istep = 1, comm%no_of_ge_steps
+!
+!  Take a step.
+      call step_r1(comm,f,tsec,ge_y,ge_yp,ge_stages,ge_test1,hsec,ge_y_new, &
+         ge_err_estimates,ge_err)
+!
+!  The primary integration is using a step size of H_OLD and the
+!  secondary integration is using the smaller step size 
+!      HSEC = H_OLD/(NO_OF_GE_STEPS).
+!  If steps of this size were taken from the same starting point and the
+!  asymptotic behavior were evident, the smaller step size would result in
+!  a local error that is considerably smaller, namely by a factor of
+!  1/(NO_OF_GE_STEPSSEC**(ORDER+1)).  If the two approximate solutions are
+!  close and TOL is neither too large nor too small, this should be
+!  approximately true.  The step size is chosen in the primary integration
+!  so that the local error ERR is no larger than TOL.  The local error,
+!  GE_ERR, of the secondary integration is compared to TOL in an attempt to
+!  diagnose a secondary integration that is not rather more accurate than
+!  the primary integration.
+!
+      if (ge_err>=ge_test1) then
+         level = 2
+      else if (ge_err>ge_test2) then
+         level = level + 1
+      end if
+      if (level>=2) then
+         ier = 6; exit body
+      end if
+!
+!  Advance TSEC and the dependent variables GE_Y and GE_YP.
+!
+      tsec = comm%t - real(comm%no_of_ge_steps-istep)*hsec
+      ge_y = ge_y_new
+!
+      if (comm%fsal) then
+!
+!  When FSAL = .TRUE., the derivative GE_YP is the last stage of the step.
+!
+         ge_yp = ge_stages(:,comm%last_stage)
+      else
+!
+!  Call F to evaluate GE_YP.
+!
+         call f(tsec,ge_y,ge_yp); comm%ge_f_count = comm%ge_f_count + 1
+      end if
+!
+   end do
+!
+!  Update the maximum error seen, GE_MAX_CONTRIB, and its location, 
+!  T_GE_MAX_CONTRIB. Use local variables ERRMAX and MXERLC.
+!
+   errmax = comm%ge_max_contrib; mxerlc = comm%t_ge_max_contrib; 
+   diff = maxval(abs(ge_y-y)/weights)                                !spec-ar!
+   if (diff>errmax) then
+      errmax = diff; mxerlc = comm%t
+   end if
+!
+!  If the global error is greater than 0.1, the solutions have diverged so
+!  far that comparing them may not provide a reliable estimate of the global
+!  error. The test is made before GE_ASSESS and GE_MAX_CONTRIB,
+!  T_GE_MAX_CONTRIB are updated so that on a failure, they refer to the
+!  last reliable results.
+!
+   if (errmax>pt1) then
+      ier = 6
+   else
+      comm%ge_max_contrib = errmax; comm%t_ge_max_contrib = mxerlc; 
+      ge_assess = ge_assess + (abs(ge_y-y)/weights)**2 
+      ier = just_fine
+   end if
+   exit body
+!
+end do body
+!
+end subroutine truerr_r1
+
+subroutine step_r1(comm,f,tnow,y,yp,stages,tol,htry,y_new,    &
+                     errest,err,hmin,phase_2)
+!
+! Part of rksuite_90 v1.0 (Aug 1994)
+!         software for initial value problems in ODEs
+!
+! Authors: R.W. Brankin (NAG Ltd., Oxford, England)
+!          I. Gladwell  (Math Dept., SMU, Dallas, TX, USA)
+!          see main doc for contact details
+!
+type(rk_comm_real_1d), intent(inout), target :: comm
+_REAL_, intent(out) :: err
+_REAL_, intent(inout) :: htry                                 !indep!
+_REAL_, intent(in) :: tnow                                    !indep!
+_REAL_, intent(in) :: tol
+_REAL_, intent(in), optional :: hmin                          !indep!
+logical, intent(inout), optional :: phase_2
+!
+_REAL_, dimension(:), intent(in) :: y, yp                     !dep!
+_REAL_, dimension(:), intent(out) ::  errest, y_new           !dep!
+_REAL_, dimension(:,:), intent(out) :: stages                 !dep!
+!
+interface
+   subroutine f(t,y,yp)
+      _REAL_, intent(in) :: t                                 !indep!
+      _REAL_, dimension(:), intent(in) :: y                   !dep!
+      _REAL_, dimension(:), intent(out) :: yp             !dep!
+   end subroutine
+   
+   !function f(t,y)
+   !   _REAL_, intent(in) :: t                                 !indep!
+   !   _REAL_, dimension(:), intent(in) :: y                   !dep!
+   !   _REAL_, dimension(size(y,1)) :: f                       !dep!
+   !end function f
+end interface
+!
+_REAL_ :: tstg                                                !indep!
+integer :: i, j
+logical :: cutbak, main
+!
+intrinsic         abs, max, sign
+!
+_REAL_, dimension(:), pointer :: weights, thresh              !shp-dep!
+_REAL_, dimension(:,:), pointer :: a                          !real!
+_REAL_, dimension(:), pointer :: b, bhat, c                   !real!
+integer, dimension(:), pointer :: ptr                                !integer!
+!
+_REAL_, parameter :: zero=0.0d0, half=0.5d0, one=1.0d0
+!
+!  ERREST is used for working storage in this computation.
+!
+weights => comm%weights
+thresh => comm%thresh
+a => comm%a
+b => comm%b
+bhat => comm%bhat
+c => comm%c
+ptr => comm%ptr
+!
+main = present(hmin) .and. present(phase_2)
+attempt_step: do
+!
+   if (main) then
+      if (comm%phase2) weights = max(thresh,abs(y))
+   end if
+!
+   do i = 2, comm%no_of_stages
+      errest = a(i,1)*yp
+      do j = 2, i - 1
+         if (a(i,j)/=zero) errest = errest + a(i,j)*stages(:,ptr(j))
+      end do
+      y_new = y + htry*errest
+!
+!  METHOD = 'M' is special in that an estimate of the local error can be
+!  formed before the step is completed.  If the step is a failure,
+!  return immediately.  Otherwise, complete the step and compute a more
+!  accurate error estimate.
+!
+      if (comm%rk_method==2 .and. i==7) then
+         call stepb
+         if (err>tol) return
+      end if
+!
+      tstg = tnow + c(i)*htry
+      if (main .and. comm%at_t_end .and. c(i)==one) tstg = comm%t_end
+      call f(tstg,y_new, stages(:,ptr(i)))
+!
+!  Increment the counter for the number of function evaluations
+!  depending on whether the primary or secondary integration is taking
+!  place.
+!
+      if (main) then
+         comm%f_count = comm%f_count + 1
+      else
+         comm%ge_f_count = comm%ge_f_count + 1
+      end if
+!
+!  When PHASE2 is .TRUE. we are in the second phase of the automatic
+!  selection of the initial step size.  The results of the first three
+!  stages are monitored in the subroutine STEPA for evidence that H is
+!  too large -- instability and/or an unreliable estimate of the error
+!  of the step is then possible.  When the subroutine believes H to be
+!  too large, it returns CUTBAK = .TRUE. and a suitably reduced H for
+!  another try.
+!
+      if (main) then
+         if (phase_2) then
+            if (i<=3 .and. abs(htry)>hmin) then
+               call stepa(stages(:,ptr(i)),htry,cutbak)
+               if (cutbak) then
+                  comm%at_t_end = .false.
+!
+!  Make sure that STEPA does not reduce the step size below the
+!  minimum. If it does, reset H to HMIN and deactivate PHASE2.
+!
+                  if (abs(htry)<=hmin) then
+                     htry = sign(hmin,htry); comm%phase2 = .false.
+                  end if
+                  cycle attempt_step
+               end if
+            end if
+         end if
+      end if
+!
+   end do
+!
+!  Some formulas are constructed so that the last stage represents
+!  the result of the step (FSAL=.TRUE.), hence if the step is acceptable,
+!  it will be the first stage for the next step. When FSAL=.FALSE., we
+!  have to complete the computation of the step.
+!
+   if (.not.comm%fsal) then
+      errest = bhat(1)*yp
+      do i = 2, comm%no_of_stages
+         if (bhat(i)/=zero) errest = errest + bhat(i)*stages(:,ptr(i))
+      end do
+      y_new = y + htry*errest
+   end if
+!
+!  Form an estimate of the error in the lower order formula by comparing
+!  it to the higher order formula of the pair. ERREST has been used
+!  as working storage above.  The higher order approximation has been
+!  formed as Y_NEW = Y + HTRY*ERREST where ERREST is a linear
+!  combination of the stages of the formula. The lower order result also
+!  has the form Y plus HTRY times a different linear combination of
+!  the stages. Hence, this different linear combination of stages for
+!  the lower order formula can just be subtracted from the combination
+!  stored in ERREST to produce the errors. The result is then
+!  multiplied by HTRY to obtain the error estimate.
+!
+   if (b(1)/=zero) errest = errest - b(1)*yp
+   do i = 2, comm%no_of_stages
+      if (b(i)/=zero) errest = errest - b(i)*stages(:,ptr(i))
+   end do
+   errest = htry*errest
+!
+!  The error in a solution component is measured relative to a weight
+!  that is the larger of a threshold and the size of the solution over
+!  the step.  Using the magnitude of a solution component at both ends
+!  of the step in the definition of "size" increases the robustness of
+!  the test. When global error estimation is specified, the weight
+!  vector WEIGHTS is defined by the primary integration and is then
+!  used in the secondary integration.
+!
+   if (main) weights = max(half*(abs(y)+abs(y_new)),thresh)
+!
+   err = maxval(abs(errest/weights))                                 !spec-ar!
+!
+   exit attempt_step
+!
+end do attempt_step
+!
+contains
+!
+   subroutine stepa(ypnew,htry,cutbak)
+!
+   _REAL_, intent(inout) :: htry                              !indep!
+   _REAL_, dimension(:), intent(in) :: ypnew                  !dep!
+   logical, intent(out) :: cutbak
+!
+   _REAL_ :: argdif, fdiff, scl, tdiff, twt, ynrm, ystgnm
+!
+!  Update the weights to account for the current intermediate solution
+!  approximation Y_NEW.  Compute the sizes of Y and Y_NEW in the
+!  new norm.  The size of the Lipschitz constant is assessed by a difference
+!  in the arguments Y, Y_NEW and a difference in the function evaluated
+!  at these arguments.
+!
+   weights = max(weights,abs(y_new))
+   ynrm = maxval(abs(y)/weights)                                     !spec-ar!
+   ystgnm = maxval(abs(y_new)/weights)                               !spec-ar!
+   argdif = maxval(abs(y_new-y)/weights)                             !spec-ar!
+   fdiff = maxval(abs(ypnew-yp)/weights)                             !spec-ar!
+!
+!  The transformation of the equation to autonomous form is done
+!  implicitly.  The difference of the arguments must take into account
+!  the difference between the values of the independent variable T and
+!  TSTG. The difference of the corresponding component of the function
+!  is zero because of the way the standard transformation is done.
+!
+   tdiff = tstg - tnow
+   twt = abs(comm%t_end-tnow)
+   ynrm = max(ynrm,abs(tnow)/twt)
+   ystgnm = max(ystgnm,abs(tstg)/twt)
+   argdif = max(argdif,abs(tdiff)/twt)
+!
+!  The ratio FDIFF/ARGDIF is a lower bound for, and an approximation to,
+!  a Lipschitz constant L for the differential equation written in 
+!  autonomous form.  First we must ask if the difference ARGDIF is 
+!  significant in the precision available.  If it appears to be, we insist
+!  that abs(HTRY)*L be less than an approximate radius, STABILITY_RADIUS,
+!  of the stability region of the method.  This is more stringent than 
+!  necessary for stability, possibly a lot more stringent, but the aim is
+!  to get an HTRY small enough that the error estimate for the step is
+!  credible.  The reduction is required to be at least as much as the step
+!  control parameter RS1. It is necessary to limit the reduction of HTRY
+!  at any one time because we may be misled in the size of the reduction
+!  that is appropriate due to nonlinearity of the differential equation
+!  and to inaccurate weights caused by HTRY much too large.  The reduction
+!  is not permitted to be more than the step control parameter RS4.
+!
+   cutbak = .false.
+   if (argdif > comm%round_off*max(ynrm,ystgnm)) then
+      if ((abs(htry)*fdiff) > (comm%stability_radius*argdif)) then
+         scl = max(comm%rs4,min(comm%rs1, &
+                   (comm%stability_radius*argdif)/(abs(htry)*fdiff)))
+         htry = scl*htry; cutbak = .true.
+      end if
+   end if
+!
+   end subroutine stepa
+!
+   subroutine stepb 
+!
+   _REAL_, dimension(:), pointer :: e                         !real!
+!
+   e => comm%e
+!
+   if (main) then
+      err = maxval( abs( e(1)*yp + e(3)*stages(:,ptr(3)) + &         !spec-ar!
+                         e(4)*stages(:,ptr(4)) + e(5)*stages(:,ptr(5)) + &
+                         e(6)*stages(:,ptr(6)) ) /  &
+                    max ( half*(abs(y)+abs(y_new)), thresh ) )
+   else
+      err = maxval( abs( e(1)*yp + e(3)*stages(:,ptr(3)) + &         !spec-ar!
+                         e(4)*stages(:,ptr(4)) + e(5)*stages(:,ptr(5)) + &
+                         e(6)*stages(:,ptr(6)) ) / weights ) 
+   end if
+!
+   err = abs(comm%h)*err
+!
+   end subroutine stepb
+!
+end subroutine step_r1
+
+
+subroutine stiff_r1(comm,f,toomch,sure_stiff)
+!
+! Part of rksuite_90 v1.0 (Aug 1994)
+!         software for initial value problems in ODEs
+!
+! Authors: R.W. Brankin (NAG Ltd., Oxford, England)
+!          I. Gladwell  (Math Dept., SMU, Dallas, TX, USA)
+!          see main doc for contact details
+!
+type(rk_comm_real_1d), intent(inout), target :: comm
+logical, intent(in) :: toomch
+logical, intent(out) :: sure_stiff
+!
+interface 
+   subroutine f(t,y,yp)
+      _REAL_, intent(in) :: t                                 !indep!
+      _REAL_, dimension(:), intent(in) :: y                   !dep!
+      _REAL_, dimension(:), intent(out) :: yp             !dep!
+   end subroutine
+   
+   !function f(t,y)
+   !   _REAL_, intent(in) :: t                                 !indep!
+   !   _REAL_, dimension(:), intent(in) :: y                   !dep!
+   !   _REAL_, dimension(size(y,1)) :: f                       !dep!
+   !end function f
+end interface
+!
+logical :: maybe_stiff, lots_of_fails
+!
+_REAL_ :: alpha1, alpha2, beta1, beta2                        !dep!
+_REAL_ :: rold, v1v0, v2v0, v2v1, v3v1, v3v2                  !dep!
+_REAL_ :: dist, res2, scale, v0nrm, v3nrm, ynrm, rho, v0v0, v1v1, &
+   v2v2, v3v3, yy, det1, det2
+integer :: ntry
+COMPLEX, dimension(2) :: root_pair, prv_root_pair
+integer, parameter :: bigr=1, smlr=2
+_REAL_, dimension(:), pointer :: v0, v1, v2, v3, y, y_old     !dep!
+_REAL_, dimension(:), pointer :: weights, thresh              !shp-dep!
+!
+integer, parameter :: max_f_count=5000
+_REAL_,parameter :: zero=0.0d0, pt001=0.001d0, pt9=0.9d0, &
+   fifth=0.2d0, half=0.5d0, one=1.0d0, two=2.0d0, five=5.0d0, &
+   large=1.0e+10
+!
+v0 => comm%v0
+v1 => comm%v1
+v2 => comm%v2
+v3 => comm%v3
+weights => comm%weights
+thresh => comm%thresh
+y => comm%y
+y_old => comm%y_old
+!
+sure_stiff = .false.
+lots_of_fails = .false.
+!
+if (mod(comm%step_count-10,40)==0) then
+   lots_of_fails = comm%stiff_bad_step_count >= 10
+   comm%stiff_bad_step_count = 0
+end if
+!
+!  If either too much work has been done or there are lots of failed steps,
+!  test for stiffness.
+!
+maybe_stiff = toomch .or. lots_of_fails
+if (maybe_stiff) then
+!
+!  Regenerate weight vector
+!
+   weights = max(half*(abs(y)+abs(y_old)),thresh)
+   maybe_stiff = fifth <  abs(comm%h/comm%h_average) .and. &
+                          abs(comm%h/comm%h_average) < five 
+   if (maybe_stiff) then
+!
+!  The average step size is used to predict the cost in function evaluations
+!  of finishing the integration to T_END.  If this cost is no more than 
+!  MAX_F_COUNT, the problem is declared not stiff. If the step size is 
+!  being restricted on grounds of stability, it will stay close to H_AVERAGE.
+!  The prediction will then be good, but the cost is too low to consider
+!  the problem stiff.  If the step size is not close to H_AVERAGE, the
+!  problem is not stiff.  Either way there is no point to testing for a step
+!  size restriction due to stability.
+!
+      maybe_stiff  = comm%cost*abs((comm%t_end-comm%t)/comm%h_average) > &
+                     real(max_f_count)
+      if (maybe_stiff) then
+!
+!  There have been many step failures or a lot of work has been done.  Now 
+!  we must determine if this is due to the stability characteristics of the
+!  formula.  This is done by calculating the dominant eigenvalues of the
+!  local Jacobian and then testing whether H_AVERAGE corresponds to being
+!  on the boundary of the stability region.
+!  The size of Y provides scale information needed to approximate
+!  the Jacobian by differences.
+!
+         v0v0 = wt_inner_prod(v0,v0)
+         yy = wt_inner_prod(y,y)
+         ynrm = sqrt(yy)
+         scale = ynrm*comm%sqrrmc
+         if (scale==zero) then
+!
+!  Degenerate case.  Y is (almost) the zero vector so the scale is not 
+!  defined.  The input vector V0 is the difference between Y and a 
+!  lower order approximation to the solution that is within the error 
+!  tolerance.  When Y vanishes, V0 is itself an acceptable approximate
+!  solution, so we take SCALE from it, if this is possible.
+!
+            scale = v0v0*comm%sqrrmc
+            maybe_stiff = scale > zero
+         end if
+      end if
+   end if
+end if
+!
+if (.not. maybe_stiff) return
+!
+if (v0v0==zero) then
+!
+!  Degenerate case.  V0 is (almost) the zero vector so cannot
+!  be used to define a direction for an increment to Y.  Try a
+!  "random" direction.
+!
+   v0 = one;   v0v0 = wt_inner_prod(v0,v0)
+end if
+!
+v0nrm = sqrt(v0v0)
+v0 = v0/v0nrm; v0v0 = one
+!
+!  Use a nonlinear power method to estimate the two dominant eigenvalues.
+!  V0 is often very rich in the two associated eigenvectors.  For this 
+!  reason the computation is organized with the expectation that a minimal 
+!  number of iterations will suffice.  Indeed, it is necessary to recognize 
+!  a kind of degeneracy when there is a dominant eigenvalue.  The function
+!  DOMINANT_EIGENVALUE does this.  In the first try, NTRY = 1, a Rayleigh 
+!  quotient for such an eigenvalue is initialized as ROLD.  After each 
+!  iteration, DOMINANT_EIGENVALUE computes a new Rayleigh quotient and
+!  tests whether the two approximations agree to one tenth of one per cent
+!  and the eigenvalue, eigenvector pair satisfy a stringent test on the 
+!  residual.
+!
+ntry = 1
+do
+!
+   v1 = approx_jacobian(f,v0,v0v0)
+   v1v1 = wt_inner_prod(v1,v1)
+!
+!  The quantity SQRT(V1V1/V0V0) is a lower bound for the product of H_AVERAGE
+!  and a Lipschitz constant.  If it should be LARGE, stiffness is not
+!  restricting the step size to the stability region.  The principle is
+!  clear enough, but the real reason for this test is to recognize an
+!  extremely inaccurate computation of V1V1 due to finite precision
+!  arithmetic in certain degenerate circumstances.
+!
+   if (sqrt(v1v1) > large*sqrt(v0v0)) return
+!
+   v1v0 = wt_inner_prod(v1,v0)
+   if (ntry==1) then
+      rold = v1v0/v0v0
+!
+!  This is the first Rayleigh quotient approximating the product of H_AVERAGE
+!  and a dominant eigenvalue.  If it should be very small, the
+!  problem is not stiff.  It is important to test for this possibility so
+!  as to prevent underflow and degeneracies in the subsequent iteration.
+!
+      if (abs(rold) < comm%cubrmc) return
+   else
+!
+      if (dominant_eigenvalue(v1v1,v1v0,v0v0)) exit
+   end if
+!
+   v2 = approx_jacobian(f,v1,v1v1)
+   v2v2 = wt_inner_prod(v2,v2)
+   v2v0 = wt_inner_prod(v2,v0)
+   v2v1 = wt_inner_prod(v2,v1)
+   if (dominant_eigenvalue(v2v2,v2v1,v1v1)) exit
+!
+!  Fit a quadratic in the eigenvalue to the three successive iterates
+!  V0,V1,V2 of the power method to get a first approximation to
+!  a pair of eigenvalues.  A test made earlier in DOMINANT_EIGENVALUE
+!  implies that the quantity DET1 here will not be too small.
+!
+   det1 = v0v0*v1v1 - v1v0*rev_wt_inner_prod(v1v0)
+   alpha1 = (-v0v0*v2v1 + rev_wt_inner_prod(v1v0)*v2v0)/det1
+   beta1 = (v1v0*v2v1 - v1v1*v2v0)/det1
+!
+!  Iterate again to get V3, test again for degeneracy, and then fit a
+!  quadratic to V1,V2,V3 to get a second approximation to a pair
+!  of eigenvalues.
+!
+   v3 = approx_jacobian(f,v2,v2v2)
+   v3v3 = wt_inner_prod(v3,v3)
+   v3v1 = wt_inner_prod(v3,v1)
+   v3v2 = wt_inner_prod(v3,v2)
+   if (dominant_eigenvalue(v3v3,v3v2,v2v2)) exit
+!
+   det2 = v1v1*v2v2 - v2v1*rev_wt_inner_prod(v2v1)
+   alpha2 = (-v1v1*v3v2 + rev_wt_inner_prod(v2v1)*v3v1)/det2
+   beta2 = (v2v1*v3v2 - v2v2*v3v1)/det2
+!
+!  First test the residual of the quadratic fit to see if we might
+!  have determined a pair of eigenvalues.
+!
+   res2 = abs( v3v3 + rev_wt_inner_prod(alpha2)*v3v2 + &
+               rev_wt_inner_prod(beta2)*v3v1 + &
+               alpha2*rev_wt_inner_prod(v3v2) + &
+               alpha2*rev_wt_inner_prod(alpha2)*v2v2 + &
+               alpha2*rev_wt_inner_prod(beta2)*v2v1 + &
+               beta2*rev_wt_inner_prod(v3v1) + &
+               beta2*rev_wt_inner_prod(alpha2)*rev_wt_inner_prod(v2v1) + &
+               beta2*rev_wt_inner_prod(beta2)*v1v1 )
+   if (res2 <= abs(v3v3)*pt001**2) then
+!
+!  Calculate the two approximate pairs of eigenvalues.
+!
+      prv_root_pair(1:2) = quadratic_roots(alpha1,beta1)
+      root_pair(1:2) = quadratic_roots(alpha2,beta2)
+!
+!  The test for convergence is done on the larger root of the second
+!  approximation.  It is complicated by the fact that one pair of roots 
+!  might be real and the other complex.  First calculate the spectral 
+!  radius RHO of HAVG*J as the magnitude of ROOT1.  Then see if one of 
+!  the roots R1,R2 is within one per cent of ROOT1.  A subdominant root 
+!  may be very poorly approximated if its magnitude is much smaller than 
+!  RHO -- this does not matter in our use of these eigenvalues.
+!
+      rho = abs(prv_root_pair(bigr))
+      dist = min( abs(root_pair(bigr) - prv_root_pair(bigr)), &
+                  abs(root_pair(bigr) - prv_root_pair(smlr)) )
+      if (dist <= pt001*rho) exit
+   end if
+!
+!  Do not have convergence yet.  Because the iterations are cheap, and
+!  because the convergence criterion is stringent, we are willing to try
+!  a few iterations.
+!
+   ntry = ntry + 1
+   if (ntry > comm%max_stiff_iters) return
+   v3nrm = sqrt(v3v3)
+   v0 = v3/v3nrm
+   v0v0 = one
+!
+end do
+!
+!  We now have the dominant eigenvalues.  Decide if the average step
+!  size is being restricted on grounds of stability.  Check the real
+!  parts of the eigenvalues.  First see if the dominant eigenvalue is
+!  in the left half plane -- there won't be a stability restriction
+!  unless it is. If there is another eigenvalue of comparable magnitude
+!  with a positive real part, the problem is not stiff. If the dominant
+!  eigenvalue is too close to the imaginary axis, we cannot diagnose
+!  stiffness.
+!
+if ( real(root_pair(bigr)) < zero) then
+   if ( .not. ( abs(root_pair(smlr)) >= pt9*rho .and. &
+                real(root_pair(smlr)) > zero ) ) then
+      if ( abs(aimag(root_pair(bigr))) <= &
+           abs(real(root_pair(bigr)))*comm%tan_angle) then
+!
+!  If the average step size corresponds to being well within the
+!  stability region, the step size is not being restricted because
+!  of stability.
+!
+         sure_stiff = rho >= pt9*comm%stability_radius
+      end if
+   end if
+end if
+!
+contains
+
+function approx_jacobian(f,v,vdotv)
+!
+_REAL_, intent(in) :: vdotv
+_REAL_, dimension(:), intent(in) :: v                         !dep!
+_REAL_, dimension(size(v,1)) :: approx_jacobian               !dep!
+!
+interface
+   subroutine f(t,y,yp)
+      _REAL_, intent(in) :: t                                 !indep!
+      _REAL_, dimension(:), intent(in) :: y                   !dep!
+      _REAL_, dimension(:), intent(out) :: yp             !dep!
+   end subroutine
+   
+   !function f(t,y)
+   !   _REAL_, intent(in) :: t                                 !indep!
+   !   _REAL_, dimension(:), intent(in) :: y                   !dep!
+   !   _REAL_, dimension(size(y,1)) :: f                       !dep!
+   !end function f
+end interface
+!
+_REAL_ :: temp1
+!
+!  Scale V so that it can be used as an increment to Y
+!  for an accurate difference approximation to the Jacobian.
+!
+temp1 = scale/sqrt(vdotv)
+comm%vtemp = y + temp1*v
+!
+!approx_jacobian = f(comm%t,comm%vtemp)
+call  f(comm%t,comm%vtemp,approx_jacobian)
+comm%f_count = comm%f_count + 1
+!
+!  Form the difference approximation.  At the same time undo
+!  the scaling of V and introduce the factor of H_AVERAGE.
+!
+approx_jacobian = &
+    (comm%h_average/temp1)*(approx_jacobian-comm%yp)
+!
+end function approx_jacobian
+
+
+function quadratic_roots(alpha,beta)
+!
+_REAL_, intent(in) :: alpha, beta                             !dep!
+COMPLEX, dimension(2) :: quadratic_roots
+!
+COMPLEX :: temp, sqdisc, r1, r2
+!
+!  For types other than real/complex, this procedure must be constructed
+!  such that temp and sqdisc are evaluated as compelx quantities
+!
+temp = alpha/two; sqdisc = sqrt(temp**2 - beta)
+!
+! Do we have double root?
+!
+if (sqdisc==zero) then
+   quadratic_roots = (/ -temp, -temp /)
+!
+! Distinct roots
+!
+else
+   r1 = -temp + sqdisc; r2 = -temp + sqdisc
+   if (abs(r1) > abs(r2)) then
+      quadratic_roots = (/ r1, r2 /)
+   else
+      quadratic_roots = (/ r2, r1 /)
+   end if
+end if
+!
+end function quadratic_roots
+
+function dominant_eigenvalue(v1v1,v1v0,v0v0)
+!
+_REAL_, intent(in) :: v0v0, v1v1
+_REAL_, intent(in) :: v1v0                                    !dep!
+logical :: dominant_eigenvalue
+!
+_REAL_ :: ratio                                               !dep!
+_REAL_ :: res, det
+logical :: big
+!
+ratio = v1v0/v0v0; rho = abs(ratio)
+det = v0v0*v1v1 - v1v0*rev_wt_inner_prod(v1v0); res = abs(det/v0v0)
+!
+big = det == zero .or. &
+                  (res<=abs(v1v1)*pt001**2 .and. abs(ratio-rold)<=pt001*rho)
+!
+if (big) then
+   root_pair(bigr) = cmplx(ratio)
+   root_pair(smlr) = cmplx(zero)
+end if
+!
+rold = ratio
+dominant_eigenvalue = big
+!
+end function dominant_eigenvalue
+
+function wt_inner_prod(vec_1,vec_2)
+!
+_REAL_, dimension(:), intent(in) :: vec_1, vec_2              !dep!
+_REAL_ :: wt_inner_prod                                       !dep!
+!
+!
+wt_inner_prod = sum ( (vec_1/weights) * (vec_2/weights) )            !spec-ar!
+!
+end function wt_inner_prod
+
+function rev_wt_inner_prod(value)
+!
+_REAL_, intent(in) :: value                                   !dep!
+_REAL_ :: rev_wt_inner_prod                                   !dep!
+!
+! given result of inner product value = v1.v0
+! must return the reverse, ie v0.v1
+!
+! for real variables the value is the same
+! for complex need to conjugate
+!
+rev_wt_inner_prod = value                                            !spec-line!
+!
+end function rev_wt_inner_prod
+
+end subroutine stiff_r1
+
+subroutine statistics_r1(comm,total_f_calls,step_cost,waste,num_succ_steps,&
+                         h_next,y_maxvals)
+!
+! Part of rksuite_90 v1.0 (Aug 1994)
+!         software for initial value problems in ODEs
+!
+! Authors: R.W. Brankin (NAG Ltd., Oxford, England)
+!          I. Gladwell  (Math Dept., SMU, Dallas, TX, USA)
+!          see main doc for contact details
+!
+type(rk_comm_real_1d), intent(inout) :: comm
+_REAL_, optional, intent(out) :: h_next                       !indep!
+_REAL_, optional, intent(out) :: waste
+_REAL_, dimension(:), optional, intent(out) :: y_maxvals      !shp-dep!
+integer, optional, intent(out) :: step_cost, num_succ_steps, total_f_calls
+!
+character(len=*), parameter :: srname="STATISTICS"
+!
+integer :: ier, nrec, state
+!
+integer, parameter :: not_ready=-1, not_reusable=-3, fatal=911, &
+   catastrophe=912, just_fine=1
+logical, parameter :: ask=.true.
+_REAL_, parameter :: zero=0.0d0
+!
+ier = just_fine; nrec = 0
+!
+body: do
+!
+!  Is it permissible to call STATISTICS?
+!
+   state = get_saved_state_r1(srname,comm%save_states)
+   if (state==fatal) then
+      ier = catastrophe; nrec = 1; write (comm%rec,"(a)") &
+" ** A catastrophic error has already been detected elsewhere."
+      exit body
+   end if
+   if (state==not_reusable) then
+      ier = fatal; nrec = 2; write (comm%rec,"(a/a)") &
+" ** You have already made a call to STATISTICS after a hard failure was ", &
+" ** reported from the integrator. You cannot call STATISTICS again."
+      exit body
+   end if
+   state = get_saved_state_r1("STEP_INTEGRATE",comm%save_states)
+   if (state==not_ready) then
+      ier = fatal; nrec = 1
+      if (comm%use_range) then
+         write (comm%rec,"(a)") &
+" ** You have not called RANGE_INTEGRATE, so you cannot use STATISTICS."
+      else
+         write (comm%rec,"(a)") &
+" ** You have not called STEP_INTEGRATE, so you cannot use STATISTICS."
+      end if
+      exit body
+   end if
+   if (present(y_maxvals)) then
+      if (any(shape(y_maxvals) /= shape(comm%y))) then
+         ier = fatal; nrec = 2; write (comm%rec,"(a,i6,a/a,i6,a)") &
+" ** The shape of Y_MAXVALS is not consistent with the shape of the", &
+" ** dependent variables."
+         exit body
+      end if
+   end if
+!
+!  Set flag so that the routine can only be called once after a hard 
+!  failure from the integrator.
+!
+   if (state==5 .or. state==6) ier = not_reusable
+!
+   if (present(total_f_calls)) then
+      total_f_calls = comm%full_f_count + comm%f_count
+!      if (comm%erason) total_f_calls = total_f_calls + comm%ge_f_count
+   end if
+   if (present(step_cost)) step_cost = comm%cost
+   if (present(num_succ_steps)) num_succ_steps = comm%step_count
+   if (present(waste)) then
+      if (comm%step_count<=1) then
+         waste = zero
+      else
+         waste = real(comm%bad_step_count) / &
+                 real(comm%bad_step_count+comm%step_count)
+      end if
+   end if
+   if (present(h_next)) h_next = comm%h
+   if (present(y_maxvals)) y_maxvals = comm%ymax
+   exit body
+end do body
+!
+call rkmsg_r1(ier,srname,nrec,comm)
+!
+end subroutine statistics_r1
+
+subroutine global_error_r1(comm,rms_error,max_error,t_max_error)
+!
+! Part of rksuite_90 v1.0 (Aug 1994)
+!         software for initial value problems in ODEs
+!
+! Authors: R.W. Brankin (NAG Ltd., Oxford, England)
+!          I. Gladwell  (Math Dept., SMU, Dallas, TX, USA)
+!          see main doc for contact details
+!
+type(rk_comm_real_1d), intent(inout) :: comm
+_REAL_, optional, intent(out) :: max_error
+_REAL_, optional, intent(out) :: t_max_error                  !indep!
+_REAL_, dimension(:), optional, intent(out) :: rms_error      !shp-dep!
+!
+character(len=*), parameter :: srname="GLOBAL_ERROR"
+!
+integer :: ier, nrec, state
+!
+intrinsic         sqrt
+!
+integer, parameter :: not_ready=-1, not_reusable=-3, fatal=911, &
+   catastrophe=912, just_fine=1
+logical, parameter :: ask=.true.
+!
+ier = just_fine; nrec = 0
+!
+body: do 
+!
+!  Is it permissible to call GLOBAL_ERROR?
+!
+   state = get_saved_state_r1(srname,comm%save_states)
+   if (state==fatal) then
+      ier = catastrophe; nrec = 1; write (comm%rec,"(a)") &
+" ** A catastrophic error has already been detected elsewhere."
+      exit body
+   end if
+   if (state==not_reusable) then
+      ier = fatal; nrec = 2; write (comm%rec,"(a/a)") &
+" ** You have already made a call to GLOBAL_ERROR after a hard failure was", &
+" ** reported from the integrator. You cannot call GLOBAL_ERROR again."
+      exit body
+   end if
+   state = get_saved_state_r1("STEP_INTEGRATE",comm%save_states)
+   if (state==not_ready) then
+      ier = fatal; nrec = 1
+      if (comm%use_range) then
+         write (comm%rec,"(a)") &
+" ** You have not yet called RANGE_INTEGRATE, so you cannot call GLOBAL_ERROR."
+      else
+         write (comm%rec,"(a)") &
+" ** You have not yet called STEP_INTEGRATE, so you cannot call GLOBAL_ERROR."
+      end if
+      exit body
+   end if
+!
+!  Set flag so that the routine can only be called once after a hard 
+!  failure from the integrator.
+!
+   if (state==5 .or. state==6) ier = not_reusable
+!
+!  Check that ERROR_ASSESS was set properly for error assessment in SETUP.
+!
+   if (.not.comm%erason) then
+      ier = fatal; nrec = 3; write (comm%rec,"(a/a/a)") &
+" ** No error assessment is available since you did not ask for it in your",&
+" ** call to the routine SETUP. Check your program carefully."
+      exit body
+   end if
+!
+! Check size of RMS_ERROR
+!
+   if (present(rms_error)) then
+      if (any(shape(rms_error) /= shape(comm%y))) then
+         ier = fatal; nrec = 2; write (comm%rec,"(a,a)") &
+" ** The shape of RMS_ERROR is not consistent with the shape of the", &
+" ** dependent variables."
+         exit body
+      end if
+   end if
+!
+!  Check to see if the integrator has not actually taken a step.
+!
+   if (comm%step_count==0) then
+      ier = fatal; nrec = 2; write (comm%rec,"(a/a)") &
+" ** The integrator has not actually taken any successful steps. You cannot",&
+" ** call GLOBAL_ERROR in this circumstance. Check your program carefully."
+       exit body
+   end if
+!
+!  Compute RMS error and set output variables.
+!
+   if (present(max_error)) max_error = comm%ge_max_contrib
+   if (present(t_max_error)) t_max_error = comm%t_ge_max_contrib
+   if (present(rms_error)) rms_error = &
+      sqrt(comm%ge_assess/real(comm%step_count))
+!
+   exit body
+end do body
+!
+call rkmsg_r1(ier,srname,nrec,comm)
+!
+end subroutine global_error_r1
+
+subroutine reset_t_end_r1(comm,t_end_new)
+!
+! Part of rksuite_90 v1.0 (Aug 1994)
+!         software for initial value problems in ODEs
+!
+! Authors: R.W. Brankin (NAG Ltd., Oxford, England)
+!          I. Gladwell  (Math Dept., SMU, Dallas, TX, USA)
+!          see main doc for contact details
+!
+_REAL_, intent(in) :: t_end_new                               !indep!
+type(rk_comm_real_1d), intent(inout) :: comm
+!
+character(len=*), parameter :: srname="RESET_T_END"
+!
+_REAL_ :: hmin, tdiff                                         !indep!
+integer ::           ier, nrec, state
+!
+integer, parameter :: not_ready=-1, usable=-2, fatal=911, catastrophe=912, &
+   just_fine=1
+logical, parameter :: ask=.true.
+_REAL_, parameter :: zero=0.0d0
+!
+ier = just_fine; nrec = 0
+!
+!  Is it permissible to call RESET_T_END?
+!
+body: do
+!
+   state = get_saved_state_r1("STEP_INTEGRATE",comm%save_states)
+   if (state==fatal) then
+      ier = catastrophe; nrec = 1; write (comm%rec,"(a)") &
+" ** A catastrophic error has already been detected elsewhere."
+      exit body
+   end if
+   if (comm%use_range) then
+      if (get_saved_state_r1("RANGE_INTEGRATE",comm%save_states)/=usable) then
+         ier = fatal; nrec = 2; write (comm%rec,"(a/a)") &
+" ** You have called RESET_T_END after you specified to SETUP that you were",&
+" ** going to use RANGE_INTEGRATE. This is not permitted."
+         exit body
+      end if
+   end if
+   if (state==not_ready) then
+      ier = fatal; nrec = 1; write (comm%rec,"(a)") &
+" ** You have not called STEP_INTEGRATE, so you cannot use RESET_T_END."
+      exit body
+   end if
+   if (state==5 .or. state==6) then
+      ier = fatal; nrec = 2; write (comm%rec,"(a,i1,a/a)") &
+" ** STEP_INTEGRATE has returned with FLAG =  ",STATE," You cannot call",&
+" ** RESET_T_END inthis circumstance."
+      exit body
+   end if
+!
+!  Check value of T_END_NEW
+!
+   if (comm%dir>zero .and. t_end_new<=comm%t) then
+      ier = fatal; nrec = 3; write (comm%rec,"(a/a,e13.5/a,e13.5,a)") &
+" ** Integration is proceeding in the positive direction. The current value",&
+" ** for the independent variable is ",comm%T," and you have set T_END_NEW =",&
+" ** ",T_END_NEW,".  T_END_NEW must be greater than T."
+      exit body
+   else if (comm%dir<zero .and. t_end_new>=comm%t) then
+      ier = fatal; nrec = 3; write (comm%rec,"(a/a,e13.5/a,e13.5,a)") &
+" ** Integration is proceeding in the negative direction. The current value",&
+" ** for the independent variable is ",comm%T," and you have set T_END_NEW =",&
+" ** ",T_END_NEW,".  T_END_NEW must be less than T."
+      exit body
+   else
+      hmin = max(comm%sqtiny,comm%toosml*max(abs(comm%t),abs(t_end_new)))
+      tdiff = abs(t_end_new-comm%t)
+      if (tdiff<hmin) then
+         ier = fatal; nrec = 4 
+         write (comm%rec,"(a,e13.5,a/a,e13.5,a/a/a,e13.5,a)")&
+" ** The current value of the independent variable T is ",comm%T,". The",&
+" ** T_END_NEW you supplied has ABS(T_END_NEW-T) = ",TDIFF,". For the METHOD",&
+" ** and the precision of the computer being used, this difference must be",&
+" ** at least ",HMIN,"."
+         exit body
+      end if
+   end if
+!
+   comm%t_end = t_end_new; comm%at_t_end = .false.
+!
+   exit body
+end do body
+!
+call rkmsg_r1(ier,srname,nrec,comm)
+!
+end subroutine reset_t_end_r1
+
+subroutine interpolate_r1(comm,f,t_want,y_want,yderiv_want)
+!
+! Part of rksuite_90 v1.0 (Aug 1994)
+!         software for initial value problems in ODEs
+!
+! Authors: R.W. Brankin (NAG Ltd., Oxford, England)
+!          I. Gladwell  (Math Dept., SMU, Dallas, TX, USA)
+!          see main doc for contact details
+!
+_REAL_, intent(in) :: t_want                                  !indep!
+type(rk_comm_real_1d), intent(inout), target :: comm
+_REAL_, dimension(:), intent(out), optional :: y_want         !dep!
+_REAL_, dimension(:), intent(out), optional :: yderiv_want    !dep!
+!
+interface
+   subroutine f(t,y,yp)
+      _REAL_, intent(in) :: t                                 !indep!
+      _REAL_, dimension(:), intent(in) :: y                   !dep!
+      _REAL_, dimension(:), intent(out) :: yp             !dep!
+   end subroutine
+   
+   !function f(t,y)
+   !   _REAL_, intent(in) :: t                                 !indep!
+   !   _REAL_, dimension(:), intent(in) :: y                   !dep!
+   !   _REAL_, dimension(size(y,1)) :: f                       !dep!
+   !end function f
+end interface
+!
+character(len=*),parameter :: srname="INTERPOLATE"
+integer :: ier, jer, nrec, state, npcls
+logical :: intrp_initialised
+!
+integer, parameter :: not_ready=-1, usable=-2, fatal=911, catastrophe=912, &
+   just_fine=1
+logical, parameter :: ask=.true.
+!
+ier = just_fine; nrec = 0
+!
+body: do
+!
+!  Is it permissible to call INTERPOLATE?
+!
+   state = get_saved_state_r1("STEP_INTEGRATE",comm%save_states)
+   if (state==fatal) then
+      ier = catastrophe; nrec = 1; write (comm%rec,"(a)") &
+" ** A catastrophic error has already been detected elsewhere."
+      exit body
+   end if
+   if (comm%use_range) then
+      if (get_saved_state_r1("RANGE_INTEGRATE",comm%save_states)/=usable) then
+         ier = fatal; nrec = 2; write (comm%rec,"(a/a)") &
+" ** You have called INTERPOLATE after you specified to SETUP that you were",&
+" ** going to use RANGE_INTEGRATE. This is not permitted."
+         exit body
+      end if
+   end if
+   if (state==not_ready) then
+      ier = fatal; nrec = 1; write (comm%rec,"(a)") &
+" ** You have not called STEP_INTEGRATE, so you cannot use INTERPOLATE."
+      exit body
+   end if
+   if (state > just_fine) then
+      ier = fatal; nrec = 2; write (comm%rec,"(a/a)") &
+" ** STEP_INTEGRATE has returned with a flag value greater than 1. You", &
+" ** cannot call INTERPOLATE in this circumstance."
+      exit body
+   end if
+!
+!  Check sizes of arrays
+!
+   if (present(y_want)) then
+      if (any(shape(y_want)/=shape(comm%y))) then
+         ier = fatal; nrec = 3; write (comm%rec,"(a,i6,a/a,i6,a/a)") &
+" ** The shape of the array Y_WANT is not consistent with the shape of the ", &
+" ** dependent variables."
+         exit body
+      end if
+   end if
+   if (present(yderiv_want)) then
+      if (any(shape(yderiv_want)/=shape(comm%y))) then
+         ier = fatal; nrec = 3; write (comm%rec,"(a,i6,a/a,i6,a/a)") &
+" ** The shape of the array YDERIV_WANT is not consistent with the shape of", &
+" ** the dependent variables."
+         exit body
+      end if
+   end if
+!
+!  Check METHOD is ok to interpolate with
+!
+   if (comm%rk_method==3) then
+      ier = fatal; nrec = 5; write (comm%rec,"(a/a/a/a/a)") &
+" ** You have been using STEP_INTEGRATE with METHOD = 'H' to integrate your",&
+" ** equations. You have just called INTERPOLATE, but interpolation is not",&
+" ** available for this METHOD. Either use METHOD = 'M', for which",&
+" ** interpolation is available, or use RESET_T_END to make STEP_INTEGRATE",&
+" ** step exactly to the points where you want output."
+      exit body
+   end if
+!
+!  Get some workspace -
+!     can overwrite STAGES in METHOD 'L' since they're not requird for the
+!     interpolant
+!
+   select case(comm%rk_method)
+   case(1)
+      if (.not. associated(comm%p)) comm%p => comm%stages(:,1:2)
+      npcls = 2
+      if (.not. associated(comm%ytemp)) comm%p => comm%stages(:,1:3)
+   case(2)
+      jer = 0
+      if (.not.associated(comm%xstage)) then
+         allocate(comm%xstage(size(comm%y,1)),stat=jer)              !alloc!
+      end if
+      if (.not.associated(comm%ytemp)) then
+         allocate(comm%ytemp(size(comm%y,1)),stat=jer)               !alloc!
+      end if
+      if (.not.associated(comm%p)) then
+         allocate(comm%p(size(comm%y,1),5),stat=jer)                 !alloc!
+      end if
+      npcls = 5
+      if (jer /= 0) then
+         ier = fatal; nrec = 1 ; write (comm%rec,"(a)") &
+" ** Not enough storage available to create workspace required internally."
+         exit body
+      end if
+   end select
+!
+!  Check data to see if interpolant has already been calculated for this
+!  step
+!
+   intrp_initialised = get_saved_state_r1(srname,comm%save_states) /= usable
+!
+!  Some initialization must be done before interpolation is possible.
+!
+   if (.not.intrp_initialised) call form_intrp(f,comm%p)
+!
+!  The actual evaluation of the interpolating polynomial and/or its first
+!  derivative is done in EVALUATE_INTRP.
+!
+   call evaluate_intrp(comm%p,y_want,yderiv_want)
+   exit body
+!
+end do body
+!
+call rkmsg_r1(ier,srname,nrec,comm)
+!
+contains
+!
+subroutine form_intrp(f,p)
+!
+_REAL_, intent(out), dimension(:,:) :: p                      !dep!
+!
+interface
+   subroutine f(t,y,yp)
+      _REAL_, intent(in) :: t                                 !indep!
+      _REAL_, dimension(:), intent(in) :: y                   !dep!
+      _REAL_, dimension(:), intent(out) :: yp             !dep!
+   end subroutine
+   
+   !function f(t,y)
+   !   _REAL_, intent(in) :: t                                 !indep!
+   !   _REAL_, dimension(:), intent(in) :: y                   !dep!
+   !   _REAL_, dimension(size(y,1)) :: f                       !dep!
+   !end function f
+end interface
+!
+_REAL_, dimension(:,:), pointer :: r                          !real!
+_REAL_, dimension(:,:), pointer :: stages                     !dep!
+_REAL_, dimension(:), pointer :: y, yp, y_old, yp_old         !dep!
+_REAL_, dimension(:), pointer :: xstage                       !dep!
+!
+stages => comm%stages
+r => comm%r
+y => comm%y
+yp => comm%yp
+y_old => comm%y_old
+yp_old => comm%yp_old
+xstage => comm%xstage
+!
+select case(comm%rk_method)
+case(1)
+!
+!  METHOD = 'L'.  Use the cubic Hermite interpolant that is fully
+!  specified by the values and slopes at the two ends of the step.
+!
+   p(:,2) = y - y_old
+   p(:,1) = comm%h_old*yp - p(:,2)
+   p(:,2) = p(:,1) - (p(:,2)-comm%h_old*yp_old)
+   p(:,1) = p(:,1) + p(:,2)
+!
+case(2)
+!
+!  METHOD = 'M'.
+!
+   if (.not.intrp_initialised) call extra_stages(f,comm%ytemp,comm%xstage)
+!
+!  Form the coefficients of the interpolating polynomial in its shifted
+!  and scaled form.  The transformation from the form in which the
+!  polynomial is derived can be somewhat ill-conditioned.  The terms 
+!  are grouped so as to minimize the errors of the transformation.
+!
+!  Coefficient of SIGMA**6
+   p(:,5) = r(5,6)*stages(:,4) + &
+                     ((r(10,6)*xstage+r(8,6)*yp)+ &
+                     (r(7,6)*stages(:,6)+r(6,6)*stages(:,5))) + &
+                     ((r(4,6)*stages(:,3)+r(9,6)*stages(:,7))+ &
+                     (r(3,6)*stages(:,2)+r(11,6)*stages(:,1))+ &
+                     r(1,6)*yp_old)
+!
+!  Coefficient of SIGMA**5
+   p(:,4) = (r(10,5)*xstage+r(9,5)*stages(:,7)) + &
+                     ((r(7,5)*stages(:,6)+r(6,5)*stages(:,5))+ &
+                     r(5,5)*stages(:,4)) + ((r(4,5)*stages(:,3)+ &
+                     r(8,5)*yp)+(r(3,5)*stages(:,2)+r(11,5)* &
+                     stages(:,1))+r(1,5)*yp_old)
+!
+!  Coefficient of SIGMA**4
+   p(:,3) = ((r(4,4)*stages(:,3)+r(8,4)*yp)+ &
+                     (r(7,4)*stages(:,6)+r(6,4)*stages(:,5))+ &
+                     r(5,4)*stages(:,4)) + ((r(10,4)*xstage+ &
+                     r(9,4)*stages(:,7))+(r(3,4)*stages(:,2)+ &
+                     r(11,4)*stages(:,1))+r(1,4)*yp_old)
+!
+!  Coefficient of SIGMA**3
+   p(:,2) = r(5,3)*stages(:,4) + r(6,3)*stages(:,5) + &
+                     ((r(3,3)*stages(:,2)+r(9,3)*stages(:,7))+ &
+                     (r(10,3)*xstage+r(8,3)*yp)+r(1,3)* &
+                     yp_old)+((r(4,3)*stages(:,3)+r(11,3)* &
+                     stages(:,1))+r(7,3)*stages(:,6))
+!
+!  Coefficient of SIGMA**2
+   p(:,1) = r(5,2)*stages(:,4) + ((r(6,2)*stages(:,5)+ &
+                   r(8,2)*yp)+r(1,2)*yp_old) + &
+                   ((r(3,2)*stages(:,2)+r(9,2)*stages(:,7))+ &
+                   r(10,2)*xstage) + ((r(4,2)*stages(:,3)+ &
+                   r(11,2)*stages(:,1))+r(7,2)*stages(:,6))
+!
+!  Scale all the coefficients by the step size.
+   p(:,:) = comm%h_old*p(:,:)
+!
+end select
+!
+end subroutine form_intrp
+
+
+subroutine evaluate_intrp(p,y_want,yderiv_want)
+!
+_REAL_, dimension(:), optional, intent(out) :: y_want         !dep!
+_REAL_, dimension(:), optional, intent(out) :: yderiv_want    !dep!
+_REAL_, dimension(:,:), intent(in) :: p                       !dep!
+!
+real :: sigma
+integer :: i
+!
+sigma = (t_want-comm%t)/comm%h_old
+!
+if (present(y_want)) then
+   y_want = p(:,comm%intrp_degree-1)*sigma
+   do i = comm%intrp_degree - 2, 1, -1
+      y_want = (y_want+p(:,i))*sigma
+   end do
+   y_want = (y_want+comm%h_old*comm%yp)*sigma + comm%y
+end if
+!
+if (present(yderiv_want)) then
+   yderiv_want = comm%intrp_degree*p(:,comm%intrp_degree-1)*sigma
+   do i = comm%intrp_degree - 1, 2, -1
+      yderiv_want = (yderiv_want+i*p(:,i-1))*sigma
+   end do
+   yderiv_want = (yderiv_want+comm%h_old*comm%yp)/comm%h_old
+end if
+!
+end subroutine evaluate_intrp
+
+
+subroutine extra_stages(f,ytemp,xstage)
+!
+_REAL_, dimension(:), intent(out) :: ytemp, xstage            !dep!
+!
+interface 
+   subroutine f(t,y,yp)
+      _REAL_, intent(in) :: t                                 !indep!
+      _REAL_, dimension(:), intent(in) :: y                   !dep!
+      _REAL_, dimension(:), intent(out) :: yp             !dep!
+   end subroutine
+   
+   !function f(t,y)
+   !   _REAL_, intent(in) :: t                                 !indep!
+   !   _REAL_, dimension(:), intent(in) :: y                   !dep!
+   !   _REAL_, dimension(size(y,1)) :: f                       !dep!
+   !end function f
+end interface
+!
+_REAL_, dimension(:,:), pointer :: stages                     !dep!
+_REAL_, dimension(:), pointer :: yp, y_old, yp_old            !dep!
+!
+_REAL_, dimension(:,:), pointer :: a                          !real!
+_REAL_, dimension(:), pointer :: c                            !real!
+_REAL_, pointer :: h_old, t_old                               !indep!
+!
+integer :: i, j
+!
+a => comm%a
+stages => comm%stages
+c => comm%c
+yp => comm%yp
+y_old => comm%y_old
+yp_old => comm%yp_old
+h_old => comm%h_old
+t_old => comm%t_old
+!
+!  Compute the extra stages needed for interpolation using the facts that
+!       1. Stage 1 is YP_OLD.
+!       2. Stage i (i>1) is stored in STAGES(...,i-1).
+!       3. This pair is FSAL, i.e. STAGES(...,7)=YP, which frees
+!          up STAGES(...,7) for use by stage 9.
+!       4. XSTAGE is used for stage 10.
+!       5. The coefficient of stage 2 in the interpolant is always 0, so
+!          STAGES(...,1) is used for stage 11.
+!
+do i = 9, 11
+   do j = 1, i-1
+      select case (j)
+         case(1); ytemp = a(i,1)*yp_old
+! could have used matmul here but that prevents increasing rank of dep-var
+         case(2:7);ytemp = ytemp + a(i,j)*stages(:,j-1)
+         case(8); ytemp = ytemp + a(i,j)*yp
+         case(9); ytemp = ytemp + a(i,j)*stages(:,7)
+         case(10); ytemp = ytemp + a(i,j)*xstage
+      end select
+   end do
+   ytemp = y_old + h_old*ytemp
+   select case(i)
+      case(9)
+          call f(t_old+c(i)*h_old,ytemp,stages(:,7))
+!         stages(:,7) = f(t_old+c(i)*h_old,ytemp)
+      case(10)
+          call f(t_old+c(i)*h_old,ytemp,xstage)
+!         xstage = f(t_old+c(i)*h_old,ytemp)
+      case(11)
+          call f(t_old+c(i)*h_old,ytemp,stages(:,1))
+!         stages(:,1) = f(t_old+c(i)*h_old,ytemp)
+   end select
+   comm%f_count = comm%f_count + 1
+end do
+!
+end subroutine extra_stages
+
+end subroutine interpolate_r1
+
+subroutine rkmsg_r1(ier,srname,nrec,comm,flag)
+!
+! Part of rksuite_90 v1.0 (Aug 1994)
+!         software for initial value problems in ODEs
+!
+! Authors: R.W. Brankin (NAG Ltd., Oxford, England)
+!          I. Gladwell  (Math Dept., SMU, Dallas, TX, USA)
+!          see main doc for contact details
+!
+integer, intent(in) :: ier, nrec
+integer, intent(out), optional :: flag
+character(len=*), intent(in) :: srname
+type(rk_comm_real_1d), intent(inout) :: comm
+!
+logical :: ok, on, range_call
+!
+integer, parameter :: fatal=911, catastrophe=912, just_fine=1
+logical, parameter :: tell=.false.
+!
+!  Check where the call came from - if it is an indirect call from 
+!  RANGE_INTEGRATE the run is not STOPped.
+!
+range_call = (srname=="RESET_T_END" .or. srname=="STEP_INTEGRATE" .or. &
+          srname=="INTERPOLATE") .and. comm%use_range
+!
+!  Check if can continue with integrator.
+!
+ok = (srname=="STEP_INTEGRATE" .or. srname=="RANGE_INTEGRATE") .and. &
+     (ier==2 .or. ier==3 .or. ier==4)
+!
+!  Check if program termination has been overridden.
+!
+on = get_stop_on_fatal_r1(comm)
+!
+if ((comm%print_message.and.ier>just_fine) .or. ier>=fatal) then
+   write (comm%outch,"(/a)") " **"
+   write (comm%outch,"(a)") comm%rec(1:nrec)
+   if (ier>=fatal) then
+      write (comm%outch,"(a/a,a,a/a/)") &
+" **",&
+" ** Catastrophic error detected in ", srname, ".",&
+" **"
+      if ((.not.range_call.and.on.and.ier==fatal) .or. ier==catastrophe) then
+         write (comm%outch,"(a/a/a)") &
+" **",&
+" ** Execution of your program is being terminated.",&
+" **"
+         stop
+      end if
+   else 
+      if (ok) then
+         write (comm%outch,"(a/a,a,a,i2,a/a/a)")  &
+" **", &
+" ** Warning from routine ", srname, " with flag set ",ier, ".",&
+" ** You can continue integrating this problem.",&
+" **"
+      else
+         write (comm%outch,"(a/a,a,a,i2,a/a/a)")  &
+" **", &
+" ** Warning from routine ", srname, " with flag set ",ier, ".", &
+" ** You cannot continue integrating this problem.", &
+" **"
+      end if
+      if (.not.present(flag)) then
+         write (comm%outch,"(a/a/a)") &
+" **",&
+" ** Execution of your program is being terminated.",&
+" **"
+         stop
+      end if
+   end if
+end if
+!
+if (present(flag)) flag = ier
+comm%rec(nrec+1:10) = " "
+!
+!  Save the status of the routine associated with SRNAME
+!
+call set_saved_state_r1(srname,ier,comm)
+!
+!  Indicate that a catastrophic error has been detected
+!
+!call set_saved_fatal_r1(comm,ier >= catastrophe)
+!
+end subroutine rkmsg_r1
+
+subroutine set_saved_state_r1(srname,state,comm)
+!
+! Part of rksuite_90 v1.0 (Aug 1994)
+!         software for initial value problems in ODEs
+!
+! Authors: R.W. Brankin (NAG Ltd., Oxford, England)
+!          I. Gladwell  (Math Dept., SMU, Dallas, TX, USA)
+!          see main doc for contact details
+!
+integer, intent(in) :: state
+type(rk_comm_real_1d), intent(inout) :: comm
+character(len=*), intent(in) :: srname
+!
+integer :: name
+!
+integer, parameter :: fatal=911
+!
+select case (srname)
+   case("SETUP"); name = 1
+   case("RANGE_INTEGRATE"); name = 2
+   case("STATISTICS"); name = 3
+   case("GLOBAL_ERROR"); name = 4
+   case("STEP_INTEGRATE"); name = 5
+   case("INTERPOLATE"); name= 6
+   case("RESET_T_END"); name = 7
+   case default; name = 0
+end select
+!
+comm%save_states(name) = state
+comm%saved_fatal_err = state >= fatal
+!
+end subroutine set_saved_state_r1
+
+function get_saved_state_r1(srname,save_states)
+!
+! Part of rksuite_90 v1.0 (Aug 1994)
+!         software for initial value problems in ODEs
+!
+! Authors: R.W. Brankin (NAG Ltd., Oxford, England)
+!          I. Gladwell  (Math Dept., SMU, Dallas, TX, USA)
+!          see main doc for contact details
+!
+integer, dimension(7), intent(inout) :: save_states
+character(len=*), intent(in) :: srname
+integer :: get_saved_state_r1
+!
+integer :: name
+!
+integer, parameter :: fatal=911
+!
+select case (srname)
+   case("SETUP"); name = 1
+   case("RANGE_INTEGRATE"); name = 2
+   case("STATISTICS"); name = 3
+   case("GLOBAL_ERROR"); name = 4
+   case("STEP_INTEGRATE"); name = 5
+   case("INTERPOLATE"); name= 6
+   case("RESET_T_END"); name = 7
+   case default; name = 0
+end select
+!
+!  Check for status of given routine but check for any fatal errors first
+!
+if (any(save_states(1:7)==fatal)) then
+   get_saved_state_r1 = fatal
+else
+   get_saved_state_r1 = save_states(name)
+end if
+!
+end function get_saved_state_r1
+
+function get_saved_fatal_r1(comm)
+!
+! Part of rksuite_90 v1.0 (Aug 1994)
+!         software for initial value problems in ODEs
+!
+! Authors: R.W. Brankin (NAG Ltd., Oxford, England)
+!          I. Gladwell  (Math Dept., SMU, Dallas, TX, USA)
+!          see main doc for contact details
+!
+type(rk_comm_real_1d), intent(in) :: comm
+logical :: get_saved_fatal_r1
+!
+get_saved_fatal_r1 = comm%saved_fatal_err
+!
+end function get_saved_fatal_r1
+
+subroutine set_stop_on_fatal_r1(comm,action)
+!
+! Part of rksuite_90 v1.0 (Aug 1994)
+!         software for initial value problems in ODEs
+!
+! Authors: R.W. Brankin (NAG Ltd., Oxford, England)
+!          I. Gladwell  (Math Dept., SMU, Dallas, TX, USA)
+!          see main doc for contact details
+!
+type(rk_comm_real_1d), intent(inout) :: comm
+logical, intent(in) :: action
+!
+comm%stop_on_fatal = action
+!
+end subroutine set_stop_on_fatal_r1
+
+function get_stop_on_fatal_r1(comm)
+!
+! Part of rksuite_90 v1.0 (Aug 1994)
+!         software for initial value problems in ODEs
+!
+! Authors: R.W. Brankin (NAG Ltd., Oxford, England)
+!          I. Gladwell  (Math Dept., SMU, Dallas, TX, USA)
+!          see main doc for contact details
+!
+type(rk_comm_real_1d), intent(in) :: comm
+logical get_stop_on_fatal_r1
+!
+get_stop_on_fatal_r1 = comm%stop_on_fatal
+!
+end function get_stop_on_fatal_r1
+
+!endc!
+end module rksuite_90
+

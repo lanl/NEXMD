@@ -10,7 +10,7 @@ contains
     integer function readstring(file,card,flen)
         integer       file, flen
         character*200 card
-        if(file.gt.200)STOP'ERROR: file number too large'
+        if(file.gt.200)STOP 'ERROR: file number too large'
         read(file,'(a)',err=100,end=100)card
         flen=199
         do while(card(flen:flen).eq.' ')
@@ -164,39 +164,62 @@ contains
         return
     end SUBROUTINE
 
-    SUBROUTINE checknorm(sim,ido,neq,tini,tend,toldivprk,param,yg,idocontrol)
-        use naesmd_module
-        use md_module
-        use communism
-        IMPLICIT NONE
-        type(simulation_t), pointer :: sim
-        integer k,ido,neq, idocontrol
-        double precision tini,tend,toldivprk,norm,normdiff,param(50)
-        double precision yg(sim%excN)
-        external fcn
+    SUBROUTINE checknorm(rk_comm,nco,t,tmax,rk_tolerance,thresholds,yg)
+       use rksuite_90, only: rk_comm_real_1d, setup 
+	 IMPLICIT NONE
+        integer nco,  k
+        _REAL_ t, tmax,rk_tolerance,norm,normdiff
+        _REAL_, dimension(:) :: yg, thresholds
+        type(rk_comm_real_1d) :: rk_comm 
 
         norm=0.0d0
-        do k = 1,sim%excN
+        do k = 1,nco
             norm=norm+yg(k)*yg(k)
         enddo
         normdiff=dabs(norm-1.0d0)
         if(normdiff.ge.1.0d-5) then
-            do k = 1,sim%excN
+            do k = 1,nco
                 yg(k)=yg(k)/dsqrt(norm)
             enddo
-            if(idocontrol.eq.0) then
-                    ido=3
-                    write(45,*) tini*convtf,normdiff
-                    call divprk(ido,neq,fcn,tini,tend, &
-                        toldivprk,param,yg)
-                    ido=1
-                    idocontrol=1
-            endif
+	    write(45,*) t*convtf,normdiff
+	    call    setup(rk_comm, t, yg, tmax, rk_tolerance, thresholds, 'M','R')
         endif
 
         RETURN
     END SUBROUTINE
 
+!    SUBROUTINE checknorm(sim,ido,neq,tini,tend,toldivprk,param,yg,idocontrol)
+!        use naesmd_module
+!        use md_module
+!        use communism
+!        IMPLICIT NONE
+!        type(simulation_t), pointer :: sim
+!        integer k,ido,neq, idocontrol
+!        double precision tini,tend,toldivprk,norm,normdiff,param(50)
+!        double precision yg(sim%excN)
+!        external fcn
+
+!        norm=0.0d0
+!        do k = 1,sim%excN
+!            norm=norm+yg(k)*yg(k)
+!        enddo
+!        normdiff=dabs(norm-1.0d0)
+!        if(normdiff.ge.1.0d-5) then
+!            do k = 1,sim%excN
+!                yg(k)=yg(k)/dsqrt(norm)
+!            enddo
+!            if(idocontrol.eq.0) then
+!                    ido=3
+!                    write(45,*) tini*convtf,normdiff
+!                    call divprk(ido,neq,fcn,tini,tend, &
+!                        toldivprk,param,yg)
+!                    ido=1
+!                    idocontrol=1
+!            endif
+!        endif
+
+!        RETURN
+!    END SUBROUTINE
     ! Subroutine to calculate the coefficients to fit to a linear eq. the values of
     ! cadiab and vmdqt during propagation
 

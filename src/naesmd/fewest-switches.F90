@@ -10,23 +10,28 @@ module fewest_switches
     use naesmd_space_module
     implicit none
 contains
-    subroutine evalhop(sim, lprint,ido,neq,tini,tend,toldivprk, &
-        param,Na,yg,cross,idocontrol)
+    subroutine evalhop(sim, rkcomm, lprint, tend,tmax,rk_tolerance,thresholds, &
+        Na,yg,cross)
+!    subroutine evalhop(sim, lprint,ido,neq,tini,tend,toldivprk, &
+!        param,Na,yg,cross,idocontrol)
         use naesmd_module
         use md_module
+	use rksuite_90, only: rk_comm_real_1d, setup 
         implicit none
         type(simulation_t), pointer :: sim
+        type(rk_comm_real_1d) :: rkcomm 
         integer Na,lprint,excNtemp,ipn,indx(Na)
         integer k,i,j,jj,icheck,itest,ini,ihopavant
-        integer ido,neq,idocontrol
-        _REAL_ tini,tend,toldivprk,param(50),pn,kavant
+        !integer ido,neq,idocontrol
+        _REAL_ tmax,tend,rk_tolerance,pn,kavant
+        !_REAL_ tini,tend,toldivprk,param(50),pn,kavant
         _REAL_ g(sim%excN),gacum(sim%excN)
         _REAL_ iseedhop,eavant, eapres
         _REAL_ xx(Na),yy(Na),zz(Na)
-        _REAL_ yg(sim%excN),ytemp,ytemp2
+        _REAL_ yg(sim%excN*2),ytemp,ytemp2, thresholds(sim%excN*2)
         _REAL_ t_start,t_finish
         integer cross(sim%excN),crosstemp,ininonhop
-        external fcn
+        !external fcn
         ! conthop is used to not allow crossing inmediately after a hop
         ! conthop2 is used to not allow hoppings inmediately after a crossing
         if(conthop.eq.3) conthop=0
@@ -122,13 +127,14 @@ contains
                      yg(j+sim%excN)=rranf1(iseedmdqt)
                   enddo
                   yg(ihop)=1.0d0
-                  if(idocontrol.eq.0) then
-                     ido=3
-                     write(6,*)'Test DIVPRK called 1'
-                     call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
-                     ido=1
-                     idocontrol=1
-                 endif
+	          call    setup(rkcomm, tend, yg, tmax, rk_tolerance, thresholds, 'M','R')
+                  !if(idocontrol.eq.0) then
+                  !   ido=3
+                  !   write(6,*)'Test DIVPRK called 1'
+                  !   call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
+                  !   ido=1
+                  !   idocontrol=1
+                 !endif
 ! after kirill
 ! check the reduction of sim%excN
                  if(iredpot.eq.1) then
@@ -208,13 +214,15 @@ contains
                   yg(j+sim%excN)=rranf1(iseedmdqt)
                enddo
                yg(ihopavant)=1.0d0
-               if(idocontrol.eq.0) then 
-                       ido=3
-                       write(6,*)'test divprk called 2'
-                       call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
-                       ido=1
-                       idocontrol=1
-               endif
+		    call    setup(rkcomm, tend, yg, tmax, rk_tolerance, thresholds, &
+			    'M','R')
+               !if(idocontrol.eq.0) then 
+               !        ido=3
+               !        write(6,*)'test divprk called 2'
+               !        call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
+               !        ido=1
+               !        idocontrol=1
+               !endif
                conthop=1
 ! check the reduction of sim%excN
                if(iredpot.eq.1) then
@@ -316,13 +324,15 @@ contains
             yg(ihopavant+sim%excN)=yg(ihop+sim%excN)
             yg(ihop)=ytemp
             yg(ihop+sim%excN)=ytemp2
-            if(idocontrol.eq.0) then
-                ido=3
-                write(6,*)'call divprk test 3'
-                call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
-                ido=1
-                idocontrol=1
-            end if
+	    call    setup(rkcomm, tend, yg, tmax, rk_tolerance, thresholds, &
+	            'M','R')
+           ! if(idocontrol.eq.0) then
+           !     ido=3
+           !     write(6,*)'call divprk test 3'
+           !     call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
+           !     ido=1
+           !     idocontrol=1
+           ! end if
         end if
         ! Evaluation of other crossings that do not involve the ihop state
         !*************************************************************
@@ -339,13 +349,15 @@ contains
                     yg(i+sim%excN)=yg(iorden(i)+sim%excN)
                     yg(iorden(i))=ytemp
                     yg(iorden(i)+sim%excN)=ytemp2
-                    if(idocontrol.eq.0) then
-                        ido=3
-                        write(6,*)'call divprk test 4'
-                        call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
-                        ido=1
-                        idocontrol=1
-                    end if
+		    call    setup(rkcomm, tend, yg, tmax, rk_tolerance, thresholds, &
+	            	'M','R')
+                   ! if(idocontrol.eq.0) then
+                   !     ido=3
+                   !     write(6,*)'call divprk test 4'
+                   !     call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
+                   !     ido=1
+                   !     idocontrol=1
+                   ! end if
                 end if
             end if
         enddo
@@ -547,7 +559,7 @@ subroutine indexx(n,arr,indx)
 5       indx(l+1)=indx(j)
         indx(j)=indxt
         jstack=jstack+2
-        if(jstack.gt.NSTACK)pause 'NSTACK too small in indexx'
+        if(jstack.gt.NSTACK) pause 'NSTACK too small in indexx'
         if(ir-i+1.ge.j-l)then
           istack(jstack)=ir
           istack(jstack-1)=i

@@ -22,6 +22,7 @@ program MD_Geometry
     use communism
     use naesmd_module!,only: allocate_naesmd_module2
     use md_module
+    use rksuite_90, only:setup, range_integrate, rk_comm_real_1d
     implicit none
     !
     !--------------------------------------------------------------------
@@ -37,7 +38,8 @@ program MD_Geometry
     !
     !--------------------------------------------------------------------
 
-    integer ido,neq,idocontrol,lprint
+    !integer ido,neq,idocontrol,lprint
+    integer neq,lprint
     integer Na,Nm,N1,N2,N3,natoms
     integer i,j,k
     integer ii,jjj,ibo
@@ -48,7 +50,7 @@ program MD_Geometry
     _REAL_,target::E0
     _REAL_,pointer::pOmega(:),pE0
     integer ither,win
-    _REAL_ tini,tend,toldivprk,param(50)
+    _REAL_ tini,tend,tmax,tgot!,toldivprk,param(50)
     integer slen
     integer ifind
     logical moldyn_found
@@ -58,6 +60,7 @@ program MD_Geometry
     integer bo_dynamics_flag,exc_state_init,n_exc_states_propagate
     integer out_count_init
     _REAL_ time_init,rk_tolerance,time_step
+    _REAL_,allocatable::thresholds(:)
     integer n_class_steps,n_quant_steps,quant_coeffs_reinit
     _REAL_ num_deriv_step,therm_temperature
     integer therm_type
@@ -80,7 +83,8 @@ program MD_Geometry
         quant_step_reduction_factor,decoher_e0,decoher_c,decoher_type,dotrivial,&
         iredpot,nstates,deltared
     integer cohertype
-    _REAL_,allocatable :: yg(:)
+    _REAL_, dimension(:), allocatable :: yg, ygprime
+    integer rk_flag
     integer,allocatable :: cross(:)
     integer crosstot
     _REAL_ ntotcoher
@@ -90,7 +94,7 @@ program MD_Geometry
     integer itime1,itime11,itime2,itime3,get_time
     _REAL_ time11,time12
     character*30 datetime, machname*36
-    external fcn ! function call for interpolation
+     external :: fcn ! function call for interpolation
     _REAL_ t_start,t_finish
     integer inputfdes
 
@@ -103,6 +107,7 @@ program MD_Geometry
     qmmm_struct%ideriv=moldyn_deriv_flag
     qmmm_struct%numder_step=num_deriv_step
 
+    open (37,file='debug.out')
 
     !***********************************************************
     !Initialization and single point calculation or zeroeth
@@ -169,6 +174,13 @@ program MD_Geometry
     ihop=qmmm_struct%state_of_interest !FIXME change ihop to module variable
     call writeoutputini(sim,ibo,yg,lprint)
 
+    tmax=nstep*dtmdqt
+    do i =1,sim%excN
+	thresholds(i)=1.0d0	
+	thresholds(i+sim%excN)=6.29d0	
+    enddo
+    call setup(rk_comm,tfemto,yg,tmax,rk_tolerance,thresholds, &
+	'M','R')
     do imdqt=1,nstep !Main loop
         !Classical propagation step - BOMD or NAESMD
         write(6,*)"Begin classical propagation step #",imdqt
@@ -188,6 +200,7 @@ program MD_Geometry
         if(state.eq.'exct'.and.ibo.ne.1) then
             write(6,*)'Begin nonadiabatic couplings and crossings calculations'
             call initialize(sim,yg)
+	    
             !*******************************************************
             ! The analytic NAC for t.
             ! are calculated inside of cadiaboldcalc,cadiabmiddlecalc, and cadiabnewcalc
@@ -369,17 +382,19 @@ program MD_Geometry
                 !--------------------------------------------------------------------
                 ! Runge-Kutta-Verner propagator
                 !--------------------------------------------------------------------
-                write(6,*)'Propagator about to be called:',ido,neq,tini,tend,toldivprk
-                write(6,*)'param:',param
+                !write(6,*)'Propagator about to be called:',ido,neq,tini,tend,toldivprk
+                write(6,*)'Propagator about to be called:', tini,tend,rk_tolerance
+                !write(6,*)'param:',param
                 write(6,*)'yg:',yg
-
-                if(ido.eq.3) then
-                    write(*,*)  'Error: Deallocating on propogation step'
-                endif
-                call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
-                idocontrol=0
+                write(37,*)'T_start / End :', imdqt, iimdqt, rk_comm%t_start, tend, tmax
+	 	tend=min(tend,tmax)	
+		call range_integrate(rk_comm,fcn,tend,tgot,yg,ygprime,rk_flag)
+                write(37,*)'T_got :',tgot, rk_comm%t_start
+		tend=tgot
+		!call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
                 ! Check the norm
-                call checknorm(sim,ido,neq,tini,tend,toldivprk,param,yg,idocontrol)
+                call checknorm(rk_comm,sim%excN,tend,tmax,rk_tolerance,thresholds,yg)
+                !call checknorm(sim,ido,neq,tini,tend,toldivprk,param,yg,idocontrol)
                 !******************************************************
                 ! values for hop probability
                 do k=1,sim%excN
@@ -407,8 +422,10 @@ program MD_Geometry
             !--------------------------------------------------------------------
             ! analyze the hopping
             !--------------------------------------------------------------------
-            call evalhop(sim,lprint,ido,neq,tini,tend,toldivprk, &
-                param,Na,yg,cross,idocontrol)
+            call evalhop(sim, rk_comm, lprint, tend, tmax, rk_tolerance, thresholds, &
+                Na, yg, cross)
+            !call evalhop(sim,lprint,ido,neq,tini,tend,toldivprk, &
+            !    param,Na,yg,cross,idocontrol)
             !--------------------------------------------------------------------
             if(icontw.eq.nstepw) then
                 if(state.eq.'exct') then
@@ -434,8 +451,8 @@ program MD_Geometry
                     write(6,*) 'Your choices for decoher_e0 and decoher_c &
                         are not currently available'
                     stop
-                    call coherence(sim,Na,ido,neq,tini,tend,toldivprk, &
-                        param,yg,constcoherE0,constcoherC,cohertype,idocontrol)
+                    call coherence(sim,rk_comm, Na, tend,tmax, rk_tolerance, &
+                        thresholds,yg,constcoherE0,constcoherC,cohertype)
                 end if
             end if
            !write(6,*)'Now finished with the other things'
@@ -463,12 +480,12 @@ program MD_Geometry
     if(state.eq.'exct'.and.ibo.ne.1) then
         if(1==0) then ! kav: to skip it whatsoever
                        ! jakb: not sure if this should be skipped or not
-            if(idocontrol.eq.0) then
-                    ido=3
-                    call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
-                    ido=1
-                    idocontrol=1
-            endif
+            !if(idocontrol.eq.0) then
+            !        ido=3
+            !        call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
+            !        ido=1
+            !        idocontrol=1
+            !endif
         end if
     end if
 
@@ -553,11 +570,11 @@ contains
         dtnact=0.002d0
 
         ! Setting divprk propagator parameters
-        call sset(50,0.0d0,param,1)
-        param(10)=1.d0
+        !call sset(50,0.0d0,param,1)
+        !param(10)=1.d0
 
         ! Maximum number of steps allowed
-        param(4)=5.d6
+        !param(4)=5.d6
 
         call get_date(datetime)
         call get_machine(machname)
@@ -602,8 +619,8 @@ contains
 
         ! ido= Flag indicating the state of the computation
         ! use by divprk propagator
-        ido=1
-        idocontrol=1
+        !ido=1
+        !idocontrol=1
         conthop=0
         conthop2=0
         !
@@ -744,7 +761,7 @@ contains
    
         icontini=out_count_init
         tfemto=time_init
-        toldivprk=rk_tolerance
+        !toldivprk=rk_tolerance
 
         dtmdqt=time_step
         h=dtmdqt
@@ -940,7 +957,9 @@ contains
         call allocate_naesmd_module(Na,npot)
         call allocate_md_module(Na)
         if(npot.gt.0) then
+                allocate(thresholds(2*sim%excN))
                 allocate(yg(2*sim%excN))
+                allocate(ygprime(2*sim%excN))
                 allocate(cross(sim%excN))
                 allocate(fosc(sim%excN))
                 allocate(Omega(sim%excN))

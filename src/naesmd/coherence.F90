@@ -3,8 +3,11 @@
 
 ! Subroutine to loose coherence
 
-subroutine coherence(sim,Na,ido,neq,tini,tend,toldivprk, &
-    param,yg,constcoherE0,constcoherC,cohertype,idocontrol)
+subroutine coherence(sim,rkcomm, Na, tend, tmax,rk_tolerance, &
+    thresholds,yg,constcoherE0,constcoherC,cohertype)
+!subroutine coherence(sim,Na,ido,neq,tini,tend,toldivprk, &
+!    param,yg,constcoherE0,constcoherC,cohertype,idocontrol)
+    use rksuite_90, only: rk_comm_real_1d, setup 
     use qm2_davidson_module
     use communism
     use naesmd_module
@@ -12,14 +15,18 @@ subroutine coherence(sim,Na,ido,neq,tini,tend,toldivprk, &
     implicit none
 
     type(simulation_t),pointer  ::  sim
-    integer cohertype,idocontrol
+    type(rk_comm_real_1d) :: rkcomm 
+   
+    integer cohertype
+    !integer cohertype,idocontrol
     integer Na,kk
     _REAL_ xx(Na),yy(Na),zz(Na)
     integer k,i,j
-    integer ido,neq
-    _REAL_ tini,tend,toldivprk,param(50)
+    !integer ido,neq
+    !_REAL_ tini,tend,toldivprk,param(50)
+    _REAL_ tend,tmax,rk_tolerance
     _REAL_ constcoherE0,constcoherC
-    _REAL_ yg(sim%excN)
+    _REAL_ yg(sim%excN*2), thresholds(sim%excN*2) 
     _REAL_ taocoher(sim%excN)
     _REAL_ norm,norm1,norm2,normdij
     _REAL_ vect1(Na*3) &
@@ -28,7 +35,7 @@ subroutine coherence(sim,Na,ido,neq,tini,tend,toldivprk, &
     _REAL_ kinec(sim%excN)
     _REAL_ dij(Na*3)
 
-    external fcn
+    !external fcn
 
     do j=1,sim%excN
         kinec(j)=0.0d0
@@ -194,12 +201,14 @@ subroutine coherence(sim,Na,ido,neq,tini,tend,toldivprk, &
 
     yg(ihop)=yg(ihop)*dsqrt((1-norm)/(yg(ihop)*yg(ihop)))
 
-    if(idocontrol.eq.0) then
-        ido=3
-        call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
-        ido=1
-        idocontrol=1
-    end if
+    call    setup(rkcomm, tend, yg, tmax, rk_tolerance, thresholds, &
+	    'M','R')
+    !if(idocontrol.eq.0) then
+    !    ido=3
+    !    call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
+    !    ido=1
+    !    idocontrol=1
+    !end if
     ! end modified by Seba
 
 
