@@ -32,7 +32,7 @@ contains
         _REAL_ energy !!JAB VE model
 
         if(solvent_model.eq.2) then
-            call calc_excsolven(energy) !JAB Test
+            call calc_excsolven(sim%qmmm,energy) !JAB Test
             vmdqt(ihop)=vmdqt(ihop)-0.5*energy/feVmdqt !JAB Test
         endif
 
@@ -292,7 +292,7 @@ contains
         save first
 
         if(solvent_model.eq.2) then
-            call calc_excsolven(energy) !JAB Test
+            call calc_excsolven(sim%qmmm,energy) !JAB Test
             vmdqt(ihop)=vmdqt(ihop)-0.5*energy/feVmdqt !JAB Test
         endif
 

@@ -22,7 +22,7 @@ module qm2_fock_d
 contains 
 
   
-    subroutine qm2_fock2_d(F, PTOT, W)
+    subroutine qm2_fock2_d(qmmm_struct, F, PTOT, W)
         !***********************************************************************
         !
         ! FOCK2 FORMS THE TWO-ELECTRON TWO-CENTER REPULSION PART OF THE FOCK
@@ -34,9 +34,11 @@ contains
         !
         !  Why isn't this used for excited states? !JAB !FIXME
         !***********************************************************************
-        use qmmm_module, only : qmmm_struct, qm2_struct, qm2_params, qmmm_mpi
-        implicit none
+        use qmmm_module, only : qm2_struct, qm2_params, qmmm_mpi
+        use qmmm_struct_module, only : qmmm_struct_type
+	implicit none
 
+         type(qmmm_struct_type), intent(in) :: qmmm_struct
         _REAL_, intent(inout) :: F(:)
         _REAL_, intent(in) :: ptot(:)
         _REAL_, intent(in) :: W(:)
@@ -48,7 +50,7 @@ contains
 
         logical, save::initialized=.false.
 
-        if (.not.w_position_initialized) call InitializeWPosition
+        if (.not.w_position_initialized) call InitializeWPosition(qmmm_struct)
  
         do ii=1,qmmm_struct%nquant_nlink
             IA=qm2_params%orb_loc(1,ii)
@@ -88,15 +90,19 @@ contains
 
 
 
-    subroutine qm2_fock1_d(F, PTOT)
+    subroutine qm2_fock1_d(qmmm_struct, F, PTOT)
 
         use constants          , only : fourth
         use ElementOrbitalIndex, only : MaxValenceDimension, &
             Index1_2Electron, IntRep,  &
             IntRf1, IntRf2, IntIJ, IntKL
         use MNDOChargeSeparation, only: GetOneCenter2Electron
-        use qmmm_module         , only : qmmm_mpi, qmmm_struct, qm2_params
+        use qmmm_module         , only : qmmm_mpi, qm2_params
+        use qmmm_struct_module, only : qmmm_struct_type
+
         implicit none
+
+        type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
         _REAL_, intent(inout) :: F(:)
         _REAL_, intent(in) :: PTOT(:)
@@ -112,10 +118,10 @@ contains
         integer::qmType
   
   
-        if (.not.w_position_initialized) call InitializeWPosition
+        if (.not.w_position_initialized) call InitializeWPosition(qmmm_struct)
 
         ! first calculate the SP contributions
-        call qm2_fock1(F,PTOT)
+        call qm2_fock1(qmmm_struct, F,PTOT)
     
         do i=1,qmmm_struct%nquant_nlink
             qmType=qmmm_struct%qm_atom_type(i)
@@ -382,10 +388,13 @@ contains
 
     end subroutine W2Fock_atompair
 
-    subroutine InitializeWPosition
+    subroutine InitializeWPosition(qmmm_struct)
 
-        use qmmm_module, only : qmmm_struct, qm2_params
+        use qmmm_struct_module, only : qmmm_struct_type
+	use qmmm_module, only : qm2_params
     
+        type(qmmm_struct_type), intent(in) :: qmmm_struct
+
         integer::i,j,k,ii,jj,kk,n
     
         if (w_position_initialized) return

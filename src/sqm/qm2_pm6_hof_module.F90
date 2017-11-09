@@ -54,11 +54,13 @@ contains
   ! -------------------------------
   ! Calculate PM6 correction to HOF
   ! -------------------------------
-  _REAL_ function hofCorrection()
+  _REAL_ function hofCorrection(qmmm_struct)
 
     use constants, only : zero
-    use qmmm_module, only : qmmm_struct
+    use qmmm_struct_module, only : qmmm_struct_type
     implicit none
+
+    type(qmmm_struct_type), intent(in) :: qmmm_struct
 
     integer :: numBonds(qmmm_struct%nquant_nlink)
     integer :: bondedAtoms(qmmm_struct%nquant_nlink,qmmm_struct%nquant_nlink)
@@ -70,7 +72,7 @@ contains
     natom = qmmm_struct%nquant_nlink
 
     ! Determine which atoms are bonded to each other
-    call setupDentate(natom, qmmm_struct%qm_coords, numBonds, bondedAtoms)
+    call setupDentate(qmmm_struct, natom, qmmm_struct%qm_coords, numBonds, bondedAtoms)
 
     if (debug ) then
        ! print info on bonded atoms
@@ -83,11 +85,11 @@ contains
     end if
 
     ! HOF CC triple bond correction
-    call ccTripleBond(natom, qmmm_struct%qm_coords, numBonds, bondedAtoms, cct)
+    call ccTripleBond(qmmm_struct, natom, qmmm_struct%qm_coords, numBonds, bondedAtoms, cct)
     hofCorrection = hofCorrection + cct%energy
 
     ! HOF MM correction for nitrogen atoms with three ligands
-    call nsp2Correction(natom, qmmm_struct%qm_coords, numBonds, bondedAtoms, nsp2)
+    call nsp2Correction(qmmm_struct, natom, qmmm_struct%qm_coords, numBonds, bondedAtoms, nsp2)
     hofCorrection = hofCorrection + nsp2%energy
 
   end function hofCorrection
@@ -95,10 +97,13 @@ contains
   ! ----------------------------------------------
   ! Determine which atoms are bonded to each other
   ! ----------------------------------------------
-  subroutine setupDentate(natom, coord, numBonds, bondedAtoms)
+  subroutine setupDentate(qmmm_struct, natom, coord, numBonds, bondedAtoms)
 
-    use qmmm_module, only : qmmm_struct
+    use qmmm_struct_module, only : qmmm_struct_type
     implicit none
+
+    type(qmmm_struct_type), intent(in) :: qmmm_struct
+
     integer, intent(in)  :: natom
     _REAL_,  intent(in)  :: coord(3,natom)
     integer, intent(out) :: numBonds(natom)
@@ -177,11 +182,13 @@ contains
   ! a correction to account for the extra stabilization of yne bonds
   ! (written according to Jimmy Stewart's code)
   ! ----------------------------------------------------------------
-  subroutine ccTripleBond(natom, coord, numBonds, bondedAtoms, cct)
+  subroutine ccTripleBond(qmmm_struct, natom, coord, numBonds, bondedAtoms, cct)
 
-    use qmmm_module, only : qmmm_struct
+    use qmmm_struct_module, only : qmmm_struct_type
     use constants, only : zero
     implicit none
+
+    type(qmmm_struct_type), intent(in) :: qmmm_struct
 
     integer, intent(in) :: natom
     _REAL_,  intent(in) :: coord(3,natom)
@@ -237,10 +244,12 @@ contains
   ! Molecular mechanics correction to all nitrogen atoms
   ! that have exactly three ligands
   ! ----------------------------------------------------
-  subroutine nsp2Correction(natom, coord, numBonds, bondedAtoms, nsp2)
+  subroutine nsp2Correction(qmmm_struct, natom, coord, numBonds, bondedAtoms, nsp2)
 
-    use qmmm_module, only : qmmm_struct
+    use qmmm_struct_module, only : qmmm_struct_type
     implicit none
+
+    type(qmmm_struct_type), intent(in) :: qmmm_struct
 
     integer, intent(in) :: natom
     _REAL_,  intent(in) :: coord(3,natom)
@@ -321,10 +330,12 @@ contains
   ! ---------------------------------
   ! Gradient of PM6 correction to HOF
   ! ---------------------------------
-  subroutine hofCorrectionGradient(natom, dxyz)
+  subroutine hofCorrectionGradient(qmmm_struct, natom, dxyz)
 
-    use qmmm_module, only : qmmm_struct
+    use qmmm_struct_module, only : qmmm_struct_type
     implicit none
+
+    type(qmmm_struct_type), intent(in) :: qmmm_struct
 
     integer, intent(in)    :: natom
     _REAL_,  intent(inout) :: dxyz(3,natom)
@@ -333,10 +344,10 @@ contains
     integer :: bondedAtoms(natom,natom)
 
     ! Determine which atoms are bonded to each other
-    call setupDentate(natom, qmmm_struct%qm_coords, numBonds, bondedAtoms)
+    call setupDentate(qmmm_struct, natom, qmmm_struct%qm_coords, numBonds, bondedAtoms)
 
     ! gradient due to 
-    call nsp2CorrectionGrad(natom, qmmm_struct%qm_coords, numBonds, bondedAtoms, dxyz)
+    call nsp2CorrectionGrad(qmmm_struct, natom, qmmm_struct%qm_coords, numBonds, bondedAtoms, dxyz)
 
   end subroutine hofCorrectionGradient
 
@@ -344,10 +355,12 @@ contains
   ! Gradient of molecular mechanics correction to all 
   ! nitrogen atoms that have exactly three ligands
   ! -------------------------------------------------
-  subroutine nsp2CorrectionGrad(natom, coord, numBonds, bondedAtoms, dxyz)
+  subroutine nsp2CorrectionGrad(qmmm_struct, natom, coord, numBonds, bondedAtoms, dxyz)
 
-    use qmmm_module, only : qmmm_struct
+    use qmmm_struct_module, only : qmmm_struct_type
     implicit none
+
+    type(qmmm_struct_type), intent(in) :: qmmm_struct
 
     integer, intent(in)   :: natom
     _REAL_,  intent(in)   :: coord(3,natom)

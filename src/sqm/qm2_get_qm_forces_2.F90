@@ -138,7 +138,7 @@ subroutine qm2_get_qm_forces_2(dxyzqm)
 
            loop_count=loop_count+1
            if (qmmm_nml%qmqm_erep_incore) then
-             call qm2_deriv_qm_analyt(ii,jj,loop_count,qm2_struct%qm_qm_e_repul(1:22,loop_count), &
+             call qm2_deriv_qm_analyt(qmmm_struct,ii,jj,loop_count,qm2_struct%qm_qm_e_repul(1:22,loop_count), &
                        psum,n_atomic_orbj,n_atomic_orbi, &
                        corei,corej,betasas,betasap,betapas,betapap,vec_qm_qm1,vec_qm_qm2,  &
                        vec_qm_qm3, pair_force, qqi, qqi2, qqj, qqj2, ddi, ddj, &
@@ -158,7 +158,7 @@ subroutine qm2_get_qm_forces_2(dxyzqm)
                        qm2_params%atom_orb_pp_eqn_xxy2(1,1,qmitype,qmjtype))
            else
 !Same call as above, just qm2_struct%qm_qm_e_repul(1,loop_count) replaced with local e_repul
-             call qm2_deriv_qm_analyt(ii,jj,loop_count,e_repul, &
+             call qm2_deriv_qm_analyt(qmmm_struct,ii,jj,loop_count,e_repul, &
                        psum,n_atomic_orbj,n_atomic_orbi, &
                        corei,corej,betasas,betasap,betapas,betapap,vec_qm_qm1,vec_qm_qm2,  &
                        vec_qm_qm3, pair_force, qqi, qqi2, qqj, qqj2, ddi, ddj, &
@@ -240,10 +240,10 @@ subroutine qm2_get_qm_forces_2(dxyzqm)
             end do
             do K=1,3
               xyz_qmi(K)=xyz_qmi(K)+halfChange
-              call qm2_dhc(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+              call qm2_dhc(qmmm_struct, psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
                        jjl,AA)
               xyz_qmi(K)=xyz_qmi(K)-change
-              call qm2_dhc(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+              call qm2_dhc(qmmm_struct, psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
                        jjl,EE)
               xyz_qmi(K)=xyz_qmi(K)+halfChange
                    
@@ -264,7 +264,7 @@ subroutine qm2_get_qm_forces_2(dxyzqm)
       ! this is not parallelized - do only on the master
       if (qmmm_nml%qmtheory%PM6) then
          natom = qmmm_struct%nquant_nlink
-         call hofCorrectionGradient(natom, dxyzqm)
+         call hofCorrectionGradient(qmmm_struct, natom, dxyzqm)
       end if
       if (qmmm_nml%qmtheory%DISPERSION .or. qmmm_nml%qmtheory%DISPERSION_HYDROGENPLUS) then
          call dh_correction_grad(qmmm_struct%nquant_nlink,qmmm_struct%qm_coords, &
@@ -448,7 +448,7 @@ subroutine qm2_deriv_qm_analyt(iqm,jqm,loop_count,qm_qm_e_repul,PSUM, &
 !If we don't have the 1-e repul integrals for this QM-QM pair in memory we need
 !to calculate them now.
    if (.NOT. qmmm_nml%qmqm_erep_incore) then
-     call qm2_repp(iqm,jqm,rr,rr2,qm_qm_e_repul,core,SQRTAEE)
+     call qm2_repp(qmmm_struct, iqm,jqm,rr,rr2,qm_qm_e_repul,core,SQRTAEE)
    end if
 
 !   THE FIRST DERIVATIVES OF OVERLAP INTEGRALS                                  
@@ -1358,7 +1358,7 @@ subroutine qm2_deriv_qm_analyt(iqm,jqm,loop_count,qm_qm_e_repul,PSUM, &
    dgij(2) = dgy(1)
    dgij(3) = dgz(1)
    dxyz = zero
-   call qm2_core_core_repulsion_dxyz(iqm, jqm, rij, onerij, xyzij, gij, dgij, dxyz)
+   call qm2_core_core_repulsion_dxyz(qmmm_struct, iqm, jqm, rij, onerij, xyzij, gij, dgij, dxyz)
    FNUCX = FNUCX + dxyz(1)
    FNUCY = FNUCY + dxyz(2)
    FNUCZ = FNUCZ + dxyz(3)
@@ -1547,7 +1547,7 @@ subroutine qm2_dhc(P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, &
       KR=1
       hasDOrbital=((n_atomic_orbi.ge.9) .or. (n_atomic_orbj.ge.9))
       call GetRotationMatrix(xyz_qmj-xyz_qmi, rotationMatrix, hasDOrbital)        
-      call qm2_rotate_qmqm(-1,iqm,jqm,natqmi,natqmj,xyz_qmi,xyz_qmj,            &
+      call qm2_rotate_qmqm(qmmm_struct,-1,iqm,jqm,natqmi,natqmj,xyz_qmi,xyz_qmj,            &
                   W(KR),KR, RI, core)
 
       if (hasDOrbital) then   ! spd case
@@ -1559,7 +1559,7 @@ subroutine qm2_dhc(P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, &
         WW=0.0D0
 
         ! calculate the 2-center integrals and core-core interaction integrals
-        call qm2_repp_d(qmitype,qmjtype,rijInAu,RI,CORE,WW,i_dimension,j_dimension,1)
+        call qm2_repp_d(qmmm_struct, qmitype,qmjtype,rijInAu,RI,CORE,WW,i_dimension,j_dimension,1)
  
         ! put 2-center 2-electron integrals to the linearized matrix W
 
@@ -1585,7 +1585,7 @@ subroutine qm2_dhc(P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, &
     n_atomic_orbi,n_atomic_orbj,  &
     ii,jj,core,rotationMatrix,H)
    
-   call qm2_core_core_repulsion(iqm, jqm, rij, oneOverRij, RI, enuclr)         
+   call qm2_core_core_repulsion(qmmm_struct, iqm, jqm, rij, oneOverRij, RI, enuclr)         
         
     ! put what we have now to the Fock matrix
     F(1:linear)=H(1:linear)

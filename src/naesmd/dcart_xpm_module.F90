@@ -13,7 +13,7 @@ contains
     ! CML this subroutine, as well as DCART1() and DCART2(), since they are based
     ! CML on the same subroutine. 7/13/12
 
-    function dcart1_xpm(ex_dm, xyz_in_p, xyz_in_m) 
+    function dcart1_xpm(qmmm_struct, ex_dm, xyz_in_p, xyz_in_m) 
         !Current code maintained by: Ross Walker (TSRI 2004)
 
         !This routine calculates the derivatives of the energy for QM-QM
@@ -24,16 +24,18 @@ contains
 
         use constants          , only : EV_TO_KCAL
         use ElementOrbitalIndex, only: MaxValenceOrbitals
-        use qmmm_module        , only : qmmm_nml,qmmm_struct, qm2_struct, qm2_params, qmmm_mpi
+        use qmmm_module        , only : qmmm_nml, qm2_struct, qm2_params, qmmm_mpi
         use qm2_pm6_hof_module
         use dh_correction_module, only : dh_correction_grad
         use qm2_davidson_module ! CML 7/13/12
+        use qmmm_struct_module, only : qmmm_struct_type
 
      
         implicit none
-
-        _REAL_ :: dcart1_xpm
+ 
+         _REAL_ :: dcart1_xpm
         !Passed in
+         type(qmmm_struct_type), intent(in) :: qmmm_struct
         !_REAL_, intent(inout) :: dxyzqm(3,qmmm_struct%nquant_nlink)
         _REAL_, intent(in) :: xyz_in_p(3,qmmm_struct%nquant_nlink), xyz_in_m(3,qmmm_struct%nquant_nlink) !, xyz_in(3,qmmm_struct%nquant_nlink)
         !_REAL_, pointer    :: xyz_in(:,:)
@@ -153,7 +155,7 @@ contains
         return
     end function dcart1_xpm
 
-    subroutine qm2_dhc1(P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, & ! CML 7/13/12
+    subroutine qm2_dhc1(qmmm_struct, P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, & ! CML 7/13/12
         natqmj, iif, iil, jjf, jjl, F)
         !***********************************************************************
         !
@@ -168,10 +170,12 @@ contains
         use qmmm_module        , only: qm2_params, OVERLAP_CUTOFF, qmmm_nml, qm2_struct
         use Rotation           , only: GetRotationMatrix, Rotate2Center2Electron, RotateCore
         use qm2_fock_d         , only: W2Fock_atompair
-     
+        use qmmm_struct_module, only : qmmm_struct_type
+ 
         implicit none
 
         !Passed in
+        type(qmmm_struct_type), intent(in) :: qmmm_struct
         _REAL_ P(:)
         _REAL_, intent(in)  :: xyz_qmi(3),xyz_qmj(3)
         integer, intent(in) :: iqm, jqm, natqmi, natqmj, qmitype, qmjtype
@@ -260,7 +264,7 @@ contains
         KR=1
         hasDOrbital=((n_atomic_orbi.ge.9) .or. (n_atomic_orbj.ge.9))
         call GetRotationMatrix(xyz_qmj-xyz_qmi, rotationMatrix, hasDOrbital)
-        call qm2_rotate_qmqm(-1,iqm,jqm,natqmi,natqmj,xyz_qmi,xyz_qmj,            &
+        call qm2_rotate_qmqm(qmmm_struct, -1,iqm,jqm,natqmi,natqmj,xyz_qmi,xyz_qmj,            &
             W(KR),KR, RI, core)
 
         if (hasDOrbital) then   ! spd case
@@ -271,7 +275,7 @@ contains
             allocate(ww(j_dimension, i_dimension))
             WW=0.0D0
             ! calculate the 2-center integrals and core-core interaction integrals
-            call qm2_repp_d(qmitype,qmjtype,rijInAu,RI,CORE,WW,i_dimension,j_dimension,1)
+            call qm2_repp_d(qmmm_struct, qmitype,qmjtype,rijInAu,RI,CORE,WW,i_dimension,j_dimension,1)
      
             ! put 2-center 2-electron integrals to the linearized matrix W
 
@@ -296,7 +300,7 @@ contains
             n_atomic_orbi,n_atomic_orbj,  &
             ii,jj,core,rotationMatrix,H)
        
-        call qm2_core_core_repulsion(iqm, jqm, rij, oneOverRij, RI, enuclr)
+        call qm2_core_core_repulsion(qmmm_struct, iqm, jqm, rij, oneOverRij, RI, enuclr)
             
         ! put what we have now to the Fock matrix
         F(1:linear)=H(1:linear)

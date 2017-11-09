@@ -2,14 +2,17 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !THIS SUBROUTINE IS THE NONEQUILIBRIUM STATE SPECIFIC SOLVENT SCF SELECTOR
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine solvent_scf_and_davidson_test();
+subroutine solvent_scf_and_davidson_test(qmmm_struct);
     use cosmo_C
+    use qmmm_struct_module, only : qmmm_struct_type
+
     implicit none
+    type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
     if (solvent_model.eq.3) then
-        call calc_cosmo_3();
+        call calc_cosmo_3(qmmm_struct);
     else if (solvent_model.eq.2) then
-        call calc_cosmo_2();
+        call calc_cosmo_2(qmmm_struct);
     end if
     return
 end subroutine
@@ -19,11 +22,14 @@ end subroutine
 !It has to be called after all variables have been determined in other
 !subroutines
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine calc_excsolven(energy)
+subroutine calc_excsolven(qmmm_struct,energy)
     use qm2_davidson_module
-    use qmmm_module,only:qmmm_struct
     use cosmo_C, only : v_solvent_difdens
+    use qmmm_struct_module, only : qmmm_struct_type
+
     implicit none
+     type(qmmm_struct_type), intent(inout) :: qmmm_struct
+
     _REAL_ :: energy,ddot
     _REAL_ :: tmp(qm2ds%Nb,qm2ds%Nb)
         
@@ -40,16 +46,19 @@ end subroutine
 !It has to be called after all variables have been determined in other
 !subroutines
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine calc_gssolven(energy)
+subroutine calc_gssolven(qmmm_struct,energy)
     use qm2_davidson_module
     use qmmm_module,only:qm2_struct
     use cosmo_C, only : rhotzpacked_k
+    use qmmm_struct_module, only : qmmm_struct_type
+
     implicit none
+     type(qmmm_struct_type), intent(inout) :: qmmm_struct
     _REAL_ :: energy,ddot
 
     energy=0.d0
     qm2ds%tz_scratch=0.d0
-    call addfck(qm2ds%tz_scratch(1),qm2_struct%den_matrix);
+    call addfck(qmmm_struct, qm2ds%tz_scratch(1),qm2_struct%den_matrix);
     call unpacking(qm2ds%Nb,qm2ds%tz_scratch(1),qm2ds%tz_scratch(qm2ds%Nb**2+1),'s')
     call unpacking(qm2ds%Nb,rhotzpacked_k,qm2ds%tz_scratch(1),'s')
 
@@ -74,15 +83,17 @@ end subroutine
 !STATE SPECIFIC ROUTINE FOR [V_s(T+Z),xi] WHICH IS ADDED TO [F(xi),rho_0] in
 !DAVIDSON
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine calc_cosmo_2()
+subroutine calc_cosmo_2(qmmm_struct)
     use qm2_davidson_module
     use communism
-    use qmmm_module,only:qmmm_struct;
     use cosmo_C, only: v_solvent_difdens, cosmo_scf_ftol,cosmo_scf_maxcyc,doZ,potential_type, &
         linmixparam
     use constants, only : ZERO
 
+    use qmmm_struct_module, only : qmmm_struct_type
+
     implicit none
+     type(qmmm_struct_type), intent(inout) :: qmmm_struct
     _REAL_ :: lastxi(qm2ds%Nrpa)
     _REAL_ :: vsol_temp(qm2ds%Nb,qm2ds%Nb)
     integer verbosity_save
@@ -108,7 +119,7 @@ subroutine calc_cosmo_2()
     endif
     soi_temp=qmmm_struct%state_of_interest
 
-    call davidson();    !initial call in gas phase
+    call davidson(qmmm_struct);    !initial call in gas phase
 
     ! Tracking the transition density (checking for crossing) from last time
     ! step during dynamics
@@ -128,7 +139,7 @@ subroutine calc_cosmo_2()
     endif
     lastxi=qm2ds%v0(:,qmmm_struct%state_of_interest) !Store old transition density
 
-    if(qm2ds%verbosity.eq.5) call outDavidson()
+    if(qm2ds%verbosity.eq.5) call outDavidson(qmmm_struct)
 
     !Initialize some variables
     e0_0 = qm2ds%e0(qmmm_struct%state_of_interest)
@@ -137,7 +148,7 @@ subroutine calc_cosmo_2()
     qmmm_struct%qm_mm_first_call = .false. !After first iteration it's false
     qm2ds%eta(:) = 0.d0 !Clearing
 
-    call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
+    call calc_rhotz(qmmm_struct,qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
     call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
 
     v_solvent_difdens=0.d0;
@@ -146,15 +157,15 @@ subroutine calc_cosmo_2()
     if(potential_type.eq.3) then !COSMO
         call VxiM(qm2ds%eta,v_solvent_difdens);
     elseif(potential_type.eq.2) then!ONSAGER
-        call rcnfld(v_solvent_difdens,qm2ds%eta,qm2ds%Nb)
+        call rcnfld(qmmm_struct,v_solvent_difdens,qm2ds%eta,qm2ds%Nb)
     elseif(potential_type.eq.1) then!Straight Correlation
-        call Vxi(qm2ds%eta,v_solvent_difdens)
+        call Vxi(qmmm_struct,qm2ds%eta,v_solvent_difdens)
     endif
     v_solvent_difdens=linmixparam*v_solvent_difdens
     !Begin SCF loop
     do k=1,cosmo_scf_maxcyc
-        call davidson();        !Calculate new excited states
-        if(qm2ds%verbosity.eq.5) call outDavidson()
+        call davidson(qmmm_struct);        !Calculate new excited states
+        if(qm2ds%verbosity.eq.5) call outDavidson(qmmm_struct)
 
         ! Tracking the transition density (checking for crossing)
         f0=abs(ddot(qm2ds%Ncis,lastxi,1,qm2ds%v0(1,soi_temp),1))
@@ -174,16 +185,16 @@ subroutine calc_cosmo_2()
 
         !Initialize Variables for Solvent Potential
         vsol_temp=v_solvent_difdens
-        call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
+        call calc_rhotz(qmmm_struct,qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
         call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
         !Calculate Solvent Potential
         v_solvent_difdens=0.d0
         if(potential_type.eq.3) then !COSMO
             call VxiM(qm2ds%eta,v_solvent_difdens);
         elseif(potential_type.eq.2) then!ONSAGER
-            call rcnfld(v_solvent_difdens,qm2ds%eta,qm2ds%Nb)
+            call rcnfld(qmmm_struct,v_solvent_difdens,qm2ds%eta,qm2ds%Nb)
         elseif(potential_type.eq.0) then!Straight Correlation
-            call Vxi(qm2ds%eta,v_solvent_difdens)
+            call Vxi(qmmm_struct,qm2ds%eta,v_solvent_difdens)
         endif
         v_solvent_difdens=linmixparam*v_solvent_difdens+(1.0-linmixparam)*vsol_temp !mixing this and previous solution
 
@@ -202,7 +213,7 @@ subroutine calc_cosmo_2()
         
     !qmmm_struct%qm_mm_first_call = .true.
     if(qm2ds%verbosity.eq.0) qm2ds%verbosity=verbosity_save
-    call calc_excsolven(energy)
+    call calc_excsolven(qmmm_struct,energy)
     if(qm2ds%verbosity>0) then
         write(6,*)
         write(6,*)'Final Results of Equilibrium Vertical Excitation Solvent Calculation '
@@ -225,7 +236,7 @@ end subroutine
 subroutine calc_cosmo_4(sim_target)
     use qm2_davidson_module
     use communism
-    use qmmm_module,only:qm2_struct,qmmm_struct,qmmm_nml;
+    use qmmm_module,only:qm2_struct,qmmm_nml;
     use cosmo_C, only: v_solvent_difdens, rhotzpacked_k,cosmo_scf_ftol,cosmo_scf_maxcyc,doZ,potential_type, &
         linmixparam,xi_k,v_solvent_difdens,solvent_model
     use constants, only : ZERO,AU_TO_EV
@@ -244,7 +255,7 @@ subroutine calc_cosmo_4(sim_target)
     sim=>sim_target
 
     call do_sqm_davidson_update(sim)
-    e0_0 = (sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0)*AU_TO_EV;
+    e0_0 = (sim%naesmd%Omega(sim%qmmm%state_of_interest)+sim%naesmd%E0)*AU_TO_EV;
     e0_k = e0_0
     calc_Z=doZ
     !Initial Davidson Call (in vacuum) and T+Z calcualtion
@@ -265,15 +276,15 @@ subroutine calc_cosmo_4(sim_target)
 
     if(solvent_model.eq.5) allocate(vsol_temp(qm2ds%nb,qm2ds%nb))
 
-    qmmm_struct%qm_mm_first_call = .false.
+    sim%qmmm%qm_mm_first_call = .false.
     qm2ds%eta(:)=0.d0 !Clearing
     rhotzpacked_k=0.d0
 
-    lastxi=qm2ds%v0(:,qmmm_struct%state_of_interest) !Store old transition densities
-    soi_temp=qmmm_struct%state_of_interest
+    lastxi=qm2ds%v0(:,sim%qmmm%state_of_interest) !Store old transition densities
+    soi_temp=sim%qmmm%state_of_interest
 
     !Get relaxed or unrelaxed difference density
-    call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
+    call calc_rhotz(sim%qmmm,sim%qmmm%state_of_interest,qm2ds%rhoTZ,calc_Z);
     call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
     call packing(qm2ds%nb,qm2ds%eta,rhotzpacked_k, 's')
 
@@ -286,16 +297,16 @@ subroutine calc_cosmo_4(sim_target)
         if(potential_type.eq.3) then !COSMO
             call VxiM(qm2ds%eta,v_solvent_difdens);
         elseif(potential_type.eq.2) then!ONSAGER
-            call rcnfld(v_solvent_difdens,qm2ds%eta,qm2ds%Nb)
+            call rcnfld(sim%qmmm,v_solvent_difdens,qm2ds%eta,qm2ds%Nb)
         elseif(potential_type.eq.1) then!Straight Correlation
-            call Vxi(qm2ds%eta,v_solvent_difdens)
+            call Vxi(sim%qmmm,qm2ds%eta,v_solvent_difdens)
         endif
         v_solvent_difdens=linmixparam*v_solvent_difdens
     endif
 
     !Get transition density k in AO
     call getmodef(2*qm2ds%Np*qm2ds%Nh,qm2ds%Mx,qm2ds%Np,qm2ds%Nh, &
-        qmmm_struct%state_of_interest,qm2ds%v0,qm2ds%eta_tz)
+        sim%qmmm%state_of_interest,qm2ds%v0,qm2ds%eta_tz)
     call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%eta_tz,xi_k, &
         qm2ds%tz_scratch(qm2ds%Nb**2+1))
          
@@ -321,7 +332,7 @@ subroutine calc_cosmo_4(sim_target)
             if(qm2ds%verbosity.gt.4) write(6,*)'Overlaps=',f0,f1
             if(f0<f1) then
                 if(abs(f0-f1)>0.95) then
-                    write(6,*)'State crossing due to solvent effect',qmmm_struct%state_of_interest,' to ',i
+                    write(6,*)'State crossing due to solvent effect',sim%qmmm%state_of_interest,' to ',i
                     write(6,*)'New state of interest is',i
                     soi_temp=i
                     f0=f1
@@ -331,12 +342,12 @@ subroutine calc_cosmo_4(sim_target)
                 endif
             end if
         end do
-        qmmm_struct%state_of_interest=soi_temp
-        lastxi=qm2ds%v0(:,qmmm_struct%state_of_interest) !Store old transition densities
+        sim%qmmm%state_of_interest=soi_temp
+        lastxi=qm2ds%v0(:,sim%qmmm%state_of_interest) !Store old transition densities
 
         !Calculate new density for solvent potential
         rhotzpacked_k_temp=rhotzpacked_k
-        call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
+        call calc_rhotz(sim%qmmm,sim%qmmm%state_of_interest,qm2ds%rhoTZ,calc_Z);
         call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
         call packing(qm2ds%nb,qm2ds%eta,rhotzpacked_k, 's')
         rhotzpacked_k=linmixparam*rhotzpacked_k+(1.0-linmixparam)*rhotzpacked_k_temp
@@ -349,9 +360,9 @@ subroutine calc_cosmo_4(sim_target)
             if(potential_type.eq.3) then !COSMO
                 call VxiM(qm2ds%eta,v_solvent_difdens);
             elseif(potential_type.eq.2) then!ONSAGER
-                call rcnfld(v_solvent_difdens,qm2ds%eta,qm2ds%Nb)
+                call rcnfld(sim%qmmm,v_solvent_difdens,qm2ds%eta,qm2ds%Nb)
             elseif(potential_type.eq.0) then!Straight Correlation
-                call Vxi(qm2ds%eta,v_solvent_difdens)
+                call Vxi(sim%qmmm,qm2ds%eta,v_solvent_difdens)
             endif
             v_solvent_difdens=linmixparam*v_solvent_difdens &
                 +(1.0-linmixparam)*vsol_temp
@@ -360,13 +371,13 @@ subroutine calc_cosmo_4(sim_target)
         !get transition density k in AO
         xi_k_temp=xi_k
         call getmodef(2*qm2ds%Np*qm2ds%Nh,qm2ds%Mx,qm2ds%Np,qm2ds%Nh, &
-            qmmm_struct%state_of_interest,qm2ds%v0,qm2ds%eta_tz)
+            sim%qmmm%state_of_interest,qm2ds%v0,qm2ds%eta_tz)
         call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%eta_tz,xi_k, &
             qm2ds%tz_scratch(qm2ds%Nb**2+1))
         xi_k=linmixparam*xi_k+(1.0-linmixparam)*xi_k_temp
                  
         e0_k_1 = e0_k !Save last transition energy
-        e0_k = (sim%naesmd%Omega(qmmm_struct%state_of_interest)+sim%naesmd%E0)*AU_TO_EV;
+        e0_k = (sim%naesmd%Omega(sim%qmmm%state_of_interest)+sim%naesmd%E0)*AU_TO_EV;
 
         write(6,111)k, e0_k ,e0_k-e0_0,abs(e0_k-e0_k_1), e0_k_1-e0_k ,cosmo_scf_ftol
 
@@ -389,19 +400,19 @@ subroutine calc_cosmo_4(sim_target)
     !Calculate nonlinear term solvent energy
     v_solvent_difdens(1:qm2_struct%norbs,1:qm2_struct%norbs)=0.d0;    !Clearing
     !Save last transition density in AO
-    call calc_rhotz(qmmm_struct%state_of_interest,qm2ds%rhoTZ,calc_Z);
+    call calc_rhotz(sim%qmmm,sim%qmmm%state_of_interest,qm2ds%rhoTZ,calc_Z);
     call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%eta,qm2ds%tz_scratch);
     !Calculate Solvent Potential
     if(potential_type.eq.3) then !COSMO
         call VxiM(qm2ds%eta,v_solvent_difdens);
     elseif(potential_type.eq.2) then!ONSAGER
-        call rcnfld(v_solvent_difdens,qm2ds%eta,qm2ds%Nb)
+        call rcnfld(sim%qmmm,v_solvent_difdens,qm2ds%eta,qm2ds%Nb)
     elseif(potential_type.eq.0) then!Straight Correlation
-        call Vxi(qm2ds%eta,v_solvent_difdens)
+        call Vxi(sim%qmmm,qm2ds%eta,v_solvent_difdens)
     endif
 
-    call calc_excsolven(energy)
-    call calc_gssolven(gsenergy)
+    call calc_excsolven(sim%qmmm,energy)
+    call calc_gssolven(sim%qmmm,gsenergy)
     if(qm2ds%verbosity>0) then
         write(6,*)
         write(6,*)'Final Results of Equilibrium State Specific Solvent Calculation'
@@ -419,13 +430,15 @@ end subroutine
 !STATE SPECIFIC ROUTINE FOR [V_s(xi),xi] WHICH IS ADDED TO [F(xi),rho_0] in 
 !Liouville operator routine
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine calc_cosmo_3()
+subroutine calc_cosmo_3(qmmm_struct)
     use qm2_davidson_module
-    use qmmm_module,only:qm2_struct,qmmm_struct;
+    use qmmm_module,only:qm2_struct;
     use cosmo_C, only: v_solvent_xi, cosmo_scf_ftol,cosmo_scf_maxcyc,potential_type;
+    use qmmm_struct_module, only : qmmm_struct_type
 
     implicit none
-    _REAL_, DIMENSION(:), allocatable:: xi_k_1
+    type(qmmm_struct_type), intent(inout) :: qmmm_struct
+   _REAL_, DIMENSION(:), allocatable:: xi_k_1
     integer verbosity_save;
     integer k;
     _REAL_ e0_0,e0_k,e0_k_1,f,ddot;
@@ -445,9 +458,9 @@ subroutine calc_cosmo_3()
     if(potential_type.eq.3) then!COSMO
         call VxiM(qm2ds%xi,v_solvent_xi);
     elseif(potential_type.eq.2) then!ONSAGER
-        call rcnfld(v_solvent_xi,qm2ds%xi,qm2ds%Nb)
+        call rcnfld(qmmm_struct,v_solvent_xi,qm2ds%xi,qm2ds%Nb)
     elseif(potential_type.eq.0) then!Straight Correlation
-        call Vxi(qm2ds%eta,v_solvent_xi)
+        call Vxi(qmmm_struct,qm2ds%eta,v_solvent_xi)
     endif
 
     !First SCF step
@@ -489,13 +502,13 @@ subroutine calc_cosmo_3()
         if(potential_type.eq.3) then!COSMO
             call VxiM(qm2ds%xi,v_solvent_xi);
         elseif(potential_type.eq.2) then!ONSAGER
-            call rcnfld(v_solvent_xi,qm2ds%xi,qm2ds%Nb)
+            call rcnfld(qmmm_struct,v_solvent_xi,qm2ds%xi,qm2ds%Nb)
         elseif(potential_type.eq.0) then!Straight Correlation
-            call Vxi(qm2ds%xi,v_solvent_xi)
+            call Vxi(qmmm_struct,qm2ds%xi,v_solvent_xi)
         endif
                 
         e0_k_1 = e0_k !Save last transition energy
-        call davidson();        !Calculate new excited states
+        call davidson(qmmm_struct);        !Calculate new excited states
         e0_k = qm2ds%e0(qmmm_struct%state_of_interest);
         write(6,111)k, e0_k ,e0_k-e0_0,abs(e0_k-e0_k_1), e0_k_1-e0_k , cosmo_scf_ftol
 

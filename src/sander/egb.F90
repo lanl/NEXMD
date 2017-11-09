@@ -346,7 +346,7 @@ subroutine egb(x,f,rborn,fs,reff,onereff,charge,iac,ico,numex, &
 
       !We need to replace the MM link pair coordinates with
       !the MM link atom coordinates. 
-      call adj_mm_link_pair_crd(x)
+      call adj_mm_link_pair_crd(qmmm_struct, x)
 
       !We also need to zero the nlink part of dxyzqm so we can accumulate link atom forces in this routine.
       qmmm_struct%dxyzqm(1:3,qmmm_struct%nquant+1:qmmm_struct%nquant_nlink) = zero
@@ -1681,10 +1681,10 @@ VACUUM3 &
         ! correctly skipped for QM-MM on the next step. Note here we don't have the routine
         ! save the charges again since depending on the GB option they may have been filled
         ! with either RESP charges or mulliken charges.
-        call qm_zero_charges(charge,qmmm_struct%scaled_mm_charges,.false.)
+        call qm_zero_charges(qmmm_struct, charge,qmmm_struct%scaled_mm_charges,.false.)
         if (qmmm_struct%nlink > 0 ) then
            !Don't save the charges here since they could be the resp charges.
-           call qm_zero_mm_link_pair_main_chg(qmmm_struct%nlink,qmmm_struct%link_pairs,charge, &
+           call qm_zero_mm_link_pair_main_chg(qmmm_struct, qmmm_struct%nlink,qmmm_struct%link_pairs,charge, &
                                               qmmm_struct%scaled_mm_charges,.false.)
         end if
      end if
@@ -1693,7 +1693,7 @@ VACUUM3 &
      !We need to restore the MM link pair coordinates and then
      !Use the chain rule to put the link pair forces back onto the
      !QM and MM link pairs.
-     call rst_mm_link_pair_crd(x)
+     call rst_mm_link_pair_crd(qmmm_struct, x)
      do i=1,qmmm_struct%nlink
        mm_no = 3*qmmm_struct%link_pairs(1,i)-2  !location of atom in x array
        lnk_no = qmmm_struct%link_pairs(2,i) !Nquant number of QM atom bound to link atom

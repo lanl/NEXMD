@@ -1,7 +1,7 @@
 ! <compile=optimized>
 #include "copyright.h"
 #include "assert.fh"
-subroutine qm_assign_atom_types
+subroutine qm_assign_atom_types(qmmm_struct)
 !----------------------------------
 !Written by Ross Walker (TSRI,2005)
 !
@@ -13,11 +13,12 @@ subroutine qm_assign_atom_types
 ! order to save memory.
 !----------------------------------
 
-use qmmm_module, only : qmmm_struct
 use ElementOrbitalIndex, only : numberElements
+use qmmm_struct_module, only : qmmm_struct_type
 
 implicit none
 
+     type(qmmm_struct_type), intent(inout) :: qmmm_struct
      integer ier
      integer i,j, natqmi
      logical assigned

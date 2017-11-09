@@ -3,7 +3,7 @@
 #include "assert.fh"
 #include "dprec.fh"
 
-subroutine qm2_load_params_and_allocate()
+subroutine qm2_load_params_and_allocate(qmmm_struct)
 
 
     ! Written by: Ross Walker (TSRI, 2005)
@@ -32,13 +32,15 @@ subroutine qm2_load_params_and_allocate()
             
     use QM2_parameters
     use qm2_params_module, only : new
-    use qmmm_module, only : qmmm_nml,qmmm_struct, qm2_struct, qm2_params, &
+    use qmmm_module, only : qmmm_nml, qm2_struct, qm2_params, &
         qmmm_mpi, qmmm_scratch, qmmm_opnq
     use MNDOChargeSeparation, only : GetDDAndPho
     use qm2_diagonalizer_module, only : qm2_diagonalizer_setup
     use xlbomd_module, only : init_xlbomd                                
+    use qmmm_struct_module, only : qmmm_struct_type
 
     implicit none
+    type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
     !Locals
     _REAL_ :: pdiag_guess1, pdiag_guess2, pddg_zaf, pddg_zbf
@@ -125,7 +127,7 @@ subroutine qm2_load_params_and_allocate()
 
     !QMMM e-repul memory depends on QM-MM pair list size so is
     !allocated later on and checked on every call.
-    call qm2_allocate_qmqm_e_repul(qm2_struct%n2el)
+    call qm2_allocate_qmqm_e_repul(qmmm_struct, qm2_struct%n2el)
 
     !Protect DUMB users from STUPID errors
     if (nelectrons > 2*qm2_struct%norbs) then
@@ -653,7 +655,7 @@ subroutine qm2_load_params_and_allocate()
            
             DD=0.0D0
             PO=0.0D0
-            call GetDDAndPho(i, DD, PO)
+            call GetDDAndPho(qmmm_struct,i, DD, PO)
 
             qm2_params%dd(1:6,i)=DD
             qm2_params%po(1:9,i)=PO
@@ -988,7 +990,7 @@ subroutine qm2_load_params_and_allocate()
            
             DD=0.0D0
             PO=0.0D0
-            call GetDDAndPho(i, DD, PO)
+            call GetDDAndPho(qmmm_struct,i, DD, PO)
            
             qm2_params%dd(1:6,i)=DD
             qm2_params%po(1:9,i)=PO
@@ -1432,7 +1434,7 @@ subroutine qm2_load_params_and_allocate()
            
             DD=0.0D0
             PO=0.0D0
-            call GetDDAndPho(i, DD, PO)
+            call GetDDAndPho(qmmm_struct,i, DD, PO)
 
             qm2_params%dd(1:6,i)=DD
             qm2_params%po(1:9,i)=PO
@@ -2132,14 +2134,14 @@ if (.not. qmmm_nml%qmtheory%DFTB) then
     ! ------------------------------------------------------
     qm2_struct%n_peptide_links = 0
     if (qmmm_nml%peptide_corr) then
-        call qm2_identify_peptide_links(qm2_struct%n_peptide_links,qmmm_struct%qm_coords)
+        call qm2_identify_peptide_links(qmmm_struct, qm2_struct%n_peptide_links,qmmm_struct%qm_coords)
     end if
 
     ! Finally setup the STO-6G orbital expansions and allocate the memory required.
     ! Setup the STO-6G orbital expansions and pre-calculate as many overlaps by type
     ! as we can and store these in memory. This will help a lot with speed in the
     ! energy and derivative code.
-    call qm2_setup_orb_exp
+    call qm2_setup_orb_exp(qmmm_struct)
 
 end if
 
@@ -2151,12 +2153,12 @@ if (qmmm_mpi%commqmmm_master) then
     ! modularize the code first and/or adjust the DFTB test outputs
     ! because qm2_dftb_load_params (called below) prints stuff as well...
     if ( .not. qmmm_nml%qmtheory%EXTERN ) then
-        call qm2_print_info
+        call qm2_print_info(qmmm_struct)
     end if
 end if
 
 if (qmmm_nml%qmtheory%DFTB) then
-    call qm2_dftb_load_params
+    call qm2_dftb_load_params(qmmm_struct)
 end if
 
 !In Parallel calculate the offset into the two electron array for each thread.

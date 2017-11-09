@@ -1,11 +1,14 @@
 #include "dprec.fh"
 
-subroutine nacR_analytic(xyz_in, ihop, icheck)
-    use qmmm_module, only : qmmm_struct, qm2_struct, qmmm_nml
+subroutine nacR_analytic(qmmm_struct, xyz_in, ihop, icheck)
+    use qmmm_module, only : qm2_struct, qmmm_nml
     use qm2_davidson_module
     use constants, only : KCAL_TO_EV
+    use qmmm_struct_module, only : qmmm_struct_type
 
     implicit none
+    type(qmmm_struct_type), intent(inout) :: qmmm_struct
+
 
     ! NEW OR MODIFIED VARIABLES
     integer :: M4_M, M2_M, Np, Nh, Nb, Mx_M, Mx
@@ -101,7 +104,7 @@ subroutine nacR_analytic(xyz_in, ihop, icheck)
         end do
         ! Term Tr(F^x rho_ij) (only symmetric part contributes)
         call packing(Nb,qm2ds%eta,qm2ds%nacr_scratch,'s')
-        call DCART1(dxyz1,qm2_struct%den_matrix,qm2ds%nacr_scratch,xyz)
+        call DCART1(qmmm_struct, dxyz1,qm2_struct%den_matrix,qm2ds%nacr_scratch,xyz)
 
         ! Convert from kcal/A to eV/A
         do j = 3,N3,3

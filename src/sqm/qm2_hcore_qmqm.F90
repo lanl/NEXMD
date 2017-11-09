@@ -1,7 +1,7 @@
 ! <compile=optimized>
 #include "copyright.h"
 #include "dprec.fh"
-subroutine qm2_hcore_qmqm(COORD,H,W,ENUCLR)
+subroutine qm2_hcore_qmqm(qmmm_struct,COORD,H,W,ENUCLR)
 !***********************************************************************/R
 ! Current code, optimisation and inlining by: Ross Walker (TSRI, 2005)
 !
@@ -26,12 +26,14 @@ subroutine qm2_hcore_qmqm(COORD,H,W,ENUCLR)
       use cosmo_C, only: solvent_model,ceps,potential_type,EF
       use constants, only : zero, one, A2_TO_BOHRS2, A_TO_BOHRS
       use ElementOrbitalIndex, only: MaxValenceOrbitals, MaxValenceDimension
-      use qmmm_module, only : qmmm_nml, qmmm_struct, qm2_struct, qm2_params, qm2_rij_eqns, &
+      use qmmm_module, only : qmmm_nml, qm2_struct, qm2_params, qm2_rij_eqns, &
                               qmmm_mpi, OVERLAP_CUTOFF      
       use Rotation, only : GetRotationMatrix, Rotate2Center2Electron, RotateCore
 !DEBUG      use utilitiesModule, only : Print
-      
+      use qmmm_struct_module, only : qmmm_struct_type
+     
       implicit none
+      type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
 !Passed in
       _REAL_, intent(in) :: COORD(3,qmmm_struct%nquant_nlink)
@@ -173,7 +175,7 @@ subroutine qm2_hcore_qmqm(COORD,H,W,ENUCLR)
             hasDOrbital=((n_atomic_orbi.ge.9) .or. (n_atomic_orbj.ge.9)) 
             call GetRotationMatrix(coord(1:3,j)-coord(1:3,i), rotationMatrix, hasDOrbital)   
             
-            call qm2_rotate_qmqm(loop_count,i,j,NI,qmmm_struct%iqm_atomic_numbers(J),COORD(1,I),COORD(1,J), &
+            call qm2_rotate_qmqm(qmmm_struct, loop_count,i,j,NI,qmmm_struct%iqm_atomic_numbers(J),COORD(1,I),COORD(1,J), &
                        W(KR),KI,RI, core)
 
             if (hasDOrbital) then   ! spd case   
@@ -196,7 +198,7 @@ subroutine qm2_hcore_qmqm(COORD,H,W,ENUCLR)
                 allocate(ww(1:j_dimension, 1:i_dimension)) 
                 WW=0.0D0
 
-                call qm2_repp_d(qmitype,qmjtype,rijInAu,RI,CORE,WW,i_dimension,j_dimension,1)
+                call qm2_repp_d(qmmm_struct, qmitype,qmjtype,rijInAu,RI,CORE,WW,i_dimension,j_dimension,1)
  
                 ! WW now holds 2-center 2-electron integrals
                 ! the following code copys WW to the global W storage
@@ -222,7 +224,7 @@ subroutine qm2_hcore_qmqm(COORD,H,W,ENUCLR)
                 qm2_params%natomic_orbs(i),qm2_params%natomic_orbs(j),  &
                 ii,jj,core,rotationMatrix,H)
 
-            call qm2_core_core_repulsion(i, j, rij, oneOverRij, RI(1), enuc)    
+            call qm2_core_core_repulsion(qmmm_struct, i, j, rij, oneOverRij, RI(1), enuc)    
             enuclr = enuclr + enuc                    
     
             ! shift the pointer to the global W storage by the size of WW
@@ -243,8 +245,8 @@ subroutine qm2_hcore_qmqm(COORD,H,W,ENUCLR)
       call addhcr(H)
 
       elseif(potential_type.eq.2) then !Onsager model
-      call rcnfldnuc(enuclr)
-      call rcnfldhcr(H)
+      call rcnfldnuc(qmmm_struct,enuclr)
+      call rcnfldhcr(qmmm_struct,H)
       endif
    endif
 

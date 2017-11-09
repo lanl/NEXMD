@@ -42,6 +42,13 @@ contains
         a%qm2      => null()
         allocate(a%naesmd)
     end subroutine
+
+    subroutine setp_simulation(a,qmmm_struct)
+        type(simulation_t), pointer  :: a
+        type(qmmm_struct_type),target :: qmmm_struct
+        a%qmmm     => qmmm_struct
+        allocate(a%naesmd)
+    end subroutine
           
     !
     !********************************************************************
@@ -177,7 +184,7 @@ contains
         type(realp_t),intent(in),optional::r(3)
         integer i,j
         _REAL_ ddot
-        integer quir_cmdqt
+        integer :: quir_cmdqt=0
         integer,optional::statelimit
           
           
@@ -198,12 +205,13 @@ contains
         if(present(statelimit)) then !reduces the calculated number of states
             sim%dav%Mx=statelimit
         endif
-          
+
         ! CML Includes call to Davidson within sqm_energy() 7/16/12
-        call sqm_energy(sim%Na,sim%coords,sim%escf,born_radii, &
+        call sqm_energy(sim%qmmm,sim%Na,sim%coords,sim%escf,born_radii, &
             one_born_radii,intdiel,extdiel,Arad,sim%qm2%scf_mchg, &
             sim%time_sqm_took,sim%time_davidson_took) !The use of sim here is a hack right now and could be fixed
         ! ground state energy
+    write(6,*)"sqm_energy_done" 
         sim%dav%Eground=qm2ds%Eground
         sim%nbasis=sim%dav%Nb
           
@@ -278,7 +286,7 @@ contains
         integer :: mn
           
         call qmmm2coords_r(sim)
-        call nacR_analytic(sim%coords,ihop,icheck)
+        call nacR_analytic(sim%qmmm, sim%coords,ihop,icheck)
         if(present(dij))  then
             mn = min(size(dij), size(sim%dav%dij))
             dij(:mn) = -sim%dav%dij(:mn)
@@ -292,7 +300,7 @@ contains
     !********************************************************************
     !
     subroutine init_sqm(sim,fdes_in,fdes_out)
-        use qmmm_module,only:qmmm_nml, qmmm_struct,qmmm_mpi, &
+        use qmmm_module,only:qmmm_nml, qmmm_mpi, &
             qm2_struct,deallocate_qmmm
           
         use constants,only:KCAL_TO_EV,EV_TO_KCAL
@@ -301,7 +309,7 @@ contains
         use Cosmo_C,only:solvent_model
         use md_module
         use naesmd_module
-          
+ 
         implicit none
           
         type(simulation_t),pointer::sim
@@ -310,32 +318,32 @@ contains
         character(len=8) atnam(sim%Na)
         integer ier, xmin_iter
         integer ntpr
-        _REAL_ excharge(qmmm_struct%qm_mm_pairs*4)
+        _REAL_ excharge(sim%qmmm%qm_mm_pairs*4)
         integer chgatnum(sim%Na)
         integer ncharge
         integer :: igb, maxcyc
         _REAL_  :: grms_tol
         logical :: master=.true.
-          
+
         ! ==== Initialise first_call flags for QMMM ====
-        qmmm_struct%qm_mm_first_call = .true.
-        qmmm_struct%fock_first_call = .true.
-        qmmm_struct%fock2_2atm_first_call = .true.
-        qmmm_struct%qm2_allocate_e_repul_first_call = .true.
-        qmmm_struct%qm2_calc_rij_eqns_first_call = .true.
-        qmmm_struct%qm2_scf_first_call = .true.
-        qmmm_struct%zero_link_charges_first_call = .true.
-        qmmm_struct%adj_mm_link_pair_crd_first_call = .true.
+        sim%qmmm%qm_mm_first_call = .true.
+        sim%qmmm%fock_first_call = .true.
+        sim%qmmm%fock2_2atm_first_call = .true.
+        sim%qmmm%qm2_allocate_e_repul_first_call = .true.
+        sim%qmmm%qm2_calc_rij_eqns_first_call = .true.
+        sim%qmmm%qm2_scf_first_call = .true.
+        sim%qmmm%zero_link_charges_first_call = .true.
+        sim%qmmm%adj_mm_link_pair_crd_first_call = .true.
         ncharge=0;
         igb = 0
-          
-        call sqm_read_and_alloc(fdes_in, fdes_out, &
+   
+        call sqm_read_and_alloc(sim%qmmm,fdes_in, fdes_out, &
             sim%Na,igb,atnam,sim%naesmd%atomtype,maxcyc, &
             grms_tol,ntpr, ncharge,excharge,chgatnum, &
             sim%excN,qm2ds%struct_opt_state,qm2ds%idav,qm2ds%dav_guess, &
             qm2ds%ftol,qm2ds%ftol0,qm2ds%ftol1,qm2ds%icount_M,nstep)
           
-        call qm_assign_atom_types
+        call qm_assign_atom_types(sim%qmmm)
           
         ! Set default QMMM MPI parameters - for single cpu operation.
         ! These will get overwritten by qmmm_mpi_setup if MPI is on.
@@ -346,23 +354,23 @@ contains
         qmmm_mpi%natom_start = 1
         qmmm_mpi%natom_end = natom
         qmmm_mpi%nquant_nlink_start = 1
-        qmmm_mpi%nquant_nlink_end = qmmm_struct%nquant_nlink
-        call allocate_qmgb(qmmm_struct%nquant_nlink)
+        qmmm_mpi%nquant_nlink_end = sim%qmmm%nquant_nlink
+        call allocate_qmgb(sim%qmmm%nquant_nlink)
           
-        allocate( qmmm_struct%dxyzqm(3, qmmm_struct%nquant_nlink), stat = ier )
+        allocate( sim%qmmm%dxyzqm(3, sim%qmmm%nquant_nlink), stat = ier )
         REQUIRE(ier == 0)
           
-        allocate ( qm2_struct%scf_mchg(qmmm_struct%nquant_nlink), stat = ier )
+        allocate ( qm2_struct%scf_mchg(sim%qmmm%nquant_nlink), stat = ier )
         REQUIRE(ier == 0)
           
-        allocate ( qmmm_struct%qm_coords(3,qmmm_struct%nquant_nlink), stat=ier )
+        allocate ( sim%qmmm%qm_coords(3,sim%qmmm%nquant_nlink), stat=ier )
         REQUIRE(ier == 0)
           
         !Check if we are doing Geometry Optimization or Dynamics and act accordingly
         if (maxcyc < 1) then
             qm2ds%minimization = .FALSE.
             sim%Ncharge  = ncharge
-            sim%qmmm     => qmmm_struct
+            !sim%qmmm     => qmmm_struct
             sim%qm2      => qm2_struct
             sim%dav      => qm2ds
             call naesmd2qmmm_r(sim)
@@ -377,7 +385,7 @@ contains
           
             qm2ds%minimization = .TRUE.
             sim%Ncharge  = ncharge
-            sim%qmmm     => qmmm_struct
+           ! sim%qmmm     => qmmm_struct
             sim%qm2 => qm2_struct
             sim%dav      => qm2ds
           
@@ -386,7 +394,7 @@ contains
                 qmmm_nml%verbosity=0
             endif
             call naesmd2qmmm_r(sim)
-            call xmin(natom, qmmm_struct%qm_coords, xmin_iter, maxcyc, grms_tol, ntpr,sim)
+            call xmin(natom, sim%qmmm%qm_coords, xmin_iter, maxcyc, grms_tol, ntpr,sim)
         else
             write(6,*) "You must run dynamics (n_class_steps > 0) or geometry optimization &
                 (maxcyc > 0). Running both simultaneously is not possible."            
@@ -401,13 +409,14 @@ contains
     !-----------------------------------------------------------------------
 #include "xmin.h" 
     !includes return_flag definitions for select_case statement shared with XminC
-    subroutine xmin( natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
+    subroutine xmin(natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
           
         use qm2_davidson_module
-        use qmmm_module, only : qmmm_nml,qmmm_struct
+        use qmmm_module, only : qmmm_nml
         use constants, only : zero, AU_TO_EV
         use iso_c_binding
         use Cosmo_C, only : solvent_model
+
         implicit none
           
         ! ------ External functions -----------------
@@ -450,7 +459,6 @@ contains
                 integer(c_int)                  ::status_flag
             end function xminc
         end interface
-          
         type(simulation_t),pointer::sim_pass
         integer, intent(in) :: natom, maxiter, ntpr
         _REAL_,  intent(inout) :: x(natom*3) !coordinates
@@ -518,8 +526,8 @@ contains
         n_force_calls = 0
         is_error = .false.
         is_xmin_done = .false.
-        if(qmmm_struct%state_of_interest>0) then
-            energy=(sim_pass%naesmd%Omega(qmmm_struct%state_of_interest)+sim_pass%naesmd%E0)*AU_TO_EV
+        if(sim_pass%qmmm%state_of_interest>0) then
+            energy=(sim_pass%naesmd%Omega(sim_pass%qmmm%state_of_interest)+sim_pass%naesmd%E0)*AU_TO_EV
         else
             energy=sim_pass%naesmd%E0*AU_TO_EV
         endif
@@ -544,13 +552,13 @@ contains
                         write(6,*) 'Final Structure'
                         !call qm_print_coords(0,.true.)
                         do i=1,natom !NAESMD format
-                            write(6,100) qmmm_struct%iqm_atomic_numbers(i),x(3*(i-1)+1),x(3*(i-1)+2),x(3*(i-1)+3)
+                            write(6,100) sim_pass%qmmm%iqm_atomic_numbers(i),x(3*(i-1)+1),x(3*(i-1)+2),x(3*(i-1)+3)
                         end do
           
                         if ( qmmm_nml%printbondorders ) then
                             write(6,*) ''
                             write(6,*) 'Bond Orders'
-                            call qm2_print_bondorders()
+                            call qm2_print_bondorders(sim_pass%qmmm)
                         end if
                     endif
                 case ( CALCENRG, CALCGRAD, CALCBOTH )
@@ -563,10 +571,10 @@ contains
                         else
                             call do_sqm_davidson_update(sim_pass)
                         endif
-                        call deriv(sim_pass,qmmm_struct%state_of_interest)
+                        call deriv(sim_pass,sim_pass%qmmm%state_of_interest)
                         fg(1:3*natom)=-sim_pass%deriv_forces(1:3*natom)
-                        if(qmmm_struct%state_of_interest>0) then
-                            energy=(sim_pass%naesmd%Omega(qmmm_struct%state_of_interest)+sim_pass%naesmd%E0)*AU_TO_EV
+                        if(sim_pass%qmmm%state_of_interest>0) then
+                            energy=(sim_pass%naesmd%Omega(sim_pass%qmmm%state_of_interest)+sim_pass%naesmd%E0)*AU_TO_EV
                         else
                             energy=sim_pass%naesmd%E0*AU_TO_EV
                         endif
@@ -591,9 +599,9 @@ contains
                         else
                             call do_sqm_davidson_update(sim_pass)
                         endif
-                        call deriv(sim_pass,qmmm_struct%state_of_interest)
-                        if(qmmm_struct%state_of_interest>0) then
-                            energy=(sim_pass%naesmd%Omega(qmmm_struct%state_of_interest)+sim_pass%naesmd%E0)*AU_TO_EV
+                        call deriv(sim_pass,sim_pass%qmmm%state_of_interest)
+                        if(sim_pass%qmmm%state_of_interest>0) then
+                            energy=(sim_pass%naesmd%Omega(sim_pass%qmmm%state_of_interest)+sim_pass%naesmd%E0)*AU_TO_EV
                         else
                             energy=sim_pass%naesmd%E0*AU_TO_EV
                         endif
@@ -611,9 +619,9 @@ contains
                         else
                             call do_sqm_davidson_update(sim_pass)
                         endif
-                        call deriv(sim_pass,qmmm_struct%state_of_interest)
-                        if(qmmm_struct%state_of_interest>0) then
-                            energy=(sim_pass%naesmd%Omega(qmmm_struct%state_of_interest)+sim_pass%naesmd%E0)*AU_TO_EV
+                        call deriv(sim_pass,sim_pass%qmmm%state_of_interest)
+                        if(sim_pass%qmmm%state_of_interest>0) then
+                            energy=(sim_pass%naesmd%Omega(sim_pass%qmmm%state_of_interest)+sim_pass%naesmd%E0)*AU_TO_EV
                         else
                             energy=sim_pass%naesmd%E0*AU_TO_EV
                         endif

@@ -720,7 +720,7 @@ subroutine qmmm_vsolv_update(nstep, natom, nres, natom_res, charge, unimaged_coo
   ! We don't need to save the charges since they won't have changed since the
   ! very first time we did it.
   ! in parallel all threads call this for now.
-  call qm_zero_charges(charge,qmmm_struct%scaled_mm_charges,.false.)
+  call qm_zero_charges(qmmm_struct, charge,qmmm_struct%scaled_mm_charges,.false.)
 
   ! Finally we must reinitialize the bonds, angles and dihedrals list
   ! for the new qm atoms.

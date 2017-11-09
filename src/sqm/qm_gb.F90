@@ -10,7 +10,7 @@
 
 subroutine allocate_qmgb(nquant_nlink)
 
-  use qmmm_module, only : qmmm_nml, qmmm_struct, qm_gb
+  use qmmm_module, only : qm_gb
   implicit none
 
   integer, intent(in) :: nquant_nlink
@@ -111,7 +111,7 @@ subroutine qmgb_calc_qmqm_onefij(nquant_nlink, qmqm_onefij, iqmatoms, born_radii
 
 end subroutine qmgb_calc_qmqm_onefij
 
-subroutine qmgb_calc_mm_pot(natom,gb_mmpot,qm_atom_mask,scaled_mm_charges, &
+subroutine qmgb_calc_mm_pot(qmmm_struct, natom,gb_mmpot,qm_atom_mask,scaled_mm_charges, &
                             real_scratch1,real_scratch2, int_scratch1, &
                             qm_coords,mm_coords,born_radii,one_born_radii, iqmatoms)
 
@@ -126,11 +126,13 @@ subroutine qmgb_calc_mm_pot(natom,gb_mmpot,qm_atom_mask,scaled_mm_charges, &
 ! to the diagonal elements of the Fock matrix of each QM atom (i).
 
 ! Needs two real scratch arrays of at least natom long.
-  use qmmm_module, only : qm_gb, qmmm_mpi, qmmm_struct, qmmm_nml
+  use qmmm_struct_module, only : qmmm_struct_type
+  use qmmm_module, only : qm_gb, qmmm_mpi, qmmm_nml
   use constants, only : fourth
   implicit none
 
 ! Passed in
+  type(qmmm_struct_type), intent(in) :: qmmm_struct
   integer, intent(in) :: natom
   _REAL_, intent(out) :: gb_mmpot(*) !nquant_nlink
   _REAL_, intent(in) :: scaled_mm_charges(natom)

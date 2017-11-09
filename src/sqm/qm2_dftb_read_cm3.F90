@@ -7,7 +7,7 @@ subroutine read_cm3(natoms,ntype,izp,cm3_file)
    ! Subroutine to read the CM3 parameters from the file
    ! $AMBERHOME/dat/slko/CM3_PARAMETERS.DAT
    !
-   use qmmm_module, only: qmmm_nml, qmmm_struct
+   use qmmm_module, only: qmmm_nml
    use qm2_dftb_module, only: mol, cm3
 
 !! Passed in:

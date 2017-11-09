@@ -42,7 +42,7 @@ module qmmm_module
   ! do not use these in new subroutines but rather pass them to
   ! subroutines/functions via explicit interfaces
   ! these live here (in this module) only for historic reasons
-  public :: qmmm_nml, qmmm_struct, qmmm_mpi
+  public :: qmmm_nml, qmmm_mpi
   public :: qmmm_scratch, qmmm_div, qmmm_vsolv, qmmm_opnq
   public :: qm2_struct, qm2_rij_eqns, qm2_params
   public :: qmewald, qm_gb
@@ -338,7 +338,6 @@ module qmmm_module
   ! but need to be global for historic reasons - too much work to disentangle sander
   ! do *not* use these as globals in new subroutines!
   type(qmmm_nml_type)   , save :: qmmm_nml
-  type(qmmm_struct_type), save,target :: qmmm_struct
   type(qm2_structure)   , save,target :: qm2_struct
   type(qm2_params_type)        :: qm2_params
   type(qm2_rij_eqns_structure) :: qm2_rij_eqns
@@ -357,7 +356,7 @@ contains
   
   
 #ifdef MPI
-  subroutine qmmm_mpi_setup( master, natom )
+  subroutine qmmm_mpi_setup(qmmm_struct, master, natom )
 
     ! QMMM specific mpi setup and broadcasts
 
@@ -373,6 +372,7 @@ contains
      logical, intent(in) :: master
      integer, intent(in) :: natom
 
+     type(qmmm_struct_type), intent(inout) :: qmmm_struct
      integer :: mpi_division, i, istartend(2)
      integer :: loop_extent, loop_extent_begin, loop_extent_end
      integer :: j, jstart, jend
@@ -818,10 +818,11 @@ contains
   
   !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   !+Sorts the array iqmatoms into numerical order
-  subroutine qmsort( iqmatoms)
+  subroutine qmsort(qmmm_struct, iqmatoms)
   
     implicit none
     integer, intent(inout) :: iqmatoms(*)
+    type(qmmm_struct_type), intent(in) :: qmmm_struct
   
     ! Local
     integer i,j,lcurrent

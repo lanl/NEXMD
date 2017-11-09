@@ -174,7 +174,7 @@ module nacT_analytic_module
 !
    function nacT_direct_ihc(sim,ihop,icheck,xstep)
 
-   use qmmm_module,only:qmmm_struct,qm2_struct
+   use qmmm_module,only:qm2_struct
    use qm2_davidson_module
    use naesmd_constants, only : kcalev
 
@@ -196,15 +196,15 @@ module nacT_analytic_module
    parameter(fbar=0.05d0)  ! maximum dE in numerical derivative, eV.
    integer Na
         
-   Na=qmmm_struct%nquant_nlink ! number of atoms
-   N3=3*qmmm_struct%nquant_nlink ! number of degrees of freedom
+   Na=sim%qmmm%nquant_nlink ! number of atoms
+   N3=3*sim%qmmm%nquant_nlink ! number of degrees of freedom
 
    one=1
    ff0=0.0
    ff1=1.0
    ff11=-1.0
         
-   Na=qmmm_struct%nquant_nlink
+   Na=sim%qmmm%nquant_nlink
    Np=qm2ds%Np
    Nh=qm2ds%Nh
    Nb=qm2ds%Nb
@@ -214,7 +214,7 @@ module nacT_analytic_module
    Mx_M=Mx
 
    ! Note, Davidson must be run prior to this for these assignments
-   if(qmmm_struct%qm_mm_first_call) then
+   if(sim%qmmm%qm_mm_first_call) then
       write(6,*)  'sqm_energy() must be run once before executing this procedure!'
 
       if(qm2ds%Mx==0) write(6,*)  'excN must be > 0 to run this procedure!'
@@ -241,7 +241,7 @@ module nacT_analytic_module
    call packing(Nb,qm2ds%eta,qm2ds%nacr_scratch,'s')
 
 
-   nacT_direct_ihc=dcart1_xpm(qm2ds%nacr_scratch,xstep%Rp,xstep%Rm) 
+   nacT_direct_ihc=dcart1_xpm(sim%qmmm, qm2ds%nacr_scratch,xstep%Rp,xstep%Rm) 
 
 
    nacT_direct_ihc=nacT_direct_ihc*kcalev &
@@ -265,7 +265,7 @@ module nacT_analytic_module
    use dcart_xpm_module
    use constants          , only : EV_TO_KCAL
    use ElementOrbitalIndex, only: MaxValenceOrbitals
-   use qmmm_module        , only : qmmm_nml,qmmm_struct, qm2_struct, qm2_params, qmmm_mpi
+   use qmmm_module        , only : qmmm_nml, qm2_struct, qm2_params, qmmm_mpi
    use qm2_pm6_hof_module
    use dh_correction_module, only : dh_correction_grad
    use qm2_davidson_module ! CML 7/13/12
@@ -297,22 +297,22 @@ module nacT_analytic_module
       jstart =  qmmm_mpi%nquant_nlink_jrange(1,ii)
       jend = qmmm_mpi%nquant_nlink_jrange(2,ii)
 #else
-   do II=2,qmmm_struct%nquant_nlink
+   do II=2,sim%qmmm%nquant_nlink
        jstart = 1
        jend = ii-1
 #endif
        !Loop over all pairs of quantum atoms
        iif=qm2_params%orb_loc(1,II)
        iil=qm2_params%orb_loc(2,II)
-       qmitype = qmmm_struct%qm_atom_type(ii)
-       natqmi=qmmm_struct%iqm_atomic_numbers(II)
+       qmitype = sim%qmmm%qm_atom_type(ii)
+       natqmi=sim%qmmm%iqm_atomic_numbers(II)
        do JJ=jstart,jend !jj=1,ii-1
            !  FORM DIATOMIC MATRICES
            jjf=qm2_params%orb_loc(1,JJ)
            jjl=qm2_params%orb_loc(2,JJ)
            !   GET FIRST ATOM
-           qmjtype = qmmm_struct%qm_atom_type(jj)
-           natqmj=qmmm_struct%iqm_atomic_numbers(JJ)
+           qmjtype = sim%qmmm%qm_atom_type(jj)
+           natqmj=sim%qmmm%iqm_atomic_numbers(JJ)
            IJ=0
            do I=jjf,jjl
                K=qm2_params%pascal_tri1(i)+jjf-1
@@ -346,12 +346,12 @@ module nacT_analytic_module
            
            xyz_qmi(:)=xs%rm(:,ii)
            xyz_qmj(:)=xs%rm(:,jj)
-           call qm2_dhc1(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+           call qm2_dhc1(sim%qmmm, psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
               jjl,Fm)
                     
            xyz_qmi(:)=xs%rp(:,ii)
            xyz_qmj(:)=xs%rp(:,jj)
-           call qm2_dhc1(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+           call qm2_dhc1(sim%qmmm, psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
               jjl,qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:))
               
            qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:)= &

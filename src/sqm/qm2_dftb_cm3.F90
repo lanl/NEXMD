@@ -1,7 +1,7 @@
 ! <compile=optimized> !  -*- mode: f90; coding: iso-8859-15; -*-
 #include "dprec.fh"
 
-subroutine qm2_dftb_cm3(scf_mchg,scf_cm3)
+subroutine qm2_dftb_cm3(qmmm_struct, scf_mchg,scf_cm3)
 
 !! Calculates the CM3 charges, according to 
 !! Kalinowsli et al, JPC-A, 108, 2545 (2004).
@@ -19,12 +19,14 @@ subroutine qm2_dftb_cm3(scf_mchg,scf_cm3)
 !! url:    http://www.qtp.ufl.edu/~seabra
 !! -------------------------------------------------
 
-   use qmmm_module, only: qmmm_struct, qmmm_nml, qmmm_mpi
+   use qmmm_module, only: qmmm_nml, qmmm_mpi
    use qm2_dftb_module, only: cm3, mol, ks_struct, izp_str, mcharge, NDIM, dacc
+   use qmmm_struct_module, only : qmmm_struct_type
 
    implicit none
 
 !! Passed in
+   type(qmmm_struct_type), intent(inout) :: qmmm_struct
    _REAL_, intent(in) :: scf_mchg(qmmm_struct%nquant_nlink) !Mulliken charge per atom.
    _REAL_, intent(out) :: scf_cm3(qmmm_struct%nquant_nlink)
 

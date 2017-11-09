@@ -15,13 +15,15 @@
 !USED, IT INCLUDES ALL SOLVENT MODELS DESIGNATED BY solvent_model and
 !potential_type
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine Lxi_testing(u1,v1,solvent_model)
+subroutine Lxi_testing(qmmm_struct,u1,v1,solvent_model)
     use qm2_davidson_module
     use qmmm_module,only:qm2_struct;
     use cosmo_C, only: v_solvent_difdens,v_solvent_xi,potential_type, EF;
+    use qmmm_struct_module, only : qmmm_struct_type
 
     implicit none
 
+     type(qmmm_struct_type), intent(inout) :: qmmm_struct
     _REAL_ u1(qm2ds%Nrpa),v1(qm2ds%Nrpa)
     _REAL_ f,f1,f2,fs1,ddot
     integer i,j,p,h
@@ -35,14 +37,14 @@ subroutine Lxi_testing(u1,v1,solvent_model)
     qm2ds%xi=0.d0
     call mo2site(u1,qm2ds%xi,qm2ds%eta) !Change basis of guess vector of Davidson from M.O to A.O
     qm2ds%eta=0.0;
-    call Vxi(qm2ds%xi,qm2ds%eta);    !Calculate Vacuum Electron Correlation
+    call Vxi(qmmm_struct,qm2ds%xi,qm2ds%eta);    !Calculate Vacuum Electron Correlation
     !!SELECT SOLVENT MODEL AND POTENTIAL TYPE
     if ((solvent_model.eq.1)) then !1:Linear Response
         tmp=0.d0;
         if (potential_type.eq.3) then !COSMO Potential
             call VxiM(qm2ds%xi,tmp);
         elseif (potential_type.eq.2) then !Onsager Potential
-            call rcnfld(tmp,qm2ds%xi,qm2ds%nb)
+            call rcnfld(qmmm_struct,tmp,qm2ds%xi,qm2ds%nb)
         elseif (potential_type.eq.1) then !testing
             do i=1,qm2ds%nb; tmp(i,i)=qm2ds%eta(qm2ds%nb*(i-1)+i); enddo !double diag vac correlation
             endif
@@ -53,7 +55,7 @@ subroutine Lxi_testing(u1,v1,solvent_model)
             if (potential_type.eq.3) then !COSMO Potential
                 call VxiM(qm2ds%xi,tmp);
             elseif (potential_type.eq.2) then !Onsager Potential
-                call rcnfld(tmp,qm2ds%xi,qm2ds%nb)
+                call rcnfld(qmmm_struct,tmp,qm2ds%xi,qm2ds%nb)
             elseif (potential_type.eq.1) then !testing
                 do i=1,qm2ds%nb; tmp(i,i)=qm2ds%eta(qm2ds%nb*(i-1)+i); enddo !double diag vac correlation
                 endif
@@ -64,7 +66,7 @@ subroutine Lxi_testing(u1,v1,solvent_model)
                 if (potential_type.eq.3) then !COSMO Potential
                     call VxiM(qm2ds%xi,tmp);
                 elseif (potential_type.eq.2) then !Onsager Potential
-                    call rcnfld(tmp,qm2ds%xi,qm2ds%nb)
+                    call rcnfld(qmmm_struct,tmp,qm2ds%xi,qm2ds%nb)
                 elseif (potential_type.eq.1) then !testing
                     do i=1,qm2ds%nb; tmp(i,i)=qm2ds%eta(qm2ds%nb*(i-1)+i); enddo !double diag vac correlation
                     endif
@@ -91,7 +93,7 @@ subroutine Lxi_testing(u1,v1,solvent_model)
                 elseif(solvent_model.eq.10) then!10: NO GS Solvent test
                     !call addnuc(tmp(1,1));
                     tmp=0.d0; tmp2=0.d0;
-                    call rcnfld_fock(tmp,qm2_struct%den_matrix,qm2ds%Nb)
+                    call rcnfld_fock(qmmm_struct,tmp,qm2_struct%den_matrix,qm2ds%Nb)
                     call unpacking(qm2ds%Nb,tmp,tmp2,'s'); tmp=0.d0;
                     call commutator(tmp2,qm2ds%xi,qm2ds%Nb,tmp,.false.)
                     call VxiM_end(qm2ds%eta,tmp)
@@ -101,7 +103,7 @@ subroutine Lxi_testing(u1,v1,solvent_model)
                 !add constant electric field potential [V_E,xi]
                 if(EF.eq.2) then!Constant Electric Field in ES only
                     tmp=0.d0; tmp2=0.d0
-                    call efield_fock(tmp,qm2ds%Nb)
+                    call efield_fock(qmmm_struct,tmp,qm2ds%Nb)
                     call unpacking(qm2ds%Nb,tmp,tmp2,'s'); tmp=0.d0
                     call commutator(qm2ds%xi,tmp2,qm2ds%Nb,tmp,.false.)
                     call VxiM_end(qm2ds%eta,tmp)
@@ -249,12 +251,14 @@ subroutine Lxi_testing(u1,v1,solvent_model)
             !ONSAGER-TYPE DIPOLE CAVITY SCREENING WITHOUT NUCLEAR TERMS FOR
             !EXCITED STATE CALCULATIONS
             !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            subroutine rcnfld(f,p,n)
-                use qmmm_module,only:qmmm_struct;
+            subroutine rcnfld(qmmm_struct,f,p,n)
                 use cosmo_C, only: fepsi,onsager_radius;
                 use constants, only : one, BOHRS_TO_A, AU_TO_EV
+	        use qmmm_struct_module, only : qmmm_struct_type
+
                 implicit none;
-                integer n,i,j;
+                 type(qmmm_struct_type), intent(inout) :: qmmm_struct
+	         integer n,i,j;
                 _REAL_ f(n,n);
                 _REAL_ p(n,n);
                 _REAL_ tmp(n,n);
@@ -267,7 +271,7 @@ subroutine Lxi_testing(u1,v1,solvent_model)
                 dipy=0.d0
                 dipz=0.d0
                 !!GET ELEC DIP MATRIX
-                call get_dipole_matrix(qmmm_struct%qm_coords, dip)
+                call get_dipole_matrix(qmmm_struct,qmmm_struct,qmmm_struct%qm_coords, dip)
                 call unpacking(n,dip(1,:),dipx,'s')
                 call unpacking(n,dip(2,:),dipy,'s')
                 call unpacking(n,dip(3,:),dipz,'s')
@@ -294,11 +298,14 @@ subroutine Lxi_testing(u1,v1,solvent_model)
             !ONSAGER-TYPE SOLVENT MODEL GRADIENT FOR TWO TRIANGULAR MATRICES i.e. tr(F(rho)Z)
             !WITH OR WITHOUT NUCLEAR PART OF FOCK MATRIX
             !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            subroutine rcnfldgrad2(dxyz,p1,p2,n,calc_nuc)
-                use qmmm_module,only: qm2_params,qmmm_struct;
+            subroutine rcnfldgrad2(qmmm_struct, dxyz,p1,p2,n,calc_nuc)
+                use qmmm_module,only: qm2_params;
                 use cosmo_C, only: fepsi,onsager_radius,numat;
                 use constants, only : one, BOHRS_TO_A, AU_TO_EV,EV_TO_KCAL
+	        use qmmm_struct_module, only : qmmm_struct_type
+
                 implicit none;
+                 type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
                 integer::  i,i1,i2,i3,j,k;
                 integer::  n
@@ -312,16 +319,16 @@ subroutine Lxi_testing(u1,v1,solvent_model)
                 dxyz=0.d0; elec_dip1=0.d0; elec_dip2=0.d0
                 nuc_dip=0.d0;dip=0.d0;q_elec1=0.d0;q_elec2=0.d0
 
-                call centercoords(origin)
+                call centercoords(qmmm_struct,origin)
                 !!GET NUC DIP MAT and CALC NUC DIP
-                call get_nuc_dip(qmmm_struct%qm_coords-origin, dip);
+                call get_nuc_dip(qmmm_struct,qmmm_struct%qm_coords-origin, dip);
                 nuc_dip(1)=sum(dip(1,:))!NUCLEAR DIPOLE IN a.u. * angstrom
                 nuc_dip(2)=sum(dip(2,:))
                 nuc_dip(3)=sum(dip(3,:))
                 dip=0.d0
 
                 !ELECTRIC DIPOLE
-                call get_dipole_matrix(qmmm_struct%qm_coords-origin, dip)
+                call get_dipole_matrix(qmmm_struct,qmmm_struct,qmmm_struct%qm_coords-origin, dip)
                 i=1
                 do j=1,n
                     do k=1,j
@@ -368,12 +375,15 @@ subroutine Lxi_testing(u1,v1,solvent_model)
             !ONSAGER-TYPE POTENTIAL GRADIENT FOR GS, i.e. tr(F(rho)rho) INCLUDING
             !NUCLEAR-ELECTRON PART AND NUCLEAR-NUCLEAR GRADIENT
             !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            subroutine rcnfldgrad(dxyz,p,n)
-                use qmmm_module,only: qm2_params,qmmm_struct;
+            subroutine rcnfldgrad(qmmm_struct,dxyz,p,n)
+                use qmmm_module,only: qm2_params;
                 use cosmo_C, only: fepsi,onsager_radius,numat;
                 use constants, only : one, BOHRS_TO_A, AU_TO_EV,EV_TO_KCAL
 
+	        use qmmm_struct_module, only : qmmm_struct_type
+
                 implicit none;
+                 type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
                 integer::  i,i1,i2,i3,j,k;
                 integer::  n
@@ -385,16 +395,16 @@ subroutine Lxi_testing(u1,v1,solvent_model)
                 dxyz=0.d0; elec_dip=0.d0
                 nuc_dip=0.d0;dip=0.d0;q_elec=0.d0
 
-                call centercoords(origin)
+                call centercoords(qmmm_struct,origin)
                 !!GET NUC DIP MAT and CALC NUC DIP
-                call get_nuc_dip(qmmm_struct%qm_coords-origin, dip);
+                call get_nuc_dip(qmmm_struct,qmmm_struct%qm_coords-origin, dip);
                 nuc_dip(1)=sum(dip(1,:))!NUCLEAR DIPOLE IN a.u. * angstrom
                 nuc_dip(2)=sum(dip(2,:))
                 nuc_dip(3)=sum(dip(3,:))
                 dip=0.d0
 
                 !ELECTRIC DIPOLE
-                call get_dipole_matrix(qmmm_struct%qm_coords-origin, dip)
+                call get_dipole_matrix(qmmm_struct,qmmm_struct%qm_coords-origin, dip)
                 i=1
                 do j=1,n
                     do k=1,j
@@ -425,12 +435,15 @@ subroutine Lxi_testing(u1,v1,solvent_model)
             !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             !GRADIENT FOR ONSAGER POTENTIAL FOR FULLL MATRICES, i.e. tr(V(xi)xi^(+))
             !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            subroutine rcnfldgrad_full(dxyz,p,n)
-                use qmmm_module,only: qm2_params,qmmm_struct;
+            subroutine rcnfldgrad_full(qmmm_struct, dxyz,p,n)
+                use qmmm_module,only: qm2_params;
                 use cosmo_C, only: fepsi,onsager_radius,numat;
                 use constants, only : one, BOHRS_TO_A, AU_TO_EV,EV_TO_KCAL
 
+	        use qmmm_struct_module, only : qmmm_struct_type
+
                 implicit none;
+                 type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
                 integer::  i,i1,i2,j,k;
                 integer::  n
@@ -441,15 +454,15 @@ subroutine Lxi_testing(u1,v1,solvent_model)
 
                 dxyz=0.d0; elec_dip=0.d0
                 nuc_dip=0.d0;dip=0.d0; dip2=0.d0; q_elec=0.d0
-                call centercoords(origin)
+                call centercoords(qmmm_struct,origin)
 
                 !!GET ELEC DIP MATRIX
-                call get_dipole_matrix(qmmm_struct%qm_coords-origin, dip)
+                call get_dipole_matrix(qmmm_struct,qmmm_struct%qm_coords-origin, dip)
                 call unpacking(n,dip(1,:),dip2(1,:),'s')
                 call unpacking(n,dip(2,:),dip2(2,:),'s')
                 call unpacking(n,dip(3,:),dip2(3,:),'s')
 
-                call get_dipole_matrix(qmmm_struct%qm_coords-origin, dip)
+                call get_dipole_matrix(qmmm_struct,qmmm_struct%qm_coords-origin, dip)
 
                 do i=1,3
                     elec_dip(i) = sum(P*dip2(i,:)) !diagonal
@@ -477,11 +490,13 @@ subroutine Lxi_testing(u1,v1,solvent_model)
             !ONSAGER-TYPE POTENTIAL FOR GROUND STATE CALCULATION INCLUDING NUCLEAR-ELECTRONIC PART
             !THIS POTENTIAL IS ADDED TO THE FOCK OPERATOR
             !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            subroutine rcnfld_fock(f,p,n)
-                use qmmm_module,only:qmmm_struct;
+            subroutine rcnfld_fock(qmmm_struct,f,p,n)
                 use cosmo_C, only: numat,fepsi,onsagE,onsager_radius;
                 use constants, only : BOHRS_TO_A, AU_TO_EV,CODATA08_AU_TO_DEBYE
+	        use qmmm_struct_module, only : qmmm_struct_type
+
                 implicit none;
+                 type(qmmm_struct_type), intent(inout) :: qmmm_struct
                 _REAL_ f0((n+1)*n/2),f((n+1)*n/2),p((n+1)*n/2)
                 _REAL_ dip(3,n*(n+1)/2);
                 _REAL_ nuc_dip(3),scaled(3),elec_dip(3),Etest;
@@ -489,10 +504,10 @@ subroutine Lxi_testing(u1,v1,solvent_model)
                 _REAL_ origin(3,numat)
                 elec_dip=0.d0; dip=0.d0; Etest=0.d0
 
-                call centercoords(origin) !origin to center of charge distribution
+                call centercoords(qmmm_struct,origin) !origin to center of charge distribution
 
                 !!GET NUC DIP MAT and CALC NUC DIP
-                call get_nuc_dip(qmmm_struct%qm_coords-origin, dip);
+                call get_nuc_dip(qmmm_struct,qmmm_struct%qm_coords-origin, dip);
                 nuc_dip(1)=sum(dip(1,:))!NUCLEAR DIPOLE IN a.u. * angstrom
                 nuc_dip(2)=sum(dip(2,:))
                 nuc_dip(3)=sum(dip(3,:))
@@ -500,7 +515,7 @@ subroutine Lxi_testing(u1,v1,solvent_model)
        
         
                 !ELECTRIC DIPOLE
-                call get_dipole_matrix(qmmm_struct%qm_coords-origin, dip)
+                call get_dipole_matrix(qmmm_struct,qmmm_struct%qm_coords-origin, dip)
                 i=1
                 do j=1,n
                     do k=1,j
@@ -525,11 +540,14 @@ subroutine Lxi_testing(u1,v1,solvent_model)
             !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             !ONSAGER-TYPE POTENTIAL FOR GROUND STATE NUCLEAR-NUCLEAR PART
             !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            subroutine rcnfldnuc(enuclr)
-                use qmmm_module,only:qm2_struct,qmmm_struct;
+            subroutine rcnfldnuc(qmmm_struct,enuclr)
+                use qmmm_module,only:qm2_struct;
                 use cosmo_C, only: numat,fepsi,onsager_radius
                 use constants, only : one, BOHRS_TO_A, AU_TO_EV
+	        use qmmm_struct_module, only : qmmm_struct_type
+
                 implicit none;
+                 type(qmmm_struct_type), intent(inout) :: qmmm_struct
                 _REAL_ dip(3,qm2_struct%norbs*(qm2_struct%norbs+1)/2)
                 _REAL_ nuc_dip(3),scaled(3)
                 _REAL_ enuclr,origin(3,numat)
@@ -537,9 +555,9 @@ subroutine Lxi_testing(u1,v1,solvent_model)
                 n=qm2_struct%norbs
                 dip=0.d0
         
-                call centercoords(origin)
+                call centercoords(qmmm_struct,origin)
                 !!GET NUC DIP MAT and CALC NUC DIP
-                call get_nuc_dip(qmmm_struct%qm_coords-origin, dip);
+                call get_nuc_dip(qmmm_struct,qmmm_struct%qm_coords-origin, dip);
                 nuc_dip(1)=sum(dip(1,:))!NUCLEAR DIPOLE IN a.u. * angstrom
                 nuc_dip(2)=sum(dip(2,:))
                 nuc_dip(3)=sum(dip(3,:))
@@ -554,11 +572,14 @@ subroutine Lxi_testing(u1,v1,solvent_model)
             !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             !ONSAGER-TYPE POTENTIAL FOR NUCLEAR-ELECTRONIC PART
             !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            subroutine rcnfldhcr(h)
-                use qmmm_module,only:qm2_struct,qmmm_struct;
+            subroutine rcnfldhcr(qmmm_struct,h)
+                use qmmm_module,only:qm2_struct;
                 use cosmo_C, only: numat,fepsi,onsager_radius
                 use constants, only : one, BOHRS_TO_A, AU_TO_EV
+	        use qmmm_struct_module, only : qmmm_struct_type
+
                 implicit none;
+                 type(qmmm_struct_type), intent(inout) :: qmmm_struct
                 _REAL_ dip(3,qm2_struct%norbs*(qm2_struct%norbs+1)/2)
                 _REAL_ nuc_dip(3),scaled(3),elec_dip(3),Etest
                 _REAL_ h(qm2_struct%norbs*(qm2_struct%norbs+1)/2)
@@ -569,15 +590,15 @@ subroutine Lxi_testing(u1,v1,solvent_model)
                 dip=0.d0
                 Etest=0.d0
 
-                call centercoords(origin)
+                call centercoords(qmmm_struct,origin)
                 !!GET NUC DIP MAT and CALC NUC DIP
-                call get_nuc_dip(qmmm_struct%qm_coords-origin, dip);
+                call get_nuc_dip(qmmm_struct,qmmm_struct%qm_coords-origin, dip);
                 nuc_dip(1)=sum(dip(1,:))!NUCLEAR DIPOLE IN a.u. * angstrom
                 nuc_dip(2)=sum(dip(2,:))
                 nuc_dip(3)=sum(dip(3,:))
                 dip=0.d0
 
-                call get_dipole_matrix(qmmm_struct%qm_coords-origin, dip)
+                call get_dipole_matrix(qmmm_struct,qmmm_struct%qm_coords-origin, dip)
                 i=1
                 do j=1,n
                     do k=1,j
@@ -601,12 +622,15 @@ subroutine Lxi_testing(u1,v1,solvent_model)
             !SUBROUTINE FOR CONSTANT ELECTRIC FIELD SCREENING
             !OF ELECTRON-ELECTRON INTERACTION
             !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            subroutine efield_fock(f,n)
-                use qmmm_module,only:qm2_struct,qmmm_struct;
+            subroutine efield_fock(qmmm_struct,f,n)
+                use qmmm_module,only:qm2_struct;
                 use cosmo_C, only: Ex,Ey,Ez
                 use constants, only : one, BOHRS_TO_A, AU_TO_EV
                 use qm2_davidson_module
+	        use qmmm_struct_module, only : qmmm_struct_type
+
                 implicit none;
+                 type(qmmm_struct_type), intent(inout) :: qmmm_struct
                 integer n,k;
                 _REAL_ f(n*(n+1)/2);
                 _REAL_ tmp(n*(n+1)/2);
@@ -617,9 +641,9 @@ subroutine Lxi_testing(u1,v1,solvent_model)
                 tmp=0.d0
                 dip=0.d0
                 origin=0.d0;
-                call centercoords(origin)
+                call centercoords(qmmm_struct,origin)
                 !!GET ELEC DIP MATRIX
-                call get_dipole_matrix(qmmm_struct%qm_coords-origin, dip) !dipole in au * A
+                call get_dipole_matrix(qmmm_struct,qmmm_struct%qm_coords-origin, dip) !dipole in au * A
                 call unpacking(qm2ds%Nb,qm2_struct%den_matrix,GSDM,'s')
                 do k=1,3  ! loop over x,y,z
                     call unpacking(qm2ds%Nb,dip(k,:),qm2ds%eta_scratch,'s')
@@ -635,18 +659,21 @@ subroutine Lxi_testing(u1,v1,solvent_model)
             !SUBROUTINE FOR CONSTANT ELECTRIC FIELD SCREENING
             !OF NUCLEAR-NUCLEAR INTERACTION
             !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            subroutine efield_nuc(enuclr)
-                use qmmm_module,only:qm2_struct,qmmm_struct;
+            subroutine efield_nuc(qmmm_struct,enuclr)
+                use qmmm_module,only:qm2_struct;
                 use cosmo_C, only: Ex,Ey,Ez
                 use constants, only : BOHRS_TO_A, AU_TO_EV
+	        use qmmm_struct_module, only : qmmm_struct_type
+
                 implicit none;
+                 type(qmmm_struct_type), intent(inout) :: qmmm_struct
                 _REAL_ dip(3,qm2_struct%norbs*(qm2_struct%norbs+1)/2)
                 _REAL_ nuc_dip(3)
                 _REAL_ enuclr,origin(3,qmmm_struct%nquant_nlink)
                 origin=0.d0; dip=0.d0
-                call centercoords(origin)
+                call centercoords(qmmm_struct,origin)
                 !!GET NUC DIP MAT and CALC NUC DIP
-                call get_nuc_dip(qmmm_struct%qm_coords-origin, dip);
+                call get_nuc_dip(qmmm_struct,qmmm_struct%qm_coords-origin, dip);
                 write(6,*)'Nuclear Dipole:',sum(dip(1,:))/BOHRS_TO_A, &
                     sum(dip(2,:))/BOHRS_TO_A, &
                     sum(dip(3,:))/BOHRS_TO_A
@@ -662,10 +689,12 @@ subroutine Lxi_testing(u1,v1,solvent_model)
             !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             !CALCULATE COORDINATE MOMENT
             !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            subroutine centercoords(origin)
-                use qmmm_module,only: qmmm_struct
+            subroutine centercoords(qmmm_struct,origin)
                 use cosmo_C,only:numat
+	        use qmmm_struct_module, only : qmmm_struct_type
+
                 implicit none;
+                 type(qmmm_struct_type), intent(inout) :: qmmm_struct
                 integer :: j
         
                 _REAL_  :: origin(3,numat)

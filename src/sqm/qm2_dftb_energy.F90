@@ -2,7 +2,7 @@
 
 #include "copyright.h"
 #include "dprec.fh"
-subroutine qm2_dftb_energy(escf,scf_mchg)
+subroutine qm2_dftb_energy(qmmm_struct, escf,scf_mchg)
 
 ! Calculates the self-consistent-charge (SCC) DFTB energy.
 ! The energy is returned in 'escf'.
@@ -19,12 +19,14 @@ subroutine qm2_dftb_energy(escf,scf_mchg)
   
 !In parallel all threads enter here.
 
-   use qmmm_module, only : qmmm_nml, qmmm_struct, qm2_struct, qmmm_mpi
+   use qmmm_module, only : qmmm_nml, qm2_struct, qmmm_mpi
    use ElementOrbitalIndex, only : elementSymbol
    use qm2_dftb_module, only: disper,mol, lmax, izp_str,mcharge
    use constants, only: AU_TO_EV, AU_TO_KCAL, A_TO_BOHRS, BOHRS_TO_A
+   use qmmm_struct_module, only : qmmm_struct_type
 
    implicit none
+   type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
    !Passed in
    _REAL_, intent(out)   :: escf
@@ -88,7 +90,7 @@ subroutine qm2_dftb_energy(escf,scf_mchg)
      !   this HAS to be done at every structure, because the dispersion
      !   parameters do depend on the arrangement of the neighbours
      if(qmmm_nml%dftb_disper == 1) then
-        call dispersion_params(qmmm_struct%nquant_nlink, izp_str%izp)
+        call dispersion_params(qmmm_struct, qmmm_struct%nquant_nlink, izp_str%izp)
      endif
    end if !qmmm_mpi%commqmmm_master
 
@@ -100,7 +102,7 @@ subroutine qm2_dftb_energy(escf,scf_mchg)
    escf = 0.0d0
 
    !do the SCF
-   call qm2_dftb_scf(escf, qmmm_struct%elec_eng,qmmm_struct%enuclr_qmqm,scf_mchg)
+   call qm2_dftb_scf(qmmm_struct, escf, qmmm_struct%elec_eng,qmmm_struct%enuclr_qmqm,scf_mchg)
 
    return
 end subroutine qm2_dftb_energy

@@ -2,7 +2,7 @@
 #include "copyright.h"
 #include "dprec.fh"
 #include "def_time.h"
-subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, scaled_mm_charges)
+subroutine qm2_energy(qmmm_struct, escf,scf_mchg,natom,born_radii, one_born_radii, coords, scaled_mm_charges)
 
    ! qm2_energy calculates the energy of the QMMM system in KCal/mol and places
    ! the answer in escf.
@@ -14,13 +14,14 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
    !                                                   most routines want qm_xcrd which is the coordinates
    !                                                   of the pair list.)
    !
-   use qmmm_module, only : qmmm_nml,qmmm_struct, qm2_struct, qmewald, qm2_params, &
+   use qmmm_module, only : qmmm_nml, qm2_struct, qmewald, qm2_params, &
          qm2_rij_eqns, qm_gb, qmmm_mpi, qmmm_opnq, qmmm_scratch
    use qm2_pm6_hof_module
    use dh_correction_module, only : dh_correction
    use constants, only : EV_TO_KCAL, zero
    use cosmo_C, only : solvent_model, potential_type
    use xlbomd_module, only : predictdens_xlbomd
+  use qmmm_struct_module, only : qmmm_struct_type
 
    implicit none
 
@@ -31,6 +32,7 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
 #endif
 
    !Passed in
+   type(qmmm_struct_type), intent(inout) :: qmmm_struct
    integer, intent(in) :: natom
    _REAL_, intent(out) :: escf
    _REAL_, intent(inout) :: scf_mchg(qmmm_struct%nquant_nlink)
@@ -154,7 +156,7 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
       qm_gb%gb_mmpot(1:qmmm_struct%nquant_nlink)=zero
 
 #ifndef SQM
-      call qmgb_calc_mm_pot(natom, qm_gb%gb_mmpot, qmmm_struct%atom_mask, &
+      call qmgb_calc_mm_pot(qmmm_struct, natom, qm_gb%gb_mmpot, qmmm_struct%atom_mask, &
            & scaled_mm_charges,qmmm_scratch%qm_real_scratch(1), &
            & qmmm_scratch%qm_real_scratch(natom+1), qmmm_scratch%qm_int_scratch(1), &
            & qmmm_struct%qm_coords, &
@@ -199,7 +201,7 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
    !   End Generalised Born Calculation (non-scf)
    !================================================
    if (qmmm_nml%qmtheory%DFTB) then  !Else we do regular semiempirical QMMM below.
-      call qm2_dftb_energy(escf,scf_mchg)
+      call qm2_dftb_energy(qmmm_struct, escf,scf_mchg)
    else
       !ALL THREADS CURRENTLY NEED TO DO HCORE_QMQM AND HCORE_QMMM to get erepul
 
@@ -211,7 +213,7 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
       
       call timer_start(TIME_QMMMENERGYHCOREQM)
       !Parallel
-      call qm2_hcore_qmqm(qmmm_struct%qm_coords,qm2_struct%hmatrix,qm2_struct%qm_qm_2e_repul, &
+      call qm2_hcore_qmqm(qmmm_struct, qmmm_struct%qm_coords,qm2_struct%hmatrix,qm2_struct%qm_qm_2e_repul, &
             qmmm_struct%enuclr_qmqm)
 
       call timer_stop_start(TIME_QMMMENERGYHCOREQM,TIME_QMMMENERGYHCOREQMMM)
@@ -229,7 +231,7 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
       !                   = 5 Mechanical embedding: no QM-MM interaction
       if (qmmm_nml%qmmm_int>0 .and. (qmmm_nml%qmmm_int /= 5) ) then
          !Parallel
-         call qm2_hcore_qmmm(qm2_struct%hmatrix, &
+         call qm2_hcore_qmmm(qmmm_struct, qm2_struct%hmatrix, &
                qmmm_struct%enuclr_qmmm,qmmm_struct%qm_xcrd)
 
          if (qmmm_nml%qmmm_switch) then
@@ -284,7 +286,7 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
       !   Calculate SCF Energy
       !==========================
       !Parallel
-      call qm2_scf(qm2_struct%fock_matrix, qm2_struct%hmatrix,qm2_struct%qm_qm_2e_repul,escf, &
+      call qm2_scf(qmmm_struct, qm2_struct%fock_matrix, qm2_struct%hmatrix,qm2_struct%qm_qm_2e_repul,escf, &
             qm2_struct%den_matrix,scf_mchg,qmmm_struct%num_qmmm_calls)
       !==========================
       ! End calculate SCF Energy
@@ -312,7 +314,7 @@ subroutine qm2_energy(escf,scf_mchg,natom,born_radii, one_born_radii, coords, sc
          escf = escf + qm2_params%tot_heat_form
          ! Add PM6 corrections to Heat of Formation
          if (qmmm_nml%qmtheory%PM6) then
-            escf = escf + hofCorrection()
+            escf = escf + hofCorrection(qmmm_struct)
          end if
          ! Add on dispersion correction
          if (qmmm_nml%qmtheory%DISPERSION .or. qmmm_nml%qmtheory%DISPERSION_HYDROGENPLUS) then

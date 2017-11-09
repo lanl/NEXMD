@@ -1,7 +1,7 @@
 ! <compile=optimized>
 #include "copyright.h"
 #include "dprec.fh"
-subroutine qm2_fock1(F, PTOT)
+subroutine qm2_fock1(qmmm_struct, F, PTOT)
 ! *********************************************************************         
 !                                                                               
 ! *** COMPUTE THE REMAINING CONTRIBUTIONS TO THE ONE-CENTRE ELEMENTS. 
@@ -9,9 +9,11 @@ subroutine qm2_fock1(F, PTOT)
 ! Current routine streamlined and optimised by Ross Walker (TSRI, 2005)         
 !                                                                               
 ! *********************************************************************         
-   use qmmm_module, only : qmmm_mpi, qmmm_struct, qm2_params
-   implicit none
+   use qmmm_module, only : qmmm_mpi, qm2_params
+   use qmmm_struct_module, only : qmmm_struct_type
 
+   implicit none
+   type(qmmm_struct_type), intent(inout) :: qmmm_struct
    _REAL_, intent(inout) :: F(*)
    _REAL_, intent(in) :: PTOT(*)
   
@@ -83,7 +85,7 @@ subroutine qm2_fock1(F, PTOT)
 
 end subroutine qm2_fock1
 
-subroutine qm2_fock2(F, PTOT, W, orb_loc)
+subroutine qm2_fock2(qmmm_struct, F, PTOT, W, orb_loc)
 !***********************************************************************        
 !                                                                               
 ! FOCK2 FORMS THE TWO-ELECTRON TWO-CENTER REPULSION PART OF THE FOCK            
@@ -93,9 +95,11 @@ subroutine qm2_fock2(F, PTOT, W, orb_loc)
 !                                                                               
 !  ON OUTPUT F   = PARTIAL FOCK MATRIX                                          
 !***********************************************************************        
-   use qmmm_module, only : qmmm_struct, qm2_struct, qm2_params, qmmm_mpi
+   use qmmm_module, only : qm2_struct, qm2_params, qmmm_mpi
+   use qmmm_struct_module, only : qmmm_struct_type
    implicit none
 
+   type(qmmm_struct_type), intent(inout) :: qmmm_struct
    _REAL_, intent(inout) :: F(*)
    _REAL_, intent(in) :: ptot(*)
    _REAL_, intent(in) :: W(qm2_struct%n2el)
@@ -522,7 +526,7 @@ subroutine qm2_kab(IA,JA, PK, W, F)
 
 end subroutine qm2_kab
 
-subroutine qm2_fock2_2atm(F, PTOT, W, orb_loc)
+subroutine qm2_fock2_2atm(qmmm_struct, F, PTOT, W, orb_loc)
 !***********************************************************************        
 ! 
 ! This subroutine is a repetition of qm2_fock2 but for the explicit case
@@ -534,8 +538,11 @@ subroutine qm2_fock2_2atm(F, PTOT, W, orb_loc)
 !***********************************************************************        
 
    use ElementOrbitalIndex, only : MaxValenceOrbitals, MaxValenceDimension
-   use qmmm_module, only : qmmm_struct, qm2_struct, qm2_params
+   use qmmm_module, only : qm2_struct, qm2_params
+   use qmmm_struct_module, only : qmmm_struct_type
    implicit none
+
+   type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
 ! dimension 36 = max of 8*(8+1)/2 = 4 orbs with 4 orbs - S,3P with S,3P
 ! modified to d-orbital 18*(18+1)/2
@@ -712,7 +719,7 @@ subroutine qm2_fock2_2atm(F, PTOT, W, orb_loc)
 end subroutine qm2_fock2_2atm
 
 ! CML Added to SQM12
-subroutine qm2_fock1_skew(F, PTOT)
+subroutine qm2_fock1_skew(qmmm_struct, F, PTOT)
 !
 ! *********************************************************************         
 !                                                                               
@@ -738,8 +745,12 @@ subroutine qm2_fock1_skew(F, PTOT)
 !                                                                               
 ! *********************************************************************
 !
-   use qmmm_module, only : qmmm_mpi, qmmm_struct, qm2_params
+   use qmmm_module, only : qmmm_mpi, qm2_params
+   use qmmm_struct_module, only : qmmm_struct_type
+
    implicit none
+
+   type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
    _REAL_, intent(inout) :: F(*)
    _REAL_, intent(in) :: PTOT(*)

@@ -41,18 +41,18 @@ contains
             sim%naesmd%deltaRm%vold(k)%p(1:natom)=sim%naesmd%deltaRm%v(k)%p(:natom)
         end do
 
-        do j=1,qm2ds%Mx
+        do j=1,sim%excN
             vmdqtold(j)=vmdqtnew(j)
         enddo
 
         do i=1,sim%dav%Ncis
-            do j=1,qm2ds%Mx
+            do j=1,sim%excN
                 cmdqtold(i,j)=cmdqtnew(i,j)
             enddo
         enddo
 
-        do j=1,qm2ds%Mx
-            do k=1,qm2ds%Mx
+        do j=1,sim%excN
+            do k=1,sim%excN
                 cadiabold(j,k)=cadiabnew(j,k)
             end do
         end do
@@ -91,41 +91,41 @@ contains
         xstep=>xs
 
         if(iimdqt.eq.1) then
-            do i=1,qm2ds%Mx
-                do j=1,qm2ds%Mx
+            do i=1,sim%excN
+                do j=1,sim%excN
                     cadiabmiddleold(i,j)=cadiabold(i,j)
                 end do
                 vmdqtmiddleold(i)=vmdqtold(i)
             end do
             do i=1,sim%dav%Ncis
-                do j=1,qm2ds%Mx
+                do j=1,sim%excN
                     cmdqtmiddleold(i,j)=cmdqtold(i,j)
                 end do
             end do
         else
-            do i=1,qm2ds%Mx
-                do j=1,qm2ds%Mx
+            do i=1,sim%excN
+                do j=1,sim%excN
                     cadiabmiddleold(i,j)=cadiabmiddle(i,j)
                 end do
                 vmdqtmiddleold(i)=vmdqtmiddle(i)
             end do
             do i=1,sim%dav%Ncis
-                do j=1,qm2ds%Mx
+                do j=1,sim%excN
                     cmdqtmiddleold(i,j)=cmdqtmiddle(i,j)
                 end do
             end do
         end if
         if(iimdqt.eq.nquantumstep) then
-            do i=1,qm2ds%Mx
+            do i=1,sim%excN
                 vmdqtmiddle(i)=vmdqtnew(i)
             end do
-            do i=1,qm2ds%Mx
-                do j=1,qm2ds%Mx
+            do i=1,sim%excN
+                do j=1,sim%excN
                     cadiabmiddle(i,j)=cadiabnew(i,j)
                 end do
             end do
             do i=1,sim%dav%Ncis
-                do j=1,qm2ds%Mx
+                do j=1,sim%excN
                     cmdqtmiddle(i,j)=cmdqtnew(i,j)
                 end do
             end do
@@ -198,15 +198,15 @@ contains
             call new_xstep(sim,xx,yy,zz,xxp,yyp,zzp,xxm,yym,zzm, xstep)
             call nacT_analytic(sim,cadiab,xstep)
 
-            do i=1,qm2ds%Mx
-                do j=1,qm2ds%Mx
+            do i=1,sim%excN
+                do j=1,sim%excN
                     cadiabmiddle(i,j)=cadiab(i,j)
                 end do
             end do
 
         end if
 
-        do i=1,qm2ds%Mx
+        do i=1,sim%excN
             if(i.eq.ihop) then
                 if(cross(i).eq.2) then
                     if(conthop.gt.0) then
@@ -235,8 +235,8 @@ contains
         end do
 
         if(iimdqt.eq.nquantumstep) then
-            do i=1,qm2ds%Mx
-                do j=1,qm2ds%Mx
+            do i=1,sim%excN
+                do j=1,sim%excN
                     cadiabnew(i,j)=cadiabmiddle(i,j)
                 end do
             end do
@@ -286,8 +286,8 @@ contains
 
         call nacT_analytic(sim,cadiab,xstep)
 
-        do i=1,qm2ds%Mx
-            do j=1,qm2ds%Mx
+        do i=1,sim%excN
+            do j=1,sim%excN
                 cadiabnew(i,j)=cadiab(i,j)
             end do
         end do

@@ -14,7 +14,7 @@ private AIJL, POIJ
 
 contains
 
-subroutine GetDDAndPho(qmtype, DD, PO)
+subroutine GetDDAndPho(qmmm_struct, qmtype, DD, PO)
 
 !C     *
 !C     CALCULATION OF CHARGE SEPARATIONS AND ADDITIVE TERMS USED
@@ -43,10 +43,11 @@ subroutine GetDDAndPho(qmtype, DD, PO)
 !C     *
 
   use constants  , only : zero, half, one, two, three, AU_TO_EV
-  use qmmm_module, only : qm2_params, qmmm_struct
-  
+  use qmmm_module, only : qm2_params
+  use qmmm_struct_module, only : qmmm_struct_type 
   implicit none
-  
+
+  type(qmmm_struct_type), intent(in) :: qmmm_struct
   integer, intent(in)::qmtype
   _REAL_, intent(out)::DD(6), PO(9)
   

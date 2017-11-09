@@ -7,7 +7,7 @@
 ! CML this subroutine, as well as DCART1() and DCART2(), since they are based
 ! CML on the same subroutine. 7/13/12
 
-subroutine dcart1(dxyzqm, gs_dm, ex_dm, xyz_in) ! CML add coordinates passed in 7/13/12
+subroutine dcart1(qmmm_struct, dxyzqm, gs_dm, ex_dm, xyz_in) ! CML add coordinates passed in 7/13/12
 !Current code maintained by: Ross Walker (TSRI 2004)
 
 !This routine calculates the derivatives of the energy for QM-QM
@@ -18,14 +18,17 @@ subroutine dcart1(dxyzqm, gs_dm, ex_dm, xyz_in) ! CML add coordinates passed in 
 
       use constants          , only : EV_TO_KCAL
       use ElementOrbitalIndex, only: MaxValenceOrbitals
-      use qmmm_module        , only : qmmm_nml,qmmm_struct, qm2_struct, qm2_params, qmmm_mpi
+      use qmmm_module        , only : qmmm_nml, qm2_struct, qm2_params, qmmm_mpi
       use qm2_pm6_hof_module
       use dh_correction_module, only : dh_correction_grad
       use dcart_xpm_module !BTN 8/7/17 use dhc1 and h1elec functions from here
-	  use qm2_davidson_module ! CML 7/13/12
+      use qm2_davidson_module ! CML 7/13/12
+      use qmmm_struct_module, only : qmmm_struct_type
 
  
        implicit none     
+      type(qmmm_struct_type), intent(in) :: qmmm_struct
+   
       _REAL_, parameter :: change=2.0D-6, halfChange=change/2.0D0, oneChange=1.0D0/change
       _REAL_, parameter :: delAdj =1.0D-8, twoOnedelAdj= 0.5D0/delAdj    
 
@@ -130,14 +133,14 @@ subroutine dcart1(dxyzqm, gs_dm, ex_dm, xyz_in) ! CML add coordinates passed in 
             end do
             do K=1,3
               xyz_qmi(K)=xyz_qmi(K)+halfChange
-              call qm2_dhc1(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+              call qm2_dhc1(qmmm_struct, psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
                        jjl,F)
               
               DENER=qm2_helect1(iil-iif+jjl-jjf+1,ptzsum,F)   ! CML 7/13/12 BTN 08/10/2017
               AA=DENER*2.d0
                        
               xyz_qmi(K)=xyz_qmi(K)-change
-              call qm2_dhc1(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+              call qm2_dhc1(qmmm_struct, psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
                        jjl,F)
                        
               DENER=qm2_helect1(iil-iif+jjl-jjf+1,ptzsum,F)   ! CML 7/13/12 BTN 08/10/2017

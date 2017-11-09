@@ -6,11 +6,14 @@
 !*************************************************
 ! Produces the dipole operator matrix for semiemirical methods
 !*****************************************************
-subroutine get_dipole_matrix(coord, dpmat)
- 	use qmmm_module, only : qm2_params, qm2_struct, qmmm_struct, qmmm_nml
+subroutine get_dipole_matrix(qmmm_struct, coord, dpmat)
+ 	use qmmm_module, only : qm2_params, qm2_struct, qmmm_nml
  	use constants, only : BOHRS_TO_A
+        use qmmm_struct_module, only : qmmm_struct_type
+
 	! use findmask
       	implicit none
+        type(qmmm_struct_type), intent(in) :: qmmm_struct
 
 	! Calculates the dipole matrices
       	_REAL_, intent(inout) :: coord(*)
@@ -64,11 +67,14 @@ endsubroutine get_dipole_matrix
 ! Calculates the transition dipole
 !******************************************************************
 
-subroutine trans_dipole(mu, alpha)
+subroutine trans_dipole(qmmm_struct, mu, alpha)
 	use qm2_davidson_module
-	use qmmm_module, only: qmmm_struct
 	use constants, only : BOHRS_TO_A, SQRT2
+        use qmmm_struct_module, only : qmmm_struct_type
+
 	implicit none
+        type(qmmm_struct_type), intent(inout) :: qmmm_struct
+
 	
 	_REAL_, intent(out) :: mu(3, qm2ds%Mx)		! Dipole moment
 	_REAL_, intent(out) :: alpha(3)		! Polarizability
@@ -82,7 +88,7 @@ subroutine trans_dipole(mu, alpha)
 	mu = 0.d0
 	alpha = 0.d0
 
-	call get_dipole_matrix(qmmm_struct%qm_coords, dip)
+	call get_dipole_matrix(qmmm_struct,qmmm_struct%qm_coords, dip)
 
 	do j = 1,qm2ds%Mx	
 		call mo2site(qm2ds%v0(1,j), qm2ds%xi_scratch, qm2ds%eta_scratch)
@@ -106,11 +112,15 @@ end subroutine trans_dipole
 !*************************************************************************
 !Calcualtes the ground and excited state dipoles
 !*************************************************************************
-subroutine qm2_calc_molecular_dipole_in_excited_state()
+subroutine qm2_calc_molecular_dipole_in_excited_state(qmmm_struct)
 	use qm2_davidson_module
-	use qmmm_module, only: qmmm_struct, qm2_struct, qm2_params, qmmm_nml
+	use qmmm_module, only: qm2_struct, qm2_params, qmmm_nml
 	use constants, only : light_speed, charge_on_elec
+        use qmmm_struct_module, only : qmmm_struct_type
+
 	implicit none
+        type(qmmm_struct_type), intent(inout) :: qmmm_struct
+
 	_REAL_ :: mu(3,qm2ds%Mx),mu_relaxed(3,qm2ds%Mx),mu_unrelaxed(3,qm2ds%Mx)          ! Dipole moment
 	_REAL_ :: nuc_dipole(3), mu_gr(3),summc
         _REAL_ :: ddot ! This is a function
@@ -129,7 +139,7 @@ subroutine qm2_calc_molecular_dipole_in_excited_state()
         end if
 
 !nuclear part
-	call get_nuc_dip(qmmm_struct%qm_coords, dip) !return nuclear dipole operator in angstroms
+	call get_nuc_dip(qmmm_struct,qmmm_struct%qm_coords, dip) !return nuclear dipole operator in angstroms
 	do k=1,3 ! loop over x,y,z
 		call unpacking(qm2ds%Nb,dip(k,:),tmp,'s')
 		summc=0.d0
@@ -143,7 +153,7 @@ subroutine qm2_calc_molecular_dipole_in_excited_state()
 !end nuclear part
 
 !ground state
-	call get_dipole_matrix(qmmm_struct%qm_coords, dip);
+	call get_dipole_matrix(qmmm_struct,qmmm_struct%qm_coords, dip);
 	call unpacking(qm2ds%Nb,qm2_struct%den_matrix,GSDM,'s')
         do k=1,3  ! loop over x,y,z
 		call unpacking(qm2ds%Nb,dip(k,:),qm2ds%eta_scratch,'s')
@@ -162,8 +172,8 @@ if (qm2ds%Mx>0) then
         allocate(ESDM(qm2ds%Nb,qm2ds%Nb));
 
 	do state=1,qm2ds%Mx
-	        call calc_rhotz(state,qm2ds%rhoTZ,.true.); 
-                call calc_rhotz(state,qm2ds%rhoT,.false.);
+	        call calc_rhotz(qmmm_struct,state,qm2ds%rhoTZ,.true.); 
+                call calc_rhotz(qmmm_struct,state,qm2ds%rhoT,.false.);
 		call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,TZ,qm2ds%tz_scratch)		
                 call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoT,T,tmp)
 
@@ -176,7 +186,7 @@ if (qm2ds%Mx>0) then
 	        	end do
 			write (6,*)
 			write (6,'("QMMM: Mulliken Charges")')
-			call qm2_print_charges(state,1,qmmm_nml%dftb_chg,qmmm_struct%nquant_nlink, &
+			call qm2_print_charges(qmmm_struct, state,1,qmmm_nml%dftb_chg,qmmm_struct%nquant_nlink, &
                                         ex_mchg,qmmm_struct%iqm_atomic_numbers)
 		end if
 
@@ -315,12 +325,15 @@ end
 !end subroutine md_trans_dipole
 
 
-subroutine get_nuc_dip(coord, dpmat)
+subroutine get_nuc_dip(qmmm_struct, coord, dpmat)
 
-	 use qmmm_module, only : qm2_params, qm2_struct, qmmm_struct, qmmm_nml
+	 use qmmm_module, only : qm2_params, qm2_struct, qmmm_nml
 	 use constants, only : CODATA08_A_TO_BOHRS, bohr_radius
+         use qmmm_struct_module, only : qmmm_struct_type
+
 ! use findmask
       implicit none
+      type(qmmm_struct_type), intent(in) :: qmmm_struct
 
 ! Calculates the dipole matrices
 

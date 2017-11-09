@@ -2,13 +2,17 @@
 #include "copyright.h"
 #include "dprec.fh"
 
-subroutine qm2_calc_dipole(coord)
- use qmmm_module, only : qm2_params, qm2_struct, qmmm_struct, qmmm_nml
+subroutine qm2_calc_dipole(qmmm_struct, coord)
+ use qmmm_module, only : qm2_params, qm2_struct,  qmmm_nml
  use constants, only : light_speed, bohr_radius, charge_on_elec, CODATA08_AU_TO_DEBYE, BOHRS_TO_A
  use qm2_davidson_module
+ use qmmm_struct_module, only : qmmm_struct_type
 
 ! use findmask
       implicit none
+ 
+      type(qmmm_struct_type), intent(inout) :: qmmm_struct
+
 !
 ! Calculates the quantum dipole moment by using NDDO mehodology
 ! from the atomic charges and the lone-pairs 

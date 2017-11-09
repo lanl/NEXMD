@@ -1,6 +1,6 @@
 ! <compile=optimized>
 #include "dprec.fh"
-subroutine qm2_core_core_repulsion_dxyz(iat, jat, rij, onerij, xyzij, gij, dgij, dxyz)
+subroutine qm2_core_core_repulsion_dxyz(qmmm_struct, iat, jat, rij, onerij, xyzij, gij, dgij, dxyz)
 ! ----------------------------------------------------------------------
 ! PURPOSE: Calculate the derivative of the core core repulsion energy
 !          between atoms iat, jat
@@ -34,12 +34,13 @@ subroutine qm2_core_core_repulsion_dxyz(iat, jat, rij, onerij, xyzij, gij, dgij,
 ! ----------------------------------------------------------------------
 
   use qmmm_module, only : qmmm_nml, &
-                          qmmm_struct, &
                           qm2_params, &
                           EXPONENTIAL_CUTOFF
   use constants, only : zero, one, two, ten, twelve, twenty, ten_to_minus8, third
+  use qmmm_struct_module, only : qmmm_struct_type
   implicit none
 
+  type(qmmm_struct_type), intent(in) :: qmmm_struct
   integer, intent(in)  :: iat, jat
   _REAL_,  intent(in)  :: rij, onerij, xyzij(3)
   _REAL_,  intent(in)  :: gij, dgij(3)

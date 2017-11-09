@@ -145,11 +145,13 @@
 !
 !********************************************************************
 !
-   subroutine allocate_davidson()
-   use qmmm_module,only:qm2_struct,qmmm_struct,qmmm_scratch,qmmm_nml
+   subroutine allocate_davidson(qmmm_struct)
+   use qmmm_module,only:qm2_struct, qmmm_scratch,qmmm_nml
+   use qmmm_struct_module, only : qmmm_struct_type
 
    implicit none
-
+   
+   type(qmmm_struct_type), intent(in) :: qmmm_struct
    integer i,j,ierr
 
    REQUIRE(qm2ds%Mx .GT. 0)
@@ -314,8 +316,6 @@
 !********************************************************************
 !
    subroutine deallocate_davidson()
-
-	use qmmm_module, only: qmmm_struct
 
 	integer :: ierr
 

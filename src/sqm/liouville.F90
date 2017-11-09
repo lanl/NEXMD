@@ -102,9 +102,12 @@
 !
 !********************************************************************
 !
-   subroutine Vxi(xi,eta)
+   subroutine Vxi(qmmm_struct,xi,eta)
    use qm2_davidson_module
+   use qmmm_struct_module, only : qmmm_struct_type
+
    implicit none
+   type(qmmm_struct_type), intent(inout) :: qmmm_struct
    _REAL_ xi(qm2ds%Nb,qm2ds%Nb),eta(qm2ds%Nb,qm2ds%Nb)
    _REAL_ coef
    integer i,j,l
@@ -120,7 +123,7 @@
     end do
    end do
 
-   call Vxi_pack(qm2ds%xis,qm2ds%etas)
+   call Vxi_pack(qmmm_struct,qm2ds%xis,qm2ds%etas)
     l=0
     do i=1,qm2ds%Nb
       do j=1,i-1
@@ -141,7 +144,7 @@
     end do
    end do
 
-   call Vxi_packA(qm2ds%xis,qm2ds%etas)
+   call Vxi_packA(qmmm_struct,qm2ds%xis,qm2ds%etas)
    l=0
    do i=1,qm2ds%Nb
       do j = 1,i-1
@@ -166,7 +169,7 @@
    end do
 
 !  multiply:
-   call Vxi_pack(qm2ds%xis,qm2ds%etas)
+   call Vxi_pack(qmmm_struct,qm2ds%xis,qm2ds%etas)
 !  unpack:
    l = 0
    do i = 1,qm2ds%Nb
@@ -182,11 +185,13 @@
 !
 !********************************************************************
 !
-   subroutine Vxi_pack(xi,eta)
+   subroutine Vxi_pack(qmmm_struct,xi,eta)
    use qmmm_module,only: qm2_params
    use qm2_davidson_module
+   use qmmm_struct_module, only : qmmm_struct_type
 
    implicit none
+   type(qmmm_struct_type), intent(inout) :: qmmm_struct
    _REAL_ xi(qm2ds%Lt),eta(qm2ds%Lt)
    character keywr*6
    common /keywr/ keywr
@@ -204,9 +209,9 @@
          first=.false.
       endif
       eta(:)=0.0
-      call qm2_fock2(eta,xi,qm2ds%W,qm2_params%orb_loc)
+      call qm2_fock2(qmmm_struct,eta,xi,qm2ds%W,qm2_params%orb_loc)
    if (qm2ds%iderivfl.eq.0) then ! We are not in analytic derivatives     
-      call qm2_fock1(eta,xi) 
+      call qm2_fock1(qmmm_struct, eta,xi) 
       endif
       eta(:)=eta(:)*2.0 !Why *2.0? Is it for the commutator in L(xi)?
    return
@@ -216,10 +221,13 @@
 !
 !********************************************************************
 !
-   subroutine Vxi_packA (xi,eta)
+   subroutine Vxi_packA (qmmm_struct,xi,eta)
    use qmmm_module,only: qm2_params
    use qm2_davidson_module
+   use qmmm_struct_module, only : qmmm_struct_type
+
    implicit none
+   type(qmmm_struct_type), intent(inout) :: qmmm_struct
    _REAL_ xi(qm2ds%Lt),eta(qm2ds%Lt)
    character keywr*6
    common /keywr/ keywr
@@ -237,9 +245,9 @@
          first=.false.
       endif
       eta(:)=0.0
-      call qm2_fock2(eta,xi,qm2ds%W,qm2_params%orb_loc)
+      call qm2_fock2(qmmm_struct, eta,xi,qm2ds%W,qm2_params%orb_loc)
    if (qm2ds%iderivfl.eq.0) then ! We are not in analytic derivatives
-      call qm2_fock1_skew(eta,xi)
+      call qm2_fock1_skew(qmmm_struct, eta,xi)
       endif
       eta(:)=eta(:)*2.0
    return

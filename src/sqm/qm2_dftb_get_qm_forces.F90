@@ -4,7 +4,7 @@
 #include "copyright.h"
 #include "dprec.fh"
 #include "def_time.h"
-subroutine qm2_dftb_get_qm_forces(dxyzqm)
+subroutine qm2_dftb_get_qm_forces(qmmm_struct, dxyzqm)
 
 !     Gets the forces from the DFTB calculation
 !
@@ -22,11 +22,13 @@ subroutine qm2_dftb_get_qm_forces(dxyzqm)
 !     qmmm_struct%nquant_nlink    - Total number of qm atoms. (Real + link)
 
       use qm2_dftb_module, only : izp_str, mcharge, mol, lmax
-      use qmmm_module, only : qmmm_struct, qmmm_nml, qmmm_mpi
+      use qmmm_module, only : qmmm_nml, qmmm_mpi
       use constants, only: AU_TO_KCAL, A_TO_BOHRS
+      use qmmm_struct_module, only : qmmm_struct_type
 
       implicit none
 
+      type(qmmm_struct_type), intent(in) :: qmmm_struct
       _REAL_, intent(out) :: dxyzqm(3,qmmm_struct%nquant_nlink)
 
 !Local
@@ -35,7 +37,7 @@ subroutine qm2_dftb_get_qm_forces(dxyzqm)
         ! DISPERSION
         if (qmmm_nml%dftb_disper == 1) then
            call timer_start(TIME_QMMMDFTBDISPF)
-           call  dispersion_grad(qmmm_struct%nquant_nlink,dxyzqm)
+           call  dispersion_grad(qmmm_struct, qmmm_struct%nquant_nlink,dxyzqm)
            call timer_stop(TIME_QMMMDFTBDISPF)
         endif
 

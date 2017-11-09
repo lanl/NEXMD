@@ -11,7 +11,7 @@
 ! E-Mail: seabra@qtp.ufl.edu
 ! Url:    http://www.qtp.ufl.edu/~seabra
 !------------------------------------------------
-subroutine qm2_dftb_gb_shift(scf_mchg)
+subroutine qm2_dftb_gb_shift(qmmm_struct, scf_mchg)
    ! Calculates the contribution from GB potential to the Shift vector. and
    ! updates the shift vector.
    !
@@ -24,13 +24,15 @@ subroutine qm2_dftb_gb_shift(scf_mchg)
 
 
 !! Modules
-   use qmmm_module, only: qmmm_struct, qm_gb, qmmm_mpi, qmmm_scratch
+   use qmmm_module, only: qm_gb, qmmm_mpi, qmmm_scratch
    use qm2_dftb_module, only: ks_struct
    use constants, only: BOHRS_TO_A, zero
+   use qmmm_struct_module, only : qmmm_struct_type
 
    implicit none
 
 !! Passed in
+   type(qmmm_struct_type), intent(inout) :: qmmm_struct
    _REAL_, intent(in) :: scf_mchg(qmmm_struct%nquant_nlink) ! Mulliken charges per atom
 
 #ifdef MPI

@@ -3338,7 +3338,7 @@ subroutine runmd(xx,ix,ih,ipairs,x,winv,amass,f, &
          !--- Print QMMM Muliken Charges if needed ---
          if (qmmm_nml%ifqnt) then
            if (qmmm_nml%printcharges .and. qmmm_mpi%commqmmm_master) then
-             call qm2_print_charges(0,nstep,qmmm_nml%dftb_chg,qmmm_struct%nquant_nlink, &
+             call qm2_print_charges(qmmm_struct, 0,nstep,qmmm_nml%dftb_chg,qmmm_struct%nquant_nlink, &
                                     qm2_struct%scf_mchg,qmmm_struct%iqm_atomic_numbers)
            end if
          end if

@@ -38,7 +38,7 @@ module opnq
    
   contains
   
-subroutine Opnq_fock(fock, density)
+subroutine Opnq_fock(qmmm_struct, fock, density)
 !***********************************************************************        
 !                                                                               
 !  This subroutine calculates the OPNQ contributions to the Fock matrix
@@ -48,8 +48,10 @@ subroutine Opnq_fock(fock, density)
 !***********************************************************************  
     use constants, only:  A_TO_BOHRS, zero     
     use ElementOrbitalIndex, only:MaxValenceOrbitals 
-    use qmmm_module, only : qmmm_struct, qm2_struct, qm2_params, qmmm_opnq
+    use qmmm_module, only :  qm2_struct, qm2_params, qmmm_opnq
+    use qmmm_struct_module, only : qmmm_struct_type
     implicit none
+    type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
     _REAL_, intent(inout) :: fock(:)
     _REAL_, intent(in) :: density(:)
@@ -95,8 +97,8 @@ subroutine Opnq_fock(fock, density)
        end do ! i
        
        do jmm=1,qmmm_struct%qm_mm_pairs
-           call Opnq_fock_atom_pair(iqm, jmm, eOPNQ_pair, fock_opnq_pair)
-           call Opnq_LJ_atom_pair(iqm, jmm, LJ_pair) 
+           call Opnq_fock_atom_pair(qmmm_struct, iqm, jmm, eOPNQ_pair, fock_opnq_pair)
+           call Opnq_LJ_atom_pair(qmmm_struct, iqm, jmm, LJ_pair) 
            eOPNQ=eOPNQ+eOPNQ_pair
            fock_opnq=fock_opnq+fock_opnq_pair
            LJ=LJ+LJ_pair
@@ -116,7 +118,7 @@ subroutine Opnq_fock(fock, density)
 
 end subroutine Opnq_fock
 
-subroutine Opnq_fock_atom_pair(iqm, jmm, eOPNQ_pair, fock_opnq_pair, dx, dy, dz )
+subroutine Opnq_fock_atom_pair(qmmm_struct, iqm, jmm, eOPNQ_pair, fock_opnq_pair, dx, dy, dz )
 !***********************************************************************        
 !                                                                               
 !  This subroutine calculates the OPNQ contributions to the Fock matrix
@@ -127,11 +129,14 @@ subroutine Opnq_fock_atom_pair(iqm, jmm, eOPNQ_pair, fock_opnq_pair, dx, dy, dz 
 !                                         
 !*********************************************************************** 
     use constants, only:  A_TO_BOHRS, AU_TO_EV, zero     
-    use qmmm_module, only : qmmm_struct, qm2_struct, qm2_params, qmmm_opnq
+    use qmmm_module, only : qm2_struct, qm2_params, qmmm_opnq
     use QM2_parameters, only : core_chg
     use opnq_switching, only : switchoff
     
+    use qmmm_struct_module, only : qmmm_struct_type
     implicit none
+
+    type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
     integer, intent(in)::iqm, jmm
     _REAL_, intent(out) :: fock_opnq_pair, eOPNQ_pair
@@ -214,7 +219,7 @@ subroutine Opnq_fock_atom_pair(iqm, jmm, eOPNQ_pair, fock_opnq_pair, dx, dy, dz 
    
 end subroutine Opnq_fock_atom_pair
   
-subroutine Opnq_LJ_atom_pair(iqm, jmm, LJ_pair, dx, dy, dz)
+subroutine Opnq_LJ_atom_pair(qmmm_struct, iqm, jmm, LJ_pair, dx, dy, dz)
 !***********************************************************************        
 !                                                                               
 !  This subroutine calculates the classic LJ interactions on a single 
@@ -225,10 +230,13 @@ subroutine Opnq_LJ_atom_pair(iqm, jmm, LJ_pair, dx, dy, dz)
 !                                         
 !*********************************************************************** 
     use constants, only:  KCAL_TO_EV, zero     
-    use qmmm_module, only : qmmm_struct, qm2_struct, qm2_params, qmmm_opnq
+    use qmmm_module, only : qm2_struct, qm2_params, qmmm_opnq
     use opnq_switching, only : switchoff
     
+    use qmmm_struct_module, only : qmmm_struct_type
     implicit none
+
+    type(qmmm_struct_type), intent(in) :: qmmm_struct
 
     integer, intent(in)::iqm, jmm
     _REAL_, intent(out) :: LJ_pair

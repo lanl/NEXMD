@@ -367,7 +367,7 @@ pgi_GOTO:   nexmd.exe
 
 gnu:  FC = gfortran
 gnu:  CC = gcc
-gnu:  FFLAG = -O3 -mcmodel=medium
+gnu:  FFLAG =  -O3 -mcmodel=medium
 gnu:  LDFLAGS = $(FFLAG)
 gnu:  nexmd.exe
 
@@ -380,7 +380,7 @@ gnu_mkl: nexmd.exe
 
 gnu_debug:  FC = gfortran
 gnu_debug:  CC = gcc
-gnu_debug:  FFLAG = -g -mcmodel=medium
+gnu_debug:  FFLAG = -g 
 gnu_debug:  LDFLAGS = $(FFLAG)
 gnu_debug:  nexmd.exe
 

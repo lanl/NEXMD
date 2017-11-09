@@ -7,7 +7,7 @@
 ! CML this subroutine, as well as DCART1() and qm2_get_exc_forces(), since they are based
 ! CML on the same subroutine. 7/13/12
 
-subroutine dcart2(dxyzqm, xisu, xyz_in) ! CML add coordinates passed in 7/13/12
+subroutine dcart2(qmmm_struct, dxyzqm, xisu, xyz_in) ! CML add coordinates passed in 7/13/12
 !Current code maintained by: Ross Walker (TSRI 2004)
 
 !This routine calculates the derivatives of the energy for QM-QM
@@ -18,13 +18,15 @@ subroutine dcart2(dxyzqm, xisu, xyz_in) ! CML add coordinates passed in 7/13/12
 
       use constants          , only : EV_TO_KCAL
       use ElementOrbitalIndex, only: MaxValenceOrbitals
-      use qmmm_module        , only : qmmm_nml,qmmm_struct, qm2_struct, qm2_params, qmmm_mpi
+      use qmmm_module        , only : qmmm_nml, qm2_struct, qm2_params, qmmm_mpi
       use qm2_pm6_hof_module
       use dh_correction_module, only : dh_correction_grad
 	  use qm2_davidson_module ! CML 7/13/12
+      use qmmm_struct_module, only : qmmm_struct_type
 
  
        implicit none     
+       type(qmmm_struct_type), intent(inout) :: qmmm_struct
       _REAL_, parameter :: change=2.0D-6, halfChange=change/2.0D0, oneChange=1.0D0/change
       _REAL_, parameter :: delAdj =1.0D-8, twoOnedelAdj= 0.5D0/delAdj    
 
@@ -122,10 +124,10 @@ subroutine dcart2(dxyzqm, xisu, xyz_in) ! CML add coordinates passed in 7/13/12
             end do
             do K=1,3
               xyz_qmi(K)=xyz_qmi(K)+halfChange
-              call qm2_dhc2(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+              call qm2_dhc2(qmmm_struct,psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
                        jjl,AA)
               xyz_qmi(K)=xyz_qmi(K)-change
-              call qm2_dhc2(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+              call qm2_dhc2(qmmm_struct,psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
                        jjl,EE)
               xyz_qmi(K)=xyz_qmi(K)+halfChange
                    
@@ -141,7 +143,7 @@ subroutine dcart2(dxyzqm, xisu, xyz_in) ! CML add coordinates passed in 7/13/12
 
 end subroutine dcart2
 
-subroutine qm2_dhc2(P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, & ! CML 7/13/12
+subroutine qm2_dhc2(qmmm_struct,P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, & ! CML 7/13/12
                    natqmj, iif, iil, jjf, jjl, DENER)
 !***********************************************************************
 !
@@ -156,10 +158,12 @@ subroutine qm2_dhc2(P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, & ! CML 7
       use qmmm_module        , only: qm2_params, OVERLAP_CUTOFF, qmmm_nml, qm2_struct
       use Rotation           , only: GetRotationMatrix, Rotate2Center2Electron, RotateCore   
       use qm2_fock_d         , only: W2Fock_atompair
+      use qmmm_struct_module, only : qmmm_struct_type
  
       implicit none
 
 !Passed in
+      type(qmmm_struct_type), intent(inout) :: qmmm_struct
       _REAL_ P(*)
       _REAL_, intent(in)  :: xyz_qmi(3),xyz_qmj(3)
       integer, intent(in) :: iqm, jqm, natqmi, natqmj, qmitype, qmjtype
@@ -250,7 +254,7 @@ subroutine qm2_dhc2(P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, & ! CML 7
       KR=1
       hasDOrbital=((n_atomic_orbi.ge.9) .or. (n_atomic_orbj.ge.9))
       call GetRotationMatrix(xyz_qmj-xyz_qmi, rotationMatrix, hasDOrbital)        
-      call qm2_rotate_qmqm(-1,iqm,jqm,natqmi,natqmj,xyz_qmi,xyz_qmj,            &
+      call qm2_rotate_qmqm(qmmm_struct, -1,iqm,jqm,natqmi,natqmj,xyz_qmi,xyz_qmj,            &
                   W(KR),KR, RI, core)
 
       if (hasDOrbital) then   ! spd case
@@ -262,7 +266,7 @@ subroutine qm2_dhc2(P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, & ! CML 7
         WW=0.0D0
 
         ! calculate the 2-center integrals and core-core interaction integrals
-        call qm2_repp_d(qmitype,qmjtype,rijInAu,RI,CORE,WW,i_dimension,j_dimension,1)
+        call qm2_repp_d(qmmm_struct, qmitype,qmjtype,rijInAu,RI,CORE,WW,i_dimension,j_dimension,1)
  
         ! put 2-center 2-electron integrals to the linearized matrix W
 

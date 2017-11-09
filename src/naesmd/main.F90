@@ -8,7 +8,7 @@
 
 program MD_Geometry
 
-    use qmmm_module,only:qmmm_struct,deallocate_qmmm
+    use qmmm_module,only:deallocate_qmmm
     use qm2_davidson_module
     use naesmd_constants
     use fewest_switches
@@ -54,6 +54,7 @@ program MD_Geometry
     integer slen
     integer ifind
     logical moldyn_found
+    type(qmmm_struct_type), target :: qmmm_struct_notp
     type(simulation_t),target::sim_notp
     type(simulation_t),pointer::sim
     ! variables of the moldyn namelist
@@ -101,11 +102,12 @@ program MD_Geometry
     sim=>sim_notp
    
     call init0_simulation(sim)
+    call setp_simulation(sim,qmmm_struct_notp)
     call init_main()
 
     !Put derivative variables into module
-    qmmm_struct%ideriv=moldyn_deriv_flag
-    qmmm_struct%numder_step=num_deriv_step
+    sim%qmmm%ideriv=moldyn_deriv_flag
+    sim%qmmm%numder_step=num_deriv_step
 
     open (37,file='debug.out')
 
@@ -116,10 +118,12 @@ program MD_Geometry
     !Open input file, initialize variables, run first calculation
     !***********************************************************
     open (inputfdes,file='input.ceon',status='old')
+    write(6,*)"init_sqm" 
     call init_sqm(sim,inputfdes,STDOUT) ! involves call to Davidson
+    write(6,*)"init_sqm_done" 
     close(inputfdes)
 
-    nbasis=sim%dav%Nb  ! this is number of atomic orbitals
+     nbasis=sim%dav%Nb  ! this is number of atomic orbitals
     sim%nbasis=nbasis  ! not to confuse with Ncis or Nrpa !!!
 
     if(sim%excN.ne.0) call allocate_naesmd_module2(sim%dav%Ncis,sim%nbasis,sim%excN)
@@ -150,7 +154,7 @@ program MD_Geometry
 
     !Calculate derivatives
     call cpu_time(t_start)
-    if (qmmm_struct%ideriv.gt.0) then
+    if (sim%qmmm%ideriv.gt.0) then
         call deriv(sim,ihop)
     elseif (nstep.gt.0) then
         write(6,*)'Must choose derivative type greater than zero for dynamics'
@@ -171,7 +175,7 @@ program MD_Geometry
     icontw=1
     !Open output files
     call open_output(ibo,tfemto,imdtype,lprint)
-    ihop=qmmm_struct%state_of_interest !FIXME change ihop to module variable
+    ihop=sim%qmmm%state_of_interest !FIXME change ihop to module variable
     call writeoutputini(sim,ibo,yg,lprint)
 
     tmax=nstep*dtmdqt
@@ -185,16 +189,16 @@ program MD_Geometry
         !Classical propagation step - BOMD or NAESMD
         write(6,*)"Begin classical propagation step #",imdqt
         tfemto=tfemto+dtmdqt*convtf
-        qmmm_struct%num_qmmm_calls=imdqt !necessary for BO dynamics
+        sim%qmmm%num_qmmm_calls=imdqt !necessary for BO dynamics
 
         if(state.eq.'exct'.and.ibo.ne.1) then
             !NAESMD-propagate
-            qmmm_struct%state_of_interest=ihop;
+            sim%qmmm%state_of_interest=ihop;
             call verlet1(sim)
         else
             !BOMD-propagate
             call verlet(sim)
-            ihop=qmmm_struct%state_of_interest
+            ihop=sim%qmmm%state_of_interest
         end if
 
         if(state.eq.'exct'.and.ibo.ne.1) then
@@ -248,7 +252,7 @@ program MD_Geometry
                     write(6,*)'there is crossing'
                     write(6,*)'cross(:)=',cross(1:sim%excN)
                 endif
-                cadiabhop=cadiabnew(qmmm_struct%state_of_interest,iorden(qmmm_struct%state_of_interest))
+                cadiabhop=cadiabnew(sim%qmmm%state_of_interest,iorden(sim%qmmm%state_of_interest))
                 nquantumstep=nquantumreal*nstepcross
                 dtquantum=dtmdqt/dfloat(nquantumstep)
                 do j=1,sim%excN
@@ -298,7 +302,7 @@ program MD_Geometry
             !  remove the couplings if cross=2
             !
             do i=1,sim%excN
-                if(i.eq.qmmm_struct%state_of_interest) then
+                if(i.eq.sim%qmmm%state_of_interest) then
 
                     if(cross(i).eq.2) then
                         nquantumstep=nquantumreal
@@ -319,7 +323,7 @@ program MD_Geometry
                         end if
                     end if
                 else
-                    if(i.ne.iorden(qmmm_struct%state_of_interest)) then
+                    if(i.ne.iorden(sim%qmmm%state_of_interest)) then
                         if(i.lt.iorden(i)) then
                             if(cross(i).eq.2) then
                                 nquantumstep=nquantumreal
@@ -386,10 +390,10 @@ program MD_Geometry
                 write(6,*)'Propagator about to be called:', tini,tend,rk_tolerance
                 !write(6,*)'param:',param
                 write(6,*)'yg:',yg
-                write(37,*)'T_start / End :', imdqt, iimdqt, rk_comm%t_start, tend, tmax
+                write(6,*)'T_start / End :', imdqt, iimdqt, rk_comm%t_start, tend, tmax
 	 	tend=min(tend,tmax)	
 		call range_integrate(rk_comm,fcn,tend,tgot,yg,ygprime,rk_flag)
-                write(37,*)'T_got :',tgot, rk_comm%t_start
+                write(6,*)'T_got :',tgot, rk_comm%t_start
 		tend=tgot
 		!call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
                 ! Check the norm
@@ -414,7 +418,7 @@ program MD_Geometry
                 write(6,*)'End quantum step #',iimdqt
             end do
 
-            !write(6,*)'Now doing some other things'
+            write(6,*)'Now doing some other things'
             !--------------------------------------------------------------------
             ! last part of velocity verlet algorithm
             ! for ehrenfest should go after evalhop
@@ -424,6 +428,7 @@ program MD_Geometry
             !--------------------------------------------------------------------
             call evalhop(sim, rk_comm, lprint, tend, tmax, rk_tolerance, thresholds, &
                 Na, yg, cross)
+            write(6,*)'Now we done some other things'
             !call evalhop(sim,lprint,ido,neq,tini,tend,toldivprk, &
             !    param,Na,yg,cross,idocontrol)
             !--------------------------------------------------------------------
@@ -815,11 +820,11 @@ contains
         write(6,*)
 
         if (imdtype.eq.0) then
-            qmmm_struct%state_of_interest=imdtype
+            sim%qmmm%state_of_interest=imdtype
             write(6,*)'Ground state MD,      imdtype=',imdtype
     
         else
-            qmmm_struct%state_of_interest=imdtype
+            sim%qmmm%state_of_interest=imdtype
             write(6,*)'Excited state MD,      state=',imdtype
             write(6,*)'Number of states to propagate',npot
         end if

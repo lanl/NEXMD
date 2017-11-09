@@ -5,7 +5,7 @@
 !This file contains several routines for printing information
 !about QMMM simulations.
 
-subroutine qm2_print_info
+subroutine qm2_print_info(qmmm_struct)
 ! ----------------------------------------------------------------------
 ! PURPOSE: Print information on QM/MM calculation setup in sander / sqm
 !
@@ -17,16 +17,19 @@ subroutine qm2_print_info
 ! ----------------------------------------------------------------------
 
   use qmmm_module, only : qmmm_nml, &
-                          qmmm_struct, &
                           qm2_struct
   use qmmm_qmtheorymodule, only : String
   use dh_correction_module, only : dh_correction_info
+  use qmmm_struct_module, only : qmmm_struct_type
+
   ! Include the file containing all of the parameter constants.
   ! (required for the paper reference indices)
   ! This module should be cleaned up at some point!
   use QM2_parameters
 
   implicit none
+  
+  type(qmmm_struct_type), intent(in) :: qmmm_struct
 
   integer :: i
   integer :: reference_index
@@ -149,7 +152,7 @@ subroutine qm2_print_info
 end subroutine qm2_print_info
 
 !------------------------------------------------------------------------------
-subroutine qm_print_coords(nstep,print_coor)
+subroutine qm_print_coords(qmmm_struct, nstep,print_coor)
 !This routine prints the qm region coordinates.
 !Including link atoms
 !
@@ -158,11 +161,14 @@ subroutine qm_print_coords(nstep,print_coor)
 !================================================
 
   use ElementOrbitalIndex, only : elementSymbol
-  use qmmm_module, only : qmmm_struct, qmmm_nml
+  use qmmm_module, only : qmmm_nml
   use file_io_dat, only : MAX_FN_LEN
+  use qmmm_struct_module, only : qmmm_struct_type
+
   implicit none
 
 !Passed in
+      type(qmmm_struct_type), intent(in) :: qmmm_struct
       integer, intent(in) :: nstep
       logical, intent(in) :: print_coor
 
@@ -194,10 +200,10 @@ subroutine qm_print_coords(nstep,print_coor)
            write(qmmm_pdb_filename,'(I8)') nstep
            qmmm_pdb_filename = 'qmmm_region.pdb.' // adjustl(qmmm_pdb_filename)
            write(6,'(a,a)') 'QMMM: Writing QM coordinates to PDB file: ',qmmm_pdb_filename
-           call qm_write_pdb(qmmm_pdb_filename)
+           call qm_write_pdb(qmmm_struct, qmmm_pdb_filename)
         else
           !We write a pdb of the coordinates
-          call qm_write_pdb('qmmm_region.pdb')
+          call qm_write_pdb(qmmm_struct, 'qmmm_region.pdb')
         end if
       end if
 
@@ -205,7 +211,7 @@ end subroutine qm_print_coords
 
 !------------------------------------------------------------------------------
 
-subroutine qm_write_pdb(filename)
+subroutine qm_write_pdb(qmmm_struct, filename)
 ! This routine will write a crude pdb of the coordinates representing
 ! the QM atoms and link atoms. This allows the user to visually check that
 ! the selected QM region is what they expected.
@@ -213,8 +219,11 @@ subroutine qm_write_pdb(filename)
 ! Written by Ross Walker (TSRI, 2005)
 
   use ElementOrbitalIndex, only : elementSymbol
-  use qmmm_module, only : qmmm_struct
+  use qmmm_struct_module, only : qmmm_struct_type
+
   implicit none
+ 
+  type(qmmm_struct_type), intent(in) :: qmmm_struct
 
   character (len=*) :: filename
   
@@ -237,16 +246,19 @@ end subroutine qm_write_pdb
 
 !------------------------------------------------------------------------------
 
-subroutine qm_print_dyn_mem(natom,npairs)
+subroutine qm_print_dyn_mem(qmmm_struct, natom,npairs)
 !This routine prints a summary of the dynamic
 !memory allocated for use in the QM calculation.
 !Written by Ross Walker, TSRI, 2004
 !Assumes _REAL_ is double precision = 8 bytes.
 !================================================
 
-  use qmmm_module, only : qmmm_nml,qmmm_struct, qm2_struct, qm2_params, qm2_rij_eqns, &
+  use qmmm_module, only : qmmm_nml,qm2_struct, qm2_params, qm2_rij_eqns, &
                           qmewald, qm_gb, qmmm_mpi, qmmm_scratch
-  implicit none
+  use qmmm_struct_module, only : qmmm_struct_type
+
+  implicit none 
+  type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
 #include "qm2_array_locations.h"
 

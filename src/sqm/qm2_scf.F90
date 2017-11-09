@@ -3,7 +3,7 @@
 #include "dprec.fh"
 #include "def_time.h"
 #include "assert.fh"
-subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm_calls)
+subroutine qm2_scf(qmmm_struct, fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm_calls)
     !---------------------------------------------------------------------
     ! This is the main SCF routine.
     ! Written by Ross Walker (TSRI, 2005)
@@ -29,7 +29,7 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
     !                           J. COMP. CHEM.,3, 227, (1982)
     !---------------------------------------------------------------------
 
-    use qmmm_module, only : qmmm_struct, qm2_struct, qm2_params, qmewald, qmmm_nml, &
+    use qmmm_module, only : qm2_struct, qm2_params, qmewald, qmmm_nml, &
         qm_gb, qmmm_mpi, qmmm_scratch
     use constants, only : EV_TO_KCAL, zero, two
 
@@ -39,7 +39,10 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
 
     use qm2_davidson_module
     use xlbomd_module, only : K
+    use qmmm_struct_module, only : qmmm_struct_type
     implicit none
+
+    type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
 
 #ifdef MPI
@@ -223,7 +226,7 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
             deallocate(density_matrix_unpacked);
         end if
 
-        CALL qm2_cpt_fock_and_energy(SIZE(fock_matrix), fock_matrix, hmatrix, den_matrix, &
+        CALL qm2_cpt_fock_and_energy(qmmm_struct, SIZE(fock_matrix), fock_matrix, hmatrix, den_matrix, &
             & SIZE(W), W, SIZE(scf_mchg), scf_mchg, density_diff )
         !q=0
         !do o=1,qm2_struct%norb
@@ -1703,15 +1706,14 @@ END SUBROUTINE qm2_diag
 !********************************************************************
 !
 
-SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
+SUBROUTINE qm2_cpt_fock_and_energy(qmmm_struct, nfock, fock_matrix, hmatrix, den_matrix, &
     & nW, W, nchg, scf_mchg, density_diff)
 
     USE qmmm_module, ONLY : qmmm_nml
     USE qmmm_module, ONLY : qmmm_mpi
     USE qmmm_module, ONLY : qmmm_scratch
-    USE qmmm_module, ONLY : qmmm_struct
-    USE qmmm_module, ONLY : qm2_struct
     USE qmmm_module, ONLY : qm2_params
+    USE qmmm_module, ONLY : qm2_struct
     USE qmmm_module, ONLY : qm_gb
     USE qmmm_module, ONLY : qmewald
     USE qmmm_module, ONLY : qmmm_opnq
@@ -1721,9 +1723,11 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
     use opnq, only : Opnq_fock
     use qm2_davidson_module
     use cosmo_C , only : ceps, SOLVENT_MODEL, potential_type, onsagE, EF, rhotzpacked_k
+    use qmmm_struct_module, only : qmmm_struct_type
 
     IMPLICIT NONE
 
+    type(qmmm_struct_type), intent(inout) :: qmmm_struct
     INTEGER,INTENT(IN) :: nfock
     _REAL_ ,INTENT(OUT) :: fock_matrix(nfock)
     _REAL_ ,INTENT(IN) :: hmatrix(nfock)
@@ -1760,8 +1764,8 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
     fock_matrix(1:qm2_struct%matsize)=hmatrix(1:qm2_struct%matsize) !hmatrix added here AND in HELECT energy calculation? JAB
 
     ! Add the two electron part of the FOCK matrix
-    call qm2_fock1_d(fock_matrix, den_matrix) !Once center two electron
-    call qm2_fock2_d(fock_matrix, den_matrix, W) !Two center two electron
+    call qm2_fock1_d(qmmm_struct, fock_matrix, den_matrix) !Once center two electron
+    call qm2_fock2_d(qmmm_struct, fock_matrix, den_matrix, W) !Two center two electron
 
     ! Add Solvent Model or Electric Field
     ! SOLVENT MODEL BLOCK !!JAB
@@ -1769,10 +1773,10 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
         allocate(temp_op(nfock))
         if (((solvent_model.eq.4).or.(solvent_model.eq.5)).and.(.not.qmmm_struct%qm_mm_first_call)) then !Use the excited state density matrix
             if (potential_type.eq.3) then !USE COSMO
-                call addfck(fock_matrix,den_matrix+rhotzpacked_k);
+                call addfck( fock_matrix,den_matrix+rhotzpacked_k);
                 if(solvent_model.eq.5) then !Variational term
                     qm2ds%tz_scratch=0.d0; temp_op=0.d0; qm2ds%eta=0.d0
-                    call addfck(temp_op,den_matrix);
+                    call addfck( temp_op,den_matrix);
                     call unpacking(qm2ds%nb,temp_op,qm2ds%tz_scratch(1),'s')
                     call calc_xicommutator(qm2ds%tz_scratch(1))
                     call packing(qm2ds%nb,qm2ds%tz_scratch(1),qm2ds%eta,'s')
@@ -1782,8 +1786,8 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
                 endif
             else if (potential_type.eq.2) then !USE ONSAGER
                 qm2ds%tz_scratch=0.d0; temp_op=0.d0; qm2ds%eta=0.d0
-                call rcnfld_fock(fock_matrix,den_matrix+rhotzpacked_k,qm2_struct%norbs);
-                call rcnfld_fock(temp_op,den_matrix,qm2_struct%norbs);
+                call rcnfld_fock(qmmm_struct,fock_matrix,den_matrix+rhotzpacked_k,qm2_struct%norbs);
+                call rcnfld_fock(qmmm_struct,temp_op,den_matrix,qm2_struct%norbs);
                 call unpacking(qm2ds%nb,temp_op,qm2ds%tz_scratch(1),'s')
                 call calc_xicommutator(qm2ds%tz_scratch(1))
                 call packing(qm2ds%nb,qm2ds%tz_scratch(1),qm2ds%eta,'s')
@@ -1791,9 +1795,9 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
             endif
         else !Use the ground state density matrix
             if (potential_type.eq.3) then !USE COSMOO
-                call addfck(fock_matrix,den_matrix);
+                call addfck( fock_matrix,den_matrix);
             else if (potential_type.eq.2) then !USE ONSAGER
-                call rcnfld_fock(fock_matrix,den_matrix,qm2_struct%norbs);
+                call rcnfld_fock(qmmm_struct,fock_matrix,den_matrix,qm2_struct%norbs);
             endif
         endif
         deallocate(temp_op)
@@ -1839,7 +1843,7 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
     ! calculating total electronic energy
     if (qmmm_opnq%useOPNQ) then
         write(6,*)'OPNQ Correction'
-        call Opnq_fock(fock_matrix, den_matrix)
+        call Opnq_fock(qmmm_struct, fock_matrix, den_matrix)
     end if
 
     call timer_stop(TIME_QMMMENERGYSCFFOCK)
