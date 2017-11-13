@@ -2,7 +2,7 @@
 #include "copyright.h"
 #include "dprec.fh"
 #include "def_time.h"
-subroutine qm2_energy(qmmm_struct, escf,scf_mchg,natom,born_radii, one_born_radii, coords, scaled_mm_charges)
+subroutine qm2_energy(qm2ds,qmmm_struct, escf,scf_mchg,natom,born_radii, one_born_radii, coords, scaled_mm_charges)
 
    ! qm2_energy calculates the energy of the QMMM system in KCal/mol and places
    ! the answer in escf.
@@ -22,7 +22,7 @@ subroutine qm2_energy(qmmm_struct, escf,scf_mchg,natom,born_radii, one_born_radi
    use cosmo_C, only : solvent_model, potential_type
    use xlbomd_module, only : predictdens_xlbomd
   use qmmm_struct_module, only : qmmm_struct_type
-
+   use qm2_davidson_module, only : qm2_davidson_structure_type
    implicit none
 
 #ifdef MPI
@@ -32,6 +32,7 @@ subroutine qm2_energy(qmmm_struct, escf,scf_mchg,natom,born_radii, one_born_radi
 #endif
 
    !Passed in
+   type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
    integer, intent(in) :: natom
    _REAL_, intent(out) :: escf
@@ -286,7 +287,7 @@ subroutine qm2_energy(qmmm_struct, escf,scf_mchg,natom,born_radii, one_born_radi
       !   Calculate SCF Energy
       !==========================
       !Parallel
-      call qm2_scf(qmmm_struct, qm2_struct%fock_matrix, qm2_struct%hmatrix,qm2_struct%qm_qm_2e_repul,escf, &
+      call qm2_scf(qm2ds, qmmm_struct, qm2_struct%fock_matrix, qm2_struct%hmatrix,qm2_struct%qm_qm_2e_repul,escf, &
             qm2_struct%den_matrix,scf_mchg,qmmm_struct%num_qmmm_calls)
       !==========================
       ! End calculate SCF Energy

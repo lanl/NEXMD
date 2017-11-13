@@ -19,9 +19,10 @@
 !
 !--------------------------------------------------------------------
 !
-   subroutine site2mo(zz,xi,v1)
+   subroutine site2mo(qm2ds,zz,xi,v1)
    use qm2_davidson_module
    implicit none
+   type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    _REAL_ f0,f1
    parameter (f0 = 0.0)
    parameter (f1 = 1.0)
@@ -37,9 +38,10 @@
    return
    end subroutine
 !
-   subroutine mo2site (v1,xi,zz)
+   subroutine mo2site (qm2ds,v1,xi,zz)
    use qm2_davidson_module
    implicit none
+   type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    _REAL_ f0,f1
    parameter (f0 = 0.0)
    parameter (f1 = 1.0)
@@ -102,12 +104,13 @@
 !
 !********************************************************************
 !
-   subroutine Vxi(qmmm_struct,xi,eta)
+   subroutine Vxi(qm2ds,qmmm_struct,xi,eta)
    use qm2_davidson_module
    use qmmm_struct_module, only : qmmm_struct_type
 
    implicit none
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
+   type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    _REAL_ xi(qm2ds%Nb,qm2ds%Nb),eta(qm2ds%Nb,qm2ds%Nb)
    _REAL_ coef
    integer i,j,l
@@ -123,7 +126,7 @@
     end do
    end do
 
-   call Vxi_pack(qmmm_struct,qm2ds%xis,qm2ds%etas)
+   call Vxi_pack(qm2ds,qmmm_struct,qm2ds%xis,qm2ds%etas)
     l=0
     do i=1,qm2ds%Nb
       do j=1,i-1
@@ -144,7 +147,7 @@
     end do
    end do
 
-   call Vxi_packA(qmmm_struct,qm2ds%xis,qm2ds%etas)
+   call Vxi_packA(qm2ds,qmmm_struct,qm2ds%xis,qm2ds%etas)
    l=0
    do i=1,qm2ds%Nb
       do j = 1,i-1
@@ -169,7 +172,7 @@
    end do
 
 !  multiply:
-   call Vxi_pack(qmmm_struct,qm2ds%xis,qm2ds%etas)
+   call Vxi_pack(qm2ds,qmmm_struct,qm2ds%xis,qm2ds%etas)
 !  unpack:
    l = 0
    do i = 1,qm2ds%Nb
@@ -185,13 +188,14 @@
 !
 !********************************************************************
 !
-   subroutine Vxi_pack(qmmm_struct,xi,eta)
+   subroutine Vxi_pack(qm2ds,qmmm_struct,xi,eta)
    use qmmm_module,only: qm2_params
    use qm2_davidson_module
    use qmmm_struct_module, only : qmmm_struct_type
 
    implicit none
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
+   type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    _REAL_ xi(qm2ds%Lt),eta(qm2ds%Lt)
    character keywr*6
    common /keywr/ keywr
@@ -221,12 +225,13 @@
 !
 !********************************************************************
 !
-   subroutine Vxi_packA (qmmm_struct,xi,eta)
+   subroutine Vxi_packA(qm2ds,qmmm_struct,xi,eta)
    use qmmm_module,only: qm2_params
    use qm2_davidson_module
    use qmmm_struct_module, only : qmmm_struct_type
 
    implicit none
+   type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
    _REAL_ xi(qm2ds%Lt),eta(qm2ds%Lt)
    character keywr*6

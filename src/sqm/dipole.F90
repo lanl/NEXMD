@@ -67,13 +67,14 @@ endsubroutine get_dipole_matrix
 ! Calculates the transition dipole
 !******************************************************************
 
-subroutine trans_dipole(qmmm_struct, mu, alpha)
+subroutine trans_dipole(qm2ds, qmmm_struct, mu, alpha)
 	use qm2_davidson_module
 	use constants, only : BOHRS_TO_A, SQRT2
         use qmmm_struct_module, only : qmmm_struct_type
 
 	implicit none
         type(qmmm_struct_type), intent(inout) :: qmmm_struct
+        type(qm2_davidson_structure_type), intent(inout) :: qm2ds
 
 	
 	_REAL_, intent(out) :: mu(3, qm2ds%Mx)		! Dipole moment
@@ -91,7 +92,7 @@ subroutine trans_dipole(qmmm_struct, mu, alpha)
 	call get_dipole_matrix(qmmm_struct,qmmm_struct%qm_coords, dip)
 
 	do j = 1,qm2ds%Mx	
-		call mo2site(qm2ds%v0(1,j), qm2ds%xi_scratch, qm2ds%eta_scratch)
+		call mo2site(qm2ds,qm2ds%v0(1,j), qm2ds%xi_scratch, qm2ds%eta_scratch)
 		call unpacking(qm2ds%Nb,dip(1,:),qm2ds%eta_scratch,'s')
 		mu(1,j) = ddot(qm2ds%Nb**2,qm2ds%xi_scratch,one,qm2ds%eta_scratch,one)*SQRT2
 		call unpacking(qm2ds%Nb,dip(2,:),qm2ds%eta_scratch,'s')
@@ -112,7 +113,7 @@ end subroutine trans_dipole
 !*************************************************************************
 !Calcualtes the ground and excited state dipoles
 !*************************************************************************
-subroutine qm2_calc_molecular_dipole_in_excited_state(qmmm_struct)
+subroutine qm2_calc_molecular_dipole_in_excited_state(qm2ds, qmmm_struct)
 	use qm2_davidson_module
 	use qmmm_module, only: qm2_struct, qm2_params, qmmm_nml
 	use constants, only : light_speed, charge_on_elec
@@ -120,6 +121,7 @@ subroutine qm2_calc_molecular_dipole_in_excited_state(qmmm_struct)
 
 	implicit none
         type(qmmm_struct_type), intent(inout) :: qmmm_struct
+        type(qm2_davidson_structure_type), intent(inout) :: qm2ds
 
 	_REAL_ :: mu(3,qm2ds%Mx),mu_relaxed(3,qm2ds%Mx),mu_unrelaxed(3,qm2ds%Mx)          ! Dipole moment
 	_REAL_ :: nuc_dipole(3), mu_gr(3),summc
@@ -172,8 +174,8 @@ if (qm2ds%Mx>0) then
         allocate(ESDM(qm2ds%Nb,qm2ds%Nb));
 
 	do state=1,qm2ds%Mx
-	        call calc_rhotz(qmmm_struct,state,qm2ds%rhoTZ,.true.); 
-                call calc_rhotz(qmmm_struct,state,qm2ds%rhoT,.false.);
+	        call calc_rhotz(qm2ds,qmmm_struct,state,qm2ds%rhoTZ,.true.); 
+                call calc_rhotz(qm2ds,qmmm_struct,state,qm2ds%rhoT,.false.);
 		call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,TZ,qm2ds%tz_scratch)		
                 call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoT,T,tmp)
 

@@ -9,7 +9,7 @@
    include 'mpif.h'
 #endif
     
-subroutine sqm_energy(qmmm_struct, natom,coords,escf,born_radii,one_born_radii, &
+subroutine sqm_energy(qm2ds,qmmm_struct, natom,coords,escf,born_radii,one_born_radii, &
     intdiel,extdiel,Arad,scf_mchg, &
     time_sqm_took,time_davidson_took)
     !
@@ -47,7 +47,7 @@ subroutine sqm_energy(qmmm_struct, natom,coords,escf,born_radii,one_born_radii, 
     ! Passed in
 
     integer,intent(in)::natom
-!    type(qmmm_struct_type), pointer :: qmmm_struct
+    type(qm2_davidson_structure_type), intent(inout) :: qm2ds
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
     _REAL_,intent(inout)::coords(natom*3) !Amber array - adjusted for link atoms
     _REAL_,intent(out)::escf
@@ -125,7 +125,7 @@ subroutine sqm_energy(qmmm_struct, natom,coords,escf,born_radii,one_born_radii, 
         end if
 
         if(qm2ds%Mx>0) then
-            call allocate_davidson(qmmm_struct) ! Davidson allocation
+            call allocate_davidson(qm2ds, qmmm_struct) ! Davidson allocation
             if(qm2ds%dav_guess.gt.1) call init_xlbomd(qm2ds%Nb**2*qm2ds%Mx)
         endif
 
@@ -159,7 +159,7 @@ subroutine sqm_energy(qmmm_struct, natom,coords,escf,born_radii,one_born_radii, 
     !  Calculate SCF Energy (ground state)
     !============================
     call cpu_time(t_start)
-    call qm2_energy(qmmm_struct, escf,scf_mchg,natom,born_radii,one_born_radii, &
+    call qm2_energy(qm2ds, qmmm_struct, escf,scf_mchg,natom,born_radii,one_born_radii, &
         coords,scaled_mm_charges)
     call cpu_time(t_finish)
     ! Incrementing the cumulative sqm time
@@ -219,7 +219,7 @@ subroutine sqm_energy(qmmm_struct, natom,coords,escf,born_radii,one_born_radii, 
  		
     if(qm2ds%Mx>0) then
         call cpu_time(t_start)
-        call dav_wrap(qmmm_struct)
+        call dav_wrap(qm2ds,qmmm_struct)
         call cpu_time(t_finish)
         ! Incrementing cumulative Davidson execution time
         time_davidson_took=time_davidson_took+t_finish-t_start
@@ -232,10 +232,10 @@ subroutine sqm_energy(qmmm_struct, natom,coords,escf,born_radii,one_born_radii, 
     qmmm_struct%qm_mm_first_call=.false.
     if ((qmmm_nml%printdipole>0).or.(qmmm_nml%printcharges)) then
         if((qmmm_nml%printdipole<3).and.(qm2ds%Mx>0)) then
-            call qm2_calc_molecular_dipole_in_excited_state(qmmm_struct)
+            call qm2_calc_molecular_dipole_in_excited_state(qm2ds,qmmm_struct)
             
         else if (qmmm_nml%printdipole>2) then
-            call qm2_calc_dipole(qmmm_struct,coords)
+            call qm2_calc_dipole(qm2ds, qmmm_struct,coords)
         end if
     end if
 
@@ -478,7 +478,7 @@ end subroutine getsqmx
 !
 !********************************************************************
 !
-subroutine sqm_read_and_alloc(qmmm_struct,fdes_in,fdes_out,natom_inout,igb,atnam, &
+subroutine sqm_read_and_alloc(qm2ds,qmmm_struct,fdes_in,fdes_out,natom_inout,igb,atnam, &
     atnum,maxcyc,grms_tol,ntpr,ncharge_in, &
     excharge,chgatnum, &
     excNin,struct_opt_state,exst_method,dav_guess, & ! Excited state
@@ -504,6 +504,7 @@ subroutine sqm_read_and_alloc(qmmm_struct,fdes_in,fdes_out,natom_inout,igb,atnam
     !XL-BOMD parameters
     implicit none
 
+    type(qm2_davidson_structure_type), intent(inout) :: qm2ds
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
     !STATIC MEMORY

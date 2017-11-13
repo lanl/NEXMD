@@ -1,12 +1,13 @@
 #include "dprec.fh"
 
-subroutine calc_rhotz(qmmm_struct, state, rhoTZ,calc_Z)
+subroutine calc_rhotz(qm2ds,qmmm_struct, state, rhoTZ,calc_Z)
         use qm2_davidson_module
         use qmmm_module
         use cosmo_C,only:ceps,potential_type,solvent_model,v_solvent_difdens,v_solvent_xi
         use qmmm_struct_module, only : qmmm_struct_type
 
         implicit none
+        type(qm2_davidson_structure_type), intent(inout) :: qm2ds
         type(qmmm_struct_type), intent(in) :: qmmm_struct
 	logical calc_Z; !This flag doesn't seem to work
         integer, intent(inout) :: state
@@ -53,12 +54,12 @@ if (calc_Z) then
         call mo2sitef(qm2ds%Nb,qm2ds%vhf,rhoTZ, &
                 qm2ds%eta_tz,qm2ds%tz_scratch(qm2ds%Nb**2+1))
         qm2ds%tz_scratch(:)=0.d0;
-        call Vxi(qmmm_struct, qm2ds%eta_tz,qm2ds%tz_scratch(1))
+        call Vxi(qm2ds,qmmm_struct, qm2ds%eta_tz,qm2ds%tz_scratch(1))
 !**************SOLVENT BLOCK !!JAB
         if(solvent_model.gt.0) then
         	tmp=0.d0
         if (potential_type.eq.3) then !COSMO Potential
-        	call VxiM(qm2ds%eta_tz,tmp); 
+        	call VxiM(qm2ds,qm2ds%eta_tz,tmp); 
         else if (potential_type.eq.2) then !Onsager Potential
         	call rcnfld(qmmm_struct,tmp,qm2ds%eta_tz,qm2ds%nb); 
         end if
@@ -80,7 +81,7 @@ if (calc_Z) then
         call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%xi_tz,qm2ds%tz_scratch(1), &
                         qm2ds%tz_scratch(qm2ds%Nb**2+1))
                 qm2ds%eta_tz(:)=0.d0;
-        call Vxi(qmmm_struct,qm2ds%tz_scratch(1),qm2ds%eta_tz)
+        call Vxi(qm2ds,qmmm_struct,qm2ds%tz_scratch(1),qm2ds%eta_tz)
 
 !**************END GAS PHASE BLOCK
 
@@ -88,7 +89,7 @@ if (calc_Z) then
 if((solvent_model.eq.1)) then !Linear Response solvent
         tmp=0.d0;
         if (potential_type.eq.3) then !COSMO Potential
-        	call VxiM(qm2ds%tz_scratch(1),tmp); 
+        	call VxiM(qm2ds,qm2ds%tz_scratch(1),tmp); 
         elseif (potential_type.eq.2) then !Onsager Potential
         	call rcnfld(qmmm_struct,tmp,qm2ds%tz_scratch(1),qm2ds%nb);
         end if
@@ -164,7 +165,7 @@ endif
                                 call summing(2*qm2ds%Np*qm2ds%Nh,qm2ds%eta_tz, &
                                         qm2ds%tz_scratch(2*qm2ds%Np*qm2ds%Nh+1))
                         end if
-                        call Lxi_testing(qmmm_struct,qm2ds%tz_scratch(2*qm2ds%Np*qm2ds%Nh+1), &
+                        call Lxi_testing(qm2ds,qmmm_struct,qm2ds%tz_scratch(2*qm2ds%Np*qm2ds%Nh+1), &
                                 qm2ds%tz_scratch(4*qm2ds%Np*qm2ds%Nh+1),solvent_model_1)
 ! Check for convergency
                         f=0.0

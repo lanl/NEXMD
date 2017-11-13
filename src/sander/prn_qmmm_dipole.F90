@@ -66,7 +66,7 @@ subroutine qmmm_dipole(coord,mass,ipres,lbres,nres)
                end do
             end if
 
-            call qm2_calc_dipole(qmmm_struct,qm_cm_coord)
+            call qm2_calc_dipole(qm2ds,qmmm_struct,qm_cm_coord)
  
          ! Asking if MM + QM dipole moment is required
          case (2)
@@ -124,7 +124,7 @@ subroutine qmmm_dipole(coord,mass,ipres,lbres,nres)
             write(6,'(" "," MM DIPOLE ",F9.3,F9.3,F9.3,F9.3)'), mmdipole(1:3), totaldipol
             
             !Computing the QM dipole moment
-            call qm2_calc_dipole(qmmm_struct, qm_cm_coord)
+            call qm2_calc_dipole(qm2ds,qmmm_struct, qm_cm_coord)
 
           case default
  

@@ -136,7 +136,7 @@ program sqm
       ! ------------------------
 	  qm2ds%minimization = .FALSE.
 	! CML Includes call to Davidson within sqm_energy() 7/16/12
-      call sqm_energy(qmmm_struct,atom, x, escf, born_radii, one_born_radii, &
+      call sqm_energy(qm2ds,qmmm_struct,atom, x, escf, born_radii, one_born_radii, &
                  intdiel, extdiel, Arad, qm2_struct%scf_mchg )
 
 		! CML TESTING
@@ -189,7 +189,7 @@ program sqm
    write(6,*) ''
    
    
-   call qm2_calc_dipole(qmmm_struct, x)
+   call qm2_calc_dipole(qm2ds,qmmm_struct, x)
    
    write(6,*) ''
    
@@ -217,13 +217,13 @@ program sqm
 
    call deallocate_qmmm(qmmm_nml, qmmm_struct, qmmm_vsolv, qm2_params)
 
-   if (qm2ds%Mx > 0) call deallocate_davidson()		! CML should be wrapped into above call 7/11/12
+   if (qm2ds%Mx > 0) call deallocate_davidson(qm2ds)		! CML should be wrapped into above call 7/11/12
 
    call mexit(6,0)
 
 end program sqm
 
-subroutine sqm_energy(qmmm_struct,natom,coords,escf, &
+subroutine sqm_energy(qm2ds,qmmm_struct,natom,coords,escf, &
                  born_radii,one_born_radii, &
                  intdiel, extdiel, Arad, scf_mchg ) 
 !
@@ -264,6 +264,7 @@ subroutine sqm_energy(qmmm_struct,natom,coords,escf, &
 #endif
 
 ! Passed in
+   type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
    integer, intent(in) :: natom
    _REAL_ , intent(inout)  :: coords(natom*3) !Amber array - adjusted for link atoms
@@ -355,7 +356,7 @@ subroutine sqm_energy(qmmm_struct,natom,coords,escf, &
           write(6,'(/80(1H-)/''  RESULTS'',/80(1H-)/)')
        end if
 
-      if (qm2ds%Mx > 0) call allocate_davidson(qmmm_struct)   ! CML 7/16/12
+      if (qm2ds%Mx > 0) call allocate_davidson(qm2ds,qmmm_struct)   ! CML 7/16/12
 
    end if !if (qmmm_struct%qm_mm_first_call)
 
@@ -371,7 +372,7 @@ subroutine sqm_energy(qmmm_struct,natom,coords,escf, &
    !============================
    ! Calculate SCF Energy
    !============================
-   call qm2_energy(qmmm_struct, escf, scf_mchg, natom, born_radii, one_born_radii, &
+   call qm2_energy(qm2ds, qmmm_struct, escf, scf_mchg, natom, born_radii, one_born_radii, &
       coords,scaled_mm_charges)
 
    !===================================
@@ -395,7 +396,7 @@ subroutine sqm_energy(qmmm_struct,natom,coords,escf, &
 
    select case (qmmm_nml%printdipole)
       case (1)
-         call qm2_calc_dipole(qmmm_struct, coords)
+         call qm2_calc_dipole(qm2ds,qmmm_struct, coords)
       case (2)
          write (6,'("QMMM: Not MM part; please check your selection")')
       case default

@@ -859,7 +859,7 @@ subroutine get_qm2_forces(master, calc_mchg_scf, natom, &
    call timer_stop_start(TIME_QMMMRIJEQNS,TIME_QMMMENERGY)
 
    ! Parallel: Calculate SCF Energy
-   call qm2_energy(qmmm_struct, escf, scf_mchg, natom, born_radii, one_born_radii, coords, scaled_mm_charges)
+   call qm2_energy(qm2ds, qmmm_struct, escf, scf_mchg, natom, born_radii, one_born_radii, coords, scaled_mm_charges)
 
    call timer_stop(TIME_QMMMENERGY)
 

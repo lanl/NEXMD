@@ -7,7 +7,7 @@
 ! CML this subroutine, as well as DCART1() and DCART2(), since they are based
 ! CML on the same subroutine. 7/13/12
 
-subroutine dcart1(qmmm_struct, dxyzqm, gs_dm, ex_dm, xyz_in) ! CML add coordinates passed in 7/13/12
+subroutine dcart1(qm2ds, qmmm_struct, dxyzqm, gs_dm, ex_dm, xyz_in) ! CML add coordinates passed in 7/13/12
 !Current code maintained by: Ross Walker (TSRI 2004)
 
 !This routine calculates the derivatives of the energy for QM-QM
@@ -28,7 +28,8 @@ subroutine dcart1(qmmm_struct, dxyzqm, gs_dm, ex_dm, xyz_in) ! CML add coordinat
  
        implicit none     
       type(qmmm_struct_type), intent(in) :: qmmm_struct
-   
+      type(qm2_davidson_structure_type), intent(in) :: qm2ds
+ 
       _REAL_, parameter :: change=2.0D-6, halfChange=change/2.0D0, oneChange=1.0D0/change
       _REAL_, parameter :: delAdj =1.0D-8, twoOnedelAdj= 0.5D0/delAdj    
 

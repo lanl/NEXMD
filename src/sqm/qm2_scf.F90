@@ -3,7 +3,7 @@
 #include "dprec.fh"
 #include "def_time.h"
 #include "assert.fh"
-subroutine qm2_scf(qmmm_struct, fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm_calls)
+subroutine qm2_scf(qm2ds, qmmm_struct, fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm_calls)
     !---------------------------------------------------------------------
     ! This is the main SCF routine.
     ! Written by Ross Walker (TSRI, 2005)
@@ -43,6 +43,7 @@ subroutine qm2_scf(qmmm_struct, fock_matrix, hmatrix, W, escf, den_matrix, scf_m
     implicit none
 
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
+    type(qm2_davidson_structure_type), intent(inout) :: qm2ds
 
 
 #ifdef MPI
@@ -226,7 +227,7 @@ subroutine qm2_scf(qmmm_struct, fock_matrix, hmatrix, W, escf, den_matrix, scf_m
             deallocate(density_matrix_unpacked);
         end if
 
-        CALL qm2_cpt_fock_and_energy(qmmm_struct, SIZE(fock_matrix), fock_matrix, hmatrix, den_matrix, &
+        CALL qm2_cpt_fock_and_energy(qm2ds, qmmm_struct, SIZE(fock_matrix), fock_matrix, hmatrix, den_matrix, &
             & SIZE(W), W, SIZE(scf_mchg), scf_mchg, density_diff )
         !q=0
         !do o=1,qm2_struct%norb
@@ -1706,7 +1707,7 @@ END SUBROUTINE qm2_diag
 !********************************************************************
 !
 
-SUBROUTINE qm2_cpt_fock_and_energy(qmmm_struct, nfock, fock_matrix, hmatrix, den_matrix, &
+SUBROUTINE qm2_cpt_fock_and_energy(qm2ds, qmmm_struct, nfock, fock_matrix, hmatrix, den_matrix, &
     & nW, W, nchg, scf_mchg, density_diff)
 
     USE qmmm_module, ONLY : qmmm_nml
@@ -1726,7 +1727,7 @@ SUBROUTINE qm2_cpt_fock_and_energy(qmmm_struct, nfock, fock_matrix, hmatrix, den
     use qmmm_struct_module, only : qmmm_struct_type
 
     IMPLICIT NONE
-
+    type(qm2_davidson_structure_type), intent(inout) :: qm2ds
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
     INTEGER,INTENT(IN) :: nfock
     _REAL_ ,INTENT(OUT) :: fock_matrix(nfock)
@@ -1778,7 +1779,7 @@ SUBROUTINE qm2_cpt_fock_and_energy(qmmm_struct, nfock, fock_matrix, hmatrix, den
                     qm2ds%tz_scratch=0.d0; temp_op=0.d0; qm2ds%eta=0.d0
                     call addfck( temp_op,den_matrix);
                     call unpacking(qm2ds%nb,temp_op,qm2ds%tz_scratch(1),'s')
-                    call calc_xicommutator(qm2ds%tz_scratch(1))
+                    call calc_xicommutator(qm2ds,qm2ds%tz_scratch(1))
                     call packing(qm2ds%nb,qm2ds%tz_scratch(1),qm2ds%eta,'s')
                     fock_matrix=fock_matrix+qm2ds%eta(1:nfock)
                     call packing(qm2ds%Nb,qm2ds%tz_scratch(1),qm2ds%eta,'u')
@@ -1789,7 +1790,7 @@ SUBROUTINE qm2_cpt_fock_and_energy(qmmm_struct, nfock, fock_matrix, hmatrix, den
                 call rcnfld_fock(qmmm_struct,fock_matrix,den_matrix+rhotzpacked_k,qm2_struct%norbs);
                 call rcnfld_fock(qmmm_struct,temp_op,den_matrix,qm2_struct%norbs);
                 call unpacking(qm2ds%nb,temp_op,qm2ds%tz_scratch(1),'s')
-                call calc_xicommutator(qm2ds%tz_scratch(1))
+                call calc_xicommutator(qm2ds,qm2ds%tz_scratch(1))
                 call packing(qm2ds%nb,qm2ds%tz_scratch(1),qm2ds%eta,'s')
                 fock_matrix=fock_matrix+qm2ds%eta(1:qm2ds%Nb*(qm2ds%Nb+1)/2)
             endif
@@ -1805,7 +1806,7 @@ SUBROUTINE qm2_cpt_fock_and_energy(qmmm_struct, nfock, fock_matrix, hmatrix, den
     if (EF.eq.1) then !USE CONSTANT ELECTRIC FIELD
         allocate(temp_op(nfock))
         temp_op=0.d0
-        call efield_fock(temp_op,qm2_struct%norbs);
+        call efield_fock(qm2ds,qmmm_struct,temp_op,qm2_struct%norbs);
         fock_matrix=fock_matrix+2.d0*temp_op
         deallocate(temp_op)
     end if

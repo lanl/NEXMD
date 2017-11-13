@@ -205,31 +205,31 @@ module nacT_analytic_module
    ff11=-1.0
         
    Na=sim%qmmm%nquant_nlink
-   Np=qm2ds%Np
-   Nh=qm2ds%Nh
-   Nb=qm2ds%Nb
-   M4_M=qm2ds%Np*qm2ds%Nh
+   Np=sim%dav%Np
+   Nh=sim%dav%Nh
+   Nb=sim%dav%Nb
+   M4_M=sim%dav%Np*sim%dav%Nh
    M2_M=M4_M*2
-   Mx=qm2ds%Mx 
+   Mx=sim%dav%Mx 
    Mx_M=Mx
 
    ! Note, Davidson must be run prior to this for these assignments
    if(sim%qmmm%qm_mm_first_call) then
       write(6,*)  'sqm_energy() must be run once before executing this procedure!'
 
-      if(qm2ds%Mx==0) write(6,*)  'excN must be > 0 to run this procedure!'
+      if(sim%dav%Mx==0) write(6,*)  'excN must be > 0 to run this procedure!'
       call mexit(6,1)
    end if
 
-   call getmodef(M2_M,Mx_M,Np,Nh,ihop,qm2ds%cmdqt,qm2ds%nacr_scratch)
-   call getmodef(M2_M,Mx_M,Np,Nh,icheck,qm2ds%cmdqt,qm2ds%eta_scratch)
+   call getmodef(M2_M,Mx_M,Np,Nh,ihop,sim%dav%cmdqt,sim%dav%nacr_scratch)
+   call getmodef(M2_M,Mx_M,Np,Nh,icheck,sim%dav%cmdqt,sim%dav%eta_scratch)
         
-   call dgemm('N','T',Nb,Nb,Nb,ff1,qm2ds%nacr_scratch,Nb, &
-      qm2ds%eta_scratch,Nb,ff0,qm2ds%eta,Nb)
-   call dgemm('T','N',Nb,Nb,Nb,ff1,qm2ds%eta_scratch,Nb, &
-      qm2ds%nacr_scratch,Nb,ff1,qm2ds%eta,Nb)
-   call Iminus2rho(Nb,Np,qm2ds%eta,qm2ds%xi)
-   call mo2sitef (Nb,qm2ds%vhf,qm2ds%xi,qm2ds%eta,qm2ds%xi_scratch)
+   call dgemm('N','T',Nb,Nb,Nb,ff1,sim%dav%nacr_scratch,Nb, &
+      sim%dav%eta_scratch,Nb,ff0,sim%dav%eta,Nb)
+   call dgemm('T','N',Nb,Nb,Nb,ff1,sim%dav%eta_scratch,Nb, &
+      sim%dav%nacr_scratch,Nb,ff1,sim%dav%eta,Nb)
+   call Iminus2rho(Nb,Np,sim%dav%eta,sim%dav%xi)
+   call mo2sitef (Nb,sim%dav%vhf,sim%dav%xi,sim%dav%eta,sim%dav%xi_scratch)
         
    ! Above eta contains transition density martix between state 
    ! ihop and icheck in AO
@@ -238,14 +238,14 @@ module nacT_analytic_module
    ! for states ihop and icheck in AO
 
    ! Term Tr(F^x rho_ij) (only symmetric part contributes)
-   call packing(Nb,qm2ds%eta,qm2ds%nacr_scratch,'s')
+   call packing(Nb,sim%dav%eta,sim%dav%nacr_scratch,'s')
 
 
-   nacT_direct_ihc=dcart1_xpm(sim%qmmm, qm2ds%nacr_scratch,xstep%Rp,xstep%Rm) 
+   nacT_direct_ihc=dcart1_xpm(sim%dav, sim%qmmm, sim%dav%nacr_scratch,xstep%Rp,xstep%Rm) 
 
 
    nacT_direct_ihc=nacT_direct_ihc*kcalev &
-      /(qm2ds%e0(qm2ds%kx(icheck))-qm2ds%e0(qm2ds%kx(ihop))) &
+      /(sim%dav%e0(sim%dav%kx(icheck))-sim%dav%e0(sim%dav%kx(ihop))) &
       / sim%naesmd%dtnact/2.d0 
    ! factor of 2. is because dt = 2.0 * dtnact
 

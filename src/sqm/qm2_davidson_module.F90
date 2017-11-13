@@ -134,7 +134,6 @@
 
    public :: allocate_davidson, deallocate_davidson
    
-   type(qm2_davidson_structure_type),target,save :: qm2ds
 
    logical, private :: initialized = 0 ! initially zero, i.e. not initialized
    contains
@@ -145,12 +144,13 @@
 !
 !********************************************************************
 !
-   subroutine allocate_davidson(qmmm_struct)
+   subroutine allocate_davidson(qm2ds, qmmm_struct)
    use qmmm_module,only:qm2_struct, qmmm_scratch,qmmm_nml
    use qmmm_struct_module, only : qmmm_struct_type
 
    implicit none
    
+   type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    type(qmmm_struct_type), intent(in) :: qmmm_struct
    integer i,j,ierr
 
@@ -315,9 +315,10 @@
 !
 !********************************************************************
 !
-   subroutine deallocate_davidson()
+   subroutine deallocate_davidson(qm2ds)
 
 	integer :: ierr
+   type(qm2_davidson_structure_type), intent(inout) :: qm2ds
 
    print*,'davidson deallocation'
 

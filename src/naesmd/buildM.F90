@@ -15,14 +15,15 @@
 !USED, IT INCLUDES ALL SOLVENT MODELS DESIGNATED BY solvent_model and
 !potential_type
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine Lxi_testing(qmmm_struct,u1,v1,solvent_model)
+subroutine Lxi_testing(qm2ds,qmmm_struct,u1,v1,solvent_model)
     use qm2_davidson_module
     use qmmm_module,only:qm2_struct;
     use cosmo_C, only: v_solvent_difdens,v_solvent_xi,potential_type, EF;
     use qmmm_struct_module, only : qmmm_struct_type
 
     implicit none
-
+  
+     type(qm2_davidson_structure_type), intent(inout) :: qm2ds
      type(qmmm_struct_type), intent(inout) :: qmmm_struct
     _REAL_ u1(qm2ds%Nrpa),v1(qm2ds%Nrpa)
     _REAL_ f,f1,f2,fs1,ddot
@@ -35,14 +36,14 @@ subroutine Lxi_testing(qmmm_struct,u1,v1,solvent_model)
 
     fs1=0;
     qm2ds%xi=0.d0
-    call mo2site(u1,qm2ds%xi,qm2ds%eta) !Change basis of guess vector of Davidson from M.O to A.O
+    call mo2site(qm2ds,u1,qm2ds%xi,qm2ds%eta) !Change basis of guess vector of Davidson from M.O to A.O
     qm2ds%eta=0.0;
-    call Vxi(qmmm_struct,qm2ds%xi,qm2ds%eta);    !Calculate Vacuum Electron Correlation
+    call Vxi(qm2ds,qmmm_struct,qm2ds%xi,qm2ds%eta);    !Calculate Vacuum Electron Correlation
     !!SELECT SOLVENT MODEL AND POTENTIAL TYPE
     if ((solvent_model.eq.1)) then !1:Linear Response
         tmp=0.d0;
         if (potential_type.eq.3) then !COSMO Potential
-            call VxiM(qm2ds%xi,tmp);
+            call VxiM(qm2ds,qm2ds%xi,tmp);
         elseif (potential_type.eq.2) then !Onsager Potential
             call rcnfld(qmmm_struct,tmp,qm2ds%xi,qm2ds%nb)
         elseif (potential_type.eq.1) then !testing
@@ -53,7 +54,7 @@ subroutine Lxi_testing(qmmm_struct,u1,v1,solvent_model)
         elseif (solvent_model.eq.99) then !For Z-vector equation if different
             tmp=0.d0;
             if (potential_type.eq.3) then !COSMO Potential
-                call VxiM(qm2ds%xi,tmp);
+                call VxiM(qm2ds,qm2ds%xi,tmp);
             elseif (potential_type.eq.2) then !Onsager Potential
                 call rcnfld(qmmm_struct,tmp,qm2ds%xi,qm2ds%nb)
             elseif (potential_type.eq.1) then !testing
@@ -64,7 +65,7 @@ subroutine Lxi_testing(qmmm_struct,u1,v1,solvent_model)
             elseif (solvent_model.eq.98) then !For Z-vector equation with SS model
                 tmp=0.d0;
                 if (potential_type.eq.3) then !COSMO Potential
-                    call VxiM(qm2ds%xi,tmp);
+                    call VxiM(qm2ds,qm2ds%xi,tmp);
                 elseif (potential_type.eq.2) then !Onsager Potential
                     call rcnfld(qmmm_struct,tmp,qm2ds%xi,qm2ds%nb)
                 elseif (potential_type.eq.1) then !testing
@@ -103,13 +104,13 @@ subroutine Lxi_testing(qmmm_struct,u1,v1,solvent_model)
                 !add constant electric field potential [V_E,xi]
                 if(EF.eq.2) then!Constant Electric Field in ES only
                     tmp=0.d0; tmp2=0.d0
-                    call efield_fock(qmmm_struct,tmp,qm2ds%Nb)
+                    call efield_fock(qm2ds,qmmm_struct,tmp,qm2ds%Nb)
                     call unpacking(qm2ds%Nb,tmp,tmp2,'s'); tmp=0.d0
                     call commutator(qm2ds%xi,tmp2,qm2ds%Nb,tmp,.false.)
                     call VxiM_end(qm2ds%eta,tmp)
                 endif
 
-                call site2mo(qm2ds%xi,qm2ds%eta,v1);                !Change basis of xi again to M.O.
+                call site2mo(qm2ds,qm2ds%xi,qm2ds%eta,v1);                !Change basis of xi again to M.O.
 
                 i=0
                 do p=1,qm2ds%Np
@@ -148,10 +149,11 @@ subroutine Lxi_testing(qmmm_struct,u1,v1,solvent_model)
             !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             !THIS SUBROUTINE CALCULATES THE SOLVENT POTENTIAL OPERATOR V_S FOR COSMO USING CHOLESKY FACTORIZATION
             !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            subroutine VxiM(xi,Vximmat)
+            subroutine VxiM(qm2ds,xi,Vximmat)
                 use qm2_davidson_module
                 use cosmo_C,only:fepsi,nps,lm61,a0,ev,amat,bmat,ipiden,gden,nsetf
                 implicit none
+	        type(qm2_davidson_structure_type), intent(inout) :: qm2ds
                 _REAL_, intent(in)::xi(qm2ds%nb,qm2ds%nb)
                 _REAL_, intent(inout)::Vximmat(qm2ds%nb,qm2ds%nb)
                 _REAL_ :: density(lm61),charges(nps),phi(nps)
@@ -271,7 +273,7 @@ subroutine Lxi_testing(qmmm_struct,u1,v1,solvent_model)
                 dipy=0.d0
                 dipz=0.d0
                 !!GET ELEC DIP MATRIX
-                call get_dipole_matrix(qmmm_struct,qmmm_struct,qmmm_struct%qm_coords, dip)
+                call get_dipole_matrix(qmmm_struct,qmmm_struct%qm_coords, dip)
                 call unpacking(n,dip(1,:),dipx,'s')
                 call unpacking(n,dip(2,:),dipy,'s')
                 call unpacking(n,dip(3,:),dipz,'s')
@@ -328,7 +330,7 @@ subroutine Lxi_testing(qmmm_struct,u1,v1,solvent_model)
                 dip=0.d0
 
                 !ELECTRIC DIPOLE
-                call get_dipole_matrix(qmmm_struct,qmmm_struct,qmmm_struct%qm_coords-origin, dip)
+                call get_dipole_matrix(qmmm_struct,qmmm_struct%qm_coords-origin, dip)
                 i=1
                 do j=1,n
                     do k=1,j
@@ -622,7 +624,7 @@ subroutine Lxi_testing(qmmm_struct,u1,v1,solvent_model)
             !SUBROUTINE FOR CONSTANT ELECTRIC FIELD SCREENING
             !OF ELECTRON-ELECTRON INTERACTION
             !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            subroutine efield_fock(qmmm_struct,f,n)
+            subroutine efield_fock(qm2ds,qmmm_struct,f,n)
                 use qmmm_module,only:qm2_struct;
                 use cosmo_C, only: Ex,Ey,Ez
                 use constants, only : one, BOHRS_TO_A, AU_TO_EV
@@ -630,7 +632,8 @@ subroutine Lxi_testing(qmmm_struct,u1,v1,solvent_model)
 	        use qmmm_struct_module, only : qmmm_struct_type
 
                 implicit none;
-                 type(qmmm_struct_type), intent(inout) :: qmmm_struct
+	        type(qm2_davidson_structure_type), intent(inout) :: qm2ds
+                type(qmmm_struct_type), intent(inout) :: qmmm_struct
                 integer n,k;
                 _REAL_ f(n*(n+1)/2);
                 _REAL_ tmp(n*(n+1)/2);

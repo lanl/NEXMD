@@ -43,10 +43,12 @@ contains
         allocate(a%naesmd)
     end subroutine
 
-    subroutine setp_simulation(a,qmmm_struct)
+    subroutine setp_simulation(a,qmmm_struct,qm2ds)
         type(simulation_t), pointer  :: a
         type(qmmm_struct_type),target :: qmmm_struct
+        type(qm2_davidson_structure_type),target :: qm2ds
         a%qmmm     => qmmm_struct
+        a%dav     => qm2ds
         allocate(a%naesmd)
     end subroutine
           
@@ -58,12 +60,11 @@ contains
     !********************************************************************
     !
     subroutine dav2naesmd_Omega(sim)
-        use qm2_davidson_module,only:qm2ds
           
         implicit none
         type(simulation_t),pointer::sim
         integer::mn
-        if (qm2ds%Mx>0) then
+        if (sim%dav%Mx>0) then
             mn=min(size(sim%dav%e0),size(sim%naesmd%Omega))
             sim%naesmd%Omega(1:mn) = sim%dav%e0(1:mn)/feVmdqt;
         endif
@@ -173,7 +174,6 @@ contains
     !********************************************************************
     !
     subroutine do_sqm_and_davidson(sim,rx,ry,rz,r,statelimit)
-        use qm2_davidson_module,only:qm2ds
         implicit none
           
         type(simulation_t),pointer::sim
@@ -207,16 +207,15 @@ contains
         endif
 
         ! CML Includes call to Davidson within sqm_energy() 7/16/12
-        call sqm_energy(sim%qmmm,sim%Na,sim%coords,sim%escf,born_radii, &
+        call sqm_energy(sim%dav,sim%qmmm,sim%Na,sim%coords,sim%escf,born_radii, &
             one_born_radii,intdiel,extdiel,Arad,sim%qm2%scf_mchg, &
             sim%time_sqm_took,sim%time_davidson_took) !The use of sim here is a hack right now and could be fixed
         ! ground state energy
-    write(6,*)"sqm_energy_done" 
-        sim%dav%Eground=qm2ds%Eground
+        sim%dav%Eground=sim%dav%Eground
         sim%nbasis=sim%dav%Nb
           
-        if (.not.allocated(qm2ds%vhf_old)) allocate(qm2ds%vhf_old(sim%dav%Nb,sim%dav%Nb));
-        qm2ds%vhf_old(1:sim%dav%Nb,1:sim%dav%Nb)=qm2ds%vhf(1:sim%dav%Nb,1:sim%dav%Nb);        ! updating hartree-fock vectors
+        if (.not.allocated(sim%dav%vhf_old)) allocate(sim%dav%vhf_old(sim%dav%Nb,sim%dav%Nb));
+        sim%dav%vhf_old(1:sim%dav%Nb,1:sim%dav%Nb)=sim%dav%vhf(1:sim%dav%Nb,1:sim%dav%Nb);        ! updating hartree-fock vectors
         ! Checking and restoring the sign of the transition density matrix (cmdqt)
         do j=1,sim%excN
           
@@ -234,7 +233,7 @@ contains
                 end do
             end if
         end do
-        if((quir_cmdqt>0).and.(qm2ds%verbosity>0)) then ! quirality was restored at least once above
+        if((quir_cmdqt>0).and.(sim%dav%verbosity>0)) then ! quirality was restored at least once above
             write(6,*) ' Restoring quirality in cmdqt'
         end if
         return
@@ -258,6 +257,7 @@ contains
         type(realp_t),intent(in),optional::r(3)
         integer i
         integer,optional::statelimit
+	
           
         sim%dav%mdflag=2
           
@@ -286,7 +286,7 @@ contains
         integer :: mn
           
         call qmmm2coords_r(sim)
-        call nacR_analytic(sim%qmmm, sim%coords,ihop,icheck)
+        call nacR_analytic(sim%dav,sim%qmmm, sim%coords,ihop,icheck)
         if(present(dij))  then
             mn = min(size(dij), size(sim%dav%dij))
             dij(:mn) = -sim%dav%dij(:mn)
@@ -337,11 +337,11 @@ contains
         ncharge=0;
         igb = 0
    
-        call sqm_read_and_alloc(sim%qmmm,fdes_in, fdes_out, &
+        call sqm_read_and_alloc(sim%dav,sim%qmmm,fdes_in, fdes_out, &
             sim%Na,igb,atnam,sim%naesmd%atomtype,maxcyc, &
             grms_tol,ntpr, ncharge,excharge,chgatnum, &
-            sim%excN,qm2ds%struct_opt_state,qm2ds%idav,qm2ds%dav_guess, &
-            qm2ds%ftol,qm2ds%ftol0,qm2ds%ftol1,qm2ds%icount_M,nstep)
+            sim%excN,sim%dav%struct_opt_state,sim%dav%idav,sim%dav%dav_guess, &
+            sim%dav%ftol,sim%dav%ftol0,sim%dav%ftol1,sim%dav%icount_M,nstep)
           
         call qm_assign_atom_types(sim%qmmm)
           
@@ -368,11 +368,9 @@ contains
           
         !Check if we are doing Geometry Optimization or Dynamics and act accordingly
         if (maxcyc < 1) then
-            qm2ds%minimization = .FALSE.
+            sim%dav%minimization = .FALSE.
             sim%Ncharge  = ncharge
-            !sim%qmmm     => qmmm_struct
             sim%qm2      => qm2_struct
-            sim%dav      => qm2ds
             call naesmd2qmmm_r(sim)
             !sim%dav%Mx = sim%excN
             !sim%dav%mdflag=2
@@ -383,14 +381,12 @@ contains
             endif
         else if (nstep<1) then ! nstep - number of classical steps for dynamics
           
-            qm2ds%minimization = .TRUE.
+            sim%dav%minimization = .TRUE.
             sim%Ncharge  = ncharge
-           ! sim%qmmm     => qmmm_struct
             sim%qm2 => qm2_struct
-            sim%dav      => qm2ds
           
             if (qmmm_nml%verbosity<5) then
-                qm2ds%verbosity=0 !don't print output from scf calculations
+                sim%dav%verbosity=0 !don't print output from scf calculations
                 qmmm_nml%verbosity=0
             endif
             call naesmd2qmmm_r(sim)

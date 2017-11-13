@@ -54,6 +54,7 @@ program MD_Geometry
     integer slen
     integer ifind
     logical moldyn_found
+    type(qm2_davidson_structure_type),target :: qm2ds_notp
     type(qmmm_struct_type), target :: qmmm_struct_notp
     type(simulation_t),target::sim_notp
     type(simulation_t),pointer::sim
@@ -102,7 +103,7 @@ program MD_Geometry
     sim=>sim_notp
    
     call init0_simulation(sim)
-    call setp_simulation(sim,qmmm_struct_notp)
+    call setp_simulation(sim,qmmm_struct_notp,qm2ds_notp)
     call init_main()
 
     !Put derivative variables into module
@@ -426,8 +427,10 @@ program MD_Geometry
             !--------------------------------------------------------------------
             ! analyze the hopping
             !--------------------------------------------------------------------
+	    write(6,*) "Here?"
             call evalhop(sim, rk_comm, lprint, tend, tmax, rk_tolerance, thresholds, &
                 Na, yg, cross)
+	    write(6,*) "no"
             write(6,*)'Now we done some other things'
             !call evalhop(sim,lprint,ido,neq,tini,tend,toldivprk, &
             !    param,Na,yg,cross,idocontrol)

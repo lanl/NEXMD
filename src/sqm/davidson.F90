@@ -12,7 +12,7 @@
 !
 !********************************************************************
 !   
-   subroutine davidson(qmmm_struct)
+   subroutine davidson(qm2ds, qmmm_struct)
    use qmmm_module,only:qm2_struct !cml-test
    use qm2_davidson_module
    use qmmm_struct_module, only : qmmm_struct_type
@@ -20,7 +20,8 @@
 
    implicit none
 
-     type(qmmm_struct_type), intent(inout) :: qmmm_struct
+   type(qmmm_struct_type), intent(inout) :: qmmm_struct
+   type(qm2_davidson_structure_type), intent(inout) :: qm2ds
 
    _REAL_ random,rranset,rranf
    _REAL_ ferr1,ferr2,fn
@@ -124,7 +125,7 @@
 !     recover excited state vectors from AO representation in v2
 !     recovered state vectors are put to v0
       do j=1,istore
-         call site2mo(qm2ds%rrwork,qm2ds%v2(1,j),qm2ds%v0(1,j))
+         call site2mo(qm2ds,qm2ds%rrwork,qm2ds%v2(1,j),qm2ds%v0(1,j))
       end do
    endif
 
@@ -176,7 +177,7 @@
 
 ! try to find vector new vectors in the batch:
 !write(6,*) 'Entering davidson0'
-   call davidson0(qmmm_struct,qm2ds%Ncis,lprint,qm2ds%ftol0,qm2ds%ftol1,qm2ds%ferr, &
+   call davidson0(qm2ds,qmmm_struct,qm2ds%Ncis,lprint,qm2ds%ftol0,qm2ds%ftol1,qm2ds%ferr, &
       qm2ds%Np,qm2ds%Nh,j0,j1, &
       qm2ds%e0,qm2ds%v0,kflag,qm2ds%ix, &
       qm2ds%rrwork(1),qm2ds%rrwork(2*qm2ds%Ncis+1), &
@@ -304,7 +305,7 @@
       if (istore.le.istore_M) istore=istore_M
 
       do j=1,qm2ds%Mx
-         call mo2site(qm2ds%v0(1,j),qm2ds%v2(1,j),qm2ds%rrwork)
+         call mo2site(qm2ds,qm2ds%v0(1,j),qm2ds%v2(1,j),qm2ds%rrwork)
       end do
 !	 if (Nb.gt.100) then
 ! --- write stored modes from the previous calculations in MD run
@@ -362,7 +363,7 @@
 !
 !********************************************************************
 !
-   subroutine davidson0(qmmm_struct,M4,lprint,ftol0,ftol1,ferr, &
+   subroutine davidson0(qm2ds,qmmm_struct,M4,lprint,ftol0,ftol1,ferr, &
       Np,Nh,j0,j1,e0,v0,kflag,iee2,ee2,eta,xi, &
       nd,nd1,vexp1,vexp,ray,rayv,rayvL,rayvR,raye,raye1, &
       ray1,ray1a,ray2,idav,istore)
@@ -372,6 +373,7 @@
 
    implicit none
      type(qmmm_struct_type), intent(inout) :: qmmm_struct
+     type(qm2_davidson_structure_type), intent(inout) :: qm2ds
 
    !logical check_symmetry; !!JAB Testing
 
@@ -646,7 +648,7 @@
    do i=nd1_old+1,nd1
       call clearing (2*M4,eta)
       call dcopy(M4,vexp1(1,i),one,eta,one)
-      call Lxi_testing(qmmm_struct,eta,vexp(1,i),solvent_model)
+      call Lxi_testing(qm2ds,qmmm_struct,eta,vexp(1,i),solvent_model)
       !call Lxi(eta,vexp(1,i),solvent_model)	
        
 ! CIS - set Y=0
@@ -885,7 +887,7 @@
 
    do j=j0+1,j0+j1
       
-      call Lxi_testing(qmmm_struct,v0(1,j),eta,solvent_model) !L(xi) output in eta !!JAB
+      call Lxi_testing(qm2ds,qmmm_struct,v0(1,j),eta,solvent_model) !L(xi) output in eta !!JAB
       !call Lxi(v0(1,j),eta,solvent_model)	
       !write(6,*)"loc(v0(1,j))=",j,loc(v0(1,j))	
       f1=ddot(M4,v0(1,j),one,eta(1),one) &

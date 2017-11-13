@@ -13,7 +13,7 @@ contains
     ! CML this subroutine, as well as DCART1() and DCART2(), since they are based
     ! CML on the same subroutine. 7/13/12
 
-    function dcart1_xpm(qmmm_struct, ex_dm, xyz_in_p, xyz_in_m) 
+    function dcart1_xpm(qm2ds, qmmm_struct, ex_dm, xyz_in_p, xyz_in_m) 
         !Current code maintained by: Ross Walker (TSRI 2004)
 
         !This routine calculates the derivatives of the energy for QM-QM
@@ -32,6 +32,8 @@ contains
 
      
         implicit none
+   
+        type(qm2_davidson_structure_type), intent(inout) :: qm2ds
  
          _REAL_ :: dcart1_xpm
         !Passed in

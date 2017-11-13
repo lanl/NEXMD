@@ -7,7 +7,7 @@
 !ccccccccccccccccccccccccccccccccccccccccccccccccccc
 !   
     
-subroutine polarizab(qmmm_struct)                         
+subroutine polarizab(qm2ds,qmmm_struct)                         
       use qmmm_module,only:qm2_struct
       use qm2_davidson_module
       use constants, only : BOHRS_TO_A, SQRT2, ONE_AU
@@ -17,6 +17,7 @@ subroutine polarizab(qmmm_struct)
     
     
       implicit none                            
+        type(qm2_davidson_structure_type), intent(inout) :: qm2ds
         type(qmmm_struct_type), intent(inout) :: qmmm_struct
         _REAL_ f0,f1,f2,f3,ddot,freq
         integer zero,one,two,three
