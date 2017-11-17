@@ -144,12 +144,12 @@
 !
 !********************************************************************
 !
-   subroutine allocate_davidson(qm2ds, qmmm_struct)
-   use qmmm_module,only:qm2_struct, qmmm_scratch,qmmm_nml
+   subroutine allocate_davidson(qm2_struct, qm2ds, qmmm_struct)
+   use qmmm_module,only:qmmm_scratch,qmmm_nml, qm2_structure
    use qmmm_struct_module, only : qmmm_struct_type
 
    implicit none
-   
+   type(qm2_structure),intent(inout) :: qm2_struct
    type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    type(qmmm_struct_type), intent(in) :: qmmm_struct
    integer i,j,ierr

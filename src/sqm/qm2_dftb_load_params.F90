@@ -8,11 +8,11 @@
 #include "copyright.h"
 #include "dprec.fh"
 
-subroutine qm2_dftb_load_params(qmmm_struct)
+subroutine qm2_dftb_load_params(qm2_struct, qmmm_struct)
 
 !In parallel all threads call this routine
 
-   use qmmm_module, only : qmmm_nml, qm2_struct, &
+   use qmmm_module, only : qmmm_nml, qm2_structure, &
                            qmmm_mpi
    use ElementOrbitalIndex, only : elementSymbol
    use constants, only: EV_TO_KCAL, AU_TO_EV, AU_TO_KCAL, A_TO_BOHRS
@@ -24,6 +24,7 @@ subroutine qm2_dftb_load_params(qmmm_struct)
    
    implicit none
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
+   type(qm2_structure),intent(inout) :: qm2_struct
 
 
    !Locals

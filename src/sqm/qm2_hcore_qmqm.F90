@@ -1,7 +1,7 @@
 ! <compile=optimized>
 #include "copyright.h"
 #include "dprec.fh"
-subroutine qm2_hcore_qmqm(qmmm_struct,COORD,H,W,ENUCLR)
+subroutine qm2_hcore_qmqm(qm2_struct,qmmm_struct,COORD,H,W,ENUCLR)
 !***********************************************************************/R
 ! Current code, optimisation and inlining by: Ross Walker (TSRI, 2005)
 !
@@ -26,7 +26,7 @@ subroutine qm2_hcore_qmqm(qmmm_struct,COORD,H,W,ENUCLR)
       use cosmo_C, only: solvent_model,ceps,potential_type,EF
       use constants, only : zero, one, A2_TO_BOHRS2, A_TO_BOHRS
       use ElementOrbitalIndex, only: MaxValenceOrbitals, MaxValenceDimension
-      use qmmm_module, only : qmmm_nml, qm2_struct, qm2_params, qm2_rij_eqns, &
+      use qmmm_module, only : qmmm_nml, qm2_structure, qm2_params, qm2_rij_eqns, &
                               qmmm_mpi, OVERLAP_CUTOFF      
       use Rotation, only : GetRotationMatrix, Rotate2Center2Electron, RotateCore
 !DEBUG      use utilitiesModule, only : Print
@@ -34,6 +34,7 @@ subroutine qm2_hcore_qmqm(qmmm_struct,COORD,H,W,ENUCLR)
      
       implicit none
       type(qmmm_struct_type), intent(inout) :: qmmm_struct
+      type(qm2_structure),intent(inout) :: qm2_struct
 
 !Passed in
       _REAL_, intent(in) :: COORD(3,qmmm_struct%nquant_nlink)
@@ -155,7 +156,7 @@ subroutine qm2_hcore_qmqm(qmmm_struct,COORD,H,W,ENUCLR)
                   ! the implementation for d-orbital by Taisung Lee 
                   ! basically by coping things from the MNDO program  
                   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                  call qm2_h1elec_d(r2InAu,COORD(1:3,I),COORD(1:3,J),  &
+                  call qm2_h1elec_d(qm2_struct,r2InAu,COORD(1:3,I),COORD(1:3,J),  &
                             n_atomic_orbi,n_atomic_orbj,firstIndexAO_i, firstIndexAO_j,  &
                             qmitype, qmjtype,qm2_struct%norbs,H)                
                 
@@ -175,8 +176,8 @@ subroutine qm2_hcore_qmqm(qmmm_struct,COORD,H,W,ENUCLR)
             hasDOrbital=((n_atomic_orbi.ge.9) .or. (n_atomic_orbj.ge.9)) 
             call GetRotationMatrix(coord(1:3,j)-coord(1:3,i), rotationMatrix, hasDOrbital)   
             
-            call qm2_rotate_qmqm(qmmm_struct, loop_count,i,j,NI,qmmm_struct%iqm_atomic_numbers(J),COORD(1,I),COORD(1,J), &
-                       W(KR),KI,RI, core)
+            call qm2_rotate_qmqm(qm2_struct,qmmm_struct, loop_count,i,j,NI,qmmm_struct%iqm_atomic_numbers(J),&
+                       COORD(1,I),COORD(1,J), W(KR),KI,RI, core)
 
             if (hasDOrbital) then   ! spd case   
                   
@@ -245,13 +246,13 @@ subroutine qm2_hcore_qmqm(qmmm_struct,COORD,H,W,ENUCLR)
       call addhcr(H)
 
       elseif(potential_type.eq.2) then !Onsager model
-      call rcnfldnuc(qmmm_struct,enuclr)
-      call rcnfldhcr(qmmm_struct,H)
+      call rcnfldnuc(qm2_struct,qmmm_struct,enuclr)
+      call rcnfldhcr(qm2_struct,qmmm_struct,H)
       endif
    endif
 
    if (EF.eq.1) then !USE CONSTANT ELECTRIC FIELD
-        call efield_nuc(enuclr);
+        call efield_nuc(qm2_struct,qmmm_struct,enuclr);
    end if
 
 !DEBUG      call print ('One-electron matrix',H,.true.)

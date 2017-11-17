@@ -22,7 +22,7 @@ module qm2_fock_d
 contains 
 
   
-    subroutine qm2_fock2_d(qmmm_struct, F, PTOT, W)
+    subroutine qm2_fock2_d(qm2_struct, qmmm_struct, F, PTOT, W)
         !***********************************************************************
         !
         ! FOCK2 FORMS THE TWO-ELECTRON TWO-CENTER REPULSION PART OF THE FOCK
@@ -34,11 +34,12 @@ contains
         !
         !  Why isn't this used for excited states? !JAB !FIXME
         !***********************************************************************
-        use qmmm_module, only : qm2_struct, qm2_params, qmmm_mpi
+        use qmmm_module, only : qm2_params, qmmm_mpi, qm2_structure
         use qmmm_struct_module, only : qmmm_struct_type
 	implicit none
 
          type(qmmm_struct_type), intent(in) :: qmmm_struct
+         type(qm2_structure), intent(inout) :: qm2_struct
         _REAL_, intent(inout) :: F(:)
         _REAL_, intent(in) :: ptot(:)
         _REAL_, intent(in) :: W(:)

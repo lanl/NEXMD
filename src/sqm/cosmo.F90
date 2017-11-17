@@ -571,13 +571,14 @@ dx = (xx(ix)*db(0, j)-db(ix, j)) * (ff + fft)
 	!CALCULATE CAVITY CHARGES FOR FULL DENSITY MATRIX AND 
 	!STORE IN MODULE VARIABLES
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine cosmo_1(exc_p)
+subroutine cosmo_1(qm2_struct, exc_p)
 	use cosmo_C,only:fepsi,nps,lm61,numat,mpack,a0,ev, &
 	amat,bmat,iatsp,nsetf,phinet,qscnet,qdenet,ipiden,gden,qscat,mmat,idenat
 
-	use qmmm_module,only:qm2_params,qm2_struct,qmmm_nml
+	use qmmm_module,only:qm2_params,qm2_structure,qmmm_nml
 
 	implicit none
+        type(qm2_structure),intent(inout) :: qm2_struct
 	_REAL_,dimension(mpack)::p ! triaungular density matrix
 	_REAL_,dimension(qm2_struct%norbs,qm2_struct%norbs), intent(in) ::exc_p !
 	_REAL_, dimension(:,:), allocatable :: A;
@@ -635,7 +636,7 @@ iat=iatsp(i)
 subroutine cosmo_1_tri(p)
 	use cosmo_C,only:fepsi,nps,lm61,numat,mpack,a0,ev, &
 	amat,bmat,iatsp,nsetf,phinet,qscnet,qdenet,ipiden,gden,qscat,mmat,idenat
-	use qmmm_module,only:qm2_params,qm2_struct,qmmm_nml
+	use qmmm_module,only:qm2_params,qmmm_nml
 
 	implicit none
 	_REAL_,dimension(mpack)::p ! triangular density matrix
@@ -717,7 +718,7 @@ subroutine cosmo_1_tri_2(p,density2,charges2,acharges2)
 	use cosmo_C,only:fepsi,nps,lm61,mpack,a0,ev,nsetf, &
 	amat,bmat,qdenet,ipiden,gden,iatsp,numat,qscnet,qscat
 
-	use qmmm_module,only:qm2_params, qm2_struct,qmmm_nml
+	use qmmm_module,only:qm2_params, qmmm_nml
 
 	implicit none
 	_REAL_, intent(in)::p(mpack) ! triangular density matrix
@@ -818,7 +819,7 @@ a(k+indi) = summe * a(kk)
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	!  Initializaton of cosmo
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-	subroutine cosini(qmmm_struct)
+	subroutine cosini(qm2_struct, qmmm_struct)
 	use cosmo_C, only: n0, ioldcv, fnsq, nps, rsolv, nspa, disex2, &
 	dirsm, dirvec, srad, ipiden, gden, idenat, qdenet, amat, &
 	cmat, lenabc, arat, sude, isude, bh,qden, nar_csm, nsetf, phinet, &
@@ -827,7 +828,7 @@ a(k+indi) = summe * a(kk)
 	ceps, v_solvent_xi, rhotzpacked_k
 	!    use cosmo_C
 
-	use qmmm_module,only:qm2_params, qm2_struct,qmmm_nml
+	use qmmm_module,only:qm2_params, qm2_structure,qmmm_nml
 	use qm2_davidson_module
         use qmmm_struct_module, only : qmmm_struct_type
 
@@ -841,7 +842,8 @@ a(k+indi) = summe * a(kk)
 	!use reada_I
 
 	implicit none
-        type(qmmm_struct_type), intent(in) :: qmmm_struct
+          type(qm2_structure),intent(inout) :: qm2_struct
+          type(qmmm_struct_type), intent(in) :: qmmm_struct
 
 	integer :: i, i0, iat, idel, iden, incif, indise, inrsol, j, k, n1, &
 	n2, nfi, nfj
@@ -2519,7 +2521,7 @@ subroutine coscav_test(qmmm_struct)
     end do
 end subroutine coscav_test
 
-subroutine cosini_testing(qmmm_struct) 
+subroutine cosini_testing(qm2_struct,qmmm_struct) 
     use cosmo_C, only: n0, ioldcv, fnsq, nps, rsolv, nspa, disex2, &
     dirsm, dirvec, srad, ipiden, gden, idenat, qdenet, amat, &
     cmat, lenabc, arat, sude, isude, bh,qden, nar_csm, nsetf, phinet, &
@@ -2528,7 +2530,7 @@ subroutine cosini_testing(qmmm_struct)
     ceps, v_solvent_xi
 !    use cosmo_C
     
-    use qmmm_module,only:qm2_params, qm2_struct,qmmm_nml
+    use qmmm_module,only:qm2_params, qm2_structure,qmmm_nml
     use qm2_davidson_module
     use qmmm_struct_module, only : qmmm_struct_type
 
@@ -2542,6 +2544,7 @@ subroutine cosini_testing(qmmm_struct)
     !use reada_I
 
     implicit none
+    type(qm2_structure),intent(inout) :: qm2_struct
     type(qmmm_struct_type), intent(in) :: qmmm_struct
 
     integer :: i, i0, iat, idel, iden, incif, indise, inrsol, j, k, n1, &

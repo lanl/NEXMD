@@ -2,7 +2,7 @@
 #include "copyright.h"
 #include "dprec.fh"
 #include "def_time.h"
-subroutine qm2_energy(qm2ds,qmmm_struct, escf,scf_mchg,natom,born_radii, one_born_radii, coords, scaled_mm_charges)
+subroutine qm2_energy(qm2_struct, qm2ds,qmmm_struct, escf,scf_mchg,natom,born_radii, one_born_radii, coords, scaled_mm_charges)
 
    ! qm2_energy calculates the energy of the QMMM system in KCal/mol and places
    ! the answer in escf.
@@ -14,7 +14,7 @@ subroutine qm2_energy(qm2ds,qmmm_struct, escf,scf_mchg,natom,born_radii, one_bor
    !                                                   most routines want qm_xcrd which is the coordinates
    !                                                   of the pair list.)
    !
-   use qmmm_module, only : qmmm_nml, qm2_struct, qmewald, qm2_params, &
+   use qmmm_module, only : qmmm_nml, qm2_structure, qmewald, qm2_params, &
          qm2_rij_eqns, qm_gb, qmmm_mpi, qmmm_opnq, qmmm_scratch
    use qm2_pm6_hof_module
    use dh_correction_module, only : dh_correction
@@ -32,6 +32,7 @@ subroutine qm2_energy(qm2ds,qmmm_struct, escf,scf_mchg,natom,born_radii, one_bor
 #endif
 
    !Passed in
+   type(qm2_structure),intent(inout) :: qm2_struct
    type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
    integer, intent(in) :: natom
@@ -106,7 +107,7 @@ subroutine qm2_energy(qm2ds,qmmm_struct, escf,scf_mchg,natom,born_radii, one_bor
             call unpacking(qm2_struct%norbs,qm2_struct%den_matrix,density_matrix_unpacked,'s');
 
             do i=1,qmmm_struct%nquant_nlink
-               call qm2_calc_mulliken(i,scf_mchg(i),density_matrix_unpacked);
+               call qm2_calc_mulliken(qm2_struct,i,scf_mchg(i),density_matrix_unpacked);
             end do
 
             deallocate(density_matrix_unpacked);
@@ -202,7 +203,7 @@ subroutine qm2_energy(qm2ds,qmmm_struct, escf,scf_mchg,natom,born_radii, one_bor
    !   End Generalised Born Calculation (non-scf)
    !================================================
    if (qmmm_nml%qmtheory%DFTB) then  !Else we do regular semiempirical QMMM below.
-      call qm2_dftb_energy(qmmm_struct, escf,scf_mchg)
+      call qm2_dftb_energy(qm2_struct,qmmm_struct, escf,scf_mchg)
    else
       !ALL THREADS CURRENTLY NEED TO DO HCORE_QMQM AND HCORE_QMMM to get erepul
 
@@ -214,7 +215,7 @@ subroutine qm2_energy(qm2ds,qmmm_struct, escf,scf_mchg,natom,born_radii, one_bor
       
       call timer_start(TIME_QMMMENERGYHCOREQM)
       !Parallel
-      call qm2_hcore_qmqm(qmmm_struct, qmmm_struct%qm_coords,qm2_struct%hmatrix,qm2_struct%qm_qm_2e_repul, &
+      call qm2_hcore_qmqm(qm2_struct,qmmm_struct, qmmm_struct%qm_coords,qm2_struct%hmatrix,qm2_struct%qm_qm_2e_repul, &
             qmmm_struct%enuclr_qmqm)
 
       call timer_stop_start(TIME_QMMMENERGYHCOREQM,TIME_QMMMENERGYHCOREQMMM)
@@ -232,7 +233,7 @@ subroutine qm2_energy(qm2ds,qmmm_struct, escf,scf_mchg,natom,born_radii, one_bor
       !                   = 5 Mechanical embedding: no QM-MM interaction
       if (qmmm_nml%qmmm_int>0 .and. (qmmm_nml%qmmm_int /= 5) ) then
          !Parallel
-         call qm2_hcore_qmmm(qmmm_struct, qm2_struct%hmatrix, &
+         call qm2_hcore_qmmm(qm2_struct,qmmm_struct, qm2_struct%hmatrix, &
                qmmm_struct%enuclr_qmmm,qmmm_struct%qm_xcrd)
 
          if (qmmm_nml%qmmm_switch) then
@@ -287,7 +288,7 @@ subroutine qm2_energy(qm2ds,qmmm_struct, escf,scf_mchg,natom,born_radii, one_bor
       !   Calculate SCF Energy
       !==========================
       !Parallel
-      call qm2_scf(qm2ds, qmmm_struct, qm2_struct%fock_matrix, qm2_struct%hmatrix,qm2_struct%qm_qm_2e_repul,escf, &
+      call qm2_scf(qm2_struct, qm2ds, qmmm_struct, qm2_struct%fock_matrix, qm2_struct%hmatrix,qm2_struct%qm_qm_2e_repul,escf, &
             qm2_struct%den_matrix,scf_mchg,qmmm_struct%num_qmmm_calls)
       !==========================
       ! End calculate SCF Energy
@@ -319,7 +320,7 @@ subroutine qm2_energy(qm2ds,qmmm_struct, escf,scf_mchg,natom,born_radii, one_bor
          end if
          ! Add on dispersion correction
          if (qmmm_nml%qmtheory%DISPERSION .or. qmmm_nml%qmtheory%DISPERSION_HYDROGENPLUS) then
-            call dh_correction(qmmm_struct%nquant_nlink, qmmm_struct%qm_coords, &
+            call dh_correction(qm2_struct, qmmm_struct%nquant_nlink, qmmm_struct%qm_coords, &
                  qmmm_struct%iqm_atomic_numbers,qmmm_nml%qmtheory, &
                  qmmm_struct%dCorrection, qmmm_struct%hCorrection)
             escf = escf + qmmm_struct%dCorrection + qmmm_struct%hCorrection

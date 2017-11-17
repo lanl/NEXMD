@@ -2,9 +2,9 @@
 #include "copyright.h"
 #include "dprec.fh"
 #include "def_time.h"
-subroutine qm2_dftb_scf(qmmm_struct, escf, elec_eng,enuclr_qmqm,scf_mchg)
+subroutine qm2_dftb_scf(qm2_struct, qmmm_struct, escf, elec_eng,enuclr_qmqm,scf_mchg)
 
-   use qmmm_module, only : qmmm_nml, qmmm_mpi
+   use qmmm_module, only : qmmm_nml, qmmm_mpi, qm2_structure
    use qm2_dftb_module, only : mcharge, izp_str, fermi_str, mol, disper, espin,dftb_3rd_order_str
    use constants, only : AU_TO_EV, AU_TO_KCAL
    use qmmm_struct_module, only : qmmm_struct_type
@@ -17,6 +17,7 @@ subroutine qm2_dftb_scf(qmmm_struct, escf, elec_eng,enuclr_qmqm,scf_mchg)
 
 !Passed in
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
+   type(qm2_structure),intent(inout) :: qm2_struct
    _REAL_, intent(out) :: elec_eng, enuclr_qmqm, escf
    _REAL_, intent(inout) :: scf_mchg(qmmm_struct%nquant_nlink)
 
@@ -36,7 +37,7 @@ subroutine qm2_dftb_scf(qmmm_struct, escf, elec_eng,enuclr_qmqm,scf_mchg)
    !---------------------
    do_scf_outer: do while ( (.not.scf_convgd) .and. (outer_scf_count < qmmm_nml%itrmax) )
      
-      call eglcao(qmmm_struct, qmmm_struct%qm_coords,total_e,elec_eng,ethird,enuclr_qmqm,&
+      call eglcao(qm2_struct, qmmm_struct, qmmm_struct%qm_coords,total_e,elec_eng,ethird,enuclr_qmqm,&
                   inner_scf_count, outer_scf_count, scf_convgd,mol%qmat,scf_mchg )
 
       if ( .not.scf_convgd ) then 
@@ -90,8 +91,8 @@ subroutine qm2_dftb_scf(qmmm_struct, escf, elec_eng,enuclr_qmqm,scf_mchg)
    end if
 
    ! If it still didn't converge, something must be really wrong. Bomb the calculation.
-   if ( outer_scf_count >= qmmm_nml%itrmax .or. .not.scf_convgd) call dftb_conv_failure(qmmm_struct,"dylcao <qm2_dftb_main.f> : ", &
-          "SCC Convergence failure - ITRMAX exceeded.", "Exiting")
+   if ( outer_scf_count >= qmmm_nml%itrmax .or. .not.scf_convgd) call dftb_conv_failure(qm2_struct,qmmm_struct, &
+          "dylcao <qm2_dftb_main.f> : ", "SCC Convergence failure - ITRMAX exceeded.", "Exiting")
 
 
    if (qmmm_nml%verbosity > 0 .and. qmmm_mpi%commqmmm_master) then
@@ -158,7 +159,7 @@ subroutine qm2_dftb_scf(qmmm_struct, escf, elec_eng,enuclr_qmqm,scf_mchg)
    return
 end subroutine qm2_dftb_scf
 
-subroutine eglcao(qmmm_struct, qm_coords,total_e,elec_eng,ethird,enuclr_qmqm, &
+subroutine eglcao(qm2_struct,qmmm_struct, qm_coords,total_e,elec_eng,ethird,enuclr_qmqm, &
       inner_scf_count, outer_scf_count, scc_converged,qmat,scf_mchg)
 
 ! SUBROUTINE EGLCAO
@@ -185,13 +186,14 @@ subroutine eglcao(qmmm_struct, qm_coords,total_e,elec_eng,ethird,enuclr_qmqm, &
 
    use qm2_dftb_module, only: MDIM,LDIM,NDIM,disper, lmax, dacc, mcharge, &
          izp_str, ks_struct, fermi_str, dftb_3rd_order_str
-   use qmmm_module, only: qmmm_nml, qm2_struct, qm_gb, qmewald, qmmm_mpi,qm2_params
+   use qmmm_module, only: qmmm_nml, qm2_structure, qm_gb, qmewald, qmmm_mpi,qm2_params
    use ElementOrbitalIndex, only : elementSymbol
    use constants, only : BOHRS_TO_A, AU_TO_KCAL, AU_TO_EV
    use qmmm_struct_module, only : qmmm_struct_type
 
    implicit none
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
+   type(qm2_structure),intent(inout) :: qm2_struct
 
 
    ! Parameters passed in:
@@ -396,7 +398,7 @@ subroutine eglcao(qmmm_struct, qm_coords,total_e,elec_eng,ethird,enuclr_qmqm, &
         ! zero the whole ks_struct%shift vector (qmmm_struct%nquant_nlink long)
         ks_struct%shift(1:qmmm_struct%nquant_nlink) = 0.0d0
 
-        call HAMILSHIFT(qmmm_struct,qm_coords, izp_str%izp,&
+        call HAMILSHIFT(qm2_struct,qmmm_struct,qm_coords, izp_str%izp,&
               mcharge%uhubb,inner_scf_count,ks_struct%gammamat, &
               ks_struct%shift, qm2_struct%scf_mchg)
 
@@ -553,7 +555,7 @@ subroutine eglcao(qmmm_struct, qm_coords,total_e,elec_eng,ethird,enuclr_qmqm, &
            write(6,*)" QMMM SCC-DFTB: ERROR ON EWEVGE (Eigenvalue solver). "
            write(6,*)" QMMM SCC-DFTB: ewevge: ier =",ier,"inner_scf_count=",inner_scf_count
            write(6,*)" QMMM SCC-DFTB: ***************************************************"
-           call dftb_conv_failure(qmmm_struct,"eglcao <qm2_dftb_eglcao.f> : ", &
+           call dftb_conv_failure(qm2_struct,qmmm_struct,"eglcao <qm2_dftb_eglcao.f> : ", &
                              "Convergence failure on EWEVGE (Eigenvalue solver).", "Exiting")
         endif
 
@@ -598,7 +600,7 @@ subroutine eglcao(qmmm_struct, qm_coords,total_e,elec_eng,ethird,enuclr_qmqm, &
         ! MULLIKEN CHARGES
         ! ----------------
         ! qmat will contain the electron populations per atom
-        call MULLIKEN(qmmm_struct, qmmm_struct%nquant_nlink,NDIM,izp_str%izp, &
+        call MULLIKEN(qm2_struct, qmmm_struct, qmmm_struct%nquant_nlink,NDIM,izp_str%izp, &
                       lmax,dacc,qmat,mcharge%qzero,scf_mchg) 
 !!!           ! OUTPUT EIGENVECTORS
 !        call outeigenvectors(lumo,qm_coords,qmmm_struct%nquant_nlink)
@@ -824,14 +826,15 @@ end subroutine eglcao
 
 ! Routine to give a message if convergence fails. It has the same syntax as
 ! sander_bomb.
-subroutine dftb_conv_failure(qmmm_struct, string1,string2,string3)
+subroutine dftb_conv_failure(qm2_struct, qmmm_struct, string1,string2,string3)
 
-   use qmmm_module, only:  qmmm_nml, qm2_struct, qmmm_mpi
+   use qmmm_module, only:  qmmm_nml, qm2_structure, qmmm_mpi
    use ElementOrbitalIndex, only : elementSymbol
    use qmmm_struct_module, only : qmmm_struct_type
 
    implicit none
    type(qmmm_struct_type), intent(in) :: qmmm_struct
+   type(qm2_structure),intent(inout) :: qm2_struct
    integer :: i, j
 
 !! Passed in:

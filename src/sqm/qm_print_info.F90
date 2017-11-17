@@ -5,7 +5,7 @@
 !This file contains several routines for printing information
 !about QMMM simulations.
 
-subroutine qm2_print_info(qmmm_struct)
+subroutine qm2_print_info(qm2_struct, qmmm_struct)
 ! ----------------------------------------------------------------------
 ! PURPOSE: Print information on QM/MM calculation setup in sander / sqm
 !
@@ -17,7 +17,7 @@ subroutine qm2_print_info(qmmm_struct)
 ! ----------------------------------------------------------------------
 
   use qmmm_module, only : qmmm_nml, &
-                          qm2_struct
+                          qm2_structure
   use qmmm_qmtheorymodule, only : String
   use dh_correction_module, only : dh_correction_info
   use qmmm_struct_module, only : qmmm_struct_type
@@ -28,7 +28,7 @@ subroutine qm2_print_info(qmmm_struct)
   use QM2_parameters
 
   implicit none
-  
+  type(qm2_structure),intent(inout) :: qm2_struct  
   type(qmmm_struct_type), intent(in) :: qmmm_struct
 
   integer :: i
@@ -246,19 +246,20 @@ end subroutine qm_write_pdb
 
 !------------------------------------------------------------------------------
 
-subroutine qm_print_dyn_mem(qmmm_struct, natom,npairs)
+subroutine qm_print_dyn_mem(qm2_struct, qmmm_struct, natom,npairs)
 !This routine prints a summary of the dynamic
 !memory allocated for use in the QM calculation.
 !Written by Ross Walker, TSRI, 2004
 !Assumes _REAL_ is double precision = 8 bytes.
 !================================================
 
-  use qmmm_module, only : qmmm_nml,qm2_struct, qm2_params, qm2_rij_eqns, &
+  use qmmm_module, only : qmmm_nml,qm2_structure, qm2_params, qm2_rij_eqns, &
                           qmewald, qm_gb, qmmm_mpi, qmmm_scratch
   use qmmm_struct_module, only : qmmm_struct_type
 
   implicit none 
   type(qmmm_struct_type), intent(inout) :: qmmm_struct
+  type(qm2_structure),intent(inout) :: qm2_struct
 
 #include "qm2_array_locations.h"
 

@@ -3,7 +3,7 @@
 #include "assert.fh"
 #include "dprec.fh"
 
-subroutine qm2_load_params_and_allocate(qmmm_struct)
+subroutine qm2_load_params_and_allocate(qm2_struct, qmmm_struct)
 
 
     ! Written by: Ross Walker (TSRI, 2005)
@@ -32,7 +32,7 @@ subroutine qm2_load_params_and_allocate(qmmm_struct)
             
     use QM2_parameters
     use qm2_params_module, only : new
-    use qmmm_module, only : qmmm_nml, qm2_struct, qm2_params, &
+    use qmmm_module, only : qmmm_nml, qm2_structure, qm2_params, &
         qmmm_mpi, qmmm_scratch, qmmm_opnq
     use MNDOChargeSeparation, only : GetDDAndPho
     use qm2_diagonalizer_module, only : qm2_diagonalizer_setup
@@ -40,6 +40,7 @@ subroutine qm2_load_params_and_allocate(qmmm_struct)
     use qmmm_struct_module, only : qmmm_struct_type
 
     implicit none
+    type(qm2_structure),intent(inout) :: qm2_struct
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
     !Locals
@@ -127,7 +128,7 @@ subroutine qm2_load_params_and_allocate(qmmm_struct)
 
     !QMMM e-repul memory depends on QM-MM pair list size so is
     !allocated later on and checked on every call.
-    call qm2_allocate_qmqm_e_repul(qmmm_struct, qm2_struct%n2el)
+    call qm2_allocate_qmqm_e_repul(qm2_struct,qmmm_struct, qm2_struct%n2el)
 
     !Protect DUMB users from STUPID errors
     if (nelectrons > 2*qm2_struct%norbs) then
@@ -2134,7 +2135,7 @@ if (.not. qmmm_nml%qmtheory%DFTB) then
     ! ------------------------------------------------------
     qm2_struct%n_peptide_links = 0
     if (qmmm_nml%peptide_corr) then
-        call qm2_identify_peptide_links(qmmm_struct, qm2_struct%n_peptide_links,qmmm_struct%qm_coords)
+        call qm2_identify_peptide_links(qm2_struct,qmmm_struct, qm2_struct%n_peptide_links,qmmm_struct%qm_coords)
     end if
 
     ! Finally setup the STO-6G orbital expansions and allocate the memory required.
@@ -2153,12 +2154,12 @@ if (qmmm_mpi%commqmmm_master) then
     ! modularize the code first and/or adjust the DFTB test outputs
     ! because qm2_dftb_load_params (called below) prints stuff as well...
     if ( .not. qmmm_nml%qmtheory%EXTERN ) then
-        call qm2_print_info(qmmm_struct)
+        call qm2_print_info(qm2_struct,qmmm_struct)
     end if
 end if
 
 if (qmmm_nml%qmtheory%DFTB) then
-    call qm2_dftb_load_params(qmmm_struct)
+    call qm2_dftb_load_params(qm2_struct, qmmm_struct)
 end if
 
 !In Parallel calculate the offset into the two electron array for each thread.

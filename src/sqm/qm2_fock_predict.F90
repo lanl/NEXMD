@@ -43,9 +43,9 @@ subroutine qm2_fock_predict(num_qmmm_calls,hmatrix,matsize,fock_matrix, &
 
 end subroutine qm2_fock_predict
 
-subroutine qm2_fock_store(matsize, fock_matrix, hmatrix)
+subroutine qm2_fock_store(qm2_struct,matsize, fock_matrix, hmatrix)
 
-   use qmmm_module, only : qm2_struct
+   use qmmm_module, only : qm2_structure
 
    implicit none
 
@@ -53,6 +53,7 @@ subroutine qm2_fock_store(matsize, fock_matrix, hmatrix)
    !storage array for it and moves the other stored arrays down the chain.
 
    !Passed in
+   type(qm2_structure),intent(inout) :: qm2_struct
    integer, intent(in) :: matsize
    _REAL_, intent(in) :: fock_matrix(matsize)
    _REAL_, intent(in) :: hmatrix(matsize)

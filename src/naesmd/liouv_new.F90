@@ -11,30 +11,27 @@
 !
 !********************************************************************
 !
-subroutine dav_wrap(qm2ds, qmmm_struct, sim_target)
-    use communism !for sim hack
+subroutine dav_wrap(qm2_struct, qm2ds, qmmm_struct)
     use qm2_davidson_module
     use cosmo_C, only: solvent_model
     use qmmm_struct_module, only : qmmm_struct_type
+    use qmmm_module,only:qm2_structure
 
     implicit none
+    type(qm2_structure),intent(inout) :: qm2_struct
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
     type(qm2_davidson_structure_type), intent(inout) :: qm2ds
 
     _REAL_ f,ddot
     integer i
-    type(simulation_t),target::sim_target
-    type(simulation_t),pointer::sim
-
-    sim=>sim_target
     ! Finding excited states
 
     !Vacuum, Linear Response Solvent have the single Davidson routine, Nonequilibrium State Specific
     !has iterative Davidson Wrapper, Equilibrium State Specific routine has scf and Davidson wrapper above this subroutine.
     if ((solvent_model.lt.2).or.(solvent_model.gt.3)) then
-        call davidson(qm2ds, qmmm_struct);
+        call davidson(qm2_struct, qm2ds, qmmm_struct);
     elseif ((solvent_model.eq.2).or.(solvent_model.eq.3)) then
-        call solvent_scf_and_davidson_test(qm2ds,qmmm_struct);
+        call solvent_scf_and_davidson_test(qm2_struct,qm2ds,qmmm_struct);
     end if
 
     ! Total energy of the ground state
@@ -66,12 +63,12 @@ subroutine dav_wrap(qm2ds, qmmm_struct, sim_target)
 
     ! Output
     if (qm2ds%verbosity>0) then
-        call outDavidson(qm2ds,qmmm_struct)
+        call outDavidson(qm2_struct,qm2ds,qmmm_struct)
     endif
         
     if (qm2ds%calcxdens) then
         write(6,*)'Calculating cross densities and printing to CEO.out'
-        call polarizab(qm2ds,qmmm_struct)
+        call polarizab(qm2_struct,qm2ds,qmmm_struct)
     endif
 
     qm2ds%has_been_run = .TRUE.
@@ -85,15 +82,16 @@ endsubroutine dav_wrap
 !
 !********************************************************************
 !
-subroutine outDavidson(qm2ds,qmmm_struct)
+subroutine outDavidson(qm2_struct,qm2ds,qmmm_struct)
     use qm2_davidson_module
-    use qmmm_module, only : qmmm_nml
+    use qmmm_module, only : qmmm_nml,qm2_structure
     use constants, only : ONE_AU
     use qmmm_struct_module, only : qmmm_struct_type
 
     implicit none
 
     integer i
+    type(qm2_structure),intent(inout) :: qm2_struct
     type(qm2_davidson_structure_type), intent(inout) :: qm2ds
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
     _REAL_ mu(3, qm2ds%Mx), alpha(3), ft
@@ -103,7 +101,7 @@ subroutine outDavidson(qm2ds,qmmm_struct)
     write(6,*) 'Frequencies (eV) and Oscillator strengths (unitless)'
     write(6,"(8x,'Omega',12x,'fx',14x,'fy',14x,'fz',10x,'ftotal')")
 
-    call trans_dipole(qm2ds,qmmm_struct, mu, alpha) ! cml-test
+    call trans_dipole(qm2_struct,qm2ds,qmmm_struct, mu, alpha) ! cml-test
     do i=1,qm2ds%Mx
         ft = (2.d0/3.d0)*(qm2ds%e0(i)/ONE_AU)*(mu(1,i)**2 + mu(2,i)**2 + mu(3,i)**2)
         write(6,"(i4,5g25.15)") i,qm2ds%e0(i), &
@@ -164,7 +162,7 @@ subroutine outDavidson(qm2ds,qmmm_struct)
         endif
     elseif(qmmm_nml%printtd.eq.-1) then !print all TD's to binary
         write(6,*) 'Printing Normal Modes to modes.b file'
-        call printNM_binary(qm2ds,76,77,78)
+        call printNM_binary(qm2_struct,qm2ds,76,77,78)
     endif
     return
 endsubroutine outDavidson

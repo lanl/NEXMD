@@ -4,7 +4,7 @@
 #include "copyright.h"
 #include "dprec.fh"
 #include "def_time.h"
-subroutine qm2_dftb_get_qm_forces(qmmm_struct, dxyzqm)
+subroutine qm2_dftb_get_qm_forces(qm2_struct, qmmm_struct, dxyzqm)
 
 !     Gets the forces from the DFTB calculation
 !
@@ -22,12 +22,12 @@ subroutine qm2_dftb_get_qm_forces(qmmm_struct, dxyzqm)
 !     qmmm_struct%nquant_nlink    - Total number of qm atoms. (Real + link)
 
       use qm2_dftb_module, only : izp_str, mcharge, mol, lmax
-      use qmmm_module, only : qmmm_nml, qmmm_mpi
+      use qmmm_module, only : qmmm_nml, qmmm_mpi, qm2_structure
       use constants, only: AU_TO_KCAL, A_TO_BOHRS
       use qmmm_struct_module, only : qmmm_struct_type
 
       implicit none
-
+      type(qm2_structure),intent(inout) :: qm2_struct
       type(qmmm_struct_type), intent(in) :: qmmm_struct
       _REAL_, intent(out) :: dxyzqm(3,qmmm_struct%nquant_nlink)
 
@@ -53,7 +53,7 @@ subroutine qm2_dftb_get_qm_forces(qmmm_struct, dxyzqm)
 
         call timer_start(TIME_QMMMDFTBGAMMAF)
         ! here are the contributions due to gamma if in scf mode - Charge Dependent Part
-        call dftb_gammagrad(qmmm_struct%nquant_nlink,qmmm_struct%qm_coords, izp_str%izp,mcharge%uhubb,&
+        call dftb_gammagrad(qm2_struct, qmmm_struct%nquant_nlink,qmmm_struct%qm_coords, izp_str%izp,mcharge%uhubb,&
                             dxyzqm)
         call timer_stop(TIME_QMMMDFTBGAMMAF)
 
@@ -76,14 +76,15 @@ subroutine qm2_dftb_get_qm_forces(qmmm_struct, dxyzqm)
 end subroutine qm2_dftb_get_qm_forces
 
 !============================================================================
-subroutine dftb_gammagrad(nquant_nlink,qm_coords,atomtype,uhubb,gmgrd)
+subroutine dftb_gammagrad(qm2_struct, nquant_nlink,qm_coords,atomtype,uhubb,gmgrd)
 
    use qm2_dftb_module, only: NNDIM, ks_struct
-   use qmmm_module, only : qm2_struct
+   use qmmm_module, only : qm2_structure
 
    implicit none
 
 !! Passed in:
+   type(qm2_structure),intent(inout) :: qm2_struct
    integer, intent(in ) :: nquant_nlink          ! number of atoms in cell
    integer, intent(in ) :: atomtype(*)  ! list of atomic types
    _REAL_ , intent(in ) :: qm_coords(3,nquant_nlink)     ! atomic coordinates

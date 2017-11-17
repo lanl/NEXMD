@@ -56,6 +56,7 @@ program MD_Geometry
     logical moldyn_found
     type(qm2_davidson_structure_type),target :: qm2ds_notp
     type(qmmm_struct_type), target :: qmmm_struct_notp
+    type(qm2_structure), target :: qm2_struct_notp
     type(simulation_t),target::sim_notp
     type(simulation_t),pointer::sim
     ! variables of the moldyn namelist
@@ -103,7 +104,7 @@ program MD_Geometry
     sim=>sim_notp
    
     call init0_simulation(sim)
-    call setp_simulation(sim,qmmm_struct_notp,qm2ds_notp)
+    call setp_simulation(sim,qmmm_struct_notp,qm2ds_notp,qm2_struct_notp)
     call init_main()
 
     !Put derivative variables into module

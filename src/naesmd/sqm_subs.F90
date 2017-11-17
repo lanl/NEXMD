@@ -9,7 +9,7 @@
    include 'mpif.h'
 #endif
     
-subroutine sqm_energy(qm2ds,qmmm_struct, natom,coords,escf,born_radii,one_born_radii, &
+subroutine sqm_energy(qm2_struct,qm2ds,qmmm_struct, natom,coords,escf,born_radii,one_born_radii, &
     intdiel,extdiel,Arad,scf_mchg, &
     time_sqm_took,time_davidson_took)
     !
@@ -34,7 +34,7 @@ subroutine sqm_energy(qm2ds,qmmm_struct, natom,coords,escf,born_radii,one_born_r
     !    one_born_radii(1->natom)  - 1.0d0/born_radii(i)
     !    scf_mchg                  - nquant long, gets filled with the mulliken charges during scf.
 
-    use qmmm_module,only:qmmm_nml,qm2_struct,qm2_rij_eqns, &
+    use qmmm_module,only:qmmm_nml,qm2_structure,qm2_rij_eqns, &
         qm_gb, qmmm_mpi, qmmm_scratch, qm2_params
     use constants,only:EV_TO_KCAL,KCAL_TO_EV,zero,one,alpb_alpha
     use qm2_davidson_module
@@ -47,6 +47,7 @@ subroutine sqm_energy(qm2ds,qmmm_struct, natom,coords,escf,born_radii,one_born_r
     ! Passed in
 
     integer,intent(in)::natom
+    type(qm2_structure),intent(inout) :: qm2_struct
     type(qm2_davidson_structure_type), intent(inout) :: qm2ds
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
     _REAL_,intent(inout)::coords(natom*3) !Amber array - adjusted for link atoms
@@ -111,13 +112,13 @@ subroutine sqm_energy(qm2ds,qmmm_struct, natom,coords,escf,born_radii,one_born_r
         if (qmmm_mpi%commqmmm_master) then
             write(6,'(/80(1H-)/''  QM CALCULATION INFO'',/80(1H-))')
         end if
-        call qm2_load_params_and_allocate(qmmm_struct) !Load the parameters
+        call qm2_load_params_and_allocate(qm2_struct,qmmm_struct) !Load the parameters
            ! Also does a lot of memory allocation and pre-calculates all
            ! the STO-6G orbital expansions.
 
         if(qmmm_mpi%commqmmm_master) then
 
-            ! call qm_print_dyn_mem(natom,qmmm_struct%qm_mm_pairs)
+            ! call qm_print_dyn_mem(qm2_struct,qmmm_struct,natom,qmmm_struct%qm_mm_pairs)
             call qm_print_coords(qmmm_struct,0,.true.)
 
             !Finally print the result header that was skipped in sander.
@@ -125,13 +126,13 @@ subroutine sqm_energy(qm2ds,qmmm_struct, natom,coords,escf,born_radii,one_born_r
         end if
 
         if(qm2ds%Mx>0) then
-            call allocate_davidson(qm2ds, qmmm_struct) ! Davidson allocation
+            call allocate_davidson(qm2_struct, qm2ds, qmmm_struct) ! Davidson allocation
             if(qm2ds%dav_guess.gt.1) call init_xlbomd(qm2ds%Nb**2*qm2ds%Mx)
         endif
 
         !ceps-Dielectric Permittivity from COSMO module
         if((solvent_model.gt.0).or.(EF.gt.0)) then !
-            call cosini
+            call cosini(qm2_struct,qmmm_struct)
         end if
 
     end if !if (qmmm_struct%qm_mm_first_call)
@@ -159,7 +160,7 @@ subroutine sqm_energy(qm2ds,qmmm_struct, natom,coords,escf,born_radii,one_born_r
     !  Calculate SCF Energy (ground state)
     !============================
     call cpu_time(t_start)
-    call qm2_energy(qm2ds, qmmm_struct, escf,scf_mchg,natom,born_radii,one_born_radii, &
+    call qm2_energy(qm2_struct,qm2ds, qmmm_struct, escf,scf_mchg,natom,born_radii,one_born_radii, &
         coords,scaled_mm_charges)
     call cpu_time(t_finish)
     ! Incrementing the cumulative sqm time
@@ -219,7 +220,7 @@ subroutine sqm_energy(qm2ds,qmmm_struct, natom,coords,escf,born_radii,one_born_r
  		
     if(qm2ds%Mx>0) then
         call cpu_time(t_start)
-        call dav_wrap(qm2ds,qmmm_struct)
+        call dav_wrap(qm2_struct,qm2ds,qmmm_struct)
         call cpu_time(t_finish)
         ! Incrementing cumulative Davidson execution time
         time_davidson_took=time_davidson_took+t_finish-t_start
@@ -232,10 +233,10 @@ subroutine sqm_energy(qm2ds,qmmm_struct, natom,coords,escf,born_radii,one_born_r
     qmmm_struct%qm_mm_first_call=.false.
     if ((qmmm_nml%printdipole>0).or.(qmmm_nml%printcharges)) then
         if((qmmm_nml%printdipole<3).and.(qm2ds%Mx>0)) then
-            call qm2_calc_molecular_dipole_in_excited_state(qm2ds,qmmm_struct)
+            call qm2_calc_molecular_dipole_in_excited_state(qm2_struct,qm2ds,qmmm_struct)
             
         else if (qmmm_nml%printdipole>2) then
-            call qm2_calc_dipole(qm2ds, qmmm_struct,coords)
+            call qm2_calc_dipole(qm2_struct,qm2ds, qmmm_struct,coords)
         end if
     end if
 
@@ -244,7 +245,7 @@ subroutine sqm_energy(qm2ds,qmmm_struct, natom,coords,escf,born_radii,one_born_r
     !  but kept here for historical reasons)
 
     if(qmmm_mpi%commqmmm_master) then
-        call qm2_print_energy(qmmm_nml%verbosity,qmmm_nml%qmtheory,escf,qmmm_struct)
+        call qm2_print_energy(qm2_struct, qmmm_nml%verbosity,qmmm_nml%qmtheory,escf,qmmm_struct)
     end if
     return
 end subroutine sqm_energy
@@ -478,7 +479,7 @@ end subroutine getsqmx
 !
 !********************************************************************
 !
-subroutine sqm_read_and_alloc(qm2ds,qmmm_struct,fdes_in,fdes_out,natom_inout,igb,atnam, &
+subroutine sqm_read_and_alloc(qm2_struct,qm2ds,qmmm_struct,fdes_in,fdes_out,natom_inout,igb,atnam, &
     atnum,maxcyc,grms_tol,ntpr,ncharge_in, &
     excharge,chgatnum, &
     excNin,struct_opt_state,exst_method,dav_guess, & ! Excited state
@@ -486,7 +487,7 @@ subroutine sqm_read_and_alloc(qm2ds,qmmm_struct,fdes_in,fdes_out,natom_inout,igb
 
     use findmask
     use constants, only : RETIRED_INPUT_OPTION
-    use qmmm_module, only : qm2_struct, qmmm_nml, &
+    use qmmm_module, only : qm2_structure, qmmm_nml, &
         validate_qm_atoms, qmsort, &
         allocate_qmmm, get_atomic_number, qmmm_div, &
         qmmm_opnq, qmmm_vsolv
@@ -506,6 +507,7 @@ subroutine sqm_read_and_alloc(qm2ds,qmmm_struct,fdes_in,fdes_out,natom_inout,igb
 
     type(qm2_davidson_structure_type), intent(inout) :: qm2ds
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
+    type(qm2_structure),intent(inout) :: qm2_struct
 
     !STATIC MEMORY
     integer :: max_quantum_atoms  !Needed in read qmmm namelist since

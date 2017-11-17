@@ -248,10 +248,11 @@ end subroutine
 !
 !--------------------------------------------------------------------
 
-   subroutine printNM_binary(qm2ds,fn1,fn2,fn3)
+   subroutine printNM_binary(qm2_struct,qm2ds,fn1,fn2,fn3)
    use qm2_davidson_module
    use qmmm_module
    implicit none
+   type(qm2_structure),intent(inout) :: qm2_struct
    type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    integer i,j,fn1,fn2,fn3
    !character(len=20) FMT

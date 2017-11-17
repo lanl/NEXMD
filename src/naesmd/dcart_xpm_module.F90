@@ -13,7 +13,7 @@ contains
     ! CML this subroutine, as well as DCART1() and DCART2(), since they are based
     ! CML on the same subroutine. 7/13/12
 
-    function dcart1_xpm(qm2ds, qmmm_struct, ex_dm, xyz_in_p, xyz_in_m) 
+    function dcart1_xpm(qm2_struct, qm2ds, qmmm_struct, ex_dm, xyz_in_p, xyz_in_m) 
         !Current code maintained by: Ross Walker (TSRI 2004)
 
         !This routine calculates the derivatives of the energy for QM-QM
@@ -24,7 +24,7 @@ contains
 
         use constants          , only : EV_TO_KCAL
         use ElementOrbitalIndex, only: MaxValenceOrbitals
-        use qmmm_module        , only : qmmm_nml, qm2_struct, qm2_params, qmmm_mpi
+        use qmmm_module        , only : qmmm_nml, qm2_structure, qm2_params, qmmm_mpi
         use qm2_pm6_hof_module
         use dh_correction_module, only : dh_correction_grad
         use qm2_davidson_module ! CML 7/13/12
@@ -32,7 +32,7 @@ contains
 
      
         implicit none
-   
+        type(qm2_structure),intent(inout) :: qm2_struct
         type(qm2_davidson_structure_type), intent(inout) :: qm2ds
  
          _REAL_ :: dcart1_xpm
@@ -157,7 +157,7 @@ contains
         return
     end function dcart1_xpm
 
-    subroutine qm2_dhc1(qmmm_struct, P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, & ! CML 7/13/12
+    subroutine qm2_dhc1(qm2_struct, qmmm_struct, P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, & ! CML 7/13/12
         natqmj, iif, iil, jjf, jjl, F)
         !***********************************************************************
         !
@@ -169,7 +169,7 @@ contains
 
         use constants          , only: ONE, A_TO_BOHRS, A2_TO_BOHRS2, EV_TO_KCAL
         use ElementOrbitalIndex, only: MaxValenceOrbitals,MaxValenceDimension
-        use qmmm_module        , only: qm2_params, OVERLAP_CUTOFF, qmmm_nml, qm2_struct
+        use qmmm_module        , only: qm2_params, OVERLAP_CUTOFF, qmmm_nml, qm2_structure
         use Rotation           , only: GetRotationMatrix, Rotate2Center2Electron, RotateCore
         use qm2_fock_d         , only: W2Fock_atompair
         use qmmm_struct_module, only : qmmm_struct_type
@@ -177,6 +177,7 @@ contains
         implicit none
 
         !Passed in
+        type(qm2_structure),intent(inout) :: qm2_struct
         type(qmmm_struct_type), intent(in) :: qmmm_struct
         _REAL_ P(:)
         _REAL_, intent(in)  :: xyz_qmi(3),xyz_qmj(3)
@@ -255,7 +256,7 @@ contains
                 
             else  ! for atoms with d orbitals
             
-                call qm2_h1elec_d(r2InAu,xyz_qmi(1:3), xyz_qmj(1:3),  &
+                call qm2_h1elec_d(qm2_struct,r2InAu,xyz_qmi(1:3), xyz_qmj(1:3),  &
                     n_atomic_orbi,n_atomic_orbj,                &
                     firstIndexAO_i, firstIndexAO_j, qmitype, qmjtype,  &
                     n_atomic_orbi+n_atomic_orbj, H)
@@ -266,7 +267,7 @@ contains
         KR=1
         hasDOrbital=((n_atomic_orbi.ge.9) .or. (n_atomic_orbj.ge.9))
         call GetRotationMatrix(xyz_qmj-xyz_qmi, rotationMatrix, hasDOrbital)
-        call qm2_rotate_qmqm(qmmm_struct, -1,iqm,jqm,natqmi,natqmj,xyz_qmi,xyz_qmj,            &
+        call qm2_rotate_qmqm(qm2_struct,qmmm_struct, -1,iqm,jqm,natqmi,natqmj,xyz_qmi,xyz_qmj,            &
             W(KR),KR, RI, core)
 
         if (hasDOrbital) then   ! spd case

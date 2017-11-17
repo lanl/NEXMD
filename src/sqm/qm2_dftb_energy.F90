@@ -2,7 +2,7 @@
 
 #include "copyright.h"
 #include "dprec.fh"
-subroutine qm2_dftb_energy(qmmm_struct, escf,scf_mchg)
+subroutine qm2_dftb_energy(qm2_struct, qmmm_struct, escf,scf_mchg)
 
 ! Calculates the self-consistent-charge (SCC) DFTB energy.
 ! The energy is returned in 'escf'.
@@ -19,13 +19,14 @@ subroutine qm2_dftb_energy(qmmm_struct, escf,scf_mchg)
   
 !In parallel all threads enter here.
 
-   use qmmm_module, only : qmmm_nml, qm2_struct, qmmm_mpi
+   use qmmm_module, only : qmmm_nml, qm2_structure , qmmm_mpi
    use ElementOrbitalIndex, only : elementSymbol
    use qm2_dftb_module, only: disper,mol, lmax, izp_str,mcharge
    use constants, only: AU_TO_EV, AU_TO_KCAL, A_TO_BOHRS, BOHRS_TO_A
    use qmmm_struct_module, only : qmmm_struct_type
 
    implicit none
+   type(qm2_structure),intent(inout) :: qm2_struct
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
    !Passed in
@@ -102,7 +103,7 @@ subroutine qm2_dftb_energy(qmmm_struct, escf,scf_mchg)
    escf = 0.0d0
 
    !do the SCF
-   call qm2_dftb_scf(qmmm_struct, escf, qmmm_struct%elec_eng,qmmm_struct%enuclr_qmqm,scf_mchg)
+   call qm2_dftb_scf(qm2_struct,qmmm_struct, escf, qmmm_struct%elec_eng,qmmm_struct%enuclr_qmqm,scf_mchg)
 
    return
 end subroutine qm2_dftb_energy

@@ -833,7 +833,7 @@ subroutine get_qm2_forces(master, calc_mchg_scf, natom, &
      call timer_start(TIME_QMMMSETUP)
      ! Load semiempirical parameters
      ! Also does a lot of memory allocation and pre-calculates all the STO-6G orbital expansions.
-     call qm2_load_params_and_allocate(qmmm_struct)
+     call qm2_load_params_and_allocate(qm2_struct,qmmm_struct)
      call timer_stop(TIME_QMMMSETUP)
 
      if (master) then
@@ -841,7 +841,7 @@ subroutine get_qm2_forces(master, calc_mchg_scf, natom, &
        ! Print a summary about memory usage
        ! WARNING - FOR THE NUMBERS PRODUCED BY THE PRINT DYN MEM ROUTINE TO BE ACCURATE ALL
        ! MEMORY ALLOCATION MUST HAVE BEEN DONE BY THIS STAGE.
-        call qm_print_dyn_mem(qmmm_struct, natom,qmmm_struct%qm_mm_pairs)
+        call qm_print_dyn_mem(qm2_struct,qmmm_struct, natom,qmmm_struct%qm_mm_pairs)
 
        ! Finally print the result header that was skipped in sander.
         write(6,'(/80("-")/"   4.  RESULTS",/80("-")/)')
@@ -859,7 +859,7 @@ subroutine get_qm2_forces(master, calc_mchg_scf, natom, &
    call timer_stop_start(TIME_QMMMRIJEQNS,TIME_QMMMENERGY)
 
    ! Parallel: Calculate SCF Energy
-   call qm2_energy(qm2ds, qmmm_struct, escf, scf_mchg, natom, born_radii, one_born_radii, coords, scaled_mm_charges)
+   call qm2_energy(qm2_struct,qm2ds, qmmm_struct, escf, scf_mchg, natom, born_radii, one_born_radii, coords, scaled_mm_charges)
 
    call timer_stop(TIME_QMMMENERGY)
 
@@ -869,10 +869,10 @@ subroutine get_qm2_forces(master, calc_mchg_scf, natom, &
    qmmm_struct%dxyzqm=zero
    if (qmmm_nml%qmtheory%DFTB) then
       ! Partially Parallel
-      call qm2_dftb_get_qm_forces(qmmm_struct, qmmm_struct%dxyzqm)
+      call qm2_dftb_get_qm_forces(qm2_sturct,qmmm_struct, qmmm_struct%dxyzqm)
    else
       ! Parallel
-      call qm2_get_qm_forces(qmmm_struct, qmmm_struct%dxyzqm)
+      call qm2_get_qm_forces(qm2_struct,qmmm_struct, qmmm_struct%dxyzqm)
    end if
 
    call timer_stop(TIME_QMMMFQM)
@@ -883,7 +883,7 @@ subroutine get_qm2_forces(master, calc_mchg_scf, natom, &
       qmmm_struct%dxyzcl=zero
       if (qmmm_nml%qmtheory%DFTB) then
          ! Parallel
-         call qm2_dftb_get_qmmm_forces(qmmm_struct, qmmm_struct%dxyzcl,qmmm_struct%dxyzqm, qmmm_scratch%qm_real_scratch(1), &
+         call qm2_dftb_get_qmmm_forces(qm2_struct,qmmm_struct, qmmm_struct%dxyzcl,qmmm_struct%dxyzqm, qmmm_scratch%qm_real_scratch(1), &
               qmmm_scratch%qm_real_scratch(natom+1), &
               qmmm_scratch%qm_real_scratch(2*natom+1), &
               qmmm_scratch%qm_real_scratch(3*natom+1))
@@ -892,10 +892,10 @@ subroutine get_qm2_forces(master, calc_mchg_scf, natom, &
          if (qmmm_nml%qmmm_switch) then
             !Calculate Mulliken charges that will be used in QM/MM switching function
             do i=1,qmmm_struct%nquant_nlink
-              call qm2_calc_mulliken(i,scf_mchg(i))
+              call qm2_calc_mulliken(qm2_struct,i,scf_mchg(i))
             end do
          end if
-         call qm2_get_qmmm_forces(qmmm_struct, qmmm_struct%dxyzqm,qmmm_struct%qm_xcrd,qmmm_struct%dxyzcl,scf_mchg)
+         call qm2_get_qmmm_forces(qm2_struct,qmmm_struct, qmmm_struct%dxyzqm,qmmm_struct%qm_xcrd,qmmm_struct%dxyzcl,scf_mchg)
       end if
    end if
 
@@ -916,14 +916,14 @@ subroutine get_qm2_forces(master, calc_mchg_scf, natom, &
       else
          do i=1,qmmm_struct%nquant_nlink
             !Need to calculate Mulliken charges here.
-            call qm2_calc_mulliken(i,scf_mchg(i))
+            call qm2_calc_mulliken(qm2_struct,i,scf_mchg(i))
          end do
       end if
    end if
 
    ! Print some extra information if verbosity level is > 0
    if (master) then
-      call qm2_print_energy(qmmm_nml%verbosity, qmmm_nml%qmtheory, escf, qmmm_struct)
+      call qm2_print_energy(qm2_struct, qmmm_nml%verbosity, qmmm_nml%qmtheory, escf, qmmm_struct)
       if (qmmm_nml%verbosity > 3) then
       
         if (qmmm_nml%qm_ewald>0) then 

@@ -85,7 +85,7 @@ subroutine qm2_fock1(qmmm_struct, F, PTOT)
 
 end subroutine qm2_fock1
 
-subroutine qm2_fock2(qmmm_struct, F, PTOT, W, orb_loc)
+subroutine qm2_fock2(qm2_struct, qmmm_struct, F, PTOT, W, orb_loc)
 !***********************************************************************        
 !                                                                               
 ! FOCK2 FORMS THE TWO-ELECTRON TWO-CENTER REPULSION PART OF THE FOCK            
@@ -95,10 +95,11 @@ subroutine qm2_fock2(qmmm_struct, F, PTOT, W, orb_loc)
 !                                                                               
 !  ON OUTPUT F   = PARTIAL FOCK MATRIX                                          
 !***********************************************************************        
-   use qmmm_module, only : qm2_struct, qm2_params, qmmm_mpi
+   use qmmm_module, only : qm2_structure, qm2_params, qmmm_mpi
    use qmmm_struct_module, only : qmmm_struct_type
    implicit none
 
+   type(qm2_structure),intent(inout) :: qm2_struct
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
    _REAL_, intent(inout) :: F(*)
    _REAL_, intent(in) :: ptot(*)
@@ -526,7 +527,7 @@ subroutine qm2_kab(IA,JA, PK, W, F)
 
 end subroutine qm2_kab
 
-subroutine qm2_fock2_2atm(qmmm_struct, F, PTOT, W, orb_loc)
+subroutine qm2_fock2_2atm(qm2_struct,qmmm_struct, F, PTOT, W, orb_loc)
 !***********************************************************************        
 ! 
 ! This subroutine is a repetition of qm2_fock2 but for the explicit case
@@ -538,10 +539,11 @@ subroutine qm2_fock2_2atm(qmmm_struct, F, PTOT, W, orb_loc)
 !***********************************************************************        
 
    use ElementOrbitalIndex, only : MaxValenceOrbitals, MaxValenceDimension
-   use qmmm_module, only : qm2_struct, qm2_params
+   use qmmm_module, only : qm2_structure, qm2_params
    use qmmm_struct_module, only : qmmm_struct_type
    implicit none
 
+   type(qm2_structure),intent(inout) :: qm2_struct
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
 ! dimension 36 = max of 8*(8+1)/2 = 4 orbs with 4 orbs - S,3P with S,3P

@@ -7,8 +7,8 @@
 !ccccccccccccccccccccccccccccccccccccccccccccccccccc
 !   
     
-subroutine polarizab(qm2ds,qmmm_struct)                         
-      use qmmm_module,only:qm2_struct
+subroutine polarizab(qm2_struct,qm2ds,qmmm_struct)                         
+      use qmmm_module,only:qm2_structure
       use qm2_davidson_module
       use constants, only : BOHRS_TO_A, SQRT2, ONE_AU
 !TODO compare units between CEO and SQM_NAESMD
@@ -17,6 +17,7 @@ subroutine polarizab(qm2ds,qmmm_struct)
     
     
       implicit none                            
+        type(qm2_structure),intent(inout) :: qm2_struct
         type(qm2_davidson_structure_type), intent(inout) :: qm2ds
         type(qmmm_struct_type), intent(inout) :: qmmm_struct
         _REAL_ f0,f1,f2,f3,ddot,freq
@@ -105,7 +106,7 @@ if(1==1) then
 ! Note after mo2siteph the mode eta is ksi(-alpha)* sqrt(2) different 
 ! from usual normalization condition, i.e Tr(rho[eta,eta^T])=2
 !     Compute mu_alpha (transition dipoles)
-        call get_dipole_matrix(qmmm_struct,qmmm_struct%qm_coords, dip)
+        call get_dipole_matrix(qm2_struct,qmmm_struct,qmmm_struct%qm_coords, dip)
         call unpacking(qm2ds%Nb,dip(1,:),temp1,'s')
         do j=1,qm2ds%Mx
            muax(j)=ddot(qm2ds%Nb**2,temp1,one,qm2ds%v2(:,j),one)*sqrt(2.0)

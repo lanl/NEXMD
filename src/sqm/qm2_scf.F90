@@ -3,7 +3,7 @@
 #include "dprec.fh"
 #include "def_time.h"
 #include "assert.fh"
-subroutine qm2_scf(qm2ds, qmmm_struct, fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm_calls)
+subroutine qm2_scf(qm2_struct, qm2ds, qmmm_struct, fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm_calls)
     !---------------------------------------------------------------------
     ! This is the main SCF routine.
     ! Written by Ross Walker (TSRI, 2005)
@@ -29,7 +29,7 @@ subroutine qm2_scf(qm2ds, qmmm_struct, fock_matrix, hmatrix, W, escf, den_matrix
     !                           J. COMP. CHEM.,3, 227, (1982)
     !---------------------------------------------------------------------
 
-    use qmmm_module, only : qm2_struct, qm2_params, qmewald, qmmm_nml, &
+    use qmmm_module, only : qm2_structure, qm2_params, qmewald, qmmm_nml, &
         qm_gb, qmmm_mpi, qmmm_scratch
     use constants, only : EV_TO_KCAL, zero, two
 
@@ -41,7 +41,8 @@ subroutine qm2_scf(qm2ds, qmmm_struct, fock_matrix, hmatrix, W, escf, den_matrix
     use xlbomd_module, only : K
     use qmmm_struct_module, only : qmmm_struct_type
     implicit none
-
+ 
+    type(qm2_structure),intent(inout) :: qm2_struct
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
     type(qm2_davidson_structure_type), intent(inout) :: qm2ds
 
@@ -194,7 +195,7 @@ subroutine qm2_scf(qm2ds, qmmm_struct, fock_matrix, hmatrix, W, escf, den_matrix
 
 
     if ( fock_predict_active ) then
-        CALL qm2_diag(qm2_struct%matsize, fock_matrix, &
+        CALL qm2_diag(qm2_struct,qm2_struct%matsize, fock_matrix, &
             & allow_pseudo_diag, density_diff, doing_pseudo_diag, &
             & smallsum, abstol )
     end if
@@ -207,7 +208,7 @@ subroutine qm2_scf(qm2ds, qmmm_struct, fock_matrix, hmatrix, W, escf, den_matrix
 
         ! construct a trial density
         if ((.NOT. first_iteration) .or. fock_predict_active) then
-            CALL qm2_densmat( scf_iteration, qm2_struct%matsize, den_matrix, density_diff)
+            CALL qm2_densmat(qm2_struct, scf_iteration, qm2_struct%matsize, den_matrix, density_diff)
         end if ! if (.NOT. first_iteration)
 
          !Calculate the Mulliken charges for the current density matrix if we require
@@ -222,12 +223,12 @@ subroutine qm2_scf(qm2ds, qmmm_struct, fock_matrix, hmatrix, W, escf, den_matrix
             allocate(density_matrix_unpacked(qm2_struct%norbs,qm2_struct%norbs));
             call unpacking(qm2_struct%norbs,qm2_struct%den_matrix,density_matrix_unpacked,'s');
             do i=1,qmmm_struct%nquant_nlink
-                call qm2_calc_mulliken(i,scf_mchg(i),density_matrix_unpacked);
+                call qm2_calc_mulliken(qm2_struct,i,scf_mchg(i),density_matrix_unpacked);
             end do
             deallocate(density_matrix_unpacked);
         end if
 
-        CALL qm2_cpt_fock_and_energy(qm2ds, qmmm_struct, SIZE(fock_matrix), fock_matrix, hmatrix, den_matrix, &
+        CALL qm2_cpt_fock_and_energy(qm2_struct,qm2ds, qmmm_struct, SIZE(fock_matrix), fock_matrix, hmatrix, den_matrix, &
             & SIZE(W), W, SIZE(scf_mchg), scf_mchg, density_diff )
         !q=0
         !do o=1,qm2_struct%norb
@@ -250,8 +251,8 @@ subroutine qm2_scf(qm2ds, qmmm_struct, fock_matrix, hmatrix, W, escf, den_matrix
                 end if
             end if
             if ( errmat_is_on ) then
-                CALL pack_diis(SIZE(fock_matrix),fock_matrix,den_matrix)
-                errval = current_scf_errval()
+                CALL pack_diis(qm2_struct,SIZE(fock_matrix),fock_matrix,den_matrix)
+                errval = current_scf_errval(qm2_struct)
             end if
         end if
       
@@ -408,10 +409,10 @@ subroutine qm2_scf(qm2ds, qmmm_struct, fock_matrix, hmatrix, W, escf, den_matrix
                 write(6,'("QMMM: DIIS extrapolation is performed")')
             end if
 
-            CALL diis_extrap( qm2_struct%matsize, fock_matrix , fock_extrap_flag )
+            CALL diis_extrap(qm2_struct, qm2_struct%matsize, fock_matrix , fock_extrap_flag )
         end if
      
-        CALL qm2_diag(qm2_struct%matsize, fock_matrix, &
+        CALL qm2_diag(qm2_struct,qm2_struct%matsize, fock_matrix, &
             & allow_pseudo_diag, density_diff, doing_pseudo_diag, &
             & smallsum, abstol )
      
@@ -482,7 +483,7 @@ subroutine qm2_scf(qm2ds, qmmm_struct, fock_matrix, hmatrix, W, escf, den_matrix
     ! If we are trying to do Fock matrix prediction based on an extrapolation of previous steps then
     ! we need to store the final fock matrix.
 
-    if (qmmm_nml%fock_predict == 1) call qm2_fock_store(qm2_struct%matsize, fock_matrix, hmatrix)
+    if (qmmm_nml%fock_predict == 1) call qm2_fock_store(qm2_struct,qm2_struct%matsize, fock_matrix, hmatrix)
 
     return
 end subroutine qm2_scf
@@ -1137,7 +1138,7 @@ end subroutine qm2_mat_diag
 
 !---------------------------------------------------------------------------
 
-subroutine qm2_pseudo_diag(matrix,vectors,noccupied,eigen,norbs,smallsum, &
+subroutine qm2_pseudo_diag(qm2_struct,matrix,vectors,noccupied,eigen,norbs,smallsum, &
     matrix_workspace, scratch_matrix, vectmp1, vectmp2, vectmp3, vecjs)
 
     !------------------------------------------------
@@ -1177,13 +1178,14 @@ subroutine qm2_pseudo_diag(matrix,vectors,noccupied,eigen,norbs,smallsum, &
     !           form of a packed lower half triangle.
     !
 #ifdef OPENMP
-  use qmmm_module, only : qm2_struct, qmmm_mpi, qmmm_omp
+  use qmmm_module, only : qm2_structure, qmmm_mpi, qmmm_omp
 #else
-    use qmmm_module, only : qm2_struct, qmmm_mpi
+    use qmmm_module, only : qm2_structure, qmmm_mpi
 #endif
     implicit none
 
     ! Passed in
+    type(qm2_structure),intent(inout) :: qm2_struct
     _REAL_, intent(in) :: matrix(qm2_struct%matsize)
     integer, intent(in) :: noccupied, norbs
     _REAL_, intent(inout) :: vectors(norbs,norbs)
@@ -1382,7 +1384,7 @@ function qm2_HELECT(nminus,den_matrix,hmatrix,F)
     qm2_helect=qm2_helect+ED
 end function qm2_helect
 
-subroutine qm2_full_diagonalize(diag_routine,matrix,matrix_dimension,eigen_vectors,abstol)
+subroutine qm2_full_diagonalize(qm2_struct,diag_routine,matrix,matrix_dimension,eigen_vectors,abstol)
     !******************************
     !This routine is a central driver routine for doing the diagonalization,
     !essentially it can be called with the matrix to be diagonalized and the
@@ -1392,14 +1394,15 @@ subroutine qm2_full_diagonalize(diag_routine,matrix,matrix_dimension,eigen_vecto
     !******************************
 
 #ifdef OPENMP
-  use qmmm_module, only : qmmm_scratch, qm2_struct, qmmm_omp
+  use qmmm_module, only : qmmm_scratch, qm2_structure, qmmm_omp
 #else
-    use qmmm_module, only : qmmm_scratch, qm2_struct
+    use qmmm_module, only : qmmm_scratch, qm2_structure
 #endif
 
     implicit none
 
     !Passed in
+    type(qm2_structure),intent(inout) :: qm2_struct
     integer, intent(inout) :: diag_routine !Controls the diagonalization method to be used.
                                         !1=built in diagonalizer
                                         !2=dspev
@@ -1614,17 +1617,18 @@ end subroutine qm2_pack_matrix
 
 
 
-SUBROUTINE qm2_diag( n, fock_matrix,    &
+SUBROUTINE qm2_diag( qm2_struct, n, fock_matrix,    &
     & allow_pseudo_diag, density_diff, doing_pseudo_diag, & ! control
     & smallsum, abstol                 ) ! machine precision limits
 
     USE qmmm_module, ONLY : qmmm_mpi
     USE qmmm_module, ONLY : qmmm_scratch
     USE qmmm_module, ONLY : qmmm_nml
-    USE qmmm_module, ONLY : qm2_struct
+    USE qmmm_module, ONLY : qm2_structure
 
     IMPLICIT NONE
 
+    type(qm2_structure),intent(inout) :: qm2_struct
     INTEGER,INTENT(IN)   :: n
     integer :: o,p,q
     _REAL_,INTENT(INOUT) :: fock_matrix(n)
@@ -1663,7 +1667,7 @@ SUBROUTINE qm2_diag( n, fock_matrix,    &
 #endif
         call timer_start(TIME_QMMMENERGYSCFPSEUDO)
         !OPENMP PARALLEL
-        call qm2_pseudo_diag(fock_matrix,qm2_struct%eigen_vectors,qm2_struct%nopenclosed, &
+        call qm2_pseudo_diag(qm2_struct,fock_matrix,qm2_struct%eigen_vectors,qm2_struct%nopenclosed, &
             qmmm_scratch%mat_diag_workspace(1:qm2_struct%norbs,1),qm2_struct%norbs,smallsum, &
             qmmm_scratch%pdiag_scr_norbs_norbs,qmmm_scratch%pdiag_scr_noccupied_norbs, &
             qmmm_scratch%pdiag_vectmp1,qmmm_scratch%pdiag_vectmp2,qmmm_scratch%pdiag_vectmp3, &
@@ -1679,7 +1683,7 @@ SUBROUTINE qm2_diag( n, fock_matrix,    &
 #endif
         !Do a full diagonalisation
         call timer_start(TIME_QMMMENERGYSCFDIAG)
-        call qm2_full_diagonalize(qmmm_nml%diag_routine,fock_matrix, &
+        call qm2_full_diagonalize(qm2_struct, qmmm_nml%diag_routine,fock_matrix, &
             qm2_struct%norbs,qm2_struct%eigen_vectors,abstol)
 
         
@@ -1707,14 +1711,14 @@ END SUBROUTINE qm2_diag
 !********************************************************************
 !
 
-SUBROUTINE qm2_cpt_fock_and_energy(qm2ds, qmmm_struct, nfock, fock_matrix, hmatrix, den_matrix, &
+SUBROUTINE qm2_cpt_fock_and_energy(qm2_struct,qm2ds, qmmm_struct, nfock, fock_matrix, hmatrix, den_matrix, &
     & nW, W, nchg, scf_mchg, density_diff)
 
     USE qmmm_module, ONLY : qmmm_nml
     USE qmmm_module, ONLY : qmmm_mpi
     USE qmmm_module, ONLY : qmmm_scratch
     USE qmmm_module, ONLY : qm2_params
-    USE qmmm_module, ONLY : qm2_struct
+    USE qmmm_module, ONLY : qm2_structure
     USE qmmm_module, ONLY : qm_gb
     USE qmmm_module, ONLY : qmewald
     USE qmmm_module, ONLY : qmmm_opnq
@@ -1727,6 +1731,7 @@ SUBROUTINE qm2_cpt_fock_and_energy(qm2ds, qmmm_struct, nfock, fock_matrix, hmatr
     use qmmm_struct_module, only : qmmm_struct_type
 
     IMPLICIT NONE
+    type(qm2_structure),intent(inout) :: qm2_struct
     type(qm2_davidson_structure_type), intent(inout) :: qm2ds
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
     INTEGER,INTENT(IN) :: nfock
@@ -1766,7 +1771,7 @@ SUBROUTINE qm2_cpt_fock_and_energy(qm2ds, qmmm_struct, nfock, fock_matrix, hmatr
 
     ! Add the two electron part of the FOCK matrix
     call qm2_fock1_d(qmmm_struct, fock_matrix, den_matrix) !Once center two electron
-    call qm2_fock2_d(qmmm_struct, fock_matrix, den_matrix, W) !Two center two electron
+    call qm2_fock2_d(qm2_struct, qmmm_struct, fock_matrix, den_matrix, W) !Two center two electron
 
     ! Add Solvent Model or Electric Field
     ! SOLVENT MODEL BLOCK !!JAB
@@ -1787,8 +1792,8 @@ SUBROUTINE qm2_cpt_fock_and_energy(qm2ds, qmmm_struct, nfock, fock_matrix, hmatr
                 endif
             else if (potential_type.eq.2) then !USE ONSAGER
                 qm2ds%tz_scratch=0.d0; temp_op=0.d0; qm2ds%eta=0.d0
-                call rcnfld_fock(qmmm_struct,fock_matrix,den_matrix+rhotzpacked_k,qm2_struct%norbs);
-                call rcnfld_fock(qmmm_struct,temp_op,den_matrix,qm2_struct%norbs);
+                call rcnfld_fock(qm2_struct,qmmm_struct,fock_matrix,den_matrix+rhotzpacked_k,qm2_struct%norbs);
+                call rcnfld_fock(qm2_struct,qmmm_struct,temp_op,den_matrix,qm2_struct%norbs);
                 call unpacking(qm2ds%nb,temp_op,qm2ds%tz_scratch(1),'s')
                 call calc_xicommutator(qm2ds,qm2ds%tz_scratch(1))
                 call packing(qm2ds%nb,qm2ds%tz_scratch(1),qm2ds%eta,'s')
@@ -1798,7 +1803,7 @@ SUBROUTINE qm2_cpt_fock_and_energy(qm2ds, qmmm_struct, nfock, fock_matrix, hmatr
             if (potential_type.eq.3) then !USE COSMOO
                 call addfck( fock_matrix,den_matrix);
             else if (potential_type.eq.2) then !USE ONSAGER
-                call rcnfld_fock(qmmm_struct,fock_matrix,den_matrix,qm2_struct%norbs);
+                call rcnfld_fock(qm2_struct,qmmm_struct,fock_matrix,den_matrix,qm2_struct%norbs);
             endif
         endif
         deallocate(temp_op)
@@ -1806,7 +1811,7 @@ SUBROUTINE qm2_cpt_fock_and_energy(qm2ds, qmmm_struct, nfock, fock_matrix, hmatr
     if (EF.eq.1) then !USE CONSTANT ELECTRIC FIELD
         allocate(temp_op(nfock))
         temp_op=0.d0
-        call efield_fock(qm2ds,qmmm_struct,temp_op,qm2_struct%norbs);
+        call efield_fock(qm2_struct,qm2ds,qmmm_struct,temp_op,qm2_struct%norbs);
         fock_matrix=fock_matrix+2.d0*temp_op
         deallocate(temp_op)
     end if
@@ -1844,7 +1849,7 @@ SUBROUTINE qm2_cpt_fock_and_energy(qm2ds, qmmm_struct, nfock, fock_matrix, hmatr
     ! calculating total electronic energy
     if (qmmm_opnq%useOPNQ) then
         write(6,*)'OPNQ Correction'
-        call Opnq_fock(qmmm_struct, fock_matrix, den_matrix)
+        call Opnq_fock(qm2_struct,qmmm_struct, fock_matrix, den_matrix)
     end if
 
     call timer_stop(TIME_QMMMENERGYSCFFOCK)
@@ -1935,9 +1940,9 @@ END SUBROUTINE qm2_cpt_fock_and_energy
 
 
 
-SUBROUTINE qm2_densmat(scf_iteration,n,den_matrix,density_diff)
+SUBROUTINE qm2_densmat(qm2_struct, scf_iteration,n,den_matrix,density_diff)
 
-    USE qmmm_module, ONLY : qmmm_mpi,qm2_struct,qmmm_nml
+    USE qmmm_module, ONLY : qmmm_mpi,qm2_structure,qmmm_nml
     USE qm2_iterator_mod, ONLY : scf_iterator_value
 
 #ifdef MPI
@@ -1946,6 +1951,7 @@ SUBROUTINE qm2_densmat(scf_iteration,n,den_matrix,density_diff)
 
     IMPLICIT NONE
 
+    type(qm2_structure),intent(inout) :: qm2_struct
     INTEGER,INTENT(IN) :: scf_iteration
     INTEGER,INTENT(IN) :: n
     _REAL_,INTENT(OUT) :: den_matrix(n)
@@ -2003,20 +2009,20 @@ END SUBROUTINE qm2_densmat
 
 
 
-SUBROUTINE pack_diis(npf,pf,pp)
+SUBROUTINE pack_diis(qm2_struct,npf,pf,pp)
 
     ! assumes nddo
     ! s = unit
     ! x = unit
 
-    USE qmmm_module, ONLY : qm2_struct,qmmm_nml,qmmm_mpi
+    USE qmmm_module, ONLY : qm2_structure,qmmm_nml,qmmm_mpi
 
     !  use qm2_iterator_mod, only : scf_iterator_value
     use qm2_iterator_mod, only : diis_iterator_value
     !  use qm2_iterator_mod, only : remaining_diis_tokens
 
     IMPLICIT NONE
-  
+    type(qm2_structure),intent(inout) :: qm2_struct
     integer,intent(in) :: npf  ! number of packed fock elements
     _REAL_,intent(in) :: pf(npf) ! packed fock
     _REAL_,intent(in) :: pp(npf) ! packed density
@@ -2090,15 +2096,17 @@ END SUBROUTINE pack_diis
 
 
 
-FUNCTION current_scf_errval() RESULT(err)
+FUNCTION current_scf_errval(qm2_struct) RESULT(err)
   
-    USE qmmm_module, ONLY : qm2_struct
+    USE qmmm_module, ONLY : qm2_structure
     USE constants, ONLY : AU_TO_EV
     !  use qm2_iterator_mod, only : scf_iterator_value
     use qm2_iterator_mod, only : diis_iterator_value
     !  use qm2_iterator_mod, only : remaining_diis_tokens
 
     IMPLICIT NONE
+ 
+    type(qm2_structure),intent(inout) :: qm2_struct
 
     _REAL_ :: err
 
@@ -2123,9 +2131,9 @@ END FUNCTION current_scf_errval
 
 
 
-SUBROUTINE diis_extrap(npf,pf,extrap_flag)
+SUBROUTINE diis_extrap(qm2_struct, npf,pf,extrap_flag)
 
-    USE qmmm_module, ONLY : qm2_struct
+    USE qmmm_module, ONLY : qm2_structure
     USE qmmm_module, ONLY : qmmm_nml
 
     use qm2_iterator_mod, only : scf_iterator_value
@@ -2135,6 +2143,7 @@ SUBROUTINE diis_extrap(npf,pf,extrap_flag)
 
     IMPLICIT NONE
 
+    type(qm2_structure),intent(inout) :: qm2_struct
     integer,intent(in) :: npf ! number of packed fock elements
     _REAL_,intent(out) :: pf(npf) ! packed fock matrix
     character(len=1),intent(out) :: extrap_flag
@@ -2166,7 +2175,7 @@ SUBROUTINE diis_extrap(npf,pf,extrap_flag)
     max_diis  = qmmm_nml%ndiis_matrices
 
     HAVE_DIIS_DATA   = scf_iter > 1
-    ERR_IS_SMALL     = current_scf_errval() < 0.5d0
+    ERR_IS_SMALL     = current_scf_errval(qm2_struct) < 0.5d0
     HAVE_DIIS_TOKENS = remaining_diis_tokens() > 0
     EXTRAPOLATE      = HAVE_DIIS_DATA .AND. ERR_IS_SMALL .AND. HAVE_DIIS_TOKENS
     IF ( .NOT. EXTRAPOLATE ) THEN

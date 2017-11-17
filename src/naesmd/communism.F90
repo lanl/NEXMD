@@ -43,12 +43,14 @@ contains
         allocate(a%naesmd)
     end subroutine
 
-    subroutine setp_simulation(a,qmmm_struct,qm2ds)
+    subroutine setp_simulation(a,qmmm_struct,qm2ds,qm2_struct)
         type(simulation_t), pointer  :: a
         type(qmmm_struct_type),target :: qmmm_struct
         type(qm2_davidson_structure_type),target :: qm2ds
+        type(qm2_structure),target :: qm2_struct
         a%qmmm     => qmmm_struct
         a%dav     => qm2ds
+        a%qm2     => qm2_struct
         allocate(a%naesmd)
     end subroutine
           
@@ -207,7 +209,7 @@ contains
         endif
 
         ! CML Includes call to Davidson within sqm_energy() 7/16/12
-        call sqm_energy(sim%dav,sim%qmmm,sim%Na,sim%coords,sim%escf,born_radii, &
+        call sqm_energy(sim%qm2,sim%dav,sim%qmmm,sim%Na,sim%coords,sim%escf,born_radii, &
             one_born_radii,intdiel,extdiel,Arad,sim%qm2%scf_mchg, &
             sim%time_sqm_took,sim%time_davidson_took) !The use of sim here is a hack right now and could be fixed
         ! ground state energy
@@ -286,7 +288,7 @@ contains
         integer :: mn
           
         call qmmm2coords_r(sim)
-        call nacR_analytic(sim%dav,sim%qmmm, sim%coords,ihop,icheck)
+        call nacR_analytic(sim%qm2,sim%dav,sim%qmmm, sim%coords,ihop,icheck)
         if(present(dij))  then
             mn = min(size(dij), size(sim%dav%dij))
             dij(:mn) = -sim%dav%dij(:mn)
@@ -301,7 +303,7 @@ contains
     !
     subroutine init_sqm(sim,fdes_in,fdes_out)
         use qmmm_module,only:qmmm_nml, qmmm_mpi, &
-            qm2_struct,deallocate_qmmm
+            deallocate_qmmm
           
         use constants,only:KCAL_TO_EV,EV_TO_KCAL
         use file_io_dat,only:MAX_FN_LEN
@@ -337,7 +339,7 @@ contains
         ncharge=0;
         igb = 0
    
-        call sqm_read_and_alloc(sim%dav,sim%qmmm,fdes_in, fdes_out, &
+        call sqm_read_and_alloc(sim%qm2,sim%dav,sim%qmmm,fdes_in, fdes_out, &
             sim%Na,igb,atnam,sim%naesmd%atomtype,maxcyc, &
             grms_tol,ntpr, ncharge,excharge,chgatnum, &
             sim%excN,sim%dav%struct_opt_state,sim%dav%idav,sim%dav%dav_guess, &
@@ -360,7 +362,7 @@ contains
         allocate( sim%qmmm%dxyzqm(3, sim%qmmm%nquant_nlink), stat = ier )
         REQUIRE(ier == 0)
           
-        allocate ( qm2_struct%scf_mchg(sim%qmmm%nquant_nlink), stat = ier )
+        allocate ( sim%qm2%scf_mchg(sim%qmmm%nquant_nlink), stat = ier )
         REQUIRE(ier == 0)
           
         allocate ( sim%qmmm%qm_coords(3,sim%qmmm%nquant_nlink), stat=ier )
@@ -370,7 +372,7 @@ contains
         if (maxcyc < 1) then
             sim%dav%minimization = .FALSE.
             sim%Ncharge  = ncharge
-            sim%qm2      => qm2_struct
+            !sim%qm2      => qm2_struct
             call naesmd2qmmm_r(sim)
             !sim%dav%Mx = sim%excN
             !sim%dav%mdflag=2
@@ -383,7 +385,7 @@ contains
           
             sim%dav%minimization = .TRUE.
             sim%Ncharge  = ncharge
-            sim%qm2 => qm2_struct
+            !sim%qm2 => qm2_struct
           
             if (qmmm_nml%verbosity<5) then
                 sim%dav%verbosity=0 !don't print output from scf calculations
@@ -554,7 +556,7 @@ contains
                         if ( qmmm_nml%printbondorders ) then
                             write(6,*) ''
                             write(6,*) 'Bond Orders'
-                            call qm2_print_bondorders(sim_pass%qmmm)
+                            call qm2_print_bondorders(sim_pass%qm2,sim_pass%qmmm)
                         end if
                     endif
                 case ( CALCENRG, CALCGRAD, CALCBOTH )

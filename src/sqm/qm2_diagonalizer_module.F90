@@ -98,7 +98,7 @@ contains
           write(6,'(''| QMMM: Auto diagonalization routine selection is in use.'')')
           write(6,'(''| QMMM:'')')
           ! only master does diagonalization at present.
-          call qm2_time_diag_routines(diag_routine, verbosity)
+          call qm2_time_diag_routines(qm2_struct,diag_routine, verbosity)
        end if
 
 #ifdef MPI
@@ -346,18 +346,20 @@ contains
    end subroutine qm2_diagonalizer_setup
 
 
-  subroutine qm2_time_diag_routines(diag_routine,verbosity)
+  subroutine qm2_time_diag_routines(qm2_struct, diag_routine,verbosity)
 
     ! This routine tries a series of different diagonalizers and returns the value
     ! of diag_method that is fastest as the first argument.
 #ifdef OPENMP
-    use qmmm_module, only : qmmm_scratch, qm2_struct, qmmm_nml, qmmm_omp
+    use qmmm_module, only : qmmm_scratch, qm2_structure, qmmm_nml, qmmm_omp
 #else
-    use qmmm_module, only : qmmm_scratch, qm2_struct, qmmm_nml
+    use qmmm_module, only : qmmm_scratch, qm2_structure, qmmm_nml
 #endif
     use constants, only : zero
 
     implicit none
+
+    type(qm2_structure),intent(inout) :: qm2_struct
 
     integer, intent(out) :: diag_routine
     integer, intent(in) :: verbosity
@@ -432,7 +434,7 @@ contains
        ! Need to rebuild the fock matrix each time since some diag routines can destroy it.
        call qm2_time_diag_routines_random(qm2_struct%matsize,qm2_struct%fock_matrix)
        call wallclock(start_time)
-       call qm2_full_diagonalize(diag_routine_to_test,qm2_struct%fock_matrix,qm2_struct%norbs, &
+       call qm2_full_diagonalize(qm2_struct,diag_routine_to_test,qm2_struct%fock_matrix,qm2_struct%norbs, &
             qm2_struct%eigen_vectors,abstol)
        call wallclock(end_time)
        current_time = current_time + (end_time-start_time)
@@ -464,7 +466,7 @@ contains
        !Need to rebuild the fock matrix each time since some diag routines can destroy it.
        call qm2_time_diag_routines_random(qm2_struct%matsize,qm2_struct%fock_matrix)
        call wallclock(start_time)
-       call qm2_full_diagonalize(diag_routine_to_test,qm2_struct%fock_matrix,qm2_struct%norbs, &
+       call qm2_full_diagonalize(qm2_struct,diag_routine_to_test,qm2_struct%fock_matrix,qm2_struct%norbs, &
             qm2_struct%eigen_vectors,abstol)
        call wallclock(end_time)
        current_time = current_time + (end_time-start_time)
@@ -515,7 +517,7 @@ contains
     !Need to rebuild the fock matrix each time since some diag routines can destroy it.
        call qm2_time_diag_routines_random(qm2_struct%matsize,qm2_struct%fock_matrix)
        call wallclock(start_time)
-       call qm2_full_diagonalize(diag_routine_to_test,qm2_struct%fock_matrix,qm2_struct%norbs, &
+       call qm2_full_diagonalize(qm2_struct,diag_routine_to_test,qm2_struct%fock_matrix,qm2_struct%norbs, &
             qm2_struct%eigen_vectors,abstol)
        call wallclock(end_time)
        current_time = current_time + (end_time-start_time)
@@ -558,7 +560,7 @@ contains
        !Need to rebuild the fock matrix each time since some diag routines can destroy it.
        call qm2_time_diag_routines_random(qm2_struct%matsize,qm2_struct%fock_matrix)
        call wallclock(start_time)
-       call qm2_full_diagonalize(diag_routine_to_test,qm2_struct%fock_matrix,qm2_struct%norbs, &
+       call qm2_full_diagonalize(qm2_struct,diag_routine_to_test,qm2_struct%fock_matrix,qm2_struct%norbs, &
             qm2_struct%eigen_vectors,abstol)
        call wallclock(end_time)
        current_time = current_time + (end_time-start_time)
@@ -607,7 +609,7 @@ contains
        !Need to rebuild the fock matrix each time since some diag routines can destroy it.
        call qm2_time_diag_routines_random(qm2_struct%matsize,qm2_struct%fock_matrix)
        call wallclock(start_time)
-       call qm2_full_diagonalize(diag_routine_to_test,qm2_struct%fock_matrix,qm2_struct%norbs, &
+       call qm2_full_diagonalize(qm2_struct,diag_routine_to_test,qm2_struct%fock_matrix,qm2_struct%norbs, &
             qm2_struct%eigen_vectors,abstol)
        call wallclock(end_time)
        current_time = current_time + (end_time-start_time)
@@ -658,7 +660,7 @@ contains
        !Need to rebuild the fock matrix each time since some diag routines can destroy it.
        call qm2_time_diag_routines_random(qm2_struct%matsize,qm2_struct%fock_matrix)
        call wallclock(start_time)
-       call qm2_full_diagonalize(diag_routine_to_test,qm2_struct%fock_matrix,qm2_struct%norbs, &
+       call qm2_full_diagonalize(qm2_struct,diag_routine_to_test,qm2_struct%fock_matrix,qm2_struct%norbs, &
             qm2_struct%eigen_vectors,abstol)
        call wallclock(end_time)
        current_time = current_time + (end_time-start_time)
@@ -723,7 +725,7 @@ contains
        !Need to rebuild the fock matrix each time since some diag routines can destroy it.
        call qm2_time_diag_routines_random(qm2_struct%matsize,qm2_struct%fock_matrix)
        call wallclock(start_time)
-       call qm2_full_diagonalize(diag_routine_to_test,qm2_struct%fock_matrix,qm2_struct%norbs, &
+       call qm2_full_diagonalize(qm2_struct,diag_routine_to_test,qm2_struct%fock_matrix,qm2_struct%norbs, &
             qm2_struct%eigen_vectors,abstol)
        call wallclock(end_time)
        current_time = current_time + (end_time-start_time)
@@ -785,7 +787,7 @@ contains
          !Need to rebuild the fock matrix each time since some diag routines can destroy it.
          call qm2_time_diag_routines_random(qm2_struct%matsize,qm2_struct%fock_matrix)
          call wallclock(start_time)
-         call qm2_pseudo_diag(qm2_struct%fock_matrix,qm2_struct%eigen_vectors,qm2_struct%nopenclosed, &
+         call qm2_pseudo_diag(qm2_struct,qm2_struct%fock_matrix,qm2_struct%eigen_vectors,qm2_struct%nopenclosed, &
               qmmm_scratch%mat_diag_workspace(1,1),qm2_struct%norbs,smallsum, &
               qmmm_scratch%pdiag_scr_norbs_norbs,qmmm_scratch%pdiag_scr_noccupied_norbs, &
               qmmm_scratch%pdiag_vectmp1,qmmm_scratch%pdiag_vectmp2,qmmm_scratch%pdiag_vectmp3, &

@@ -2,7 +2,7 @@
 
 #include "dprec.fh"
 
-subroutine qm2_dftb_get_qmmm_forces(qmmm_struct, dxyzcl,dxyzqm, vectmp1,vectmp2,vectmp3,vectmp4)
+subroutine qm2_dftb_get_qmmm_forces(qm2_struct, qmmm_struct, dxyzcl,dxyzqm, vectmp1,vectmp2,vectmp3,vectmp4)
 !Calculate interaction between REAL QM and MM atoms in the list. Exclude MM atoms.
 ! Due to the different charge magnitude in quantum and classical parts,
 ! a scaling may be necessary in this interaction. See eq. (4) in
@@ -24,13 +24,14 @@ subroutine qm2_dftb_get_qmmm_forces(qmmm_struct, dxyzcl,dxyzqm, vectmp1,vectmp2,
 
 ! Vector version written by Ross Walker (SDSC 2006)
 
-  use qmmm_module, only : qm2_struct, qmmm_mpi
+  use qmmm_module, only : qm2_structure, qmmm_mpi
   use constants, only: AU_TO_KCAL, BOHRS_TO_A
   use qmmm_struct_module, only : qmmm_struct_type
 
   implicit none
 
   !Passed in
+   type(qm2_structure),intent(inout) :: qm2_struct
    type(qmmm_struct_type), intent(in) :: qmmm_struct
   _REAL_ , intent(out) :: dxyzcl(3,qmmm_struct%qm_mm_pairs)
   _REAL_ , intent(inout) :: dxyzqm(3,qmmm_struct%nquant_nlink)

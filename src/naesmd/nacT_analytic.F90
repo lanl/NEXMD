@@ -174,7 +174,6 @@ module nacT_analytic_module
 !
    function nacT_direct_ihc(sim,ihop,icheck,xstep)
 
-   use qmmm_module,only:qm2_struct
    use qm2_davidson_module
    use naesmd_constants, only : kcalev
 
@@ -241,7 +240,7 @@ module nacT_analytic_module
    call packing(Nb,sim%dav%eta,sim%dav%nacr_scratch,'s')
 
 
-   nacT_direct_ihc=dcart1_xpm(sim%dav, sim%qmmm, sim%dav%nacr_scratch,xstep%Rp,xstep%Rm) 
+   nacT_direct_ihc=dcart1_xpm(sim%qm2, sim%dav, sim%qmmm, sim%dav%nacr_scratch,xstep%Rp,xstep%Rm) 
 
 
    nacT_direct_ihc=nacT_direct_ihc*kcalev &
@@ -265,7 +264,7 @@ module nacT_analytic_module
    use dcart_xpm_module
    use constants          , only : EV_TO_KCAL
    use ElementOrbitalIndex, only: MaxValenceOrbitals
-   use qmmm_module        , only : qmmm_nml, qm2_struct, qm2_params, qmmm_mpi
+   use qmmm_module        , only : qmmm_nml, qm2_params, qmmm_mpi
    use qm2_pm6_hof_module
    use dh_correction_module, only : dh_correction_grad
    use qm2_davidson_module ! CML 7/13/12
@@ -319,7 +318,7 @@ module nacT_analytic_module
                do J=jjf,I
                    IJ=IJ+1
                    K=K+1
-                   psum(IJ)=qm2_struct%den_matrix(K)               
+                   psum(IJ)=sim%qm2%den_matrix(K)               
                end do
            end do
            ! GET SECOND ATOM FIRST ATOM INTERSECTION
@@ -329,13 +328,13 @@ module nacT_analytic_module
                do J=jjf,jjl
                    IJ=IJ+1
                    K=K+1
-                   psum(IJ)=qm2_struct%den_matrix(K)
+                   psum(IJ)=sim%qm2%den_matrix(K)
                end do
                K=L+iif-1
                do L=iif,I
                    K=K+1
                    IJ=IJ+1
-                   psum(IJ)=qm2_struct%den_matrix(K)
+                   psum(IJ)=sim%qm2%den_matrix(K)
                end do
            end do
            
@@ -346,21 +345,21 @@ module nacT_analytic_module
            
            xyz_qmi(:)=xs%rm(:,ii)
            xyz_qmj(:)=xs%rm(:,jj)
-           call qm2_dhc1(sim%qmmm, psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+           call qm2_dhc1(sim%qm2, sim%qmmm, psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
               jjl,Fm)
                     
            xyz_qmi(:)=xs%rp(:,ii)
            xyz_qmj(:)=xs%rp(:,jj)
-           call qm2_dhc1(sim%qmmm, psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
-              jjl,qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:))
+           call qm2_dhc1(sim%qm2, sim%qmmm, psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+              jjl,sim%qm2%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:))
               
-           qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:)= &
-              qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:)-Fm(:)
+           sim%qm2%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:)= &
+              sim%qm2%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:)-Fm(:)
            
        end do
    end do
    
-   !qm2_struct%fock_matrix_dp=qm2_struct%fock_matrix_dp-qm2_struct%fock_matrix_dm
+   !sim%qm2%fock_matrix_dp=sim%qm2%fock_matrix_dp-sim%qm2%fock_matrix_dm
    
    !BTN End here
 

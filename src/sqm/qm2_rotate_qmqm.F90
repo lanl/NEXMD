@@ -1,7 +1,7 @@
 ! <compile=optimized>
 #include "copyright.h"
 #include "dprec.fh"
-subroutine qm2_rotate_qmqm(qmmm_struct, loop_count,IQM, JQM,NI,NJ,XI,XJ,W,KI,&
+subroutine qm2_rotate_qmqm(qm2_struct, qmmm_struct, loop_count,IQM, JQM,NI,NJ,XI,XJ,W,KI,&
                        RI, core)
 
 !********************************************************
@@ -39,12 +39,13 @@ subroutine qm2_rotate_qmqm(qmmm_struct, loop_count,IQM, JQM,NI,NJ,XI,XJ,W,KI,&
 !
 !***********************************************************************
       use constants  , only : one, A_TO_BOHRS, A2_TO_BOHRS2 
-      use qmmm_module, only : qmmm_nml,  qm2_struct, qm2_params, &
+      use qmmm_module, only : qmmm_nml,  qm2_structure, qm2_params, &
                               qm2_rij_eqns, EXPONENTIAL_CUTOFF
       use qmmm_struct_module, only : qmmm_struct_type
 
       implicit none
 !Passed in
+      type(qm2_structure),intent(inout) :: qm2_struct
       type(qmmm_struct_type), intent(in) :: qmmm_struct
       integer, intent(in) :: loop_count, iqm, jqm, ni, nj
       integer, intent(inout) :: ki

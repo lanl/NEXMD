@@ -260,7 +260,7 @@
       !   E_el^x=1/2 Tr((t^x+F^x) rho)
 
       ! qm2_get_exc_forces() is the SQM equivalent of DCART() in CEO 
-      call qm2_get_exc_forces(dxyz1,qmmm_struct%qm_coords)
+      call qm2_get_exc_forces(qm2_struct, dxyz1,qmmm_struct%qm_coords)
       !!JAB The function name should be changed? This is ground state derivative
       ! Convert from kcal/A to eV/A.
       ! Maps matrix onto vector. Only works when -Mbounds is not specified as compiler flag
@@ -299,7 +299,7 @@
          ! a different number of times. The numbers returned are the same, however.
          ! This could be a discrepancy in the indexing or the looping which may be moot,
          ! but it may be worth investigating. CML 6/26/12
-         call dcart1(qm2ds, qmmm_struct, dxyz1,qm2_struct%den_matrix,qm2ds%rhoTZ, &
+         call dcart1(qm2_struct, qm2ds, qmmm_struct, dxyz1,qm2_struct%den_matrix,qm2ds%rhoTZ, &
             qmmm_struct%qm_coords)
          ! Convert from kcal/A to eV/A.
          ! Maps matrix onto vector. Only works when -Mbounds is not specified as compiler flag
@@ -357,7 +357,7 @@
 
          call packing(qm2ds%Nb, qm2ds%rhoLZ, qm2ds%tz_scratch(1), 's')
 
-         call dcart2(qm2ds,qmmm_struct,dxyz1, qm2ds%tz_scratch(1), &
+         call dcart2(qm2_struct,qm2ds,qmmm_struct,dxyz1, qm2ds%tz_scratch(1), &
             qmmm_struct%qm_coords)
 
       ! Add solvent for symmetric part !!JAB
@@ -384,7 +384,7 @@
 
          call packing(qm2ds%Nb, qm2ds%rhoLZ, qm2ds%tz_scratch(1), 'u')
 
-         call dcart2(qm2ds,qmmm_struct,dxyz1, qm2ds%tz_scratch(1), &
+         call dcart2(qm2_struct,qm2ds,qmmm_struct,dxyz1, qm2ds%tz_scratch(1), &
             qmmm_struct%qm_coords)
 
       ! Add solvent for antisymmetric part !!JAB

@@ -2,7 +2,7 @@
 #include "copyright.h"
 #include "assert.fh"
 #include "dprec.fh"
-subroutine qm2_identify_peptide_links(qmmm_struct, n_peptide_links,coord)
+subroutine qm2_identify_peptide_links(qm2_struct, qmmm_struct, n_peptide_links,coord)
 
 !Ross Walker (TSRI, 2005)
 !Identifies peptide linkages based on distance. Also allocates
@@ -12,10 +12,11 @@ subroutine qm2_identify_peptide_links(qmmm_struct, n_peptide_links,coord)
 !for the moment this will suffice.
 
       use qmmm_struct_module, only : qmmm_struct_type
-      use qmmm_module, only :  qm2_struct
+      use qmmm_module, only :  qm2_structure
       implicit none
 
 !Passed in
+      type(qm2_structure),intent(inout) :: qm2_struct
       type(qmmm_struct_type), intent(inout) :: qmmm_struct
       integer, intent(out) :: n_peptide_links
       _REAL_, intent(in) :: coord(3,qmmm_struct%nquant_nlink)

@@ -44,7 +44,7 @@ module qmmm_module
   ! these live here (in this module) only for historic reasons
   public :: qmmm_nml, qmmm_mpi
   public :: qmmm_scratch, qmmm_div, qmmm_vsolv, qmmm_opnq
-  public :: qm2_struct, qm2_rij_eqns, qm2_params
+  public :: qm2_rij_eqns, qm2_params
   public :: qmewald, qm_gb
 
   ! functions and subroutines
@@ -338,7 +338,6 @@ module qmmm_module
   ! but need to be global for historic reasons - too much work to disentangle sander
   ! do *not* use these as globals in new subroutines!
   type(qmmm_nml_type)   , save :: qmmm_nml
-  type(qm2_structure)   , save,target :: qm2_struct
   type(qm2_params_type)        :: qm2_params
   type(qm2_rij_eqns_structure) :: qm2_rij_eqns
   type(qm_ewald_structure)     :: qmewald
@@ -356,7 +355,7 @@ contains
   
   
 #ifdef MPI
-  subroutine qmmm_mpi_setup(qmmm_struct, master, natom )
+  subroutine qmmm_mpi_setup(qm2_struct, qmmm_struct, master, natom )
 
     ! QMMM specific mpi setup and broadcasts
 
@@ -373,6 +372,7 @@ contains
      integer, intent(in) :: natom
 
      type(qmmm_struct_type), intent(inout) :: qmmm_struct
+     type(qm2_structure), intent(inout) :: qm2_struct
      integer :: mpi_division, i, istartend(2)
      integer :: loop_extent, loop_extent_begin, loop_extent_end
      integer :: j, jstart, jend
@@ -577,7 +577,7 @@ contains
   !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #endif
   
-  subroutine allocate_qmmm( qmmm_nml, qmmm_struct, natom )
+  subroutine allocate_qmmm(qmmm_nml, qmmm_struct, natom )
 
      ! allocates space for qmmm variables and arrays that depend only on nquant or natom
 
@@ -614,7 +614,7 @@ contains
   end subroutine allocate_qmmm
   !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   
-  subroutine deallocate_qmmm(qmmm_nml, qmmm_struct, qmmm_vsolv, qm2_params)
+  subroutine deallocate_qmmm(qm2_struct, qmmm_nml, qmmm_struct, qmmm_vsolv, qm2_params)
     
     use qmmm_nml_module   , only : qmmm_nml_type, delete
     use qmmm_struct_module, only : qmmm_struct_type, delete
@@ -623,6 +623,7 @@ contains
 
     implicit none
 
+    type(qm2_structure), intent(inout) :: qm2_struct
     type(qmmm_nml_type)   , intent(inout) :: qmmm_nml
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
     type(qmmm_vsolv_type) , intent(inout) :: qmmm_vsolv

@@ -51,18 +51,18 @@ subroutine deriv(sim,state) ! , xyz_in)
            !   E_el^x=1/2 Tr((t^x+F^x) rho)
            ! qm2_get_exc_forces() is the SQM equivalent of DCART() in CEO
 
-        call qm2_get_exc_forces(simpoint%qmmm,dxyz1,simpoint%qmmm%qm_coords)
+        call qm2_get_exc_forces(simpoint%qm2, simpoint%qmmm,dxyz1,simpoint%qmmm%qm_coords)
 
         !add solvent part (nuclear and electronic for ground state with COSMO
         !surface derivatives)
         if((solvent_model.gt.0).and.(solvent_model.ne.10)) then
             if((potential_type.eq.3).and.(ceps.gt.1.0)) then !have to specify ceps here because of division by 0 when eq 1
-                call cosmo_1_tri(qm2_struct%den_matrix) !put simpoint%dav%den_matrix in the right place
+                call cosmo_1_tri(simpoint%qm2%den_matrix) !put simpoint%dav%den_matrix in the right place
                 call diegrd(simpoint%qmmm, dxyz1_test) !derivative
             elseif(potential_type.eq.2) then
-                call rcnfldgrad(simpoint%qmmm,dxyz1_test,qm2_struct%den_matrix,qm2_struct%norbs)
+                call rcnfldgrad(simpoint%qm2,simpoint%qmmm,dxyz1_test,simpoint%qm2%den_matrix,simpoint%qm2%norbs)
               !write(6,*)'dxyz1=',dxyz1_test; dxyz1_test=0.d0
-              !call rcnfldgrad2(simpoint%qmmm,dxyz1_test,qm2_struct%den_matrix,qm2_struct%den_matrix,simpoint%dav%nb,.true.)
+              !call rcnfldgrad2(simpoint%qm2,simpoint%qmmm,dxyz1_test,simpoint%qm2%den_matrix,simpoint%qm2%den_matrix,simpoint%dav%nb,.true.)
             endif
             dxyz1=dxyz1+dxyz1_test
         endif
@@ -83,7 +83,7 @@ subroutine deriv(sim,state) ! , xyz_in)
             ! add allocation to the big allocation/dealloc regime
       
             ! Get excited state density
-            call calc_rhotz(simpoint%dav,simpoint%qmmm,ihop, simpoint%dav%rhoTZ,.true.)
+            call calc_rhotz(simpoint%qm2,simpoint%dav,simpoint%qmmm,ihop, simpoint%dav%rhoTZ,.true.)
             call mo2sitef(simpoint%dav%Nb,simpoint%dav%vhf,simpoint%dav%rhoTZ,simpoint%dav%tz_scratch(1), &
                 simpoint%dav%tz_scratch(simpoint%dav%Nb**2+1))
             call packing(simpoint%dav%Nb,simpoint%dav%tz_scratch(1),simpoint%dav%rhoTZ,'s')
@@ -96,14 +96,16 @@ subroutine deriv(sim,state) ! , xyz_in)
             dxyz1=0.d0; dxyz1_test=0.d0;
 
             !calculate vacuum derivative for term 1
-            call dcart1(simpoint%dav, simpoint%qmmm, dxyz1,qm2_struct%den_matrix,simpoint%dav%rhoTZ,simpoint%qmmm%qm_coords)
+            call dcart1(simpoint%qm2, simpoint%dav, simpoint%qmmm, dxyz1,&
+		simpoint%qm2%den_matrix,simpoint%dav%rhoTZ,simpoint%qmmm%qm_coords)
             !add solvent part (symmetric only b/c symmetric matrix)
             if(solvent_model.gt.0) then
                 if((potential_type.eq.3).and.(ceps.gt.1.0)) then !ceps.gt.1.0 because of singularity in cosmo subroutines
                     call cosmo_1_tri_2(simpoint%dav%rhoTZ,density2,charges2,acharges2) !solvent and solute charges
                     call diegrd2(simpoint%qmmm,dxyz1_test,density2,charges2,acharges2) !derivative
                 elseif(potential_type.eq.2) then
-                    call rcnfldgrad2(simpoint%qmmm,dxyz1_test,qm2_struct%den_matrix,simpoint%dav%rhoTZ,simpoint%dav%nb,.true.)
+                    call rcnfldgrad2(simpoint%qm2,simpoint%qmmm,dxyz1_test,&
+			simpoint%qm2%den_matrix,simpoint%dav%rhoTZ,simpoint%dav%nb,.true.)
                 endif
                 dxyz1=dxyz1+dxyz1_test
             endif
@@ -122,15 +124,16 @@ subroutine deriv(sim,state) ! , xyz_in)
             call packing(simpoint%dav%Nb, simpoint%dav%rhoLZ,simpoint%dav%tz_scratch(1), 's')
             call packing(simpoint%dav%Nb, simpoint%dav%rhoLZ,simpoint%dav%tz_scratch(simpoint%dav%nb**2+1),'u')
             !vacuum derivative
-            call dcart2(simpoint%dav, simpoint%qmmm,dxyz1,simpoint%dav%tz_scratch(1),simpoint%qmmm%qm_coords)
-            call dcart2(simpoint%dav, simpoint%qmmm,dxyz1,simpoint%dav%tz_scratch(simpoint%dav%nb**2+1),simpoint%qmmm%qm_coords)
+            call dcart2(simpoint%qm2, simpoint%dav, simpoint%qmmm,dxyz1,simpoint%dav%tz_scratch(1),simpoint%qmmm%qm_coords)
+            call dcart2(simpoint%qm2, simpoint%dav, simpoint%qmmm,dxyz1, &
+		simpoint%dav%tz_scratch(simpoint%dav%nb**2+1),simpoint%qmmm%qm_coords)
             if(solvent_model.eq.1) then
                 if((potential_type.eq.3).and.(ceps.gt.1.0)) then
                     qscnet(:,1)=0.d0; qdenet(:,1)=0.d0;                    !Clear Nuclear Charges
                     call cosmo_1_tri(simpoint%dav%tz_scratch(1)) !Fill Electronic Chrages
                     call diegrd(simpoint%qmmm, dxyz1_test);                !derivative
                 elseif(potential_type.eq.2) then
-                    call rcnfldgrad_full(simpoint%qmmm,dxyz1_test,simpoint%dav%rhoLZ,simpoint%dav%nb);
+                    call rcnfldgrad_full(simpoint%qm2,simpoint%qmmm,dxyz1_test,simpoint%dav%rhoLZ,simpoint%dav%nb);
                 end if
             end if
             dxyz1=dxyz1+0.5*dxyz1_test
@@ -147,12 +150,12 @@ subroutine deriv(sim,state) ! , xyz_in)
             !Vertical Excitation Model
             if(solvent_model.eq.2) then
                 !Get unrelaxed difference density matrix for the state to calculate derivatives for
-                call calc_rhotz(simpoint%dav,simpoint%qmmm,ihop, simpoint%dav%rhoT,.false.)
+                call calc_rhotz(simpoint%qm2,simpoint%dav,simpoint%qmmm,ihop, simpoint%dav%rhoT,.false.)
                 call mo2sitef(simpoint%dav%Nb,simpoint%dav%vhf,simpoint%dav%rhoT,simpoint%dav%tz_scratch(1), &
                     simpoint%dav%tz_scratch(simpoint%dav%Nb**2+1))
                 call packing(simpoint%dav%Nb,simpoint%dav%tz_scratch(1),simpoint%dav%rhoT,'s')
                 !Get relaxed or unrelaxed difference density matrix for the state specific state
-                call calc_rhotz(simpoint%dav,simpoint%qmmm,simpoint%qmmm%state_of_interest,simpoint%dav%rhoTZ,doZ);
+                call calc_rhotz(simpoint%qm2,simpoint%dav,simpoint%qmmm,simpoint%qmmm%state_of_interest,simpoint%dav%rhoTZ,doZ);
                 call mo2sitef(simpoint%dav%Nb,simpoint%dav%vhf,simpoint%dav%rhoTZ,simpoint%dav%tz_scratch(1), &
                     simpoint%dav%tz_scratch(simpoint%dav%Nb**2+1))
                 call packing(simpoint%dav%Nb,simpoint%dav%tz_scratch(1),simpoint%dav%rhoTZ,'s')
@@ -164,7 +167,8 @@ subroutine deriv(sim,state) ! , xyz_in)
                     call cosmo_1_tri_2(simpoint%dav%rhoT,density2,charges2,acharges2) !fill solute charges
                     call diegrd2(simpoint%qmmm,dxyz1_test,density2,charges2,acharges2) !derivative
                 elseif(potential_type.eq.2) then
-                    call rcnfldgrad2(simpoint%qmmm,dxyz1_test,simpoint%dav%rhoTZ,simpoint%dav%rhoT,simpoint%dav%nb,.false.)
+                    call rcnfldgrad2(simpoint%qm2,simpoint%qmmm,dxyz1_test,&
+			simpoint%dav%rhoTZ,simpoint%dav%rhoT,simpoint%dav%nb,.false.)
                 endif
                 dxyz1=dxyz1+0.5*dxyz1_test
                 
@@ -181,7 +185,7 @@ subroutine deriv(sim,state) ! , xyz_in)
                 write(6,*)'WARNING:DERIVATIVES FOR STATE SPECIFIC SOLVENT ARE NONVARIATIONAL'
                 !Get relaxed density matrix for the state specific state
                 simpoint%dav%rhoT=0; simpoint%dav%rhoTZ=0;
-                call calc_rhotz(simpoint%dav,simpoint%qmmm,simpoint%qmmm%state_of_interest,simpoint%dav%rhoT,doZ);                !rhoT will be rhoTZ_k
+                call calc_rhotz(simpoint%qm2,simpoint%dav,simpoint%qmmm,simpoint%qmmm%state_of_interest,simpoint%dav%rhoT,doZ);                !rhoT will be rhoTZ_k
                 call mo2sitef(simpoint%dav%Nb,simpoint%dav%vhf,simpoint%dav%rhoT,simpoint%dav%tz_scratch(1), &
                     simpoint%dav%tz_scratch(simpoint%dav%Nb**2+1))
                 simpoint%dav%rhoT=0;
@@ -193,7 +197,8 @@ subroutine deriv(sim,state) ! , xyz_in)
                     call cosmo_1_tri_2(simpoint%dav%rhoTZ,density2,charges2,acharges2) !fill solute charges
                     call diegrd2(simpoint%qmmm,dxyz1_test,density2,charges2,acharges2) !derivative
                 elseif(potential_type.eq.2) then
-                    call rcnfldgrad2(simpoint%qmmm,dxyz1_test,simpoint%dav%rhoT,simpoint%dav%rhoTZ,simpoint%dav%nb,.false.)
+                    call rcnfldgrad2(simpoint%qm2,simpoint%qmmm,dxyz1_test,&
+			simpoint%dav%rhoT,simpoint%dav%rhoTZ,simpoint%dav%nb,.false.)
                 endif
                 dxyz1=dxyz1+dxyz1_test
    
@@ -207,10 +212,11 @@ subroutine deriv(sim,state) ! , xyz_in)
                 dxyz1=0.d0; dxyz1_test=0.d0; charges2=0.d0; acharges2=0.d0; density2=0.d0
                 !Ground State part
                 if((potential_type.eq.3).and.(ceps.gt.1.0)) then !ceps.gt.1.0 because of singularity in cosmo subroutines
-                    call cosmo_1_tri_2(qm2_struct%den_matrix,density2,charges2,acharges2) !fill solute charges
+                    call cosmo_1_tri_2(simpoint%qm2%den_matrix,density2,charges2,acharges2) !fill solute charges
                     call diegrd2(simpoint%qmmm,dxyz1_test,density2,charges2,acharges2) !derivative
                 elseif(potential_type.eq.2) then
-                    call rcnfldgrad2(simpoint%qmmm,dxyz1_test,simpoint%dav%rhoT,qm2_struct%den_matrix,simpoint%dav%nb,.true.)
+                    call rcnfldgrad2(simpoint%qm2,simpoint%qmmm,dxyz1_test,&
+			simpoint%dav%rhoT,simpoint%qm2%den_matrix,simpoint%dav%nb,.true.)
                 endif
                 dxyz1=dxyz1+dxyz1_test
 
@@ -236,8 +242,8 @@ subroutine deriv(sim,state) ! , xyz_in)
         E_ES_left=0; E_ES_right=0;
         !Loop over the number of coordinates
         do i=1,simpoint%qmmm%nquant_nlink*3
-            !write(6,*)'den_c',qm2_struct%den_matrix
-            !write(6,*)'fock_c',qm2_struct%fock_matrix
+            !write(6,*)'den_c',simpoint%qm2%den_matrix
+            !write(6,*)'fock_c',simpoint%qm2%fock_matrix
             !Modify the coordinates and calculate energies
 
             xyz(i)=xyz(i)+h !left

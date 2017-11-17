@@ -1,7 +1,7 @@
 #include "copyright.h"
 #include "dprec.fh"
 
-subroutine qm2_print_energy(verbosity, qmtheory, escf, qmmm_struct)
+subroutine qm2_print_energy(qm2_struct, verbosity, qmtheory, escf, qmmm_struct)
 
   ! Print QM energy contributions
   ! For historic reasons the nomenclature for the energy terms is misleading:
@@ -21,14 +21,15 @@ subroutine qm2_print_energy(verbosity, qmtheory, escf, qmmm_struct)
 
   use constants, only : J_PER_CAL, EV_TO_KCAL, KCAL_TO_EV
   use qmmm_struct_module, only : qmmm_struct_type
-  use qmmm_module, only: qmmm_scratch,qm2_struct
+  use qmmm_module, only: qmmm_scratch,qm2_structure
   use qmmm_qmtheorymodule, only : qmTheoryType
 
    use cosmo_C, only: ediel,onsagE,solvent_model,potential_type
    use qm2_davidson_module
 
   implicit none
-
+  
+  type(qm2_structure),intent(inout) :: qm2_struct
   integer, intent(in) :: verbosity
   _REAL_, intent(in) :: escf
   type(qmmm_struct_type), intent(in) :: qmmm_struct
