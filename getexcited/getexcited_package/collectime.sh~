@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [ -f timing.out ]; then
+    rm timing.out
+fi
+## FOR NEW CODE (NEXMD) USING INTEL AND GNU COMPILERS ##
+#tail -14 md.out | awk 'NR%2==0' | head -n-1 >> timing.out
+
+## FOR NEW CODE (NEXMD) USING PGI COMPILER ##
+#tail -17 md.out | awk 'NR%2==0' | head -n-2 >> timing.out
+
+## FOR OLD CODE (NAESMD) ##
+tail -5 md.out | head -n-4 >> timing.out

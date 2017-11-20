@@ -1,0 +1,263 @@
+#/usr/bin/python
+
+# NEED TO ADD ARRAYV AFTER SINGLE-POINT IS FULLY FIXED
+
+'''
+ ___________________________________________________________________
+|                                                                   |
+| This function prepares input files for non-adiabatic              |
+| excited-state molecular dynamics (NAESMD).                        |
+|                                                                   |
+| A general header called 'header' must be in the NAESMD directory  |
+| (e.g. naesmd) and must have all inputs set except for:            |
+|                                                                   |
+| 1) Random seed (rnd_seed)                                         |
+| 2) Initial excited state (exc_state_init)                         |
+| 3) Initial nuclear coordinates and velocities (nucl_coord_veloc)  |
+| 4) Initial quantum amplitudes and phase (quant_amp_phase)         |
+|                                                                   |
+| In parentheses shown above, are specific key phrases in the       |
+| 'header' that label these inputs.  This function finds these      |
+| labels and fills them in accordingly.                             |
+|___________________________________________________________________|
+
+'''
+
+import numpy as np
+import os
+import sys
+
+def NAESMD():
+
+    SPDIR = raw_input('Single-point calculations directory: ')
+    if not os.path.exists(SPDIR):
+        print 'Path %s does not exist.' % (SPDIR)
+        sys.exit()
+    GSDIR = raw_input('Ground-state dynamics directory: ')
+    if not os.path.exists(GSDIR):
+        print 'Path %s does not exist.' % (GSDIR)
+        sys.exit()
+    if not os.path.exists('%s/coords.xyz' % (GSDIR)):
+        print 'Path %s/coords.xyz does not exist.' % (GSDIR)
+        sys.exit()
+    DATAC = open('%s/coords.xyz' % (GSDIR),'r')
+    DATAC = DATAC.readlines()
+    LEN = len(DATAC)
+    if not os.path.exists('%s/velocity.out' % (GSDIR)):
+        print 'Path %s/velocity.out does not exist.' % (GSDIR)
+        sys.exit()
+    DATAV = open('%s/velocity.out' % (GSDIR),'r')
+    DATAV = DATAV.readlines()
+    NCOORDS = 0
+    INDEX = 0
+    ARRAYC = np.array([])
+    for LINE in DATAC:
+        if 'time' in LINE:
+            if NCOORDS == 0:
+                TINIT = np.float(LINE.split()[-1])
+                NCOORDS += 1
+                ARRAYC = np.append(ARRAYC,INDEX)
+            else:
+                TIME = np.float(LINE.split()[-1])
+                NCOORDS += 1
+                ARRAYC = np.append(ARRAYC,INDEX)
+        INDEX += 1
+    ARRAYC = np.append(ARRAY,LEN)
+    ARRAYC = np.int_(ARRAY)
+    if NCOORDS > 1:
+        INDEX = 0
+        ARRAYV = np.array([0])
+        for LINE in DATAV:
+            if 'time' in LINE:
+                ARRAYV = np.append(ARRAYV,INDEX)
+            INDEX += 1
+        ARRAYV = np.append(ARRAYV,LENV)
+        ARRAYV = np.int_(ARRAYV)
+    if NCOORDS == 0:
+        print 'No coordinates have been found.'
+        sys.exit()
+    if NCOORDS == 1:
+        print 'Only initial coordinates at %.2f fs have been found.' % (TINIT)
+        sys.exit()
+    TINC = TIME/(NCOORDS - 1)
+    print 'A total of %d sets of coordinates, ranging from %.2f to %.2f fs in increments of %.2f fs, have been found.' % (NCOORDS,TINIT,TIME,TINC)
+    COORDS = input('Specify range of coordinate files.\nInput an array of the form [start, end, increment]: ')
+    if not isinstance(COORDS,list):
+        print 'Input must be an array of the form [start, end, increment].\nFor example, [1, 1000, 1] requests coordinate files 0001 to 1000 in increments of 1.'
+        sys.exit()
+    if len(COORDS) != 3:
+        print 'Input must be an array with three elements of the form [start, end, increment].\nFor example, [1, 1000, 1] requests coordinate files 0001 to 1000 in increments of 1.'
+        sys.exit()
+    INDEX = 0
+    for i in COORDS:
+        if type(i) != int:
+            print 'Element number %d of the input array is not integer.\nUser inputted [%s, %s, %s], which is not allowed.' % (INDEX+1,COORDS[0],COORDS[1],COORDS[2])
+            sys.exit()
+        INDEX += 1
+    if COORDS[0] not in np.arange(NCOORDS+1):
+        print 'First element must be between 0001 and %04d.\nUser inputted [%d, %d, %d], which is not allowed.' % (NCOORDS,COORDS[0],COORDS[1],COORDS[2])
+        sys.exit()
+    if COORDS[0] > COORDS[1]:
+        print 'First element of input array must be less than second element.\nUser inputted [%d, %d, %d], which is not allowed.' % (COORDS[0],COORDS[1],COORDS[2])
+        sys.exit()
+    if (COORDS[1] - COORDS[0]) < COORDS[2]:
+        print 'Second element minus first element must be greater than the third element.\nUser inputted [%d, %d, %d], which is not allowed.' % (COORDS[0],COORDS[1],COORDS[2])
+        sys.exit()
+    NTRAJ = len(np.arange(COORDS[0],COORDS[1]+1,COORDS[2]))
+    COORDSQ = input('You have requested coordinate files %04d to %04d in increments of %d.\nThis is a total of %d coordinate files.\nIs this correct? Answer YES [1] or NO [0]: ' % (COORDS[0],COORDS[1],COORDS[2],NTRAJ))
+    if COORDSQ not in [1,0]:
+        print 'Answer must be 1 or 0.'
+        sys.exit()
+    if COORDSQ == 0:
+        sys.exit()
+    ANUM = open('%s/restart.out' % (GSDIR),'r')
+    ANUM = ANUM.readlines()
+    INDEX = 0
+    for LINE in ANUM:
+        if '$COORD' in LINE:
+            TOP = INDEX
+        if '$ENDCOORD' in LINE:
+            BOTTOM = INDEX
+            break
+        INDEX += 1
+    ANUM = [ LINE.split()[0] for LINE in ANUM[TOP+1:BOTTOM:1] ]
+    OUTDIR = raw_input('Output directory [e.g. naesmd]: ')
+    if not os.path.exists(OUTDIR):
+        print 'Path %s does not exist.' % (OUTDIR)
+        sys.exit()
+    SPLIT = input('Number of trajectories per NAMD folder: ')
+    if type(SPLIT) != int:
+        print 'Number of trajectories per NAMD folder must be an integer.'
+        sys.exit()
+    if SPLIT < 0:
+        print 'Number of trajectories per NAMD folder must be an integer greater than zero.'
+        sys.exit()
+    DIRSPLIT = SPLIT*np.arange(1,np.ceil(np.float(NTRAJ)/SPLIT)+1)
+    DIRSPLIT[-1] = COORDS[1]+1
+    DIRSPLIT = np.split(np.arange(COORDS[0],COORDS[1]+1,COORDS[2]),DIRSPLIT)
+
+    RANDQ = input('New random seeds? Answer YES [1] or NO [0]: ')
+    if RANDQ not in [1,0]:
+        print 'Answer must be 1 or 0.'
+        sys.exit()
+    if RANDQ == 1:
+        RSEEDS = np.random.choice(np.arange(1,1000001), NTRAJ)
+    else:
+        RSEEDSLIST = raw_input('Path to random-seeds list: ')
+        if not os.path.exists(RSEEDSLIST):
+            print 'Path %s does not exist.' % (RSEEDSLIST)
+            sys.exit()
+        RSEEDSLIST = open('%s' % (RSEEDSLIST),'r')
+        RSEEDSLIST = RSEEDSLIST.readlines()
+        LEN = len(RSEEDSLIST)
+        if LEN < NTRAJ:
+            print 'Length of random-seeds list must be equal to or greater than the number of trajectories.\nUser inputted a random-seeds list of length %d, while the number of trajectories requested is %d.' % (LEN,NTRAJ)
+            sys.exit()
+        RSEEDS = np.zeros(LEN)
+        INDEX = 0
+        for LINE in RSEEDSLIST:
+            VAL = LINE.split()
+            RSEEDS[INDEX] = np.int(VAL[2])
+            INDEX += 1
+
+    EXCEN = input('Laser excitation energy in eV: ')
+    EXCSD = input('Spectral broadening (i.e. Gaussian standard deviation) in eV [e.g. 0.15]: ')
+    ERROR = open('%s/ceo.err' % (CWD),'w')
+    CEOFLAG = 0
+    INDEX = 0
+    for NAMD in np.arange(1,np.ceil(np.float(NTRAJ)/SPLIT)+1):
+        if not os.path.exists('%s/NAMD%d' % (OUTDIR,NAMD)):
+            os.makedirs('%s/NAMD%d' % (OUTDIR,NAMD))
+        else:
+            DATA = next(os.walk('%s/NAMD%d' % (OUTDIR,NAMD)))[2]
+            DATA = [ x for x in DATA if 'dirlist' in x ]
+            if len(DATA) != 0:
+                for FILE in DATA:
+                    os.remove('%s/NAMD%d/%s' % (OUTDIR,NAMD,FILE))
+        DIRLIST = open('%s/NAMD%d/dirlist' % (OUTDIR,NAMD),'w')
+        for DIR in DIRSPLIT[INDEX]:
+            if not os.path.exists('%s/NAMD%d/%04d' % (OUTDIR,NAMD,DIR)):
+                os.makedirs('%s/NAMD%d/%04d' % (OUTDIR,NAMD,DIR))
+            if not os.path.exists('%s/NAMD%d/%04d/ceo.out' % (SPDIR,NAMD,DIR)):
+                print 'Path %s/NAMD%d/%04d/ceo.out does not exist.' % (SPDIR,NAMD,DIR)
+                sys.exit()
+            if os.stat('%s/NAMD%d/%04d/ceo.out' % (SPDIR,NAMD,DIR)).st_size == 0:
+                print >> ERROR, 'NAMD%d' % (NAMD), '%04d' % (DIR)
+                CEOFLAG = 1
+            print >> DIRLIST, '%04d' % (DIR)
+        INDEX += 1
+        if CEOFLAG == 1:
+            print 'One of more ceo.out files are empty, check ceo.err.'
+            sys.exit()
+        else:
+            os.remove('%s/ceo.err' % (CWD))
+
+        if not os.path.exists('%s/header' % (OUTDIR)):
+            print 'Path %s/header does not exist.' % (OUTDIR)
+            sys.exit()
+        HEADER = open('%s/header' % (OUTDIR),'r')
+        HEADER = HEADER.readlines()
+        for LINE in HEADER:
+            if 'n_class_steps' in LINE:
+                TSMAX = np.int(LINE.split()[0][len('n_class_steps='):-1])
+                break
+        if TSMAX == 0:
+            print 'User must change n_class_steps in %s/header to greater than 0 for dynamics.' % (OUTDIR)
+            sys.exit()
+        TRAJ = 0
+        for NAMD in np.arange(1,np.ceil(np.float(NTRAJ)/SPLIT)+1):
+            if not os.path.exists('%s/NAMD%d' % (OUTDIR,NAMD)):
+                os.makedirs('%s/NAMD%d' % (OUTDIR,NAMD))
+            DATA = open('%s/NAMD%d/dirlist' % (OUTDIR,NAMD),'r')
+            DATA = DATA.readlines()
+            LEN = len(DATA)
+            DIRLIST = np.zeros(LEN)
+            INDEX = 0
+            for LINE in DATA:
+                VAL = LINE.split()
+                DIRLIST[INDEX] = np.int(VAL[0])
+                INDEX += 1
+            for DIR in DIRLIST:
+                DATA = open('%s/NAMD%d/%04d/ceo.out' % (SPDIR,NAMD,DIR),'r')
+                DATA = DATA.readlines()
+                LEN = len(DATA)
+                QPOP = np.zeros(LEN)
+                INDEX = 0
+                for LINE in DATA:
+                    VAL = LINE.split()
+                    QPOP[INDEX] = np.float(VAL[1])*np.exp(-(EXCEN - np.float(VAL[0]))**(2.0)/(2.0*EXCSD**(2.0)))/np.sqrt(2.0*np.pi*EXCSD**(2.0))
+                    INDEX += 1
+                QPOP = QPOP/np.sum(QPOP)
+                STATE = np.searchsorted(np.cumsum(QPOP),np.random.uniform())+1
+                QPOP = np.zeros(LEN)
+                QPOP[STATE-1]=1.0
+                COORDS = DATAC[ARRAYC[DIR]+1:ARRAYC[DIR+1]-1:1]
+                VELOCS = DATAV[ARRAYV[DIR]+2:ARRAYV[DIR+1]-1:1]
+                if not os.path.exists('%s/NAMD%d/%04d' % (OUTDIR,NAMD,DIR)):
+                    os.makedirs('%s/NAMD%d/%04d' % (OUTDIR,NAMD,DIR))
+                INPUT = open('%s/NAMD%d/%04d/input.ceon' % (OUTDIR,NAMD,DIR),'w')
+                for LINE in HEADER:
+                    if 'rnd_seed' in LINE:
+                        INPUT.write('   rnd_seed=%d, ! Seed for the random number generator\n' % (RSEEDS[TRAJ]))
+                    else:
+                        if 'exc_state_init' in LINE:
+                            INPUT.write('   exc_state_init=%d, ! Initial excited state (0 - ground state) [0]\n' % (STATE))
+                        else:
+                            if 'nucl_coord_veloc' in LINE:
+                                for LINE in COORDS:
+                                    INPUT.write(LINE)
+                                INPUT.write('\n')
+                                for LINE in VELOCS:
+                                    INPUT.write(LINE)
+                            else:
+                                if 'quant_amp_phase' in LINE:
+                                    INPUT.write('&coeff\n')
+                                    for LINE in QPOP:
+                                        INPUT.write('  %.3f  %.3f\n' % (LINE,0.0))
+                                    INPUT.write('&endcoeff\n')
+                                else:
+                                    INPUT.write(LINE)
+                INPUT.close()
+                print 'NAMD%d' % (NAMD), '%04d' % (DIR)
+                TRAJ += 1
+    np.savetext('%s/rseedslist' % (OUTDIR), np.transpose([RSEEDS[0:TRAJ:1]]))

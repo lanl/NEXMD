@@ -1,0 +1,12 @@
+
+TASKS:
+
+Urgent
+1) check to make sure rseedslist prints for restart.py
+2) check problem with TSMAX
+
+Less Urgent
+1) how to simulate pump-push-probe spectroscopy, possible convolution?
+2) push pulse data must come from coords.xyz, coordinate.out, velocity.out, and coeff-n.out - this is to be able use same ensemble data for different pump-push delay times
+
+
