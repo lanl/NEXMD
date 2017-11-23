@@ -32,12 +32,12 @@ contains
 
         if(solvent_model.eq.2) then
             call calc_excsolven(sim%qmmm,energy) !JAB Test
-            vmdqt(ihop)=vmdqt(ihop)-0.5*energy/feVmdqt !JAB Test
+            sim%naesmd%vmdqt(sim%naesmd%ihop)=sim%naesmd%vmdqt(sim%naesmd%ihop)-0.5*energy/feVmdqt !JAB Test
         endif
 
-        kin=0.0d0
-        do i =1, natom
-            kin=kin+massmdqt(i)*(vx(i)**2+vy(i)**2+vz(i)**2)/2
+        sim%naesmd%kin=0.0d0
+        do i =1, sim%naesmd%natom
+            sim%naesmd%kin=sim%naesmd%kin+sim%naesmd%massmdqt(i)*(sim%naesmd%vx(i)**2+sim%naesmd%vy(i)**2+sim%naesmd%vz(i)**2)/2
         end do
 
         ntot=0
@@ -45,37 +45,39 @@ contains
             ntot=ntot+yg(j)**2
         end do
 
-        kinini=kin
-        if(state.eq.'fund') then
-            vini=vgs
-            etotini=kin+vgs
-            write(98,889) tfemto,kin*feVmdqt,kin*feVmdqt-kinini*feVmdqt, &
-                vgs*feVmdqt, &
-                vgs*feVmdqt-vini*feVmdqt, &
-                kin*feVmdqt+vgs*feVmdqt,kin*feVmdqt+vgs*feVmdqt-etotini*feVmdqt
+        sim%naesmd%kinini=sim%naesmd%kin
+        if(sim%naesmd%state.eq.'fund') then
+            sim%naesmd%vini=sim%naesmd%vgs
+            sim%naesmd%etotini=sim%naesmd%kin+sim%naesmd%vgs
+            write(98,889) sim%naesmd%tfemto,sim%naesmd%kin*feVmdqt,sim%naesmd%kin*feVmdqt-sim%naesmd%kinini*feVmdqt, &
+                sim%naesmd%vgs*feVmdqt, &
+                sim%naesmd%vgs*feVmdqt-sim%naesmd%vini*feVmdqt, &
+                sim%naesmd%kin*feVmdqt+sim%naesmd%vgs*feVmdqt, &
+                sim%naesmd%kin*feVmdqt+sim%naesmd%vgs*feVmdqt-sim%naesmd%etotini*feVmdqt
         end if
 
-        if(state.eq.'exct') then
-            vini=vmdqt(ihop)
-            etotini=kin+vmdqt(ihop)
-            write(98,889) tfemto,kin*feVmdqt,kin*feVmdqt-kinini*feVmdqt, &
-                vmdqt(ihop)*feVmdqt, &
-                vmdqt(ihop)*feVmdqt-vini*feVmdqt, &
-                kin*feVmdqt+vmdqt(ihop)*feVmdqt,kin*feVmdqt+vmdqt(ihop)*feVmdqt- &
-                etotini*feVmdqt
+        if(sim%naesmd%state.eq.'exct') then
+            sim%naesmd%vini=sim%naesmd%vmdqt(sim%naesmd%ihop)
+            sim%naesmd%etotini=sim%naesmd%kin+sim%naesmd%vmdqt(sim%naesmd%ihop)
+            write(98,889) sim%naesmd%tfemto,sim%naesmd%kin*feVmdqt,sim%naesmd%kin*feVmdqt-sim%naesmd%kinini*feVmdqt, &
+                sim%naesmd%vmdqt(sim%naesmd%ihop)*feVmdqt, &
+                sim%naesmd%vmdqt(sim%naesmd%ihop)*feVmdqt-sim%naesmd%vini*feVmdqt, &
+                sim%naesmd%kin*feVmdqt+sim%naesmd%vmdqt(sim%naesmd%ihop)*feVmdqt,&
+                sim%naesmd%kin*feVmdqt+sim%naesmd%vmdqt(sim%naesmd%ihop)*feVmdqt- &
+                sim%naesmd%etotini*feVmdqt
         end if
 
-        if(state.eq.'exct') then
+        if(sim%naesmd%state.eq.'exct') then
             if(lprint.ge.1) then
-                write(96,889) tfemto,vgs*feVmdqt, &
-                    (vmdqt(j)*feVmdqt,j=1,sim%excN)
+                write(96,889) sim%naesmd%tfemto,sim%naesmd%vgs*feVmdqt, &
+                    (sim%naesmd%vmdqt(j)*feVmdqt,j=1,sim%excN)
                 if(ibo.ne.1) then
-                    write(95,999) ihop,tfemto,(yg(j)**2,j=1,sim%excN),ntot
+                    write(95,999) sim%naesmd%ihop,sim%naesmd%tfemto,(yg(j)**2,j=1,sim%excN),ntot
                 end if
             end if
 
             if(lprint.ge.3.and.ibo.ne.1) then
-                write(94,889) tfemto,(dsin(yg(j+sim%excN)),j=1,sim%excN)
+                write(94,889) sim%naesmd%tfemto,(dsin(yg(j+sim%excN)),j=1,sim%excN)
                 call flush(94)
             end if
 
@@ -83,35 +85,35 @@ contains
             call flush(95)
         endif
         ! use for vibrations**************************************
-        !      write(99,779) tfemto,(atomtype(k),
-        !     $rx(k)*convl,ry(k)*convl,rz(k)*convl,k=1,natom)
-        !      write(80,779) tfemto,(atomtype(k),
-        !     $vx(k)*convl/convt,vy(k)*convl/convt,vz(k)*convl/convt,k=1,natom)
+        !      write(99,779) sim%naesmd%tfemto,(sim%naesmd%atomtype(k),
+        !     $sim%naesmd%rx(k)*convl,sim%naesmd%ry(k)*convl,sim%naesmd%rz(k)*convl,k=1,sim%naesmd%natom)
+        !      write(80,779) sim%naesmd%tfemto,(sim%naesmd%atomtype(k),
+        !     $sim%naesmd%vx(k)*convl/convt,sim%naesmd%vy(k)*convl/convt,sim%naesmd%vz(k)*convl/convt,k=1,sim%naesmd%natom)
         !***********************************************************
 
         !Old Force writing code
         if(lprint.ge.3) then
-            write (85,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
-                '  time = ',tfemto
-            do k=1,natom
-                write(85,999) atomtype(k),sim%deriv_forces(1+3*(k-1)) &
+            write (85,449) 'FINAL HEAT OF FORMATION =   ', (sim%naesmd%kin+sim%naesmd%vgs)*feVmdqt, &
+                '  time = ',sim%naesmd%tfemto
+            do k=1,sim%naesmd%natom
+                write(85,999) sim%naesmd%atomtype(k),sim%deriv_forces(1+3*(k-1)) &
                     ,sim%deriv_forces(2+3*(k-1)),sim%deriv_forces(3+3*(k-1))
             end do
-        !    write(85,889) tfemto,(sim%deriv_forces(1+3*(j-1)),j=1,natom)
-        !    write(84,889) tfemto,(sim%deriv_forces(2+3*(j-1)),j=1,natom)
-        !    write(83,889) tfemto,(sim%deriv_forces(3+3*(j-1)),j=1,natom)
+        !    write(85,889) sim%naesmd%tfemto,(sim%deriv_forces(1+3*(j-1)),j=1,sim%naesmd%natom)
+        !    write(84,889) sim%naesmd%tfemto,(sim%deriv_forces(2+3*(j-1)),j=1,sim%naesmd%natom)
+        !    write(83,889) sim%naesmd%tfemto,(sim%deriv_forces(3+3*(j-1)),j=1,sim%naesmd%natom)
             ! Check the position of the center of mass
             xcm=0.0d0
             ycm=0.0d0
             zcm=0.0d0
         
-            do j=1,natom
-                xcm=xcm+rx(j)*massmdqt(j)/masstot
-                ycm=ycm+ry(j)*massmdqt(j)/masstot
-                zcm=zcm+rz(j)*massmdqt(j)/masstot
+            do j=1,sim%naesmd%natom
+                xcm=xcm+sim%naesmd%rx(j)*sim%naesmd%massmdqt(j)/sim%naesmd%masstot
+                ycm=ycm+sim%naesmd%ry(j)*sim%naesmd%massmdqt(j)/sim%naesmd%masstot
+                zcm=zcm+sim%naesmd%rz(j)*sim%naesmd%massmdqt(j)/sim%naesmd%masstot
             end do
         
-            write(91,889) tfemto,xcm-xcmini,ycm-ycmini,zcm-zcmini
+            write(91,889) sim%naesmd%tfemto,xcm-sim%naesmd%xcmini,ycm-sim%naesmd%ycmini,zcm-sim%naesmd%zcmini
             call flush(85)
             call flush(84)
             call flush(83)
@@ -119,12 +121,12 @@ contains
             call flush(99)
         end if
 
-        if(state.eq.'exct'.and.lprint.ge.1) then
-            write(89,889) tfemto,(sim%dav%v2(sim%dav%Nb*(j-1)+j,ihop),j=1,sim%dav%Nb)
+        if(sim%naesmd%state.eq.'exct'.and.lprint.ge.1) then
+            write(89,889) sim%naesmd%tfemto,(sim%dav%v2(sim%dav%Nb*(j-1)+j,sim%naesmd%ihop),j=1,sim%dav%Nb)
             call flush(89)
             ! in order to print the initial transition density of all states
             do k=1,sim%excN
-                write(77,889) tfemto,(sim%dav%v2(sim%dav%Nb*(j-1)+j,k),j=1,sim%dav%Nb)
+                write(77,889) sim%naesmd%tfemto,(sim%dav%v2(sim%dav%Nb*(j-1)+j,k),j=1,sim%dav%Nb)
                 call flush(77)
             end do
         end if
@@ -133,22 +135,22 @@ contains
 !        card='coordinates.out'
 !        OPEN(201,FILE=card,action='write',STATUS='replace')
 !        
-!        write (201,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
-!            '  time = ',tfemto
+!        write (201,449) 'FINAL HEAT OF FORMATION =   ', (sim%naesmd%kin+sim%naesmd%vgs)*feVmdqt, &
+!            '  time = ',sim%naesmd%tfemto
 !        write(201,557) '$COORD'
-!        do i=1,txtinicoord
-!            write(201,555) txtinput(i)
+!        do i=1,sim%naesmd%txtinicoord
+!            write(201,555) sim%naesmd%txtinput(i)
 !        end do
 !
-!        do i=1,natom
-!            write(201,999) atomtype(i),rx(i)*convl &
-!                ,ry(i)*convl,rz(i)*convl
+!        do i=1,sim%naesmd%natom
+!            write(201,999) sim%naesmd%atomtype(i),sim%naesmd%rx(i)*convl &
+!                ,sim%naesmd%ry(i)*convl,sim%naesmd%rz(i)*convl
 !        end do
 !
 !        write(201,556) '$ENDCOORD'
         
-        !Determine file status based on job state
-        if(tfemto.eq.0.d0) then
+        !Determine file status based on job sim%naesmd%state
+        if(sim%naesmd%tfemto.eq.0.d0) then
             file_access='sequential'
             file_status='unknown'
         else
@@ -160,22 +162,22 @@ contains
         if(ibo==0) OPEN(203,FILE='coefficient.out',action='write',STATUS=file_status,ACCESS=file_access)
         OPEN(9,file='coords.xyz',action='write',STATUS=file_status,ACCESS=file_access)
         
-        if(tfemto.eq.0.d0) then
+        if(sim%naesmd%tfemto.eq.0.d0) then
         
-            write (202,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
-                '  time = ',tfemto
+            write (202,449) 'FINAL HEAT OF FORMATION =   ', (sim%naesmd%kin+sim%naesmd%vgs)*feVmdqt, &
+                '  time = ',sim%naesmd%tfemto
             write(202,557) '$VELOC'
             
-            do k=1,natom
-                write(202,223) vx(k)*convl/convt, &
-                    vy(k)*convl/convt,vz(k)*convl/convt
+            do k=1,sim%naesmd%natom
+                write(202,223) sim%naesmd%vx(k)*convl/convt, &
+                    sim%naesmd%vy(k)*convl/convt,sim%naesmd%vz(k)*convl/convt
             end do
             
             write(202,556) '$ENDVELOC'
             
             if(ibo==0) then
-                write (203,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
-                    '  time = ',tfemto
+                write (203,449) 'FINAL HEAT OF FORMATION =   ', (sim%naesmd%kin+sim%naesmd%vgs)*feVmdqt, &
+                    '  time = ',sim%naesmd%tfemto
                 write(203,557) '$COEFF'
                 
                 do k=1,sim%excN
@@ -185,38 +187,38 @@ contains
                 write(203,556) '$ENDCOEFF'
             end if
             
-            write (9,*) natom
-            write (9,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
-                '  time = ',tfemto
-            do k=1,natom
-                write(9,302) ELEMNT(atomtype(k)),rx(k)*convl, &
-                    ry(k)*convl,rz(k)*convl
+            write (9,*) sim%naesmd%natom
+            write (9,449) 'FINAL HEAT OF FORMATION =   ', (sim%naesmd%kin+sim%naesmd%vgs)*feVmdqt, &
+                '  time = ',sim%naesmd%tfemto
+            do k=1,sim%naesmd%natom
+                write(9,302) ELEMNT(sim%naesmd%atomtype(k)),sim%naesmd%rx(k)*convl, &
+                    sim%naesmd%ry(k)*convl,sim%naesmd%rz(k)*convl
             end do
         end if
 
 
-        if(iview.eq.1) then
+        if(sim%naesmd%iview.eq.1) then
 
             ! to be used in case we want to print the transition densities of all the states at t=0
             do kki=1,sim%excN
-                card='view' // ktbig(icontini) // '-' //  ktbig(kki) // '.DATA'
+                card='view' // sim%naesmd%ktbig(sim%naesmd%icontini) // '-' //  sim%naesmd%ktbig(kki) // '.DATA'
                 !************************************************************************************
-                !       card='view' // ktbig(icontini) // '-' //  ktbig(ihop) // '.DATA'
+                !       card='view' // sim%naesmd%ktbig(sim%naesmd%icontini) // '-' //  sim%naesmd%ktbig(sim%naesmd%ihop) // '.DATA'
                 !************************************************************************************
                 OPEN(90,FILE=card)
                 write(90,440) ' Number of atoms:'
-                write(90,99) natom
+                write(90,99) sim%naesmd%natom
                 write(90,441) ' Number of orbitals:'
-                write(90,99) nao
+                write(90,99) sim%naesmd%nao
                 write(90,445) ' Number of occupied orbitals:'
                 write(90,222) ' 1'
                 write(90,442) ' Number of eigenvectors printed:'
                 write(90,222) ' 1'
                 write(90,441) ' Atomic coordinates:'
 
-                do k=1,natom
-                    write(90,999) atomtype(k), &
-                        rx(k)*convl,ry(k)*convl,rz(k)*convl
+                do k=1,sim%naesmd%natom
+                    write(90,999) sim%naesmd%atomtype(k), &
+                        sim%naesmd%rx(k)*convl,sim%naesmd%ry(k)*convl,sim%naesmd%rz(k)*convl
                 end do
 
                 write(90,443) ' Eigenvector:   1  with Eigenvalue:   0.0'
@@ -291,37 +293,38 @@ contains
 
         if(solvent_model.eq.2) then
             call calc_excsolven(sim%qmmm,energy) !JAB Test
-            vmdqt(ihop)=vmdqt(ihop)-0.5*energy/feVmdqt !JAB Test
+            sim%naesmd%vmdqt(sim%naesmd%ihop)=sim%naesmd%vmdqt(sim%naesmd%ihop)-0.5*energy/feVmdqt !JAB Test
         endif
 
-        if(state.eq.'fund') then
-            write(98,889) tfemto,kin*feVmdqt,kin*feVmdqt-kinini*feVmdqt, &
-                vgs*feVmdqt, &
-                vgs*feVmdqt-vini*feVmdqt, &
-                kin*feVmdqt+vgs*feVmdqt,kin*feVmdqt+vgs*feVmdqt-etotini*feVmdqt
+        if(sim%naesmd%state.eq.'fund') then
+            write(98,889) sim%naesmd%tfemto,sim%naesmd%kin*feVmdqt,sim%naesmd%kin*feVmdqt-sim%naesmd%kinini*feVmdqt, &
+                sim%naesmd%vgs*feVmdqt, &
+                sim%naesmd%vgs*feVmdqt-sim%naesmd%vini*feVmdqt, &
+                sim%naesmd%kin*feVmdqt+sim%naesmd%vgs*feVmdqt,&
+                sim%naesmd%kin*feVmdqt+sim%naesmd%vgs*feVmdqt-sim%naesmd%etotini*feVmdqt
         end if
 
-        if(state.eq.'exct') then
+        if(sim%naesmd%state.eq.'exct') then
             if(ibo.eq.1) then
-                write(98,889) tfemto,kin*feVmdqt,kin*feVmdqt-kinini*feVmdqt, &
-                    vmdqt(ihop)*feVmdqt, &
-                    vmdqt(ihop)*feVmdqt-vini*feVmdqt, &
-                    kin*feVmdqt+vmdqt(ihop)*feVmdqt,kin*feVmdqt &
-                    +vmdqt(ihop)*feVmdqt &
-                    -etotini*feVmdqt
+                write(98,889) sim%naesmd%tfemto,sim%naesmd%kin*feVmdqt,sim%naesmd%kin*feVmdqt-sim%naesmd%kinini*feVmdqt, &
+                    sim%naesmd%vmdqt(sim%naesmd%ihop)*feVmdqt, &
+                    sim%naesmd%vmdqt(sim%naesmd%ihop)*feVmdqt-sim%naesmd%vini*feVmdqt, &
+                    sim%naesmd%kin*feVmdqt+sim%naesmd%vmdqt(sim%naesmd%ihop)*feVmdqt,sim%naesmd%kin*feVmdqt &
+                    +sim%naesmd%vmdqt(sim%naesmd%ihop)*feVmdqt &
+                    -sim%naesmd%etotini*feVmdqt
             else
-                write(98,889) tfemto,kin*feVmdqt,kin*feVmdqt-kinini*feVmdqt, &
-                    vmdqtnew(ihop)*feVmdqt, &
-                    vmdqtnew(ihop)*feVmdqt-vini*feVmdqt, &
-                    kin*feVmdqt+vmdqtnew(ihop)*feVmdqt,kin*feVmdqt &
-                    +vmdqtnew(ihop)*feVmdqt &
-                    -etotini*feVmdqt
+                write(98,889) sim%naesmd%tfemto,sim%naesmd%kin*feVmdqt,sim%naesmd%kin*feVmdqt-sim%naesmd%kinini*feVmdqt, &
+                    sim%naesmd%vmdqtnew(sim%naesmd%ihop)*feVmdqt, &
+                    sim%naesmd%vmdqtnew(sim%naesmd%ihop)*feVmdqt-sim%naesmd%vini*feVmdqt, &
+                    sim%naesmd%kin*feVmdqt+sim%naesmd%vmdqtnew(sim%naesmd%ihop)*feVmdqt,sim%naesmd%kin*feVmdqt &
+                    +sim%naesmd%vmdqtnew(sim%naesmd%ihop)*feVmdqt &
+                    -sim%naesmd%etotini*feVmdqt
 
             end if
         end if
 
         !ntot is the variable to check the norm conservation
-        if(state.eq.'exct') then
+        if(sim%naesmd%state.eq.'exct') then
             ntot=0
             do j=1,sim%excN
                 ntot=ntot+yg(j)**2
@@ -329,13 +332,13 @@ contains
 
             if(lprint.ge.1) then
                 if(ibo.eq.1) then
-                    write(96,889) tfemto,vgs*feVmdqt, &
-                        (vmdqt(j)*feVmdqt,j=1,sim%excN)
+                    write(96,889) sim%naesmd%tfemto,sim%naesmd%vgs*feVmdqt, &
+                        (sim%naesmd%vmdqt(j)*feVmdqt,j=1,sim%excN)
                 else
-                    write(96,889) tfemto,vgs*feVmdqt, &
-                        (vmdqt(j)*feVmdqt,j=1,sim%excN)
-                    write(95,999) ihop,tfemto,(yg(j)**2,j=1,sim%excN),ntot
-                    write(93,888) tfemto,((cadiabnew(j,k),k=1,sim%excN),j=1,sim%excN)
+                    write(96,889) sim%naesmd%tfemto,sim%naesmd%vgs*feVmdqt, &
+                        (sim%naesmd%vmdqt(j)*feVmdqt,j=1,sim%excN)
+                    write(95,999) sim%naesmd%ihop,sim%naesmd%tfemto,(yg(j)**2,j=1,sim%excN),ntot
+                    write(93,888) sim%naesmd%tfemto,((sim%naesmd%cadiabnew(j,k),k=1,sim%excN),j=1,sim%excN)
 
                     call flush(95)
                     call flush(93)
@@ -345,46 +348,46 @@ contains
             end if
 
             if(lprint.ge.3.and.ibo.ne.1) then
-                write(94,889) tfemto,(dsin(yg(j+sim%excN)),j=1,sim%excN)
+                write(94,889) sim%naesmd%tfemto,(dsin(yg(j+sim%excN)),j=1,sim%excN)
                 call flush(94)
             end if
         end if
 
-        write(92,889) tfemto,tempi,tempf
+        write(92,889) sim%naesmd%tfemto,sim%naesmd%tempi,sim%naesmd%tempf
         call flush(92)
         !
         ! use for vibrations*****************************
-        !      write(99,779) tfemto,(atomtype(k),
-        !     $rx(k)*convl,ry(k)*convl,rz(k)*convl,k=1,natom)
-        !      write(80,779) tfemto,(atomtype(k),
-        !     $vx(k)*convl/convt,vy(k)*convl/convt,vz(k)*convl/convt,k=1,natom)
+        !      write(99,779) sim%naesmd%tfemto,(sim%naesmd%atomtype(k),
+        !     $sim%naesmd%rx(k)*convl,sim%naesmd%ry(k)*convl,sim%naesmd%rz(k)*convl,k=1,sim%naesmd%natom)
+        !      write(80,779) sim%naesmd%tfemto,(sim%naesmd%atomtype(k),
+        !     $sim%naesmd%vx(k)*convl/convt,sim%naesmd%vy(k)*convl/convt,sim%naesmd%vz(k)*convl/convt,k=1,sim%naesmd%natom)
         !******************************************************
         !
         if(lprint.ge.3) then
-            write (85,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
-                '  time = ',tfemto
-            do k=1,natom
-                write(85,999) atomtype(k),sim%deriv_forces(1+3*(k-1)) &
+            write (85,449) 'FINAL HEAT OF FORMATION =   ', (sim%naesmd%kin+sim%naesmd%vgs)*feVmdqt, &
+                '  time = ',sim%naesmd%tfemto
+            do k=1,sim%naesmd%natom
+                write(85,999) sim%naesmd%atomtype(k),sim%deriv_forces(1+3*(k-1)) &
                     ,sim%deriv_forces(2+3*(k-1)),sim%deriv_forces(3+3*(k-1))
             end do
-!            write(85,889) tfemto,(sim%deriv_forces(1+3*(j-1)),j=1,natom)
-!            write(84,889) tfemto,(sim%deriv_forces(2+3*(j-1)),j=1,natom)
-!            write(83,889) tfemto,(sim%deriv_forces(3+3*(j-1)),j=1,natom)
+!            write(85,889) sim%naesmd%tfemto,(sim%deriv_forces(1+3*(j-1)),j=1,sim%naesmd%natom)
+!            write(84,889) sim%naesmd%tfemto,(sim%deriv_forces(2+3*(j-1)),j=1,sim%naesmd%natom)
+!            write(83,889) sim%naesmd%tfemto,(sim%deriv_forces(3+3*(j-1)),j=1,sim%naesmd%natom)
 
-            write(125,889) tfemto,(sim%naesmd%a%x(j),j=1,natom)
-            write(126,889) tfemto,(ax(j),j=1,natom)
+            write(125,889) sim%naesmd%tfemto,(sim%naesmd%ax(j),j=1,sim%naesmd%natom)
+            write(126,889) sim%naesmd%tfemto,(sim%naesmd%ax(j),j=1,sim%naesmd%natom)
             ! Check the position of the center of mass
             xcm=0.0d0
             ycm=0.0d0
             zcm=0.0d0
 
-            do j=1,natom
-                xcm=xcm+rx(j)*massmdqt(j)/masstot
-                ycm=ycm+ry(j)*massmdqt(j)/masstot
-                zcm=zcm+rz(j)*massmdqt(j)/masstot
+            do j=1,sim%naesmd%natom
+                xcm=xcm+sim%naesmd%rx(j)*sim%naesmd%massmdqt(j)/sim%naesmd%masstot
+                ycm=ycm+sim%naesmd%ry(j)*sim%naesmd%massmdqt(j)/sim%naesmd%masstot
+                zcm=zcm+sim%naesmd%rz(j)*sim%naesmd%massmdqt(j)/sim%naesmd%masstot
             end do
 
-            write(91,889) tfemto,xcm-xcmini,ycm-ycmini,zcm-zcmini
+            write(91,889) sim%naesmd%tfemto,xcm-sim%naesmd%xcmini,ycm-sim%naesmd%ycmini,zcm-sim%naesmd%zcmini
             call flush(85)
             call flush(84)
             call flush(83)
@@ -393,53 +396,53 @@ contains
             call flush(80)
         end if
 
-        if(state.eq.'exct'.and.lprint.ge.2) then
-            write(100,688) tfemto,(iorden(j),j=1,sim%excN),cross
-            write(120,688) tfemto,(cross(j),j=1,sim%excN)
+        if(sim%naesmd%state.eq.'exct'.and.lprint.ge.2) then
+            write(100,688) sim%naesmd%tfemto,(sim%naesmd%iorden(j),j=1,sim%excN),cross
+            write(120,688) sim%naesmd%tfemto,(cross(j),j=1,sim%excN)
             call flush(120)
             call flush(100)
         end if
 
-        if(state.eq.'exct'.and.lprint.ge.1) then
-            write(89,889) tfemto,(sim%dav%v2(sim%dav%Nb*(j-1)+j,ihop),j=1,sim%dav%Nb)
+        if(sim%naesmd%state.eq.'exct'.and.lprint.ge.1) then
+            write(89,889) sim%naesmd%tfemto,(sim%dav%v2(sim%dav%Nb*(j-1)+j,sim%naesmd%ihop),j=1,sim%dav%Nb)
             call flush(89)
         end if
 
-        if(icont.ne.nstepcoord) then
-            icont=icont+1
+        if(sim%naesmd%icont.ne.sim%naesmd%nstepcoord) then
+            sim%naesmd%icont=sim%naesmd%icont+1
         else
-            icont=1
-            icontpdb=icontpdb+1
+            sim%naesmd%icont=1
+            sim%naesmd%icontpdb=sim%naesmd%icontpdb+1
             
-!            write (201,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
-!                '  time = ',tfemto
+!            write (201,449) 'FINAL HEAT OF FORMATION =   ', (sim%naesmd%kin+sim%naesmd%vgs)*feVmdqt, &
+!                '  time = ',sim%naesmd%tfemto
 !            write(201,557) '$COORD'
-!            do k=1,txtinicoord
-!                write(201,555) txtinput(k)
+!            do k=1,sim%naesmd%txtinicoord
+!                write(201,555) sim%naesmd%txtinput(k)
 !            end do
 !    
-!            do k=1,natom
-!                write(201,999) atomtype(k),rx(k)*convl &
-!                    ,ry(k)*convl,rz(k)*convl
+!            do k=1,sim%naesmd%natom
+!                write(201,999) sim%naesmd%atomtype(k),sim%naesmd%rx(k)*convl &
+!                    ,sim%naesmd%ry(k)*convl,sim%naesmd%rz(k)*convl
 !            end do
 !    
 !            write(201,556) '$ENDCOORD'
             
             
-            write (202,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
-                '  time = ',tfemto
+            write (202,449) 'FINAL HEAT OF FORMATION =   ', (sim%naesmd%kin+sim%naesmd%vgs)*feVmdqt, &
+                '  time = ',sim%naesmd%tfemto
             write(202,557) '$VELOC'
     
-            do k=1,natom
-                write(202,223) vx(k)*convl/convt, &
-                    vy(k)*convl/convt,vz(k)*convl/convt
+            do k=1,sim%naesmd%natom
+                write(202,223) sim%naesmd%vx(k)*convl/convt, &
+                    sim%naesmd%vy(k)*convl/convt,sim%naesmd%vz(k)*convl/convt
             end do
     
             write(202,556) '$ENDVELOC'
             
             if(ibo==0) then
-                write (203,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
-                    '  time = ',tfemto
+                write (203,449) 'FINAL HEAT OF FORMATION =   ', (sim%naesmd%kin+sim%naesmd%vgs)*feVmdqt, &
+                    '  time = ',sim%naesmd%tfemto
                 write(203,557) '$COEFF'
                 
                 do k=1,sim%excN
@@ -451,27 +454,27 @@ contains
     
             card='restart.out'
             OPEN(10,FILE=card,ACTION='write',STATUS='replace')
-            write (10,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
-                '  time = ',tfemto
-            randint=int(rranf1(iseedmdqt)*1d8)
-            write (10,*) 'State = ', ihop
+            write (10,449) 'FINAL HEAT OF FORMATION =   ', (sim%naesmd%kin+sim%naesmd%vgs)*feVmdqt, &
+                '  time = ',sim%naesmd%tfemto
+            randint=int(rranf1(sim%naesmd%iseedmdqt)*1d8)
+            write (10,*) 'State = ', sim%naesmd%ihop
             write (10,*) 'Seed  = ', randint
             write(10,557) '$COORD'
-            do k=1,txtinicoord
-                write(10,555) txtinput(k)
+            do k=1,sim%naesmd%txtinicoord
+                write(10,555) sim%naesmd%txtinput(k)
             end do
     
-            do k=1,natom
-                write(10,999) atomtype(k),rx(k)*convl &
-                    ,ry(k)*convl,rz(k)*convl
+            do k=1,sim%naesmd%natom
+                write(10,999) sim%naesmd%atomtype(k),sim%naesmd%rx(k)*convl &
+                    ,sim%naesmd%ry(k)*convl,sim%naesmd%rz(k)*convl
             end do
     
             write(10,556) '$ENDCOORD'
             write(10,557) '$VELOC'
     
-            do k=1,natom
-                write(10,223) vx(k)*convl/convt, &
-                    vy(k)*convl/convt,vz(k)*convl/convt
+            do k=1,sim%naesmd%natom
+                write(10,223) sim%naesmd%vx(k)*convl/convt, &
+                    sim%naesmd%vy(k)*convl/convt,sim%naesmd%vz(k)*convl/convt
             end do
     
             write(10,556) '$ENDVELOC'
@@ -485,31 +488,31 @@ contains
             close(10)
             
 
-            write (9,*) natom
-            write (9,449) 'FINAL HEAT OF FORMATION =   ', (kin+vgs)*feVmdqt, &
-                '  time = ',tfemto
-            do k=1,natom
-                write(9,302) ELEMNT(atomtype(k)),rx(k)*convl, &
-                    ry(k)*convl,rz(k)*convl
+            write (9,*) sim%naesmd%natom
+            write (9,449) 'FINAL HEAT OF FORMATION =   ', (sim%naesmd%kin+sim%naesmd%vgs)*feVmdqt, &
+                '  time = ',sim%naesmd%tfemto
+            do k=1,sim%naesmd%natom
+                write(9,302) ELEMNT(sim%naesmd%atomtype(k)),sim%naesmd%rx(k)*convl, &
+                    sim%naesmd%ry(k)*convl,sim%naesmd%rz(k)*convl
             end do
 
-            if(iview.eq.1) then
+            if(sim%naesmd%iview.eq.1) then
                 do kki=1,sim%excN
-                    card='view' // ktbig(icontpdb) // '-' //  ktbig(kki) // '.DATA'
+                    card='view' // sim%naesmd%ktbig(sim%naesmd%icontpdb) // '-' //  sim%naesmd%ktbig(kki) // '.DATA'
                     OPEN(90,FILE=card)
                     write(90,440) ' Number of atoms:'
-                    write(90,99) natom
+                    write(90,99) sim%naesmd%natom
                     write(90,441) ' Number of orbitals:'
-                    write(90,99) nao
+                    write(90,99) sim%naesmd%nao
                     write(90,445) ' Number of occupied orbitals:'
                     write(90,222) ' 1'
                     write(90,442) ' Number of eigenvectors printed:'
                     write(90,222) ' 1'
                     write(90,441) ' Atomic coordinates:'
 
-                    do k=1,natom
-                        write(90,999) atomtype(k), &
-                            rx(k)*convl,ry(k)*convl,rz(k)*convl
+                    do k=1,sim%naesmd%natom
+                        write(90,999) sim%naesmd%atomtype(k), &
+                            sim%naesmd%rx(k)*convl,sim%naesmd%ry(k)*convl,sim%naesmd%rz(k)*convl
                     end do
 
                     write(90,443) ' Eigenvector:   1  with Eigenvalue:   0.0'

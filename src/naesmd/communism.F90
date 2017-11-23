@@ -5,8 +5,9 @@ module communism
     use qm2_davidson_module, only      : qm2_davidson_structure_type
     use qmmm_struct_module, only       : qmmm_struct_type
     use qmmm_module, only              : qm2_structure
+    use naesmd_module, only            : naesmd_structure, realp_t
     use naesmd_constants
-    use naesmd_space_module
+    use rksuite_90, only:rk_comm_real_1d 
           
     implicit none
           
@@ -24,10 +25,11 @@ module communism
         _REAL_::time_deriv_took=0.d0 ! adiabatic derivatives (i.e., forces)
         _REAL_::time_nact_took=0.d0 ! non-adiabatic derivatives (nact)
           
-        type(naesmd_data_t),pointer               :: naesmd
+        type(naesmd_structure),pointer               :: naesmd
         type(qm2_davidson_structure_type),pointer :: dav
         type(qmmm_struct_type),pointer            :: qmmm
         type(qm2_structure),pointer               :: qm2
+	type(rk_comm_real_1d),pointer :: rk_comm !quantum coeff ode solver common variables
     end type simulation_t
           
 contains
@@ -40,18 +42,23 @@ contains
         a%dav      => null()
         a%qmmm     => null()
         a%qm2      => null()
+        a%naesmd      => null()
+        a%rk_comm      => null()
         allocate(a%naesmd)
     end subroutine
 
-    subroutine setp_simulation(a,qmmm_struct,qm2ds,qm2_struct)
+    subroutine setp_simulation(a,qmmm_struct,qm2ds,qm2_struct,naesmd_struct,rk_struct)
         type(simulation_t), pointer  :: a
         type(qmmm_struct_type),target :: qmmm_struct
         type(qm2_davidson_structure_type),target :: qm2ds
         type(qm2_structure),target :: qm2_struct
+        type(naesmd_structure),target :: naesmd_struct
+	type(rk_comm_real_1d),target :: rk_struct 
         a%qmmm     => qmmm_struct
         a%dav     => qm2ds
         a%qm2     => qm2_struct
-        allocate(a%naesmd)
+        a%naesmd  => naesmd_struct
+	a%rk_comm => rk_struct
     end subroutine
           
     !
@@ -61,8 +68,7 @@ contains
     !
     !********************************************************************
     !
-    subroutine dav2naesmd_Omega(sim)
-          
+    subroutine dav2naesmd_Omega(sim) 
         implicit none
         type(simulation_t),pointer::sim
         integer::mn
@@ -79,20 +85,20 @@ contains
     subroutine qmmm2naesmd_r(sim)
         type(simulation_t), pointer :: sim
         integer :: mn
-        mn = min(size(sim%naesmd%r%x), size(sim%qmmm%qm_coords(1,:)))
-        sim%naesmd%r%x(:mn) = sim%qmmm%qm_coords(1,:mn) / convl
-        sim%naesmd%r%y(:mn) = sim%qmmm%qm_coords(2,:mn) / convl
-        sim%naesmd%r%z(:mn) = sim%qmmm%qm_coords(3,:mn) / convl
+        mn = min(size(sim%naesmd%rx), size(sim%qmmm%qm_coords(1,:)))
+        sim%naesmd%rx(:mn) = sim%qmmm%qm_coords(1,:mn) / convl
+        sim%naesmd%ry(:mn) = sim%qmmm%qm_coords(2,:mn) / convl
+        sim%naesmd%rz(:mn) = sim%qmmm%qm_coords(3,:mn) / convl
         return
     end subroutine
           
     subroutine naesmd2qmmm_r(sim)
         type(simulation_t), pointer :: sim
         integer :: mn
-        mn = min(size(sim%naesmd%r%x), size(sim%qmmm%qm_coords(1,:)))
-        sim%qmmm%qm_coords(1,:mn) = sim%naesmd%r%x(:mn) * convl
-        sim%qmmm%qm_coords(2,:mn) = sim%naesmd%r%y(:mn) * convl
-        sim%qmmm%qm_coords(3,:mn) = sim%naesmd%r%z(:mn) * convl
+        mn = min(size(sim%naesmd%rx), size(sim%qmmm%qm_coords(1,:)))
+        sim%qmmm%qm_coords(1,:mn) = sim%naesmd%rx(:mn) * convl
+        sim%qmmm%qm_coords(2,:mn) = sim%naesmd%ry(:mn) * convl
+        sim%qmmm%qm_coords(3,:mn) = sim%naesmd%rz(:mn) * convl
         return
     end subroutine
           
@@ -122,14 +128,14 @@ contains
         integer i
           
         do i=1,sim%Na
-            sim%naesmd%a%x(i)=sim%deriv_forces(i*3-2) &
-                *convl/feVmdqt/sim%naesmd%mass(i)
+            sim%naesmd%ax(i)=sim%deriv_forces(i*3-2) &
+                *convl/feVmdqt/sim%naesmd%massmdqt(i)
           
-            sim%naesmd%a%y(i)=sim%deriv_forces(i*3-1) &
-                *convl/feVmdqt/sim%naesmd%mass(i)
+            sim%naesmd%ay(i)=sim%deriv_forces(i*3-1) &
+                *convl/feVmdqt/sim%naesmd%massmdqt(i)
           
-            sim%naesmd%a%z(i)=sim%deriv_forces(i*3) &
-                *convl/feVmdqt/sim%naesmd%mass(i)
+            sim%naesmd%az(i)=sim%deriv_forces(i*3) &
+                *convl/feVmdqt/sim%naesmd%massmdqt(i)
         end do
         return
     end subroutine
@@ -252,7 +258,9 @@ contains
     !********************************************************************
     !
     subroutine do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs,rx,ry,rz,r,statelimit)
-        implicit none
+	use naesmd_module, only : realp_t
+        
+	implicit none
         type(simulation_t),pointer::sim
         _REAL_,intent(inout),optional::cmdqt(:,:),vmdqt(:),vgs
         _REAL_,intent(in),optional::rx(:),ry(:),rz(:)
@@ -310,7 +318,6 @@ contains
         use qm2_davidson_module ! CML 7/11/12
         use Cosmo_C,only:solvent_model
         use md_module
-        use naesmd_module
  
         implicit none
           
@@ -343,7 +350,7 @@ contains
             sim%Na,igb,atnam,sim%naesmd%atomtype,maxcyc, &
             grms_tol,ntpr, ncharge,excharge,chgatnum, &
             sim%excN,sim%dav%struct_opt_state,sim%dav%idav,sim%dav%dav_guess, &
-            sim%dav%ftol,sim%dav%ftol0,sim%dav%ftol1,sim%dav%icount_M,nstep)
+            sim%dav%ftol,sim%dav%ftol0,sim%dav%ftol1,sim%dav%icount_M,sim%naesmd%nstep)
           
         call qm_assign_atom_types(sim%qmmm)
           
@@ -354,7 +361,7 @@ contains
         qmmm_mpi%numthreads = 1
         qmmm_mpi%mytaskid = 0
         qmmm_mpi%natom_start = 1
-        qmmm_mpi%natom_end = natom
+        qmmm_mpi%natom_end = sim%naesmd%natom
         qmmm_mpi%nquant_nlink_start = 1
         qmmm_mpi%nquant_nlink_end = sim%qmmm%nquant_nlink
         call allocate_qmgb(sim%qmmm%nquant_nlink)
@@ -376,12 +383,12 @@ contains
             call naesmd2qmmm_r(sim)
             !sim%dav%Mx = sim%excN
             !sim%dav%mdflag=2
-            if ((solvent_model.eq.4).or.(solvent_model.eq.5)) then !solvent model that loops over ground state
+            if ((solvent_model.eq.4).or.(solvent_model.eq.5)) then !solvent model that loops over ground sim%naesmd%state
                 call calc_cosmo_4(sim)
             else
-                call do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs)
+                call do_sqm_davidson_update(sim,sim%naesmd%cmdqt,sim%naesmd%vmdqt,sim%naesmd%vgs)
             endif
-        else if (nstep<1) then ! nstep - number of classical steps for dynamics
+        else if (sim%naesmd%nstep<1) then ! sim%naesmd%nstep - number of classical steps for dynamics
           
             sim%dav%minimization = .TRUE.
             sim%Ncharge  = ncharge
@@ -392,7 +399,7 @@ contains
                 qmmm_nml%verbosity=0
             endif
             call naesmd2qmmm_r(sim)
-            call xmin(natom, sim%qmmm%qm_coords, xmin_iter, maxcyc, grms_tol, ntpr,sim)
+            call xmin(sim%naesmd%natom, sim%qmmm%qm_coords, xmin_iter, maxcyc, grms_tol, ntpr,sim)
         else
             write(6,*) "You must run dynamics (n_class_steps > 0) or geometry optimization &
                 (maxcyc > 0). Running both simultaneously is not possible."            
@@ -400,6 +407,7 @@ contains
         end if
         return
     end subroutine
+
           
           
     !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

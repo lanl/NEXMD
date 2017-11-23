@@ -18,13 +18,14 @@ module langevin_temperature
 
 contains
 
-    subroutine sdterm
-        use naesmd_module
+    subroutine sdterm(naesmd_struct)
+        use naesmd_module, only:naesmd_structure
         use md_module
         implicit none
+        type(naesmd_structure), intent(inout) :: naesmd_struct 
 
         integer i,j
-        _REAL_  xgamma(natom) 
+        _REAL_  xgamma(naesmd_struct%natom) 
         _REAL_  gdt,egdt 
         _REAL_  pterm,vterm 
         _REAL_  rho,rhoc 
@@ -33,42 +34,42 @@ contains
         _REAL_  psig,vsig 
         _REAL_  pnorm,vnorm 
         !
-        !     set the atomic friction coefficients to the global value
+        !     set the atomic naesmd_struct%friction coefficients to the global value
         !
-        do i = 1, natom
-            xgamma(i) = friction
+        do i = 1, naesmd_struct%natom
+            xgamma(i) = naesmd_struct%friction
         end do
         !
         !     get the frictional and random terms for stochastic dynamics
         !
-        do i = 1, natom
-            gdt = xgamma(i) * dtmdqt
+        do i = 1, naesmd_struct%natom
+            gdt = xgamma(i) * naesmd_struct%dtmdqt
             !
-            !     stochastic dynamics reduces to simple MD for zero friction
+            !     stochastic dynamics reduces to simple MD for zero naesmd_struct%friction
             !
             if (gdt .le. 0.0d0) then
-                pfric(i) = 1.0d0
-                vfric(i) = dtmdqt
-                afric(i) = 0.5d0 * dtmdqt * dtmdqt
+                naesmd_struct%pfric(i) = 1.0d0
+                naesmd_struct%vfric(i) = naesmd_struct%dtmdqt
+                naesmd_struct%afric(i) = 0.5d0 * naesmd_struct%dtmdqt * naesmd_struct%dtmdqt
                 do j = 1, 3
-                    prand(j,i) = 0.0d0
-                    vrand(j,i) = 0.0d0
+                    naesmd_struct%prand(j,i) = 0.0d0
+                    naesmd_struct%vrand(j,i) = 0.0d0
                 end do
 
             !
-            !     analytical expressions when friction coefficient is large
+            !     analytical expressions when naesmd_struct%friction coefficient is large
             !
             else
                 if (gdt .ge. 0.05d0) then
                     egdt = exp(-gdt)
-                    pfric(i) = egdt
-                    vfric(i) = (1.0d0-egdt) / xgamma(i)
-                    afric(i) = (dtmdqt-vfric(i)) / xgamma(i)
+                    naesmd_struct%pfric(i) = egdt
+                    naesmd_struct%vfric(i) = (1.0d0-egdt) / xgamma(i)
+                    naesmd_struct%afric(i) = (naesmd_struct%dtmdqt-naesmd_struct%vfric(i)) / xgamma(i)
                     pterm = 2.0d0*gdt - 3.0d0 + (4.0d0-egdt)*egdt
                     vterm = 1.0d0 - egdt**2
                     rho = (1.0d0-egdt)**2 / sqrt(pterm*vterm)
                 !
-                !     use series expansions when friction coefficient is small
+                !     use series expansions when naesmd_struct%friction coefficient is small
                 !
                 else
                     gdt2 = gdt * gdt
@@ -79,12 +80,12 @@ contains
                     gdt7 = gdt3 * gdt4
                     gdt8 = gdt4 * gdt4
                     gdt9 = gdt4 * gdt5
-                    afric(i) = (gdt2/2.0d0 - gdt3/6.0d0 + gdt4/24.0d0 &
+                    naesmd_struct%afric(i) = (gdt2/2.0d0 - gdt3/6.0d0 + gdt4/24.0d0 &
                         - gdt5/120.0d0 + gdt6/720.0d0 &
                         - gdt7/5040.0d0 + gdt8/40320.0d0 &
                         - gdt9/362880.0d0) / xgamma(i)**2
-                    vfric(i) = dtmdqt - xgamma(i)*afric(i)
-                    pfric(i) = 1.0d0 - xgamma(i)*vfric(i)
+                    naesmd_struct%vfric(i) = naesmd_struct%dtmdqt - xgamma(i)*naesmd_struct%afric(i)
+                    naesmd_struct%pfric(i) = 1.0d0 - xgamma(i)*naesmd_struct%vfric(i)
                     pterm = 2.0d0*gdt3/3.0d0 - gdt4/2.0d0 &
                         + 7.0d0*gdt5/30.0d0 - gdt6/12.0d0 &
                         + 31.0d0*gdt7/1260.0d0 - gdt8/160.0d0 &
@@ -101,17 +102,17 @@ contains
                         - 1429487.0d0*gdt6/13212057600.0d0)
                 end if
                 !
-                !     compute random terms to thermostat the nonzero friction case
+                !     compute random terms to thermostat the nonzero naesmd_struct%friction case
                 !
-                ktm = boltzman * temp0 / massmdqt(i)
+                ktm = boltzman * naesmd_struct%temp0 / naesmd_struct%massmdqt(i)
                 psig = sqrt(ktm*pterm) / xgamma(i)
                 vsig = sqrt(ktm*vterm)
                 rhoc = sqrt(1.0d0 - rho*rho)
                 do j = 1, 3
-                    pnorm = normal ()
-                    vnorm = normal ()
-                    prand(j,i) = psig * pnorm
-                    vrand(j,i) = vsig * (rho*pnorm+rhoc*vnorm)
+                    pnorm = normal (naesmd_struct)
+                    vnorm = normal (naesmd_struct)
+                    naesmd_struct%prand(j,i) = psig * pnorm
+                    naesmd_struct%vrand(j,i) = vsig * (rho*pnorm+rhoc*vnorm)
                 end do
             end if
         end do
@@ -130,11 +131,12 @@ contains
     !     "normal" generates a random number from a normal Gaussian
     !     distribution with a mean of zero and a variance of one
     !
-    function normal ()
-        use naesmd_module
+    function normal (naesmd_struct)
+        use naesmd_module, only:naesmd_structure
         use md_module
 
         implicit none
+        type(naesmd_structure), intent(inout) :: naesmd_struct 
 
         _REAL_ v1,v2,rsq
         _REAL_ factor,store,normal
@@ -147,8 +149,8 @@ contains
         !
         if (compute) then
 10      continue
-        v1 = 2.0d0 * rranf1(iseedmdqt) - 1.0d0
-        v2 = 2.0d0 * rranf1(iseedmdqt) - 1.0d0
+        v1 = 2.0d0 * rranf1(naesmd_struct%iseedmdqt) - 1.0d0
+        v2 = 2.0d0 * rranf1(naesmd_struct%iseedmdqt) - 1.0d0
         rsq = v1**2 + v2**2
         if (rsq .ge. 1.0d0)  goto 10
         factor = sqrt(-2.0d0*log(rsq)/rsq)
@@ -167,53 +169,54 @@ end function
 
 ! Subroutine to thermaize the velocities
 
-SUBROUTINE temperature(i)
-    use naesmd_module
+SUBROUTINE temperature(i,naesmd_struct)
+    use naesmd_module, only:naesmd_structure
     use md_module
 
     IMPLICIT NONE
+    type(naesmd_structure), intent(inout) :: naesmd_struct 
 
     integer i,j
     _REAL_ scltmp
 
-    call temper
+    call temper(naesmd_struct)
 
-    ! tempf is the target temperature at the specific heating step
-    ! temp0 is the final target temperature
-    ! tempi is the instantaneus temperature
+    ! naesmd_struct%tempf is the target temperature at the specific heating step
+    ! naesmd_struct%temp0 is the final target temperature
+    ! naesmd_struct%tempi is the instantaneus temperature
 
-    if(ensemble.eq.'temper') then
-        if(prep.eq.'heat') then
+    if(naesmd_struct%ensemble.eq.'temper') then
+        if(naesmd_struct%prep.eq.'heat') then
             if(i.eq.1) then
-                iconttemperature=1
-                tempf=tempi
+                naesmd_struct%iconttemperature=1
+                naesmd_struct%tempf=naesmd_struct%tempi
             endif
-            if(iconttemperature.le.istepheat) then
-                iconttemperature=iconttemperature+1
-                if (iconttemperature.eq.istepheat) then
-                    iconttemperature=1
-                    tempf=tempf+1
-                    if(tempf.gt.temp0) tempf=temp0
+            if(naesmd_struct%iconttemperature.le.naesmd_struct%istepheat) then
+                naesmd_struct%iconttemperature=naesmd_struct%iconttemperature+1
+                if (naesmd_struct%iconttemperature.eq.naesmd_struct%istepheat) then
+                    naesmd_struct%iconttemperature=1
+                    naesmd_struct%tempf=naesmd_struct%tempf+1
+                    if(naesmd_struct%tempf.gt.naesmd_struct%temp0) naesmd_struct%tempf=naesmd_struct%temp0
                 endif
             endif
         else
-            tempf=temp0
+            naesmd_struct%tempf=naesmd_struct%temp0
         endif
 
-        if(prep.eq.'heat') then
-            SCLTMP = DSQRT(1.0D0+dtmdqt*CONVT/TAO* &
-                (TEMPf/TEMPI-1.0D0))
+        if(naesmd_struct%prep.eq.'heat') then
+            SCLTMP = DSQRT(1.0D0+naesmd_struct%dtmdqt*CONVT/naesmd_struct%TAO* &
+                (naesmd_struct%TEMPf/naesmd_struct%TEMPI-1.0D0))
         else
-            SCLTMP = DSQRT(1.0D0+dtmdqt*CONVT/TAO* &
-                (TEMP0/TEMPI-1.0D0))
+            SCLTMP = DSQRT(1.0D0+naesmd_struct%dtmdqt*CONVT/naesmd_struct%TAO* &
+                (naesmd_struct%TEMP0/naesmd_struct%TEMPI-1.0D0))
         endif
-        do j=1,natom
-            vx(j)=scltmp*vx(j)
-            vy(j)=scltmp*vy(j)
-            vz(j)=scltmp*vz(j)
+        do j=1,naesmd_struct%natom
+            naesmd_struct%vx(j)=scltmp*naesmd_struct%vx(j)
+            naesmd_struct%vy(j)=scltmp*naesmd_struct%vy(j)
+            naesmd_struct%vz(j)=scltmp*naesmd_struct%vz(j)
         enddo
     else
-        if(ensemble.eq.'langev') tempf=temp0
+        if(naesmd_struct%ensemble.eq.'langev') naesmd_struct%tempf=naesmd_struct%temp0
     endif
 
  
@@ -228,11 +231,12 @@ END SUBROUTINE
 ! WITH CONSTANT TOTAL LINEAR MOMENTUM AND WITH TOTAL ANGULAR
 ! MOMENTUM, ARE 3*N
 
-subroutine temper
-    use naesmd_module
+subroutine temper(naesmd_struct)
+    use naesmd_module, only:naesmd_structure
     use md_module
 
     implicit none
+    type(naesmd_structure), intent(inout) :: naesmd_struct 
 
     integer i
     _REAL_ xkboltz
@@ -244,11 +248,11 @@ subroutine temper
     ! KINETIC ENERGY OF ATOMS
 
     xkinsum=0.0d0
-    do i=1,natom
-        xkinsum=xkinsum+massmdqt(i)*(vx(i)**2+vy(i)**2+vz(i)**2)
+    do i=1,naesmd_struct%natom
+        xkinsum=xkinsum+naesmd_struct%massmdqt(i)*(naesmd_struct%vx(i)**2+naesmd_struct%vy(i)**2+naesmd_struct%vz(i)**2)
     end do
 
-    tempi=xkinsum/(3.0d0*dfloat(natom)*xkboltz)
+    naesmd_struct%tempi=xkinsum/(3.0d0*dfloat(naesmd_struct%natom)*xkboltz)
 
     return
 end subroutine

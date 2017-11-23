@@ -46,9 +46,6 @@ program MD_Geometry
     integer imdqt,iimdqt
     _REAL_ h,d,t,Ek,Etot
     _REAL_,allocatable::fosc(:)
-    _REAL_,target,allocatable::Omega(:)
-    _REAL_,target::E0
-    _REAL_,pointer::pOmega(:),pE0
     integer ither,win
     _REAL_ tini,tend,tmax,tgot!,toldivprk,param(50)
     integer slen
@@ -57,6 +54,8 @@ program MD_Geometry
     type(qm2_davidson_structure_type),target :: qm2ds_notp
     type(qmmm_struct_type), target :: qmmm_struct_notp
     type(qm2_structure), target :: qm2_struct_notp
+    type(naesmd_structure), target :: naesmd_struct_notp
+    type(rk_comm_real_1d), target :: rk_struct_notp
     type(simulation_t),target::sim_notp
     type(simulation_t),pointer::sim
     ! variables of the moldyn namelist
@@ -75,6 +74,8 @@ program MD_Geometry
     _REAL_ quant_step_reduction_factor
     _REAL_ decoher_e0,decoher_c
     integer decoher_type,dotrivial
+    _REAL_ deltared
+    integer iredpot,nstates
     namelist /moldyn/ natoms,bo_dynamics_flag,exc_state_init, &
         n_exc_states_propagate,out_count_init,time_init, &
         rk_tolerance,time_step,n_class_steps,n_quant_steps, &
@@ -104,8 +105,9 @@ program MD_Geometry
     sim=>sim_notp
    
     call init0_simulation(sim)
-    call setp_simulation(sim,qmmm_struct_notp,qm2ds_notp,qm2_struct_notp)
-    call init_main()
+    call setp_simulation(sim,qmmm_struct_notp,qm2ds_notp,&
+		qm2_struct_notp,naesmd_struct_notp, rk_struct_notp)
+    call init_main(sim%naesmd)
 
     !Put derivative variables into module
     sim%qmmm%ideriv=moldyn_deriv_flag
@@ -125,30 +127,30 @@ program MD_Geometry
     write(6,*)"init_sqm_done" 
     close(inputfdes)
 
-     nbasis=sim%dav%Nb  ! this is number of atomic orbitals
-    sim%nbasis=nbasis  ! not to confuse with Ncis or Nrpa !!!
+    sim%naesmd%nbasis=sim%dav%Nb  ! this is number of atomic orbitals
+    sim%nbasis=sim%naesmd%nbasis  ! not to confuse with Ncis or Nrpa !!!
 
-    if(sim%excN.ne.0) call allocate_naesmd_module2(sim%dav%Ncis,sim%nbasis,sim%excN)
+    if(sim%excN.ne.0) call allocate_naesmd_module2(sim%naesmd, sim%dav%Ncis,sim%nbasis,sim%excN)
 
     ! calling the first time to check the quirality in what follows
-    !  uumdqtflag =0 means that ceo is called by the first time,
+    !  sim%naesmd%uumdqtflag =0 means that ceo is called by the first time,
     !     so m.o. matrix is stored
-    !  uumdqtflag =1 means that the quirality of m.o. must be checked
-    uumdqtflag=0
+    !  sim%naesmd%uumdqtflag =1 means that the quirality of m.o. must be checked
+    sim%naesmd%uumdqtflag=0
     !
     do i=1,sim%excN
-        iorden(i)=i
-        iordenhop(i)=0
+        sim%naesmd%iorden(i)=i
+        sim%naesmd%iordenhop(i)=0
     end do
      
-    !uumdqtflag=1
+    !sim%naesmd%uumdqtflag=1
     if(imdtype.eq.0) then
-        Etot=E0+Ek
+        Etot=sim%naesmd%E0+Ek
     else
-        Etot=E0+Omega(imdtype)+Ek
+        Etot=sim%naesmd%E0+sim%naesmd%Omega(imdtype)+Ek
     endif
-    vgs=E0;
-    vmdqt(1:sim%excN)=Omega(1:sim%excN)+vgs
+    sim%naesmd%vgs=sim%naesmd%E0;
+    sim%naesmd%vmdqt(1:sim%excN)=sim%naesmd%Omega(1:sim%excN)+sim%naesmd%vgs
     t=0.0
 
     itime2=get_time()
@@ -157,8 +159,8 @@ program MD_Geometry
     !Calculate derivatives
     call cpu_time(t_start)
     if (sim%qmmm%ideriv.gt.0) then
-        call deriv(sim,ihop)
-    elseif (nstep.gt.0) then
+        call deriv(sim,sim%naesmd%ihop)
+    elseif (sim%naesmd%nstep.gt.0) then
         write(6,*)'Must choose derivative type greater than zero for dynamics'
         stop
     endif
@@ -174,36 +176,36 @@ program MD_Geometry
     !! Molecular dynamics with Quantum transition main loop
     !##########################################################
     i=1
-    icontw=1
+    sim%naesmd%icontw=1
     !Open output files
-    call open_output(ibo,tfemto,imdtype,lprint)
-    ihop=sim%qmmm%state_of_interest !FIXME change ihop to module variable
+    call open_output(ibo,sim%naesmd%tfemto,imdtype,lprint)
+    sim%naesmd%ihop=sim%qmmm%state_of_interest !FIXME change sim%naesmd%ihop to module variable
     call writeoutputini(sim,ibo,yg,lprint)
 
-    tmax=nstep*dtmdqt
+    tmax=sim%naesmd%nstep*sim%naesmd%dtmdqt
     do i =1,sim%excN
 	thresholds(i)=1.0d0	
 	thresholds(i+sim%excN)=6.29d0	
     enddo
-    call setup(rk_comm,tfemto,yg,tmax,rk_tolerance,thresholds, &
+    call setup(sim%rk_comm,sim%naesmd%tfemto,yg,tmax,rk_tolerance,thresholds, &
 	'M','R')
-    do imdqt=1,nstep !Main loop
+    do imdqt=1,sim%naesmd%nstep !Main loop
         !Classical propagation step - BOMD or NAESMD
         write(6,*)"Begin classical propagation step #",imdqt
-        tfemto=tfemto+dtmdqt*convtf
+        sim%naesmd%tfemto=sim%naesmd%tfemto+sim%naesmd%dtmdqt*convtf
         sim%qmmm%num_qmmm_calls=imdqt !necessary for BO dynamics
 
-        if(state.eq.'exct'.and.ibo.ne.1) then
+        if(sim%naesmd%state.eq.'exct'.and.ibo.ne.1) then
             !NAESMD-propagate
-            sim%qmmm%state_of_interest=ihop;
+            sim%qmmm%state_of_interest=sim%naesmd%ihop;
             call verlet1(sim)
         else
             !BOMD-propagate
             call verlet(sim)
-            ihop=sim%qmmm%state_of_interest
+            sim%naesmd%ihop=sim%qmmm%state_of_interest
         end if
 
-        if(state.eq.'exct'.and.ibo.ne.1) then
+        if(sim%naesmd%state.eq.'exct'.and.ibo.ne.1) then
             write(6,*)'Begin nonadiabatic couplings and crossings calculations'
             call initialize(sim,yg)
 	    
@@ -213,35 +215,35 @@ program MD_Geometry
             ! Input should be xxp,yyp,zzp 'plus' xyz at t+dt
             ! xxm,yym,zzm 'minus' - xyz at t-dt, dt should correspond ~10^-4 10^-5 A shift
             ! Vectors and frequencies from the above ceo, at xx,yy,zz geometry
-            ! The routine will output cadiab_analt - an array of NA couplings for T
-            ! from state ihop to all other states npot
-            ! xxp,yyp, and zzp are xyz at t + dtnact
-            ! xxm,yym, and zzm are xyz at t - dtnact
+            ! The routine will output sim%naesmd%cadiab_analt - an array of NA couplings for T
+            ! from sim%naesmd%state sim%naesmd%ihop to all other states sim%naesmd%npot
+            ! xxp,yyp, and zzp are xyz at t + sim%naesmd%dtnact
+            ! xxm,yym, and zzm are xyz at t - sim%naesmd%dtnact
             !****************************************************************
-            ! calculation of the energies(=vmdqtold) and nacT(=cadiabold) values at the beginning
+            ! calculation of the energies(=sim%naesmd%vmdqtold) and nacT(=sim%naesmd%cadiabold) values at the beginning
             ! of the classical step
             !*******************************************************
             call cadiaboldcalc(sim,imdqt)
             !**************************************************************
-            ! calculation of the energies(=vmdqtnew) and nacT(=cadiabnew) values at the end
+            ! calculation of the energies(=sim%naesmd%vmdqtnew) and nacT(=sim%naesmd%cadiabnew) values at the end
             ! of the classical step
             !*******************************************************
             call cadiabnewcalc(sim)
             !**************************************************************
-            ! check crossing, if crossing takes place, nquantumstep=nstepcross*nquantumreal
+            ! check crossing, if crossing takes place, sim%naesmd%nquantumstep=sim%naesmd%nstepcross*sim%naesmd%nquantumreal
             !***************************************************************
             
             if(dotrivial.eq.1) then
             call checkcrossing(sim,cross,lprint)
             else
                write(6,*)'WARNING:TRIVIAL UNAVOIDED CROSSING DETECTION IS OFF'
-               do i=1,npot
+               do i=1,sim%naesmd%npot
                   cross(i)=0
                enddo
             endif
 
-            nquantumstep=nquantumreal
-            dtquantum=dtmdqt/dfloat(nquantumstep)
+            sim%naesmd%nquantumstep=sim%naesmd%nquantumreal
+            sim%naesmd%dtquantum=sim%naesmd%dtmdqt/dfloat(sim%naesmd%nquantumstep)
             !*******************************************
             ! loop to detect the crossing point
             !******************************************
@@ -254,24 +256,24 @@ program MD_Geometry
                     write(6,*)'there is crossing'
                     write(6,*)'cross(:)=',cross(1:sim%excN)
                 endif
-                cadiabhop=cadiabnew(sim%qmmm%state_of_interest,iorden(sim%qmmm%state_of_interest))
-                nquantumstep=nquantumreal*nstepcross
-                dtquantum=dtmdqt/dfloat(nquantumstep)
+                sim%naesmd%cadiabhop=sim%naesmd%cadiabnew(sim%qmmm%state_of_interest,sim%naesmd%iorden(sim%qmmm%state_of_interest))
+                sim%naesmd%nquantumstep=sim%naesmd%nquantumreal*sim%naesmd%nstepcross
+                sim%naesmd%dtquantum=sim%naesmd%dtmdqt/dfloat(sim%naesmd%nquantumstep)
                 do j=1,sim%excN
-                    lowvalue(j)=1000.0d0
+                    sim%naesmd%lowvalue(j)=1000.0d0
                 end do
-                do iimdqt=1,nquantumstep
-                    tfemtoquantum=tfemto-dtmdqt*convtf &
-                        +iimdqt*dtquantum*convtf
+                do iimdqt=1,sim%naesmd%nquantumstep
+                    sim%naesmd%tfemtoquantum=sim%naesmd%tfemto-sim%naesmd%dtmdqt*convtf &
+                        +iimdqt*sim%naesmd%dtquantum*convtf
                     call vmdqtmiddlecalc(sim,iimdqt,Na)
                     call checkcrossingmiddle(sim,cross)
                     if(lprint.ge.2) then
                         do j=1,sim%excN
                             if(cross(j).eq.1) then
-                                write(101,888) tfemto,tfemtoquantum, &
-                                    cross(j),j,iordenhop(j),scpr(j,iordenhop(j)), &
-                                    scprreal(j,iordenhop(j)), &
-                                    vmdqtmiddle(j)-vmdqtmiddle(iordenhop(j))
+                                write(101,888) sim%naesmd%tfemto,sim%naesmd%tfemtoquantum, &
+                                    cross(j),j,sim%naesmd%iordenhop(j),sim%naesmd%scpr(j,sim%naesmd%iordenhop(j)), &
+                                    sim%naesmd%scprreal(j,sim%naesmd%iordenhop(j)), &
+                                    sim%naesmd%vmdqtmiddle(j)-sim%naesmd%vmdqtmiddle(sim%naesmd%iordenhop(j))
                                 call flush(101)
                             end if
                         end do
@@ -280,15 +282,15 @@ program MD_Geometry
                 do win=1,3
                     do j=1,sim%excN
                         if(cross(j).eq.1) then
-                            if(j.lt.iordenhop(j).or.j.eq.ihop) then
-                                if(j.ne.iordenhop(j)) then
-                                    call vmdqtlowvalue(sim,win,lowvaluestep(j),Na)
+                            if(j.lt.sim%naesmd%iordenhop(j).or.j.eq.sim%naesmd%ihop) then
+                                if(j.ne.sim%naesmd%iordenhop(j)) then
+                                    call vmdqtlowvalue(sim,win,sim%naesmd%lowvaluestep(j),Na)
                                     call checkcrossingmiddle(sim,cross)
                                     if(lprint.ge.2) then
-                                        write(101,888) tfemto,tfemto-dtmdqt*convtf &
-                                            +lowvaluestep(j)*dtquantum*convtf, &
-                                            cross(j),j,iordenhop(j),scpr(j,iordenhop(j)), &
-                                            scprreal(j,iordenhop(j)),lowvalue(j)
+                                        write(101,888) sim%naesmd%tfemto,sim%naesmd%tfemto-sim%naesmd%dtmdqt*convtf &
+                                            +sim%naesmd%lowvaluestep(j)*sim%naesmd%dtquantum*convtf, &
+                                            cross(j),j,sim%naesmd%iordenhop(j),sim%naesmd%scpr(j,sim%naesmd%iordenhop(j)), &
+                                            sim%naesmd%scprreal(j,sim%naesmd%iordenhop(j)),sim%naesmd%lowvalue(j)
                                         call flush(101)
                                     end if
                                 end if
@@ -296,8 +298,8 @@ program MD_Geometry
                         end if
                     end do
                 end do
-                nquantumstep=nquantumreal
-                dtquantum=dtmdqt/dfloat(nquantumstep)
+                sim%naesmd%nquantumstep=sim%naesmd%nquantumreal
+                sim%naesmd%dtquantum=sim%naesmd%dtmdqt/dfloat(sim%naesmd%nquantumstep)
             end if
 
             !
@@ -307,32 +309,32 @@ program MD_Geometry
                 if(i.eq.sim%qmmm%state_of_interest) then
 
                     if(cross(i).eq.2) then
-                        nquantumstep=nquantumreal
+                        sim%naesmd%nquantumstep=sim%naesmd%nquantumreal
 
-                        if(conthop.gt.0) then
-                            if(iordenhop(i).ne.ihopprev) conthop=0
+                        if(sim%naesmd%conthop.gt.0) then
+                            if(sim%naesmd%iordenhop(i).ne.sim%naesmd%ihopprev) sim%naesmd%conthop=0
                         end if
 
-                        if(conthop2.gt.0) then
-                            if(iordenhop(i).ne.ihopprev) conthop2=0
+                        if(sim%naesmd%conthop2.gt.0) then
+                            if(sim%naesmd%iordenhop(i).ne.sim%naesmd%ihopprev) sim%naesmd%conthop2=0
                         end if
 
-                        if(conthop.eq.0) then
-                            cadiabold(i,iorden(i))=0.0d0
-                            cadiabold(iorden(i),i)=0.0d0
-                            cadiabnew(i,iorden(i))=0.0d0
-                            cadiabnew(iorden(i),i)=0.0d0
+                        if(sim%naesmd%conthop.eq.0) then
+                            sim%naesmd%cadiabold(i,sim%naesmd%iorden(i))=0.0d0
+                            sim%naesmd%cadiabold(sim%naesmd%iorden(i),i)=0.0d0
+                            sim%naesmd%cadiabnew(i,sim%naesmd%iorden(i))=0.0d0
+                            sim%naesmd%cadiabnew(sim%naesmd%iorden(i),i)=0.0d0
                         end if
                     end if
                 else
-                    if(i.ne.iorden(sim%qmmm%state_of_interest)) then
-                        if(i.lt.iorden(i)) then
+                    if(i.ne.sim%naesmd%iorden(sim%qmmm%state_of_interest)) then
+                        if(i.lt.sim%naesmd%iorden(i)) then
                             if(cross(i).eq.2) then
-                                nquantumstep=nquantumreal
-                                cadiabold(i,iorden(i))=0.0d0
-                                cadiabold(iorden(i),i)=0.0d0
-                                cadiabnew(i,iorden(i))=0.0d0
-                                cadiabnew(iorden(i),i)=0.0d0
+                                sim%naesmd%nquantumstep=sim%naesmd%nquantumreal
+                                sim%naesmd%cadiabold(i,sim%naesmd%iorden(i))=0.0d0
+                                sim%naesmd%cadiabold(sim%naesmd%iorden(i),i)=0.0d0
+                                sim%naesmd%cadiabnew(i,sim%naesmd%iorden(i))=0.0d0
+                                sim%naesmd%cadiabnew(sim%naesmd%iorden(i),i)=0.0d0
                             end if
                         end if
                     end if
@@ -345,10 +347,10 @@ program MD_Geometry
             !--------------------------------------------------------------------
             write(6,*)"End classical propagation step #",imdqt
          
-            do iimdqt=1,nquantumstep
+            do iimdqt=1,sim%naesmd%nquantumstep
                 write(6,*)'Begin quantum step #',iimdqt
-                tfemtoquantum=tfemto-dtmdqt*convtf &
-                    +iimdqt*dtquantum*convtf
+                sim%naesmd%tfemtoquantum=sim%naesmd%tfemto-sim%naesmd%dtmdqt*convtf &
+                    +iimdqt*sim%naesmd%dtquantum*convtf
                 ! Definition of initial and final time for the quantum propagator
                 if(imdqt.eq.1.and.iimdqt.eq.1) then
                     tini=0.0d0
@@ -356,32 +358,32 @@ program MD_Geometry
                     tini=tend
                 end if
 
-                tend=tfemtoquantum/convtf
-                tini0=tini
+                tend=sim%naesmd%tfemtoquantum/convtf
+                sim%naesmd%tini0=tini
                 !--------------------------------------------------------------------
                 ! Calculation of the coordinates at the middle of the step.
                 ! This intermediate structure is obtained using Newton equation
                 ! with constant velocities and accelerations.
-                ! and calculation of the energies(=vmdqtmiddle) and nacT(=cadiabmiddle) values
+                ! and calculation of the energies(=sim%naesmd%vmdqtmiddle) and nacT(=sim%naesmd%cadiabmiddle) values
                 ! at intermediate times of the classical step
                 !--------------------------------------------------------------------
                 call cadiabmiddlecalc(sim,iimdqt,Na,cross)
 
                 if(lprint.ge.3) then
-                    if(iimdqt.ne.nquantumstep) then
-                        write(96,889) tfemtoquantum, &
-                            vgs*feVmdqt,(vmdqtmiddle(j)*feVmdqt,j=1,sim%excN)
+                    if(iimdqt.ne.sim%naesmd%nquantumstep) then
+                        write(96,889) sim%naesmd%tfemtoquantum, &
+                            sim%naesmd%vgs*feVmdqt,(sim%naesmd%vmdqtmiddle(j)*feVmdqt,j=1,sim%excN)
 
-                        write(93,889) tfemtoquantum, &
-                            ((cadiabmiddle(j,k),k=1,sim%excN),j=1,sim%excN)
+                        write(93,889) sim%naesmd%tfemtoquantum, &
+                            ((sim%naesmd%cadiabmiddle(j,k),k=1,sim%excN),j=1,sim%excN)
                         call flush(96)
                         call flush(93)
                     end if
                 end if
                 !--------------------------------------------------------------------
                 !
-                !  Calculation of parameters to fit the values of cadiab and
-                !  vmdqt during propagation
+                !  Calculation of parameters to fit the values of sim%naesmd%cadiab and
+                !  sim%naesmd%vmdqt during propagation
                 !
                 !--------------------------------------------------------------------
                 call fitcoef(sim)
@@ -392,29 +394,29 @@ program MD_Geometry
                 write(6,*)'Propagator about to be called:', tini,tend,rk_tolerance
                 !write(6,*)'param:',param
                 write(6,*)'yg:',yg
-                write(6,*)'T_start / End :', imdqt, iimdqt, rk_comm%t_start, tend, tmax
+                write(6,*)'T_start / End :', imdqt, iimdqt, sim%rk_comm%t_start, tend, tmax
 	 	tend=min(tend,tmax)	
-		call range_integrate(rk_comm,fcn,tend,tgot,yg,ygprime,rk_flag)
-                write(6,*)'T_got :',tgot, rk_comm%t_start
+		call range_integrate(sim%rk_comm,fcn,tend,tgot,yg,ygprime,sim%naesmd,rk_flag)
+                write(6,*)'T_got :',tgot, sim%rk_comm%t_start
 		tend=tgot
 		!call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
                 ! Check the norm
-                call checknorm(rk_comm,sim%excN,tend,tmax,rk_tolerance,thresholds,yg)
+                call checknorm(sim%rk_comm,sim%excN,tend,tmax,rk_tolerance,thresholds,yg)
                 !call checknorm(sim,ido,neq,tini,tend,toldivprk,param,yg,idocontrol)
                 !******************************************************
                 ! values for hop probability
                 do k=1,sim%excN
                     do j=1,sim%excN
-                        vnqcorrhop(k,j)=-1.0d0*yg(j) &
-                            *dcos(yg(j+sim%excN)-yg(k+sim%excN))*cadiabmiddle(k,j)
-                        vnqcorrhop(k,j)=vnqcorrhop(k,j)*2.0d0*yg(k)
+                        sim%naesmd%vnqcorrhop(k,j)=-1.0d0*yg(j) &
+                            *dcos(yg(j+sim%excN)-yg(k+sim%excN))*sim%naesmd%cadiabmiddle(k,j)
+                        sim%naesmd%vnqcorrhop(k,j)=sim%naesmd%vnqcorrhop(k,j)*2.0d0*yg(k)
                     end do
                 end do
 
                 do k=1,sim%excN
                     do j=1,sim%excN
-                        vnqcorrhoptot(k,j)=vnqcorrhoptot(k,j) &
-                            +vnqcorrhop(k,j)*dtquantum
+                        sim%naesmd%vnqcorrhoptot(k,j)=sim%naesmd%vnqcorrhoptot(k,j) &
+                            +sim%naesmd%vnqcorrhop(k,j)*sim%naesmd%dtquantum
                     end do
                 end do
                 write(6,*)'End quantum step #',iimdqt
@@ -429,15 +431,15 @@ program MD_Geometry
             ! analyze the hopping
             !--------------------------------------------------------------------
 	    write(6,*) "Here?"
-            call evalhop(sim, rk_comm, lprint, tend, tmax, rk_tolerance, thresholds, &
+            call evalhop(sim, sim%rk_comm, lprint, tend, tmax, rk_tolerance, thresholds, &
                 Na, yg, cross)
 	    write(6,*) "no"
             write(6,*)'Now we done some other things'
             !call evalhop(sim,lprint,ido,neq,tini,tend,toldivprk, &
             !    param,Na,yg,cross,idocontrol)
             !--------------------------------------------------------------------
-            if(icontw.eq.nstepw) then
-                if(state.eq.'exct') then
+            if(sim%naesmd%icontw.eq.sim%naesmd%nstepw) then
+                if(sim%naesmd%state.eq.'exct') then
                     if(lprint.ge.1) then
                         ntotcoher=0.0d0
 
@@ -445,7 +447,7 @@ program MD_Geometry
                             ntotcoher=ntotcoher+yg(j)**2
                         end do
 !BTN: removed file coeff-n-before.out. grep this line to undo
-!                        write(105,999) ihop,tfemto,(yg(j)**2,j=1,sim%excN), &
+!                        write(105,999) sim%naesmd%ihop,sim%naesmd%tfemto,(yg(j)**2,j=1,sim%excN), &
 !                            ntotcoher
                         call flush(105)
                     end if
@@ -453,14 +455,14 @@ program MD_Geometry
             end if
 
             if(constcoherE0.ne.0.d0.and.constcoherC.ne.0.d0) then
-                if(conthop.ne.1.and.conthop2.ne.1) then
+                if(sim%naesmd%conthop.ne.1.and.sim%naesmd%conthop2.ne.1) then
                     !BTN: I have not had time to investigate this fully, but the simulation object gets garbled when passed to coherence. 
                     !My guess is that one of the variables passed (though it does not appear to be sim) is not defined identically correctly inside coherence.
                     !For now, just exit.
                     write(6,*) 'Your choices for decoher_e0 and decoher_c &
                         are not currently available'
                     stop
-                    call coherence(sim,rk_comm, Na, tend,tmax, rk_tolerance, &
+                    call coherence(sim,sim%rk_comm, Na, tend,tmax, rk_tolerance, &
                         thresholds,yg,constcoherE0,constcoherC,cohertype)
                 end if
             end if
@@ -470,23 +472,23 @@ program MD_Geometry
 
 
         ! evaluation of current kinetic energy
-        call temperature(imdqt)
+        call temperature(imdqt,sim%naesmd)
         if(imdqt.eq.1) then
-            icont=1
-            icontpdb=icontini
+            sim%naesmd%icont=1
+            sim%naesmd%icontpdb=sim%naesmd%icontini
         end if
 
-        if(icontw.ne.nstepw) then
-            icontw=icontw+1
+        if(sim%naesmd%icontw.ne.sim%naesmd%nstepw) then
+            sim%naesmd%icontw=sim%naesmd%icontw+1
         else
-            icontw=1
+            sim%naesmd%icontw=1
             call writeoutput(sim,ibo,yg,lprint,cross)
         end if
     end do
 
     !  final call to divprk to release workspace
     !  which was automatically allocated by the initial call with IDO=1.
-    if(state.eq.'exct'.and.ibo.ne.1) then
+    if(sim%naesmd%state.eq.'exct'.and.ibo.ne.1) then
         if(1==0) then ! kav: to skip it whatsoever
                        ! jakb: not sure if this should be skipped or not
             !if(idocontrol.eq.0) then
@@ -531,7 +533,7 @@ program MD_Geometry
     write(6,*)
 
     ! Cumulative execution time of various code blocks
-    write(6,*) ' SQM (ground state) took overall [s]:'
+    write(6,*) ' SQM (ground sim%naesmd%state) took overall [s]:'
     write(6,'(g16.3)') sim%time_sqm_took
     write(6,*) ' Davidson (excited states) took overall [s]:'
     write(6,'(g16.3)') sim%time_davidson_took
@@ -563,20 +565,23 @@ program MD_Geometry
 98  stop 'bad input'
 
 
+
+
 contains
     !
     !********************************************************************
     !
-    subroutine init_main()
+    subroutine init_main(naesmd_struct)
         use naesmd_module
         use naesmd_constants
         use md_module
 
         implicit none
+	type(naesmd_structure), intent(inout) :: naesmd_struct	
         _REAL_,allocatable::xx(:),yy(:),zz(:)
 
-        ! dtnact is the incremental time to be used at nact calculation
-        dtnact=0.002d0
+        !dtnact is the incremental time to be used at nact calculation
+        naesmd_struct%dtnact=0.002d0
 
         ! Setting divprk propagator parameters
         !call sset(50,0.0d0,param,1)
@@ -591,16 +596,16 @@ contains
 
         ! definition of variables
         i=0
-        ktbig(i)=char(48)//char(48)//char(48)//char(48)
+        naesmd_struct%ktbig(i)=char(48)//char(48)//char(48)//char(48)
         do i=1,9
-            ktbig(i)=char(48)//char(48)//char(48)//char(48+i)
+            naesmd_struct%ktbig(i)=char(48)//char(48)//char(48)//char(48+i)
         end do
 
         ii=9
         do j=1,9
             do i=0,9
                 ii=ii+1
-                ktbig(ii)=char(48)//char(48)//char(48+j)//char(48+i)
+                naesmd_struct%ktbig(ii)=char(48)//char(48)//char(48+j)//char(48+i)
             end do
         end do
 
@@ -609,7 +614,7 @@ contains
             do j=0,9
                 do i=0,9
                     ii=ii+1
-                    ktbig(ii)=char(48)//char(48+k)//char(48+j)//char(48+i)
+                    naesmd_struct%ktbig(ii)=char(48)//char(48+k)//char(48+j)//char(48+i)
                 end do
             end do
         end do
@@ -620,7 +625,7 @@ contains
                 do j=0,9
                     do i=0,9
                         ii=ii+1
-                        ktbig(ii)=char(48+jjj)//char(48+k)//char(48+j)//char(48+i)
+                        naesmd_struct%ktbig(ii)=char(48+jjj)//char(48+k)//char(48+j)//char(48+i)
                     end do
                 end do
             end do
@@ -630,8 +635,8 @@ contains
         ! use by divprk propagator
         !ido=1
         !idocontrol=1
-        conthop=0
-        conthop2=0
+        naesmd_struct%conthop=0
+        naesmd_struct%conthop2=0
         !
         !--------------------------------------------------------------------
         !
@@ -645,24 +650,24 @@ contains
         ! copy input file
         open (12,file='input.ceon',status='old')
         j=0
-        do while(readstring(12,cardini,slen).ge.0)
+        do while(readstring(12,naesmd_struct%cardini,slen).ge.0)
             j=j+1
 
             do i=1,slen
-                txtinput(j)(i:i)=cardini(i:i)
+                naesmd_struct%txtinput(j)(i:i)=naesmd_struct%cardini(i:i)
             end do
 
-            if(cardini(1:6).eq.'$COORD') then
-                txtinicoord=j
+            if(naesmd_struct%cardini(1:6).eq.'$COORD') then
+                naesmd_struct%txtinicoord=j
             end if
 
-            if(cardini(1:9).eq.'$ENDCOORD') then
-                txtendcoord=j
+            if(naesmd_struct%cardini(1:9).eq.'$ENDCOORD') then
+                naesmd_struct%txtendcoord=j
             end if
         end do
         close(12)
 
-        jend=j
+        naesmd_struct%jend=j
         !
         !--------------------------------------------------------------------
         !
@@ -719,6 +724,10 @@ contains
             stop
         endif
         
+        naesmd_struct%iredpot=iredpot
+        naesmd_struct%nstates=nstates 
+        naesmd_struct%deltared=deltared 
+        
         !Input checks for features under development
         if(decoher_type>2) then
             write(6,*) "decoher_type under development. Do not use."
@@ -758,67 +767,67 @@ contains
         ibo=bo_dynamics_flag
    
         imdtype=exc_state_init
-        ihop=imdtype
+        naesmd_struct%ihop=imdtype
         if(imdtype==0) then
-            state='fund'
+            naesmd_struct%state='fund'
         else
-            state='exct'
+            naesmd_struct%state='exct'
         end if
 
-        npot=n_exc_states_propagate
-        neq=2*npot !Number of equations for divprk -- could use 2*sim%excN instead
+        naesmd_struct%npot=n_exc_states_propagate
+        neq=2*naesmd_struct%npot !Number of equations for divprk -- could use 2*sim%excN instead
    
-        icontini=out_count_init
-        tfemto=time_init
+        naesmd_struct%icontini=out_count_init
+        naesmd_struct%tfemto=time_init
         !toldivprk=rk_tolerance
 
-        dtmdqt=time_step
-        h=dtmdqt
-        dtmdqt=dtmdqt/convtf
+        naesmd_struct%dtmdqt=time_step
+        h=naesmd_struct%dtmdqt
+        naesmd_struct%dtmdqt=naesmd_struct%dtmdqt/convtf
 
-        nstep=n_class_steps
+        naesmd_struct%nstep=n_class_steps
 
-        nquantumreal=n_quant_steps
-        dtquantum=dtmdqt/dfloat(nquantumreal)
+        naesmd_struct%nquantumreal=n_quant_steps
+        naesmd_struct%dtquantum=naesmd_struct%dtmdqt/dfloat(naesmd_struct%nquantumreal)
 
-        decorhop=quant_coeffs_reinit
+        naesmd_struct%decorhop=quant_coeffs_reinit
         d=num_deriv_step
 
-        temp0=therm_temperature
-        ttt=temp0
+        naesmd_struct%temp0=therm_temperature
+        ttt=naesmd_struct%temp0
 
         ither=therm_type
-        if(ither==0) ensemble ='energy'
-        if(ither==1) ensemble ='langev'
-        if(ither==2) ensemble ='temper'
+        if(ither==0) naesmd_struct%ensemble ='energy'
+        if(ither==1) naesmd_struct%ensemble ='langev'
+        if(ither==2) naesmd_struct%ensemble ='temper'
 
-        tao=berendsen_relax_const
+        naesmd_struct%tao=berendsen_relax_const
 
         if(heating==1) then
-            prep='heat'
+            naesmd_struct%prep='heat'
         else
-            prep='equi'
+            naesmd_struct%prep='equi'
         end if
 
-        istepheat=heating_steps_per_degree
-        nstepw=out_data_steps
-        nstepcoord=out_coords_steps
+        naesmd_struct%istepheat=heating_steps_per_degree
+        naesmd_struct%nstepw=out_data_steps
+        naesmd_struct%nstepcoord=out_coords_steps
    
-        friction=therm_friction/1.d3*convtf !convter therm_friction (in 1/ps) to friction (1/AU)
+        naesmd_struct%friction=therm_friction/1.d3*convtf !convter therm_friction (in 1/ps) to naesmd_struct%friction (1/AU)
 
-        iseedmdqt=rnd_seed
+        naesmd_struct%iseedmdqt=rnd_seed
         write(6,*)"rnd_seed=",rnd_seed
-        iview=out_data_cube
+        naesmd_struct%iview=out_data_cube
         lprint=verbosity
         ideriv=moldyn_deriv_flag
 
-        nstepcross=int(1.d0/quant_step_reduction_factor)
+        naesmd_struct%nstepcross=int(1.d0/quant_step_reduction_factor)
         constcoherE0=decoher_e0
         constcoherC=decoher_c
 
         cohertype=decoher_type
 
-        deltared=deltared/feVmdqt !for reducing number of potentials   
+        naesmd_struct%deltared=naesmd_struct%deltared/feVmdqt !for reducing number of potentials   
 
         write(6,*) '!!!!!!-----MD INPUT-----!!!!!!'
         write(6,*)
@@ -830,28 +839,28 @@ contains
         else
             sim%qmmm%state_of_interest=imdtype
             write(6,*)'Excited state MD,      state=',imdtype
-            write(6,*)'Number of states to propagate',npot
+            write(6,*)'Number of states to propagate',naesmd_struct%npot
         end if
 
-        write(6,*)'Initial count for out files   ',icontini
+        write(6,*)'Initial count for out files   ',naesmd_struct%icontini
 
-        if(ensemble.eq.'langev') then
+        if(naesmd_struct%ensemble.eq.'langev') then
             write(6,*)'MD using Langevin '
             !write(6,*)'with friction coefficient [1/ps]=',friction*1.0D3
 
         else
-            if(ensemble.eq.'temper') then
+            if(naesmd_struct%ensemble.eq.'temper') then
                 write(6,*)'MD using Berendsen thermostat'
-                write(6,*)'with bath relaxation constant [ps]=',tao
+                write(6,*)'with bath relaxation constant [ps]=',naesmd_struct%tao
             else
                 write(6,*)'MD at constant energy'
             end if
         end if
 
-        write(6,*)'Starting time, fs        ',tfemto
-        write(6,*)'Time step, fs		      ',dtmdqt*convtf
-        write(6,*)'Number of classical steps (CS) ',nstep
-        write(6,*)'Quantum steps/per CS         ',nquantumreal
+        write(6,*)'Starting time, fs        ',naesmd_struct%tfemto
+        write(6,*)'Time step, fs		      ',naesmd_struct%dtmdqt*convtf
+        write(6,*)'Number of classical steps (CS) ',naesmd_struct%nstep
+        write(6,*)'Quantum steps/per CS         ',naesmd_struct%nquantumreal
         !	write(6,*)	'Vibr. modes to consider      ',   symm
         write(6,*)'Displacement for deriv. [A]   ',d
 
@@ -863,19 +872,19 @@ contains
             write(6,*)'Temperature thermostat,       ither=',ither
         end if
 
-        write(6,*)'Temperature, K               ',temp0
-        write(6,*)'Bath relaxation constant     ',tao
+        write(6,*)'Temperature, K               ',naesmd_struct%temp0
+        write(6,*)'Bath relaxation constant     ',naesmd_struct%tao
 
-        if(prep.eq.'equi') write(6,*)'Equilibrated dynamics'
-        if(prep.eq.'heat') write(6,*)'Heating dynamics from T=0'
+        if(naesmd_struct%prep.eq.'equi') write(6,*)'Equilibrated dynamics'
+        if(naesmd_struct%prep.eq.'heat') write(6,*)'Heating dynamics from T=0'
 
-        write(6,*)'Number of steps per degree K  ',istepheat
-        write(6,*)'Number of steps to write data ',nstepw
-        write(6,*)'Number of steps to write coords',nstepcoord
-        write(6,*)'Friction coefficient [1/ps]   ',friction/convtf*1d3 !convert back to ps
-        write(6,*)'Seed for random generator    ',iseedmdqt
+        write(6,*)'Number of steps per degree K  ',naesmd_struct%istepheat
+        write(6,*)'Number of steps to write data ',naesmd_struct%nstepw
+        write(6,*)'Number of steps to write coords',naesmd_struct%nstepcoord
+        write(6,*)'Friction coefficient [1/ps]   ',naesmd_struct%friction/convtf*1d3 !convert back to ps
+        write(6,*)'Seed for random generator    ',naesmd_struct%iseedmdqt
 
-        if(iview.eq.1) write(6,*)'Will write files to generate cubes'
+        if(naesmd_struct%iview.eq.1) write(6,*)'Will write files to generate cubes'
 
         write(6,*)'NAESMD verbosity, ',lprint
 
@@ -893,7 +902,7 @@ contains
         !***************************************************
         ! Initial allocations
         ! **************************************************
-        call allocate_naesmd_module_init(natoms)
+        call allocate_naesmd_module_init(naesmd_struct,natoms)
         call allocate_md_module_init(natoms)
         allocate(xx(natoms),yy(natoms),zz(natoms))
 
@@ -923,55 +932,55 @@ contains
 
             read(txt,*,err=29) atoms(Na),r0(3*Na-2),r0(3*Na-1),r0(3*Na)
             atmass(Na)=2*atoms(Na)
-            atomtype(Na)=atoms(Na)
-            !         if(atomtype(Na).eq.1) massmdqt(Na)=1.0079d0*convm
-            if(atomtype(Na).eq.1) massmdqt(Na)=1.00d0*convm
-            if(atomtype(Na).eq.1) atomtype2(Na)='H '
-            if(atomtype(Na).eq.2) massmdqt(Na)=4.0026d0*convm
-            if(atomtype(Na).eq.2) atomtype2(Na)='He'
-            if(atomtype(Na).eq.3) massmdqt(Na)=6.941d0*convm
-            if(atomtype(Na).eq.3) atomtype2(Na)='Li'
-            if(atomtype(Na).eq.4) massmdqt(Na)=9.0122d0*convm
-            if(atomtype(Na).eq.4) atomtype2(Na)='Be'
-            if(atomtype(Na).eq.5) massmdqt(Na)=10.811d0*convm
-            if(atomtype(Na).eq.5) atomtype2(Na)='B '
-            if(atomtype(Na).eq.6) massmdqt(Na)=12.011d0*convm
-            if(atomtype(Na).eq.6) atomtype2(Na)='C '
-            if(atomtype(Na).eq.7) massmdqt(Na)=14.007d0*convm
-            if(atomtype(Na).eq.7) atomtype2(Na)='N '
-            if(atomtype(Na).eq.8) massmdqt(Na)=15.9994d0*convm
-            if(atomtype(Na).eq.8) atomtype2(Na)='O '
-            if(atomtype(Na).eq.9) massmdqt(Na)=18.998d0*convm
-            if(atomtype(Na).eq.9) atomtype2(Na)='F '
-            if(atomtype(Na).eq.10) massmdqt(Na)=20.180d0*convm
-            if(atomtype(Na).eq.10) atomtype2(Na)='Ne'
-            if(atomtype(Na).eq.14) massmdqt(Na)=28.086d0*convm
-            if(atomtype(Na).eq.14) atomtype2(Na)='Si'
-            if(atomtype(Na).eq.15) massmdqt(Na)=30.974d0*convm
-            if(atomtype(Na).eq.15) atomtype2(Na)='P '
-            if(atomtype(Na).eq.16) massmdqt(Na)=32.065d0*convm
-            if(atomtype(Na).eq.16) atomtype2(Na)='S '
-            if(atomtype(Na).eq.17) massmdqt(Na)=35.453d0*convm
-            if(atomtype(Na).eq.17) atomtype2(Na)='Cl'
+            naesmd_struct%atomtype(Na)=atoms(Na)
+            !         if(naesmd_struct%atomtype(Na).eq.1) naesmd_struct%massmdqt(Na)=1.0079d0*convm
+            if(naesmd_struct%atomtype(Na).eq.1) naesmd_struct%massmdqt(Na)=1.00d0*convm
+            if(naesmd_struct%atomtype(Na).eq.1) naesmd_struct%atomtype2(Na)='H '
+            if(naesmd_struct%atomtype(Na).eq.2) naesmd_struct%massmdqt(Na)=4.0026d0*convm
+            if(naesmd_struct%atomtype(Na).eq.2) naesmd_struct%atomtype2(Na)='He'
+            if(naesmd_struct%atomtype(Na).eq.3) naesmd_struct%massmdqt(Na)=6.941d0*convm
+            if(naesmd_struct%atomtype(Na).eq.3) naesmd_struct%atomtype2(Na)='Li'
+            if(naesmd_struct%atomtype(Na).eq.4) naesmd_struct%massmdqt(Na)=9.0122d0*convm
+            if(naesmd_struct%atomtype(Na).eq.4) naesmd_struct%atomtype2(Na)='Be'
+            if(naesmd_struct%atomtype(Na).eq.5) naesmd_struct%massmdqt(Na)=10.811d0*convm
+            if(naesmd_struct%atomtype(Na).eq.5) naesmd_struct%atomtype2(Na)='B '
+            if(naesmd_struct%atomtype(Na).eq.6) naesmd_struct%massmdqt(Na)=12.011d0*convm
+            if(naesmd_struct%atomtype(Na).eq.6) naesmd_struct%atomtype2(Na)='C '
+            if(naesmd_struct%atomtype(Na).eq.7) naesmd_struct%massmdqt(Na)=14.007d0*convm
+            if(naesmd_struct%atomtype(Na).eq.7) naesmd_struct%atomtype2(Na)='N '
+            if(naesmd_struct%atomtype(Na).eq.8) naesmd_struct%massmdqt(Na)=15.9994d0*convm
+            if(naesmd_struct%atomtype(Na).eq.8) naesmd_struct%atomtype2(Na)='O '
+            if(naesmd_struct%atomtype(Na).eq.9) naesmd_struct%massmdqt(Na)=18.998d0*convm
+            if(naesmd_struct%atomtype(Na).eq.9) naesmd_struct%atomtype2(Na)='F '
+            if(naesmd_struct%atomtype(Na).eq.10) naesmd_struct%massmdqt(Na)=20.180d0*convm
+            if(naesmd_struct%atomtype(Na).eq.10) naesmd_struct%atomtype2(Na)='Ne'
+            if(naesmd_struct%atomtype(Na).eq.14) naesmd_struct%massmdqt(Na)=28.086d0*convm
+            if(naesmd_struct%atomtype(Na).eq.14) naesmd_struct%atomtype2(Na)='Si'
+            if(naesmd_struct%atomtype(Na).eq.15) naesmd_struct%massmdqt(Na)=30.974d0*convm
+            if(naesmd_struct%atomtype(Na).eq.15) naesmd_struct%atomtype2(Na)='P '
+            if(naesmd_struct%atomtype(Na).eq.16) naesmd_struct%massmdqt(Na)=32.065d0*convm
+            if(naesmd_struct%atomtype(Na).eq.16) naesmd_struct%atomtype2(Na)='S '
+            if(naesmd_struct%atomtype(Na).eq.17) naesmd_struct%massmdqt(Na)=35.453d0*convm
+            if(naesmd_struct%atomtype(Na).eq.17) naesmd_struct%atomtype2(Na)='Cl'
 
             read(12,'(a)',err=29) txt
         end do
         !--------------------------------------------------------------------
         !Allocate variables
         write(6,*)'Allocating variables'
-        natom=Na
+        naesmd_struct%natom=Na
         sim%Na=Na
         allocate(sim%coords(Na*3))
-        sim%excN=npot
-        call allocate_naesmd_module(Na,npot)
+        sim%excN=naesmd_struct%npot
+        call allocate_naesmd_module(naesmd_struct,Na,naesmd_struct%npot)
         call allocate_md_module(Na)
-        if(npot.gt.0) then
+        if(naesmd_struct%npot.gt.0) then
                 allocate(thresholds(2*sim%excN))
                 allocate(yg(2*sim%excN))
                 allocate(ygprime(2*sim%excN))
                 allocate(cross(sim%excN))
                 allocate(fosc(sim%excN))
-                allocate(Omega(sim%excN))
+                allocate(naesmd_struct%Omega(sim%excN))
         endif
 
         !--------------------------------------------------------------------
@@ -999,13 +1008,13 @@ contains
                 .or.txt(1:9).eq.'&ENDVELOC' &
                 .or.txt(1:9).eq.'&endveloc') exit
 
-            read(txt,*,err=29) vx(i),vy(i),vz(i)
+            read(txt,*,err=29) naesmd_struct%vx(i),naesmd_struct%vy(i),naesmd_struct%vz(i)
             i=i+1
         end do
 
-        vx(1:natom)=vx(1:natom)/convl*convt
-        vy(1:natom)=vy(1:natom)/convl*convt
-        vz(1:natom)=vz(1:natom)/convl*convt
+        naesmd_struct%vx(1:naesmd_struct%natom)=naesmd_struct%vx(1:naesmd_struct%natom)/convl*convt
+        naesmd_struct%vy(1:naesmd_struct%natom)=naesmd_struct%vy(1:naesmd_struct%natom)/convl*convt
+        naesmd_struct%vz(1:naesmd_struct%natom)=naesmd_struct%vz(1:naesmd_struct%natom)/convl*convt
         !
         !--------------------------------------------------------------------
         ! Reading quantum coeffients
@@ -1086,33 +1095,35 @@ contains
 
         ! define cartesian coordinates for mdqt
         ! transform coordiantes from angstrom to atomic units
-        rx(1:natom)=xx(1:natom)/convl
-        ry(1:natom)=yy(1:natom)/convl
-        rz(1:natom)=zz(1:natom)/convl
+        naesmd_struct%rx(1:naesmd_struct%natom)=xx(1:naesmd_struct%natom)/convl
+        naesmd_struct%ry(1:naesmd_struct%natom)=yy(1:naesmd_struct%natom)/convl
+        naesmd_struct%rz(1:naesmd_struct%natom)=zz(1:naesmd_struct%natom)/convl
 
         ! position of the center of mass
-        xcmini=0.d0
-        ycmini=0.d0
-        zcmini=0.d0
+        naesmd_struct%xcmini=0.d0
+        naesmd_struct%ycmini=0.d0
+        naesmd_struct%zcmini=0.d0
 
-        masstot=0.d0 ! kav: - zeroing was not here, needed?
-        do j=1,natom
-            masstot=masstot+massmdqt(j)
+        naesmd_struct%masstot=0.d0 ! kav: - zeroing was not here, needed?
+        do j=1,naesmd_struct%natom
+            naesmd_struct%masstot=naesmd_struct%masstot+naesmd_struct%massmdqt(j)
         end do
-        do j=1,natom
-            xcmini=xcmini+rx(j)*massmdqt(j)/masstot
-            ycmini=ycmini+ry(j)*massmdqt(j)/masstot
-            zcmini=zcmini+rz(j)*massmdqt(j)/masstot
+        do j=1,naesmd_struct%natom
+            naesmd_struct%xcmini=naesmd_struct%xcmini+naesmd_struct%rx(j)*naesmd_struct%massmdqt(j)/naesmd_struct%masstot
+            naesmd_struct%ycmini=naesmd_struct%ycmini+naesmd_struct%ry(j)*naesmd_struct%massmdqt(j)/naesmd_struct%masstot
+            naesmd_struct%zcmini=naesmd_struct%zcmini+naesmd_struct%rz(j)*naesmd_struct%massmdqt(j)/naesmd_struct%masstot
         end do
    
         !Remove rotation and translation from initial velocity
         write(6,*)'Rescaling velocity'
-        call rescaleveloc(rx,ry,rz,vx,vy,vz,massmdqt,natom)
+        call rescaleveloc(naesmd_struct%rx,naesmd_struct%ry,naesmd_struct%rz, &
+		naesmd_struct%vx,naesmd_struct%vy,naesmd_struct%vz,naesmd_struct%massmdqt,naesmd_struct%natom)
 
         ! compute kinetic energy, for cartesian option
-        kin=0.d0
-        do i=1,natom
-            kin=kin+massmdqt(i)*(vx(i)**2+vy(i)**2+vz(i)**2)/2
+        naesmd_struct%kin=0.d0
+        do i=1,naesmd_struct%natom
+            naesmd_struct%kin=naesmd_struct%kin+naesmd_struct%massmdqt(i)* &
+		(naesmd_struct%vx(i)**2+naesmd_struct%vy(i)**2+naesmd_struct%vz(i)**2)/2
         end do
 
         write(6,*)
@@ -1124,7 +1135,7 @@ contains
 100     format(I5,'     ',3F12.6)
 
 
-!        if(tfemto.eq.0.d0) then
+!        if(naesmd_struct%tfemto.eq.0.d0) then
 !            open (9,file='coords.xyz')
 !            write (9,*) Na
 !            write (9,*) 'Input Geometry'
@@ -1136,10 +1147,6 @@ contains
 !        end if
         sim%coords(1:3*Na)=r0(1:3*Na)
         allocate(sim%deriv_forces(3*Na))
-        pOmega=>Omega
-        pE0=>E0
-
-        call init_naesmd_space_globs(sim%naesmd, pOmega, pE0)
 
         return
 
@@ -1158,5 +1165,7 @@ contains
 29      write(6,*) txt
 98      stop 'bad input'
     end subroutine
+
+
   
 end

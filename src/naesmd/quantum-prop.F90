@@ -1,6 +1,7 @@
 #include "dprec.fh"
 
 module rksuite_90
+use naesmd_module, only : naesmd_structure  
 !
 ! Part of rksuite_90 v1.0 (Aug 1994)
 !         software for initial value problems in ODEs
@@ -912,7 +913,7 @@ if (associated(comm%stages)) then
 end if
 !
 end subroutine collect_garbage_r1
-recursive subroutine range_integrate_r1(comm,f,t_want,t_got,y_got,yderiv_got, &
+recursive subroutine range_integrate_r1(comm,f,t_want,t_got,y_got,yderiv_got, struct, &
                                         flag)
 !
 ! Part of rksuite_90 v1.0 (Aug 1994)
@@ -927,12 +928,15 @@ _REAL_, intent(out) :: t_got                                  !indep!
 _REAL_, dimension(:), intent(out) :: y_got, yderiv_got        !dep!
 integer, intent(out), optional :: flag
 type(rk_comm_real_1d), intent(inout) :: comm
+type(naesmd_structure), intent(inout) :: struct 
 !
 interface 
-   subroutine f(t,y,yp)
+   subroutine f(t,y,yp,struct)
+      import naesmd_structure
       _REAL_, intent(in) :: t                                 !indep!
       _REAL_, dimension(:), intent(in) :: y                   !dep!
       _REAL_, dimension(:), intent(out) :: yp             !dep!
+      type(naesmd_structure), intent(inout) :: struct 
    end subroutine
    
    !function f(t,y)
@@ -1089,7 +1093,7 @@ body: do
 !
          goback = comm%dir*(comm%t-t_want) >= zero
          if (goback) then
-            call interpolate(comm,f,t_want,y_got,yderiv_got)
+            call interpolate(comm,f,t_want,y_got,yderiv_got,struct)
             baderr = get_saved_fatal_r1(comm)
             if (baderr) exit body
             t_got = t_want
@@ -1117,7 +1121,7 @@ body: do
 !  program. T_NOW is output from STEP_INTEGRATE and is actually a copy of T
 !  from inside COMM.
 
-      call step_integrate(comm,f,t_now,y_got,yderiv_got,step_flag)
+      call step_integrate(comm,f,t_now,y_got,yderiv_got,struct,step_flag)
       ier = step_flag 
 !  
 !  A successful step by STEP_INTEGRATE is indicated by step_flag= 1.
@@ -1155,7 +1159,7 @@ call rkmsg_r1(ier,srname,nrec,comm,flag)
 !
 end subroutine range_integrate_r1
 
-recursive subroutine step_integrate_r1(comm,f,t_now,y_now,yderiv_now,flag)
+recursive subroutine step_integrate_r1(comm,f,t_now,y_now,yderiv_now,struct,flag)
 !
 ! Part of rksuite_90 v1.0 (Aug 1994)
 !         software for initial value problems in ODEs
@@ -1168,11 +1172,14 @@ _REAL_, intent(out) :: t_now                                  !indep!
 integer, intent(out), optional :: flag
 type(rk_comm_real_1d), intent(inout) :: comm
 _REAL_, dimension(:), intent(out) :: y_now, yderiv_now        !dep!
+type(naesmd_structure), intent(inout) :: struct 
 interface
-   subroutine f(t,y,yp)
+   subroutine f(t,y,yp,struct)
+      import naesmd_structure
       _REAL_, intent(in) :: t                                 !indep!
       _REAL_, dimension(:), intent(in) :: y                   !dep!
       _REAL_, dimension(:), intent(out) :: yp             !dep!
+      type(naesmd_structure), intent(inout) :: struct 
    end subroutine
    
    !function f(t,y)
@@ -1231,7 +1238,7 @@ body: do
 !
    if (comm%at_t_start) then
 !
-      call f(comm%t,comm%y,comm%yp); comm%f_count = comm%f_count + 1
+      call f(comm%t,comm%y,comm%yp,struct); comm%f_count = comm%f_count + 1
       if (comm%erason) comm%ge_yp = comm%yp
 !
 !  The weights for the control of the error depend on the size of the
@@ -1359,7 +1366,7 @@ body: do
 !  much work is augmented inside STIFF to explain that it is due to
 !  stiffness.
 !
-         call stiff_r1(comm,f,toomch,sure_stiff)
+         call stiff_r1(comm,f,toomch,sure_stiff,struct)
          if (sure_stiff) then
 !
 !  Predict how much extra work will be needed to reach TND.
@@ -1387,7 +1394,7 @@ body: do
 !
       htry = comm%h
       call step_r1(comm,f,comm%t,comm%y,comm%yp,comm%stages,comm%tol,htry, &
-                   comm%y_new,comm%err_estimates,err,hmin,comm%phase2)
+                   comm%y_new,comm%err_estimates,err,hmin,comm%phase2,struct=struct)
       comm%h = htry
 !
 !  Compare the norm of the local error to the tolerance.
@@ -1497,14 +1504,14 @@ body: do
 !
 !  Call F to evaluate YP.
 !
-         call f(comm%t,comm%y,comm%yp); comm%f_count = comm%f_count + 1
+         call f(comm%t,comm%y,comm%yp,struct); comm%f_count = comm%f_count + 1
       end if
 !
 !  If global error assessment is desired, advance the secondary
 !  integration from TOLD to T.
 !
       if (comm%erason) then
-         call truerr_r1(comm,f,ier)
+         call truerr_r1(comm,f,struct,ier)
          if (ier==6) then
 !
 !  The global error estimating procedure has broken down. Treat it as a
@@ -1554,7 +1561,7 @@ call rkmsg_r1(ier,srname,nrec,comm,flag)
 end subroutine step_integrate_r1
 
 
-subroutine truerr_r1(comm,f,ier)
+subroutine truerr_r1(comm,f,struct, ier)
 !
 ! Part of rksuite_90 v1.0 (Aug 1994)
 !         software for initial value problems in ODEs
@@ -1565,12 +1572,15 @@ subroutine truerr_r1(comm,f,ier)
 !
 type(rk_comm_real_1d), intent(inout) :: comm
 integer, intent(inout) :: ier
+type(naesmd_structure), intent(inout) :: struct 
 !
 interface
-   subroutine f(t,y,yp)
+   subroutine f(t,y,yp,struct)
+      import naesmd_structure
       _REAL_, intent(in) :: t                                 !indep!
       _REAL_, dimension(:), intent(in) :: y                   !dep!
       _REAL_, dimension(:), intent(out) :: yp             !dep!
+       type(naesmd_structure), intent(inout) :: struct 
    end subroutine
    
    !function f(t,y)
@@ -1618,7 +1628,7 @@ body: do
 !
 !  Take a step.
       call step_r1(comm,f,tsec,ge_y,ge_yp,ge_stages,ge_test1,hsec,ge_y_new, &
-         ge_err_estimates,ge_err)
+         ge_err_estimates,ge_err,struct=struct)
 !
 !  The primary integration is using a step size of H_OLD and the
 !  secondary integration is using the smaller step size 
@@ -1657,7 +1667,7 @@ body: do
 !
 !  Call F to evaluate GE_YP.
 !
-         call f(tsec,ge_y,ge_yp); comm%ge_f_count = comm%ge_f_count + 1
+         call f(tsec,ge_y,ge_yp,struct); comm%ge_f_count = comm%ge_f_count + 1
       end if
 !
    end do
@@ -1691,7 +1701,7 @@ end do body
 end subroutine truerr_r1
 
 subroutine step_r1(comm,f,tnow,y,yp,stages,tol,htry,y_new,    &
-                     errest,err,hmin,phase_2)
+                     errest,err,hmin,phase_2,struct)
 !
 ! Part of rksuite_90 v1.0 (Aug 1994)
 !         software for initial value problems in ODEs
@@ -1711,12 +1721,15 @@ logical, intent(inout), optional :: phase_2
 _REAL_, dimension(:), intent(in) :: y, yp                     !dep!
 _REAL_, dimension(:), intent(out) ::  errest, y_new           !dep!
 _REAL_, dimension(:,:), intent(out) :: stages                 !dep!
+type(naesmd_structure), intent(inout) :: struct 
 !
 interface
-   subroutine f(t,y,yp)
+   subroutine f(t,y,yp,struct)
+      import naesmd_structure
       _REAL_, intent(in) :: t                                 !indep!
       _REAL_, dimension(:), intent(in) :: y                   !dep!
       _REAL_, dimension(:), intent(out) :: yp             !dep!
+       type(naesmd_structure), intent(inout) :: struct 
    end subroutine
    
    !function f(t,y)
@@ -1775,7 +1788,7 @@ attempt_step: do
 !
       tstg = tnow + c(i)*htry
       if (main .and. comm%at_t_end .and. c(i)==one) tstg = comm%t_end
-      call f(tstg,y_new, stages(:,ptr(i)))
+      call f(tstg,y_new, stages(:,ptr(i)),struct)
 !
 !  Increment the counter for the number of function evaluations
 !  depending on whether the primary or secondary integration is taking
@@ -1946,7 +1959,7 @@ contains
 end subroutine step_r1
 
 
-subroutine stiff_r1(comm,f,toomch,sure_stiff)
+subroutine stiff_r1(comm,f,toomch,sure_stiff,struct)
 !
 ! Part of rksuite_90 v1.0 (Aug 1994)
 !         software for initial value problems in ODEs
@@ -1958,12 +1971,15 @@ subroutine stiff_r1(comm,f,toomch,sure_stiff)
 type(rk_comm_real_1d), intent(inout), target :: comm
 logical, intent(in) :: toomch
 logical, intent(out) :: sure_stiff
+type(naesmd_structure), intent(inout) :: struct 
 !
 interface 
-   subroutine f(t,y,yp)
+   subroutine f(t,y,yp,struct)
+      import naesmd_structure
       _REAL_, intent(in) :: t                                 !indep!
       _REAL_, dimension(:), intent(in) :: y                   !dep!
       _REAL_, dimension(:), intent(out) :: yp             !dep!
+       type(naesmd_structure), intent(inout) :: struct 
    end subroutine
    
    !function f(t,y)
@@ -2089,7 +2105,7 @@ v0 = v0/v0nrm; v0v0 = one
 ntry = 1
 do
 !
-   v1 = approx_jacobian(f,v0,v0v0)
+   v1 = approx_jacobian(f,v0,v0v0,struct)
    v1v1 = wt_inner_prod(v1,v1)
 !
 !  The quantity SQRT(V1V1/V0V0) is a lower bound for the product of H_AVERAGE
@@ -2116,7 +2132,7 @@ do
       if (dominant_eigenvalue(v1v1,v1v0,v0v0)) exit
    end if
 !
-   v2 = approx_jacobian(f,v1,v1v1)
+   v2 = approx_jacobian(f,v1,v1v1,struct)
    v2v2 = wt_inner_prod(v2,v2)
    v2v0 = wt_inner_prod(v2,v0)
    v2v1 = wt_inner_prod(v2,v1)
@@ -2135,7 +2151,7 @@ do
 !  quadratic to V1,V2,V3 to get a second approximation to a pair
 !  of eigenvalues.
 !
-   v3 = approx_jacobian(f,v2,v2v2)
+   v3 = approx_jacobian(f,v2,v2v2,struct)
    v3v3 = wt_inner_prod(v3,v3)
    v3v1 = wt_inner_prod(v3,v1)
    v3v2 = wt_inner_prod(v3,v2)
@@ -2215,17 +2231,20 @@ end if
 !
 contains
 
-function approx_jacobian(f,v,vdotv)
+function approx_jacobian(f,v,vdotv,struct)
 !
 _REAL_, intent(in) :: vdotv
 _REAL_, dimension(:), intent(in) :: v                         !dep!
 _REAL_, dimension(size(v,1)) :: approx_jacobian               !dep!
+type(naesmd_structure), intent(inout) :: struct 
 !
 interface
-   subroutine f(t,y,yp)
+   subroutine f(t,y,yp,struct)
+      import naesmd_structure
       _REAL_, intent(in) :: t                                 !indep!
       _REAL_, dimension(:), intent(in) :: y                   !dep!
       _REAL_, dimension(:), intent(out) :: yp             !dep!
+       type(naesmd_structure), intent(inout) :: struct 
    end subroutine
    
    !function f(t,y)
@@ -2244,7 +2263,7 @@ temp1 = scale/sqrt(vdotv)
 comm%vtemp = y + temp1*v
 !
 !approx_jacobian = f(comm%t,comm%vtemp)
-call  f(comm%t,comm%vtemp,approx_jacobian)
+call  f(comm%t,comm%vtemp,approx_jacobian,struct)
 comm%f_count = comm%f_count + 1
 !
 !  Form the difference approximation.  At the same time undo
@@ -2625,7 +2644,7 @@ call rkmsg_r1(ier,srname,nrec,comm)
 !
 end subroutine reset_t_end_r1
 
-subroutine interpolate_r1(comm,f,t_want,y_want,yderiv_want)
+subroutine interpolate_r1(comm,f,t_want,y_want,yderiv_want,struct)
 !
 ! Part of rksuite_90 v1.0 (Aug 1994)
 !         software for initial value problems in ODEs
@@ -2634,16 +2653,20 @@ subroutine interpolate_r1(comm,f,t_want,y_want,yderiv_want)
 !          I. Gladwell  (Math Dept., SMU, Dallas, TX, USA)
 !          see main doc for contact details
 !
+use naesmd_module
 _REAL_, intent(in) :: t_want                                  !indep!
 type(rk_comm_real_1d), intent(inout), target :: comm
 _REAL_, dimension(:), intent(out), optional :: y_want         !dep!
 _REAL_, dimension(:), intent(out), optional :: yderiv_want    !dep!
+type(naesmd_structure), intent(inout) :: struct 
 !
 interface
-   subroutine f(t,y,yp)
+   subroutine f(t,y,yp,struct)
+      import naesmd_structure
       _REAL_, intent(in) :: t                                 !indep!
       _REAL_, dimension(:), intent(in) :: y                   !dep!
       _REAL_, dimension(:), intent(out) :: yp             !dep!
+       type(naesmd_structure), intent(inout) :: struct 
    end subroutine
    
    !function f(t,y)
@@ -2759,7 +2782,7 @@ body: do
 !
 !  Some initialization must be done before interpolation is possible.
 !
-   if (.not.intrp_initialised) call form_intrp(f,comm%p)
+   if (.not.intrp_initialised) call form_intrp(f,comm%p,struct)
 !
 !  The actual evaluation of the interpolating polynomial and/or its first
 !  derivative is done in EVALUATE_INTRP.
@@ -2773,15 +2796,18 @@ call rkmsg_r1(ier,srname,nrec,comm)
 !
 contains
 !
-subroutine form_intrp(f,p)
+subroutine form_intrp(f,p,struct)
 !
 _REAL_, intent(out), dimension(:,:) :: p                      !dep!
+type(naesmd_structure), intent(inout) :: struct 
 !
 interface
-   subroutine f(t,y,yp)
+   subroutine f(t,y,yp,struct)
+      import naesmd_structure
       _REAL_, intent(in) :: t                                 !indep!
       _REAL_, dimension(:), intent(in) :: y                   !dep!
       _REAL_, dimension(:), intent(out) :: yp             !dep!
+       type(naesmd_structure), intent(inout) :: struct 
    end subroutine
    
    !function f(t,y)
@@ -2819,7 +2845,7 @@ case(2)
 !
 !  METHOD = 'M'.
 !
-   if (.not.intrp_initialised) call extra_stages(f,comm%ytemp,comm%xstage)
+   if (.not.intrp_initialised) call extra_stages(f,comm%ytemp,comm%xstage,struct)
 !
 !  Form the coefficients of the interpolating polynomial in its shifted
 !  and scaled form.  The transformation from the form in which the
@@ -2900,15 +2926,18 @@ end if
 end subroutine evaluate_intrp
 
 
-subroutine extra_stages(f,ytemp,xstage)
+subroutine extra_stages(f,ytemp,xstage,struct)
 !
 _REAL_, dimension(:), intent(out) :: ytemp, xstage            !dep!
+type(naesmd_structure), intent(inout) :: struct 
 !
 interface 
-   subroutine f(t,y,yp)
+   subroutine f(t,y,yp,struct)
+      import naesmd_structure
       _REAL_, intent(in) :: t                                 !indep!
       _REAL_, dimension(:), intent(in) :: y                   !dep!
       _REAL_, dimension(:), intent(out) :: yp             !dep!
+       type(naesmd_structure), intent(inout) :: struct 
    end subroutine
    
    !function f(t,y)
@@ -2959,13 +2988,13 @@ do i = 9, 11
    ytemp = y_old + h_old*ytemp
    select case(i)
       case(9)
-          call f(t_old+c(i)*h_old,ytemp,stages(:,7))
+          call f(t_old+c(i)*h_old,ytemp,stages(:,7),struct)
 !         stages(:,7) = f(t_old+c(i)*h_old,ytemp)
       case(10)
-          call f(t_old+c(i)*h_old,ytemp,xstage)
+          call f(t_old+c(i)*h_old,ytemp,xstage,struct)
 !         xstage = f(t_old+c(i)*h_old,ytemp)
       case(11)
-          call f(t_old+c(i)*h_old,ytemp,stages(:,1))
+          call f(t_old+c(i)*h_old,ytemp,stages(:,1),struct)
 !         stages(:,1) = f(t_old+c(i)*h_old,ytemp)
    end select
    comm%f_count = comm%f_count + 1

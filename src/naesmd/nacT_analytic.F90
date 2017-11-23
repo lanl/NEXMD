@@ -6,7 +6,6 @@ module nacT_analytic_module
    use naesmd_constants
    use langevin_temperature
    use communism
-   use naesmd_space_module
    use dcart_xpm_module
    implicit none
 
@@ -101,11 +100,15 @@ module nacT_analytic_module
    type(xstep_t),pointer::xs
    _REAL_,target,intent(in)::xxx(sim%Na),yyy(sim%Na),zzz(sim%Na)
    integer k,j
-   type(realp_t),pointer::vv(:),aa(:)
-   type(realp_t)::r(3)
+   type(realp_t) :: vv(3), aa(3)
+   type(realp_t) :: r(3)
 
-   vv=>sim%naesmd%v%vold
-   aa=>sim%naesmd%a%vold
+   vv(1)%p=>sim%naesmd%vxold
+   vv(2)%p=>sim%naesmd%vyold
+   vv(3)%p=>sim%naesmd%vzold
+   aa(1)%p=>sim%naesmd%axold
+   aa(2)%p=>sim%naesmd%ayold
+   aa(3)%p=>sim%naesmd%azold
    r(1)%p=>xxx
    r(2)%p=>yyy
    r(3)%p=>zzz
@@ -114,25 +117,25 @@ module nacT_analytic_module
    !allocate(xs%Rm(3,sim%Na))
    !allocate(xs%R(3,sim%Na))
 
-   do j=1,natom
-      if(ensemble.eq.'energy'.or.ensemble.eq.'temper') then
+   do j=1,sim%naesmd%natom
+      if(sim%naesmd%ensemble.eq.'energy'.or.sim%naesmd%ensemble.eq.'temper') then
          do k=1,3
-            xs%Rp(k,j)=r(k)%p(j)+vv(k)%p(j)*dtnact &
-               +aa(k)%p(j)*0.5d0*dtnact*dtnact
+            xs%Rp(k,j)=r(k)%p(j)+vv(k)%p(j)*sim%naesmd%dtnact &
+               +aa(k)%p(j)*0.5d0*sim%naesmd%dtnact*sim%naesmd%dtnact
 
-            xs%Rm(k,j)=r(k)%p(j)-vv(k)%p(j)*dtnact &
-               -aa(k)%p(j)*0.5d0*dtnact*dtnact
+            xs%Rm(k,j)=r(k)%p(j)-vv(k)%p(j)*sim%naesmd%dtnact &
+               -aa(k)%p(j)*0.5d0*sim%naesmd%dtnact*sim%naesmd%dtnact
          end do
 
-      else if(ensemble.eq.'langev') then
+      else if(sim%naesmd%ensemble.eq.'langev') then
          do k=1,3
-            xs%Rp(k,j)=r(k)%p(j)+vv(k)%p(j)*vfric(j)/dtmdqt*dtnact  &
-               +aa(k)%p(j)*afric(j)/(dtmdqt*dtmdqt)*dtnact*dtnact     &
-               +prand(k,j)/dtmdqt*dtnact
+            xs%Rp(k,j)=r(k)%p(j)+vv(k)%p(j)*sim%naesmd%vfric(j)/sim%naesmd%dtmdqt*sim%naesmd%dtnact  &
+               +aa(k)%p(j)*sim%naesmd%afric(j)/(sim%naesmd%dtmdqt*sim%naesmd%dtmdqt)*sim%naesmd%dtnact*sim%naesmd%dtnact     &
+               +sim%naesmd%prand(k,j)/sim%naesmd%dtmdqt*sim%naesmd%dtnact
 
-            xs%Rm(k,j)=r(k)%p(j)-vv(k)%p(j)*vfric(j)/dtmdqt*dtnact  &
-               -aa(k)%p(j)*afric(j)/(dtmdqt*dtmdqt)*dtnact*dtnact     &
-               -prand(k,j)/dtmdqt*dtnact
+            xs%Rm(k,j)=r(k)%p(j)-vv(k)%p(j)*sim%naesmd%vfric(j)/sim%naesmd%dtmdqt*sim%naesmd%dtnact  &
+               -aa(k)%p(j)*sim%naesmd%afric(j)/(sim%naesmd%dtmdqt*sim%naesmd%dtmdqt)*sim%naesmd%dtnact*sim%naesmd%dtnact     &
+               -sim%naesmd%prand(k,j)/sim%naesmd%dtmdqt*sim%naesmd%dtnact
          end do
       end if
    end do
@@ -153,6 +156,7 @@ module nacT_analytic_module
 !********************************************************************
 !
    subroutine new_xstep_dtnact_r3(sim, r, xs)
+   use naesmd_module, only : realp_t
    implicit none
 
    type(xstep_t),pointer::xs
@@ -176,7 +180,7 @@ module nacT_analytic_module
 
    use qm2_davidson_module
    use naesmd_constants, only : kcalev
-
+  
    implicit none
 
    _REAL_ nacT_direct_ihc ! function result
@@ -230,7 +234,7 @@ module nacT_analytic_module
    call Iminus2rho(Nb,Np,sim%dav%eta,sim%dav%xi)
    call mo2sitef (Nb,sim%dav%vhf,sim%dav%xi,sim%dav%eta,sim%dav%xi_scratch)
         
-   ! Above eta contains transition density martix between state 
+   ! Above eta contains transition density martix between sim%naesmd%state 
    ! ihop and icheck in AO
 
    ! Above xi and xi_scratch_2 contain transition density martices 
@@ -246,7 +250,7 @@ module nacT_analytic_module
    nacT_direct_ihc=nacT_direct_ihc*kcalev &
       /(sim%dav%e0(sim%dav%kx(icheck))-sim%dav%e0(sim%dav%kx(ihop))) &
       / sim%naesmd%dtnact/2.d0 
-   ! factor of 2. is because dt = 2.0 * dtnact
+   ! factor of 2. is because dt = 2.0 * sim%naesmd%dtnact
 
 
 

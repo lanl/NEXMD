@@ -136,14 +136,13 @@ OBJSQM = \
         $(OBJDIR)/$(SQMDIR)/polarizab0ab_new.o
 OBJNAESMD = \
 	$(OBJDIR)/$(NAESMDDIR)/apc.o \
-        $(OBJDIR)/$(NAESMDDIR)/quantum-prop.o \
-        $(OBJDIR)/$(NAESMDDIR)/naesmd_constants.o\
         $(OBJDIR)/$(NAESMDDIR)/naesmd_module.o\
         $(OBJDIR)/$(NAESMDDIR)/md_module.o\
-        $(OBJDIR)/$(NAESMDDIR)/naesmd_space_module.o \
+        $(OBJDIR)/$(NAESMDDIR)/naesmd_constants.o\
+        $(OBJDIR)/$(NAESMDDIR)/fcn.o \
+        $(OBJDIR)/$(NAESMDDIR)/quantum-prop.o \
         $(OBJDIR)/$(NAESMDDIR)/communism.o \
         $(OBJDIR)/$(NAESMDDIR)/additional-subroutines.o \
-        $(OBJDIR)/$(NAESMDDIR)/fcn.o \
 	$(OBJDIR)/$(NAESMDDIR)/random.o \
 	$(OBJDIR)/$(NAESMDDIR)/langevin-temperature.o \
         $(OBJDIR)/$(NAESMDDIR)/statespecific.o \

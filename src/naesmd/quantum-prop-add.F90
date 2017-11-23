@@ -7,7 +7,6 @@ module quantum_prop_add
 contains
 
     subroutine checkcrossing(sim,cross,lprint)
-        use naesmd_module
         use md_module
         implicit none
 
@@ -23,7 +22,7 @@ contains
         !
         !  Following the nonavoiding crossing of states
         !
-        !  scpr is the overlap between new and old transition densities
+        !  sim%naesmd%scpr is the overlap between new and old transition densities
         !  if there is no crossing, the matrix is supposed to be close
         !  to identity matrix
         !
@@ -32,25 +31,25 @@ contains
             write(6,*)'Error:quantum propagator does not yet handle more than 260 states'
         endif
 
-        scpr(1:sim%excN,1:sim%excN)=0.d0
+        sim%naesmd%scpr(1:sim%excN,1:sim%excN)=0.d0
 
         ! kav: FIXME
         ! Here and below, in the old code the size Ncis is used as a size of
-        ! cmdqt vectors. This is not entirely correct, since the size is
+        ! sim%naesmd%cmdqt vectors. This is not entirely correct, since the size is
         ! Nrpa=2*Ncis (check it!!!). However, it can be very accurate becuase
         ! the contribution of negative energies to a positive excitation
         ! energy can be very small (would be great to check it)
         do i=1,sim%excN
             do j=1,sim%excN
                 do k=1,sim%dav%Ncis
-                    scpr(i,j)=scpr(i,j)+cmdqtold(k,i)*cmdqtnew(k,j)
+                    sim%naesmd%scpr(i,j)=sim%naesmd%scpr(i,j)+sim%naesmd%cmdqtold(k,i)*sim%naesmd%cmdqtnew(k,j)
                 end do
             end do
         end do
 
         do i=1,sim%excN
             do j=1,sim%excN
-                ascpr(i,j)=int(scpr(i,j)**2*1.d5)
+                ascpr(i,j)=int(sim%naesmd%scpr(i,j)**2*1.d5)
             end do
         end do
         ! window**************************************
@@ -69,24 +68,24 @@ contains
                 ascpr(i,j)=-1*ascpr(i,j)
             enddo
         end do
-        !write(6,*)'iorden:',iorden
+        !write(6,*)'sim%naesmd%iorden:',sim%naesmd%iorden
         
         !Translate to old APC min-cost algorithm routine in F77
         !Requires static matrix sizes
-        iordenapc(1:sim%excN)=iorden
-        call apc(sim%excN,ascpr,iorden,z)
-        iorden=iordenapc(1:sim%excN)
+        iordenapc(1:sim%excN)=sim%naesmd%iorden
+        call apc(sim%excN,ascpr,sim%naesmd%iorden,z)
+        sim%naesmd%iorden=iordenapc(1:sim%excN)
 
         do i=1,sim%excN
-            !write(6,*)'i,iorden(i),ihop,scpr(i,iorden(i))',i,iorden(i),ihop,scpr(i,iorden(i))
-            if(iorden(i).ne.i) then
-                if(i.lt.iorden(i).or.i.eq.ihop) then
-                    if(dabs(scpr(i,iorden(i))).lt.0.9d0) then
+            !write(6,*)'i,sim%naesmd%iorden(i),sim%naesmd%ihop,sim%naesmd%scpr(i,sim%naesmd%iorden(i))',i,sim%naesmd%iorden(i),sim%naesmd%ihop,sim%naesmd%scpr(i,sim%naesmd%iorden(i))
+            if(sim%naesmd%iorden(i).ne.i) then
+                if(i.lt.sim%naesmd%iorden(i).or.i.eq.sim%naesmd%ihop) then
+                    if(dabs(sim%naesmd%scpr(i,sim%naesmd%iorden(i))).lt.0.9d0) then
                         cross(i)=1
                     else
                         cross(i)=2
                     end if
-                    iordenhop(i)=iorden(i)
+                    sim%naesmd%iordenhop(i)=sim%naesmd%iorden(i)
                     if(lprint.ge.2) then
                     endif
                 else
@@ -102,7 +101,7 @@ contains
 
         do i=1,sim%excN
             do j=1,sim%excN
-                scprreal(i,j)=scpr(i,j)
+                sim%naesmd%scprreal(i,j)=sim%naesmd%scpr(i,j)
             end do
         end do
 
@@ -113,7 +112,6 @@ contains
     end subroutine
 
     subroutine checkcrossingmiddle(sim,cross)
-        use naesmd_module
         use md_module
         implicit none
 
@@ -126,16 +124,16 @@ contains
         !***************************************************
         do i=1,sim%excN
             do j=1,sim%excN
-                scpr(i,j)=0.0d0
+                sim%naesmd%scpr(i,j)=0.0d0
                 do k=1,sim%dav%Ncis
-                    scpr(i,j)=scpr(i,j)+cmdqtmiddleold(k,i)*cmdqtmiddle(k,j)
+                    sim%naesmd%scpr(i,j)=sim%naesmd%scpr(i,j)+sim%naesmd%cmdqtmiddleold(k,i)*sim%naesmd%cmdqtmiddle(k,j)
                 end do
             end do
         end do
         do i=1,sim%excN
-            if(i.lt.iorden(i).or.i.eq.ihop) then
-                if(i.ne.iorden(ihop)) then
-                    if(dabs(scpr(i,iorden(i))).ge.0.9d0) then
+            if(i.lt.sim%naesmd%iorden(i).or.i.eq.sim%naesmd%ihop) then
+                if(i.ne.sim%naesmd%iorden(sim%naesmd%ihop)) then
+                    if(dabs(sim%naesmd%scpr(i,sim%naesmd%iorden(i))).ge.0.9d0) then
                         cross(i)=2
                     end if
                 end if
@@ -145,7 +143,6 @@ contains
     end subroutine
 
     subroutine vmdqtmiddlecalc(sim, iimdqt,Na)
-        use naesmd_module
         use md_module
         implicit none
 
@@ -156,109 +153,108 @@ contains
 
         if(iimdqt.eq.1) then
             do i=1,sim%excN
-                vmdqtmiddleold(i)=vmdqtold(i)
+                sim%naesmd%vmdqtmiddleold(i)=sim%naesmd%vmdqtold(i)
             end do
 
             do i=1,sim%dav%Ncis
                 do j=1,sim%excN
-                    cmdqtmiddleold(i,j)=cmdqtold(i,j)
+                    sim%naesmd%cmdqtmiddleold(i,j)=sim%naesmd%cmdqtold(i,j)
                 end do
             end do
 
         else
             do i=1,sim%excN
-                vmdqtmiddleold(i)=vmdqtmiddle(i)
+                sim%naesmd%vmdqtmiddleold(i)=sim%naesmd%vmdqtmiddle(i)
             end do
 
             do i=1,sim%dav%Ncis
                 do j=1,sim%excN
-                    cmdqtmiddleold(i,j)=cmdqtmiddle(i,j)
+                    sim%naesmd%cmdqtmiddleold(i,j)=sim%naesmd%cmdqtmiddle(i,j)
                 end do
             end do
         end if
 
-        if(iimdqt.eq.nquantumstep) then
+        if(iimdqt.eq.sim%naesmd%nquantumstep) then
 
             do i=1,sim%excN
-                vmdqtmiddle(i)=vmdqtnew(i)
+                sim%naesmd%vmdqtmiddle(i)=sim%naesmd%vmdqtnew(i)
             end do
 
             do i=1,sim%dav%Ncis
                 do j=1,sim%excN
-                    cmdqtmiddle(i,j)=cmdqtnew(i,j)
+                    sim%naesmd%cmdqtmiddle(i,j)=sim%naesmd%cmdqtnew(i,j)
                 end do
             end do
 
         else
 
-            if(ensemble.eq.'energy'.or.ensemble.eq.'temper') then
-                do j=1,natom
-                    xx(j)=rxold(j) &
-                        +vxold(j)*dtquantum*dfloat(iimdqt) &
-                        +axold(j)*0.5d0*(dtquantum*dfloat(iimdqt))**2
+            if(sim%naesmd%ensemble.eq.'energy'.or.sim%naesmd%ensemble.eq.'temper') then
+                do j=1,sim%naesmd%natom
+                    xx(j)=sim%naesmd%rxold(j) &
+                        +sim%naesmd%vxold(j)*sim%naesmd%dtquantum*dfloat(iimdqt) &
+                        +sim%naesmd%axold(j)*0.5d0*(sim%naesmd%dtquantum*dfloat(iimdqt))**2
 
-                    yy(j)=ryold(j) &
-                        +vyold(j)*dtquantum*dfloat(iimdqt) &
-                        +ayold(j)*0.5d0*(dtquantum*dfloat(iimdqt))**2
+                    yy(j)=sim%naesmd%ryold(j) &
+                        +sim%naesmd%vyold(j)*sim%naesmd%dtquantum*dfloat(iimdqt) &
+                        +sim%naesmd%ayold(j)*0.5d0*(sim%naesmd%dtquantum*dfloat(iimdqt))**2
 
-                    zz(j)=rzold(j) &
-                        +vzold(j)*dtquantum*dfloat(iimdqt) &
-                        +azold(j)*0.5d0*(dtquantum*dfloat(iimdqt))**2
+                    zz(j)=sim%naesmd%rzold(j) &
+                        +sim%naesmd%vzold(j)*sim%naesmd%dtquantum*dfloat(iimdqt) &
+                        +sim%naesmd%azold(j)*0.5d0*(sim%naesmd%dtquantum*dfloat(iimdqt))**2
                 end do
             end if
 
-            if(ensemble.eq.'langev') then
-                do j=1,natom
+            if(sim%naesmd%ensemble.eq.'langev') then
+                do j=1,sim%naesmd%natom
 
-                    xx(j)=rxold(j) &
-                        +vxold(j)*vfric(j)/dtmdqt*dtquantum*dfloat(iimdqt) &
-                        +axold(j)*afric(j)/(dtmdqt*dtmdqt) &
-                        *(dtquantum*dfloat(iimdqt))**2 &
-                        +prand(1,j)/dtmdqt*dtquantum*dfloat(iimdqt)
+                    xx(j)=sim%naesmd%rxold(j) &
+                        +sim%naesmd%vxold(j)*sim%naesmd%vfric(j)/sim%naesmd%dtmdqt*sim%naesmd%dtquantum*dfloat(iimdqt) &
+                        +sim%naesmd%axold(j)*sim%naesmd%afric(j)/(sim%naesmd%dtmdqt*sim%naesmd%dtmdqt) &
+                        *(sim%naesmd%dtquantum*dfloat(iimdqt))**2 &
+                        +sim%naesmd%prand(1,j)/sim%naesmd%dtmdqt*sim%naesmd%dtquantum*dfloat(iimdqt)
 
-                    yy(j)=ryold(j) &
-                        +vyold(j)*vfric(j)/dtmdqt*dtquantum*dfloat(iimdqt) &
-                        +ayold(j)*afric(j)/(dtmdqt*dtmdqt) &
-                        *(dtquantum*dfloat(iimdqt))**2 &
-                        +prand(2,j)/dtmdqt*dtquantum*dfloat(iimdqt)
+                    yy(j)=sim%naesmd%ryold(j) &
+                        +sim%naesmd%vyold(j)*sim%naesmd%vfric(j)/sim%naesmd%dtmdqt*sim%naesmd%dtquantum*dfloat(iimdqt) &
+                        +sim%naesmd%ayold(j)*sim%naesmd%afric(j)/(sim%naesmd%dtmdqt*sim%naesmd%dtmdqt) &
+                        *(sim%naesmd%dtquantum*dfloat(iimdqt))**2 &
+                        +sim%naesmd%prand(2,j)/sim%naesmd%dtmdqt*sim%naesmd%dtquantum*dfloat(iimdqt)
 
-                    zz(j)=rzold(j) &
-                        +vzold(j)*vfric(j)/dtmdqt*dtquantum*dfloat(iimdqt) &
-                        +azold(j)*afric(j)/(dtmdqt*dtmdqt) &
-                        *(dtquantum*dfloat(iimdqt))**2 &
-                        +prand(3,j)/dtmdqt*dtquantum*dfloat(iimdqt)
+                    zz(j)=sim%naesmd%rzold(j) &
+                        +sim%naesmd%vzold(j)*sim%naesmd%vfric(j)/sim%naesmd%dtmdqt*sim%naesmd%dtquantum*dfloat(iimdqt) &
+                        +sim%naesmd%azold(j)*sim%naesmd%afric(j)/(sim%naesmd%dtmdqt*sim%naesmd%dtmdqt) &
+                        *(sim%naesmd%dtquantum*dfloat(iimdqt))**2 &
+                        +sim%naesmd%prand(3,j)/sim%naesmd%dtmdqt*sim%naesmd%dtquantum*dfloat(iimdqt)
                 end do
             end if
 
 
-            call do_sqm_davidson_update(sim,cmdqt=cmdqtmiddle, &
-                vmdqt=vmdqtmiddle,vgs=vgs,rx=xx,ry=yy,rz=zz)
+            call do_sqm_davidson_update(sim,cmdqt=sim%naesmd%cmdqtmiddle, &
+                vmdqt=sim%naesmd%vmdqtmiddle,vgs=sim%naesmd%vgs,rx=xx,ry=yy,rz=zz)
         end if
-        write(6,*)'iordenhop:',iordenhop
-        write(6,*)'sizevmdqtmiddle',shape(vmdqtmiddle)
+        write(6,*)'sim%naesmd%iordenhop:',sim%naesmd%iordenhop
+        write(6,*)'sizevmdqtmiddle',shape(sim%naesmd%vmdqtmiddle)
 ! option 1: check trivial unavoided crossingfor all the states
-! Note: Currently broken due to iordenhop initialized as 0
+! Note: Currently broken due to sim%naesmd%iordenhop initialized as 0
 !        do j=1,sim%excN
-!            if(lowvalue(j).gt.dabs(vmdqtmiddle(j)- &
-!                vmdqtmiddle(iordenhop(j)))) then
+!            if(sim%naesmd%lowvalue(j).gt.dabs(sim%naesmd%vmdqtmiddle(j)- &
+!                sim%naesmd%vmdqtmiddle(sim%naesmd%iordenhop(j)))) then
 !
-!                lowvalue(j)=dabs(vmdqtmiddle(j)- &
-!                    vmdqtmiddle(iordenhop(j)))
-!                lowvaluestep(j)=iimdqt
+!                sim%naesmd%lowvalue(j)=dabs(sim%naesmd%vmdqtmiddle(j)- &
+!                    sim%naesmd%vmdqtmiddle(sim%naesmd%iordenhop(j)))
+!                sim%naesmd%lowvaluestep(j)=iimdqt
 !            end if
 !        end do
-! option 2: check trivial unavoided crossingfor for the current state
-        if(lowvalue(ihop).gt.dabs(vmdqtmiddle(ihop)- &
-                vmdqtmiddle(iordenhop(ihop)))) then
-                lowvalue(ihop)=dabs(vmdqtmiddle(ihop)- &
-                        vmdqtmiddle(iordenhop(ihop)))
-                lowvaluestep(ihop)=iimdqt
+! option 2: check trivial unavoided crossingfor for the current sim%naesmd%state
+        if(sim%naesmd%lowvalue(sim%naesmd%ihop).gt.dabs(sim%naesmd%vmdqtmiddle(sim%naesmd%ihop)- &
+                sim%naesmd%vmdqtmiddle(sim%naesmd%iordenhop(sim%naesmd%ihop)))) then
+                sim%naesmd%lowvalue(sim%naesmd%ihop)=dabs(sim%naesmd%vmdqtmiddle(sim%naesmd%ihop)- &
+                        sim%naesmd%vmdqtmiddle(sim%naesmd%iordenhop(sim%naesmd%ihop)))
+                sim%naesmd%lowvaluestep(sim%naesmd%ihop)=iimdqt
         end if
         return
     end subroutine
 
     subroutine vmdqtlowvalue(sim,win,iimdqt,Na)
-        use naesmd_module
         use md_module
         implicit none
 
@@ -267,88 +263,88 @@ contains
         integer Na
         _REAL_ xx(Na),yy(Na),zz(Na)
 
-        if(ensemble.eq.'energy'.or.ensemble.eq.'temper') then
-            do j=1,natom
-                xx(j)=rxold(j) &
-                    +vxold(j)*dtquantum*dfloat(iimdqt+win) &
-                    +axold(j)*0.5d0*(dtquantum*dfloat(iimdqt+win))**2
+        if(sim%naesmd%ensemble.eq.'energy'.or.sim%naesmd%ensemble.eq.'temper') then
+            do j=1,sim%naesmd%natom
+                xx(j)=sim%naesmd%rxold(j) &
+                    +sim%naesmd%vxold(j)*sim%naesmd%dtquantum*dfloat(iimdqt+win) &
+                    +sim%naesmd%axold(j)*0.5d0*(sim%naesmd%dtquantum*dfloat(iimdqt+win))**2
 
-                yy(j)=ryold(j) &
-                    +vyold(j)*dtquantum*dfloat(iimdqt+win) &
-                    +ayold(j)*0.5d0*(dtquantum*dfloat(iimdqt+win))**2
+                yy(j)=sim%naesmd%ryold(j) &
+                    +sim%naesmd%vyold(j)*sim%naesmd%dtquantum*dfloat(iimdqt+win) &
+                    +sim%naesmd%ayold(j)*0.5d0*(sim%naesmd%dtquantum*dfloat(iimdqt+win))**2
 
-                zz(j)=rzold(j) &
-                    +vzold(j)*dtquantum*dfloat(iimdqt+win) &
-                    +azold(j)*0.5d0*(dtquantum*dfloat(iimdqt+win))**2
+                zz(j)=sim%naesmd%rzold(j) &
+                    +sim%naesmd%vzold(j)*sim%naesmd%dtquantum*dfloat(iimdqt+win) &
+                    +sim%naesmd%azold(j)*0.5d0*(sim%naesmd%dtquantum*dfloat(iimdqt+win))**2
             end do
         end if
 
-        if(ensemble.eq.'langev') then
-            do j=1,natom
-                xx(j)=rxold(j) &
-                    +vxold(j)*vfric(j)/dtmdqt*dtquantum*dfloat(iimdqt+win) &
-                    +axold(j)*afric(j)/(dtmdqt*dtmdqt) &
-                    *(dtquantum*dfloat(iimdqt+win))**2 &
-                    +prand(1,j)/dtmdqt*dtquantum*dfloat(iimdqt+win)
+        if(sim%naesmd%ensemble.eq.'langev') then
+            do j=1,sim%naesmd%natom
+                xx(j)=sim%naesmd%rxold(j) &
+                    +sim%naesmd%vxold(j)*sim%naesmd%vfric(j)/sim%naesmd%dtmdqt*sim%naesmd%dtquantum*dfloat(iimdqt+win) &
+                    +sim%naesmd%axold(j)*sim%naesmd%afric(j)/(sim%naesmd%dtmdqt*sim%naesmd%dtmdqt) &
+                    *(sim%naesmd%dtquantum*dfloat(iimdqt+win))**2 &
+                    +sim%naesmd%prand(1,j)/sim%naesmd%dtmdqt*sim%naesmd%dtquantum*dfloat(iimdqt+win)
 
-                yy(j)=ryold(j) &
-                    +vyold(j)*vfric(j)/dtmdqt*dtquantum*dfloat(iimdqt+win) &
-                    +ayold(j)*afric(j)/(dtmdqt*dtmdqt) &
-                    *(dtquantum*dfloat(iimdqt+win))**2 &
-                    +prand(2,j)/dtmdqt*dtquantum*dfloat(iimdqt+win)
+                yy(j)=sim%naesmd%ryold(j) &
+                    +sim%naesmd%vyold(j)*sim%naesmd%vfric(j)/sim%naesmd%dtmdqt*sim%naesmd%dtquantum*dfloat(iimdqt+win) &
+                    +sim%naesmd%ayold(j)*sim%naesmd%afric(j)/(sim%naesmd%dtmdqt*sim%naesmd%dtmdqt) &
+                    *(sim%naesmd%dtquantum*dfloat(iimdqt+win))**2 &
+                    +sim%naesmd%prand(2,j)/sim%naesmd%dtmdqt*sim%naesmd%dtquantum*dfloat(iimdqt+win)
 
-                zz(j)=rzold(j) &
-                    +vzold(j)*vfric(j)/dtmdqt*dtquantum*dfloat(iimdqt+win) &
-                    +azold(j)*afric(j)/(dtmdqt*dtmdqt) &
-                    *(dtquantum*dfloat(iimdqt+win))**2 &
-                    +prand(3,j)/dtmdqt*dtquantum*dfloat(iimdqt+win)
+                zz(j)=sim%naesmd%rzold(j) &
+                    +sim%naesmd%vzold(j)*sim%naesmd%vfric(j)/sim%naesmd%dtmdqt*sim%naesmd%dtquantum*dfloat(iimdqt+win) &
+                    +sim%naesmd%azold(j)*sim%naesmd%afric(j)/(sim%naesmd%dtmdqt*sim%naesmd%dtmdqt) &
+                    *(sim%naesmd%dtquantum*dfloat(iimdqt+win))**2 &
+                    +sim%naesmd%prand(3,j)/sim%naesmd%dtmdqt*sim%naesmd%dtquantum*dfloat(iimdqt+win)
             end do
         end if
          
 
 
-        call do_sqm_davidson_update(sim,cmdqt=cmdqtmiddle, &
-            vmdqt=vmdqtmiddle,vgs=vgs,rx=xx,ry=yy,rz=zz)
+        call do_sqm_davidson_update(sim,cmdqt=sim%naesmd%cmdqtmiddle, &
+            vmdqt=sim%naesmd%vmdqtmiddle,vgs=sim%naesmd%vgs,rx=xx,ry=yy,rz=zz)
 
-        if(ensemble.eq.'energy'.or.ensemble.eq.'temper') then
-            do j=1,natom
-                xx(j)=rxold(j) &
-                    +vxold(j)*dtquantum*dfloat(iimdqt-win) &
-                    +axold(j)*0.5d0*(dtquantum*dfloat(iimdqt-win))**2
+        if(sim%naesmd%ensemble.eq.'energy'.or.sim%naesmd%ensemble.eq.'temper') then
+            do j=1,sim%naesmd%natom
+                xx(j)=sim%naesmd%rxold(j) &
+                    +sim%naesmd%vxold(j)*sim%naesmd%dtquantum*dfloat(iimdqt-win) &
+                    +sim%naesmd%axold(j)*0.5d0*(sim%naesmd%dtquantum*dfloat(iimdqt-win))**2
 
-                yy(j)=ryold(j) &
-                    +vyold(j)*dtquantum*dfloat(iimdqt-win) &
-                    +ayold(j)*0.5d0*(dtquantum*dfloat(iimdqt-win))**2
+                yy(j)=sim%naesmd%ryold(j) &
+                    +sim%naesmd%vyold(j)*sim%naesmd%dtquantum*dfloat(iimdqt-win) &
+                    +sim%naesmd%ayold(j)*0.5d0*(sim%naesmd%dtquantum*dfloat(iimdqt-win))**2
 
-                zz(j)=rzold(j) &
-                    +vzold(j)*dtquantum*dfloat(iimdqt-win) &
-                    +azold(j)*0.5d0*(dtquantum*dfloat(iimdqt-win))**2
+                zz(j)=sim%naesmd%rzold(j) &
+                    +sim%naesmd%vzold(j)*sim%naesmd%dtquantum*dfloat(iimdqt-win) &
+                    +sim%naesmd%azold(j)*0.5d0*(sim%naesmd%dtquantum*dfloat(iimdqt-win))**2
             end do
         end if
 
-        if(ensemble.eq.'langev') then
-            do j=1,natom
-                xx(j)=rxold(j) &
-                    +vxold(j)*vfric(j)/dtmdqt*dtquantum*dfloat(iimdqt-win) &
-                    +axold(j)*afric(j)/(dtmdqt*dtmdqt) &
-                    *(dtquantum*dfloat(iimdqt-win))**2 &
-                    +prand(1,j)/dtmdqt*dtquantum*dfloat(iimdqt-win)
+        if(sim%naesmd%ensemble.eq.'langev') then
+            do j=1,sim%naesmd%natom
+                xx(j)=sim%naesmd%rxold(j) &
+                    +sim%naesmd%vxold(j)*sim%naesmd%vfric(j)/sim%naesmd%dtmdqt*sim%naesmd%dtquantum*dfloat(iimdqt-win) &
+                    +sim%naesmd%axold(j)*sim%naesmd%afric(j)/(sim%naesmd%dtmdqt*sim%naesmd%dtmdqt) &
+                    *(sim%naesmd%dtquantum*dfloat(iimdqt-win))**2 &
+                    +sim%naesmd%prand(1,j)/sim%naesmd%dtmdqt*sim%naesmd%dtquantum*dfloat(iimdqt-win)
 
-                yy(j)=ryold(j) &
-                    +vyold(j)*vfric(j)/dtmdqt*dtquantum*dfloat(iimdqt-win) &
-                    +ayold(j)*afric(j)/(dtmdqt*dtmdqt) &
-                    *(dtquantum*dfloat(iimdqt-win))**2 &
-                    +prand(2,j)/dtmdqt*dtquantum*dfloat(iimdqt-win)
+                yy(j)=sim%naesmd%ryold(j) &
+                    +sim%naesmd%vyold(j)*sim%naesmd%vfric(j)/sim%naesmd%dtmdqt*sim%naesmd%dtquantum*dfloat(iimdqt-win) &
+                    +sim%naesmd%ayold(j)*sim%naesmd%afric(j)/(sim%naesmd%dtmdqt*sim%naesmd%dtmdqt) &
+                    *(sim%naesmd%dtquantum*dfloat(iimdqt-win))**2 &
+                    +sim%naesmd%prand(2,j)/sim%naesmd%dtmdqt*sim%naesmd%dtquantum*dfloat(iimdqt-win)
 
-                zz(j)=rzold(j) &
-                    +vzold(j)*vfric(j)/dtmdqt*dtquantum*dfloat(iimdqt-win) &
-                    +azold(j)*afric(j)/(dtmdqt*dtmdqt) &
-                    *(dtquantum*dfloat(iimdqt-win))**2 &
-                    +prand(3,j)/dtmdqt*dtquantum*dfloat(iimdqt-win)
+                zz(j)=sim%naesmd%rzold(j) &
+                    +sim%naesmd%vzold(j)*sim%naesmd%vfric(j)/sim%naesmd%dtmdqt*sim%naesmd%dtquantum*dfloat(iimdqt-win) &
+                    +sim%naesmd%azold(j)*sim%naesmd%afric(j)/(sim%naesmd%dtmdqt*sim%naesmd%dtmdqt) &
+                    *(sim%naesmd%dtquantum*dfloat(iimdqt-win))**2 &
+                    +sim%naesmd%prand(3,j)/sim%naesmd%dtmdqt*sim%naesmd%dtquantum*dfloat(iimdqt-win)
             end do
         end if
 
-        call do_sqm_davidson_update(sim,cmdqtmiddleold,rx=xx,ry=yy,rz=zz)
+        call do_sqm_davidson_update(sim,sim%naesmd%cmdqtmiddleold,rx=xx,ry=yy,rz=zz)
 
         return
     end subroutine

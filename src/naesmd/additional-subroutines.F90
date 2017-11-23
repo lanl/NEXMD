@@ -189,7 +189,6 @@ contains
     END SUBROUTINE
 
 !    SUBROUTINE checknorm(sim,ido,neq,tini,tend,toldivprk,param,yg,idocontrol)
-!        use naesmd_module
 !        use md_module
 !        use communism
 !        IMPLICIT NONE
@@ -221,10 +220,9 @@ contains
 !        RETURN
 !    END SUBROUTINE
     ! Subroutine to calculate the coefficients to fit to a linear eq. the values of
-    ! cadiab and vmdqt during propagation
+    ! sim%naesmd%cadiab and sim%naesmd%vmdqt during propagation
 
     SUBROUTINE fitcoef(sim)
-        use naesmd_module
         use md_module
         use communism
         IMPLICIT NONE
@@ -233,25 +231,24 @@ contains
 
         do k=1,sim%excN
             do j=1,sim%excN
-                bcoeffcadiab(k,j)=(cadiabmiddle(k,j)- &
-                    cadiabmiddleold(k,j))/dtquantum
+                sim%naesmd%bcoeffcadiab(k,j)=(sim%naesmd%cadiabmiddle(k,j)- &
+                    sim%naesmd%cadiabmiddleold(k,j))/sim%naesmd%dtquantum
             enddo
         enddo
         
         do k=1,sim%excN
-            bcoeffvmdqt(k)=(vmdqtmiddle(k)- &
-                vmdqtmiddleold(k))/dtquantum
+            sim%naesmd%bcoeffvmdqt(k)=(sim%naesmd%vmdqtmiddle(k)- &
+                sim%naesmd%vmdqtmiddleold(k))/sim%naesmd%dtquantum
         enddo
 
         RETURN
     END SUBROUTINE
 
     ! Subroutine that initialize the values of
-    ! vnqcorrhoptot that are integrated in time during each quantum propagation
-    ! it also store the value of yg(ihop) at t to be used in the hopping evaluation
+    ! sim%naesmd%vnqcorrhoptot that are integrated in time during each quantum propagation
+    ! it also store the value of yg(sim%naesmd%ihop) at t to be used in the hopping evaluation
 
     SUBROUTINE initialize(sim,yg)
-        use naesmd_module
         use md_module
         use communism
         IMPLICIT NONE
@@ -260,15 +257,15 @@ contains
         integer k,j
         double precision yg(sim%excN)!yg(nmaxpot) 
 
-        nqold=yg(ihop)
+        sim%naesmd%nqold=yg(sim%naesmd%ihop)
 
         do k=1,sim%excN
             do j=1,sim%excN
-                vnqcorrhoptot(k,j)=0.0d0
+                sim%naesmd%vnqcorrhoptot(k,j)=0.0d0
             enddo
         enddo
 
-        tfemtoquantum=0.0d0
+        sim%naesmd%tfemtoquantum=0.0d0
 
         RETURN
     END SUBROUTINE

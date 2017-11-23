@@ -7,14 +7,12 @@ module fewest_switches
     use random
     use langevin_temperature
     use communism
-    use naesmd_space_module
     implicit none
 contains
     subroutine evalhop(sim, rkcomm, lprint, tend,tmax,rk_tolerance,thresholds, &
         Na,yg,cross)
 !    subroutine evalhop(sim, lprint,ido,neq,tini,tend,toldivprk, &
 !        param,Na,yg,cross,idocontrol)
-        use naesmd_module
         use md_module
 	use rksuite_90, only: rk_comm_real_1d, setup 
         implicit none
@@ -32,32 +30,32 @@ contains
         _REAL_ t_start,t_finish
         integer cross(sim%excN),crosstemp,ininonhop
         !external fcn
-        ! conthop is used to not allow crossing inmediately after a hop
-        ! conthop2 is used to not allow hoppings inmediately after a crossing
-        if(conthop.eq.3) conthop=0
-        if(conthop2.eq.3) conthop2=0
-        if(conthop.gt.0) conthop=conthop+1
-        if(conthop2.gt.0) conthop2=conthop2+1
-        if(conthop.gt.0) then
-            if(cross(ihop).eq.2) then
-                if(iordenhop(ihop).ne.ihopprev) conthop=0
+        ! sim%naesmd%conthop is used to not allow crossing inmediately after a hop
+        ! sim%naesmd%conthop2 is used to not allow hoppings inmediately after a crossing
+        if(sim%naesmd%conthop.eq.3) sim%naesmd%conthop=0
+        if(sim%naesmd%conthop2.eq.3) sim%naesmd%conthop2=0
+        if(sim%naesmd%conthop.gt.0) sim%naesmd%conthop=sim%naesmd%conthop+1
+        if(sim%naesmd%conthop2.gt.0) sim%naesmd%conthop2=sim%naesmd%conthop2+1
+        if(sim%naesmd%conthop.gt.0) then
+            if(cross(sim%naesmd%ihop).eq.2) then
+                if(sim%naesmd%iordenhop(sim%naesmd%ihop).ne.sim%naesmd%ihopprev) sim%naesmd%conthop=0
             end if
         end if
-        iseedhop=rranf1(iseedmdqt)
-        ihopavant=ihop
-        eavant=vmdqtnew(ihop)
-        do j=1,natom
-            eavant=eavant+0.5d0*massmdqt(j)*(vx(j)**2+vy(j)**2+vz(j)**2)
+        iseedhop=rranf1(sim%naesmd%iseedmdqt)
+        ihopavant=sim%naesmd%ihop
+        eavant=sim%naesmd%vmdqtnew(sim%naesmd%ihop)
+        do j=1,sim%naesmd%natom
+            eavant=eavant+0.5d0*sim%naesmd%massmdqt(j)*(sim%naesmd%vx(j)**2+sim%naesmd%vy(j)**2+sim%naesmd%vz(j)**2)
         end do
         do j=1,sim%excN
             g(j)=0.d0
             gacum(j)=0.d0
         end do
         ! g(j) is the probability to hop from the
-        ! current state to the state j
+        ! current sim%naesmd%state to the sim%naesmd%state j
         do j=1,sim%excN
-            if(j.ne.ihop) then
-                g(j)=vnqcorrhoptot(j,ihop)/(nqold**2)
+            if(j.ne.sim%naesmd%ihop) then
+                g(j)=sim%naesmd%vnqcorrhoptot(j,sim%naesmd%ihop)/(sim%naesmd%nqold**2)
                 if(g(j).lt.0.0d0) g(j)=0.0d0
             end if
         end do
@@ -65,53 +63,53 @@ contains
         write(6,*)'gacum:',j,gacum(j),iseedhop
         do j=1,sim%excN
             gacum(j)=0.0d0
-            if(j.ne.ihop) then
+            if(j.ne.sim%naesmd%ihop) then
                 do k=1,j
-                    if(k.ne.ihop) gacum(j)=gacum(j)+g(k)
+                    if(k.ne.sim%naesmd%ihop) gacum(j)=gacum(j)+g(k)
                 end do
                 write(6,*)'gacum:',j,gacum(j),iseedhop
             end if
         end do
         itest=0
         do j=1,sim%excN
-            if(j.ne.ihop) then
+            if(j.ne.sim%naesmd%ihop) then
                 if(iseedhop.le.gacum(j).and.itest.eq.0) then
                     icheck=j
                     itest=1
                 end if
             end if
         end do
-        crosstemp=cross(ihop)
-        if(icheck.ne.0.and.cross(ihop).ne.2) then
+        crosstemp=cross(sim%naesmd%ihop)
+        if(icheck.ne.0.and.cross(sim%naesmd%ihop).ne.2) then
             ini=0
             ! adjustment of velocities
-            if(conthop2.gt.0) then
-                if(ihopprev.ne.icheck) conthop2=0
+            if(sim%naesmd%conthop2.gt.0) then
+                if(sim%naesmd%ihopprev.ne.icheck) sim%naesmd%conthop2=0
             end if
-            if(conthop2.eq.0) then
+            if(sim%naesmd%conthop2.eq.0) then
                 call veladjustment(sim, lprint,Na,icheck,ini)
                 if(lprint.ge.2) then
-                    write(33,*) tfemto,icheck,ini
+                    write(33,*) sim%naesmd%tfemto,icheck,ini
                     call flush(33)
                 end if
             else
                 ini=1
             end if
             if(ini.eq.0) then
-                ihop=icheck
+                sim%naesmd%ihop=icheck
                 call naesmd2qmmm_r(sim)
                 call cpu_time(t_start)
-                call deriv(sim,ihop)
+                call deriv(sim,sim%naesmd%ihop)
                 call cpu_time(t_finish)
                 sim%time_deriv_took=sim%time_deriv_took+t_finish-t_start
-                call do_sqm_davidson_update(sim,vmdqt=vmdqtnew,vgs=vgs)
+                call do_sqm_davidson_update(sim,vmdqt=sim%naesmd%vmdqtnew,vgs=sim%naesmd%vgs)
 
-!                if(decorhop.eq.1) then
+!                if(sim%naesmd%decorhop.eq.1) then
 !                    do j=1,sim%excN
 !                        yg(j)=0.0d0
-!                        yg(j+sim%excN)=rranf1(iseedmdqt)
+!                        yg(j+sim%excN)=rranf1(sim%naesmd%iseedmdqt)
 !                    end do
-!                    yg(ihop)=1.d0
+!                    yg(sim%naesmd%ihop)=1.d0
 !                    ido=3
 !                    call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
 !                    ido=1
@@ -119,14 +117,14 @@ contains
 !                end if
 
 !Added for patch JAKB
-               if(decorhop.ne.0) then
+               if(sim%naesmd%decorhop.ne.0) then
                   do j=1,sim%excN
                      yg(j)=0.0d0
-!                     call random(iseedmdqt,iseedhop)
+!                     call random(sim%naesmd%iseedmdqt,iseedhop)
 !                     yg(j+sim%excN)=iseedhop
-                     yg(j+sim%excN)=rranf1(iseedmdqt)
+                     yg(j+sim%excN)=rranf1(sim%naesmd%iseedmdqt)
                   enddo
-                  yg(ihop)=1.0d0
+                  yg(sim%naesmd%ihop)=1.0d0
 	          call    setup(rkcomm, tend, yg, tmax, rk_tolerance, thresholds, 'M','R')
                   !if(idocontrol.eq.0) then
                   !   ido=3
@@ -137,71 +135,75 @@ contains
                  !endif
 ! after kirill
 ! check the reduction of sim%excN
-                 if(iredpot.eq.1) then
-                   if((ihop+nstates).lt.sim%excN) then
-                      sim%excN=ihop+nstates
-                      write(34,887) tfemto,ihopavant,ihop,sim%excN
+                 if(sim%naesmd%iredpot.eq.1) then
+                   if((sim%naesmd%ihop+sim%naesmd%nstates).lt.sim%excN) then
+                      sim%excN=sim%naesmd%ihop+sim%naesmd%nstates
+                      write(34,887) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN
                       call flush(34)
                    endif
                  endif
-                 if(iredpot.eq.2) then
+                 if(sim%naesmd%iredpot.eq.2) then
                    excNtemp=sim%excN
                    do i=1,sim%excN
-                      if((vmdqtnew(ihop)+deltared).lt.vmdqtnew(sim%excN+1-i)) then
+                      if((sim%naesmd%vmdqtnew(sim%naesmd%ihop)+sim%naesmd%deltared).lt.sim%naesmd%vmdqtnew(sim%excN+1-i)) then
                          excNtemp=sim%excN+1-i
                       endif
                    enddo
                    sim%excN=excNtemp
-                   write(34,887) tfemto,ihopavant,ihop,sim%excN
+                   write(34,887) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN
                    call flush(34)
                  endif
 ! after Josiah
-                 if(iredpot.eq.3) then
+                 if(sim%naesmd%iredpot.eq.3) then
                    jj=1
                    pn=0.0d0
-                   do i=1,natom
-                      if(atomtype(i).eq.1) then
-                        cicoeffao3(i)=cicoeffao2(jj,ihop)**2
+                   do i=1,sim%naesmd%natom
+                      if(sim%naesmd%atomtype(i).eq.1) then
+                        sim%naesmd%cicoeffao3(i)=sim%naesmd%cicoeffao2(jj,sim%naesmd%ihop)**2
                         jj=jj+1
                       endif
-                      if(atomtype(i).eq.6) then
-                        cicoeffao3(i)=cicoeffao2(jj,ihop)**2 + cicoeffao2(jj+1,ihop)**2+cicoeffao2(jj+2,ihop)**2 &
-                               + cicoeffao2(jj+3,ihop)**2
+                      if(sim%naesmd%atomtype(i).eq.6) then
+                        sim%naesmd%cicoeffao3(i)=sim%naesmd%cicoeffao2(jj,sim%naesmd%ihop)**2 &
+			    + sim%naesmd%cicoeffao2(jj+1,sim%naesmd%ihop)**2&
+                            +sim%naesmd%cicoeffao2(jj+2,sim%naesmd%ihop)**2 + sim%naesmd%cicoeffao2(jj+3,sim%naesmd%ihop)**2
                           jj=jj+4
                       endif
-                      pn=pn+ cicoeffao3(i)**2
+                      pn=pn+ sim%naesmd%cicoeffao3(i)**2
                    enddo
                    pn=1.0d0/pn
                    ipn=int(pn)+1
-                   call indexx(natom,cicoeffao3,indx)
-                   deltared=0.0d0
-                   do jj=1,natom
-                      write(110,*) ipn,atomtype(indx(jj)),cicoeffao3(indx(jj))
+                   call indexx(sim%naesmd%natom,sim%naesmd%cicoeffao3,indx)
+                   sim%naesmd%deltared=0.0d0
+                   do jj=1,sim%naesmd%natom
+                      write(110,*) ipn,sim%naesmd%atomtype(indx(jj)),sim%naesmd%cicoeffao3(indx(jj))
                    enddo
                    call flush(110)
-                   do jj=1,natom
-                      if(indx(jj).ge.(natom-ipn)) then
-                        deltared = deltared + 0.5d0*massmdqt(jj)*(vx(jj)**2+vy(jj)**2+vz(jj)**2)
+                   do jj=1,sim%naesmd%natom
+                      if(indx(jj).ge.(sim%naesmd%natom-ipn)) then
+                        sim%naesmd%deltared = sim%naesmd%deltared + &
+			0.5d0*sim%naesmd%massmdqt(jj)*(sim%naesmd%vx(jj)**2 &
+			+sim%naesmd%vy(jj)**2+sim%naesmd%vz(jj)**2)
                       endif
                    enddo
                    excNtemp=sim%excN
                    do i=1,sim%excN
-                     if((vmdqtnew(ihop)+deltared).lt.vmdqtnew(sim%excN+1-i)) then
+                     if((sim%naesmd%vmdqtnew(sim%naesmd%ihop)+sim%naesmd%deltared).lt.sim%naesmd%vmdqtnew(sim%excN+1-i)) then
                          excNtemp=sim%excN+1-i
                      endif
                    enddo
                    sim%excN=excNtemp
-                   write(34,884) tfemto,ihopavant,ihop,sim%excN,ipn,deltared*feVmdqt,kavant*feVmdqt
+                   write(34,884) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN, &
+				ipn,sim%naesmd%deltared*feVmdqt,kavant*feVmdqt
                    call flush(34)
                  endif
 ! end after josiah
 ! after kirill
                endif
-               conthop=1
-! ihopprev keep the value of the previous state from where we hop
+               sim%naesmd%conthop=1
+! sim%naesmd%ihopprev keep the value of the previous sim%naesmd%state from where we hop
 ! in order to allow new hops for the next 2 steps only in case that
-! we do not want to hop again to the same state
-!               ihopprev=ihopavant
+! we do not want to hop again to the same sim%naesmd%state
+!               sim%naesmd%ihopprev=ihopavant
 !######################################### 
             endif
 !######################################### 
@@ -211,7 +213,7 @@ contains
 !######################################### 
                do j=1,sim%excN
                   yg(j)=0.0d0
-                  yg(j+sim%excN)=rranf1(iseedmdqt)
+                  yg(j+sim%excN)=rranf1(sim%naesmd%iseedmdqt)
                enddo
                yg(ihopavant)=1.0d0
 		    call    setup(rkcomm, tend, yg, tmax, rk_tolerance, thresholds, &
@@ -223,66 +225,66 @@ contains
                !        ido=1
                !        idocontrol=1
                !endif
-               conthop=1
+               sim%naesmd%conthop=1
 ! check the reduction of sim%excN
-               if(iredpot.eq.1) then
-                   if((ihopavant+nstates).lt.sim%excN) then
-                      sim%excN=ihopavant+nstates
-                      write(34,887) tfemto,ihopavant,ihop,sim%excN
+               if(sim%naesmd%iredpot.eq.1) then
+                   if((ihopavant+sim%naesmd%nstates).lt.sim%excN) then
+                      sim%excN=ihopavant+sim%naesmd%nstates
+                      write(34,887) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN
                       call flush(34)
                    endif
                endif
-               if(iredpot.eq.2) then
+               if(sim%naesmd%iredpot.eq.2) then
                   excNtemp=sim%excN
                   do i=1,sim%excN
-                     if((vmdqtnew(ihopavant)+deltared).lt.vmdqtnew(sim%excN+1-i)) then
+                     if((sim%naesmd%vmdqtnew(ihopavant)+sim%naesmd%deltared).lt.sim%naesmd%vmdqtnew(sim%excN+1-i)) then
                          excNtemp=sim%excN+1-i
                      endif
                   enddo
                   sim%excN=excNtemp
-                  write(34,887) tfemto,ihopavant,ihop,sim%excN
+                  write(34,887) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN
                   call flush(34)
                endif
 ! after Josiah
-               if(iredpot.eq.3) then
+               if(sim%naesmd%iredpot.eq.3) then
                   jj=1
                   pn=0.0d0
-                  do i=1,natom
-                     if(atomtype(i).eq.1) then
-                        cicoeffao3(i)=cicoeffao2(jj,ihopavant)**2
+                  do i=1,sim%naesmd%natom
+                     if(sim%naesmd%atomtype(i).eq.1) then
+                        sim%naesmd%cicoeffao3(i)=sim%naesmd%cicoeffao2(jj,ihopavant)**2
                         jj=jj+1
                      endif
-                     if(atomtype(i).eq.6) then
-                        cicoeffao3(i)=cicoeffao2(jj,ihopavant)**2 &
-      + cicoeffao2(jj+1,ihopavant)**2+cicoeffao2(jj+2,ihopavant)**2 &
-      + cicoeffao2(jj+3,ihopavant)**2
+                     if(sim%naesmd%atomtype(i).eq.6) then
+                        sim%naesmd%cicoeffao3(i)=sim%naesmd%cicoeffao2(jj,ihopavant)**2 &
+      + sim%naesmd%cicoeffao2(jj+1,ihopavant)**2+sim%naesmd%cicoeffao2(jj+2,ihopavant)**2 &
+      + sim%naesmd%cicoeffao2(jj+3,ihopavant)**2
                         jj=jj+4
                      endif
-                     pn=pn+ cicoeffao3(i)**2
+                     pn=pn+ sim%naesmd%cicoeffao3(i)**2
                   enddo
                   pn=1.0d0/pn
                   ipn=int(pn)+1
-                  call indexx(natom,cicoeffao3,indx)
-                  deltared=0.0d0
-              do jj=1,natom
-                write(110,*) ipn,atomtype(indx(jj)),cicoeffao3(indx(jj))
+                  call indexx(sim%naesmd%natom,sim%naesmd%cicoeffao3,indx)
+                  sim%naesmd%deltared=0.0d0
+              do jj=1,sim%naesmd%natom
+                write(110,*) ipn,sim%naesmd%atomtype(indx(jj)),sim%naesmd%cicoeffao3(indx(jj))
              enddo
               call flush(110)
-                  do jj=1,natom
-                     if(indx(jj).ge.(natom-ipn)) then
-                        deltared = deltared + 0.5d0*massmdqt(jj)*&
-                                (vx(jj)**2+vy(jj)**2+vz(jj)**2)
+                  do jj=1,sim%naesmd%natom
+                     if(indx(jj).ge.(sim%naesmd%natom-ipn)) then
+                        sim%naesmd%deltared = sim%naesmd%deltared + 0.5d0*sim%naesmd%massmdqt(jj)*&
+                                (sim%naesmd%vx(jj)**2+sim%naesmd%vy(jj)**2+sim%naesmd%vz(jj)**2)
                      endif
                   enddo
                   excNtemp=sim%excN
                   do i=1,sim%excN
-                     if((vmdqtnew(ihopavant)+deltared).lt.vmdqtnew(sim%excN+1-i)) then
+                     if((sim%naesmd%vmdqtnew(ihopavant)+sim%naesmd%deltared).lt.sim%naesmd%vmdqtnew(sim%excN+1-i)) then
                          excNtemp=sim%excN+1-i
                      endif
                   enddo
                   sim%excN=excNtemp
-                  write(34,884) tfemto,ihopavant,ihop,sim%excN,ipn,&
-                                deltared*feVmdqt,kavant*feVmdqt
+                  write(34,884) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN,ipn,&
+                                sim%naesmd%deltared*feVmdqt,kavant*feVmdqt
                   call flush(34)
                endif
 !###############################################3       
@@ -292,38 +294,38 @@ contains
 ! end added after Kirill
 ! end added for patch JAKB
 
-!                conthop=1
+!                sim%naesmd%conthop=1
 !            end if
 
         endif
 
-        if(crosstemp.eq.2.and.conthop.eq.0) then
-            conthop2=1
-            ! ihopprev keep the value of the previous state from where we hop
+        if(crosstemp.eq.2.and.sim%naesmd%conthop.eq.0) then
+            sim%naesmd%conthop2=1
+            ! sim%naesmd%ihopprev keep the value of the previous sim%naesmd%state from where we hop
             ! in order to allow new hops for the next 2 steps only in case that
-            ! we do not want to hop again to the same state
-            ihopprev=ihop
+            ! we do not want to hop again to the same sim%naesmd%state
+            sim%naesmd%ihopprev=sim%naesmd%ihop
             ini=0
-            ihop=iordenhop(ihop)
-            icheck=ihop
+            sim%naesmd%ihop=sim%naesmd%iordenhop(sim%naesmd%ihop)
+            icheck=sim%naesmd%ihop
             ! after the hop, we reinitialize the variables
             call naesmd2qmmm_r(sim)
             call cpu_time(t_start)
-            call deriv(sim,ihop)
+            call deriv(sim,sim%naesmd%ihop)
             call cpu_time(t_finish)
             sim%time_deriv_took=sim%time_deriv_took+t_finish-t_start
-            do j=1,natom
-                xx(j)=rx(j)
-                yy(j)=ry(j)
-                zz(j)=rz(j)
+            do j=1,sim%naesmd%natom
+                xx(j)=sim%naesmd%rx(j)
+                yy(j)=sim%naesmd%ry(j)
+                zz(j)=sim%naesmd%rz(j)
             end do
-            call do_sqm_davidson_update(sim,vmdqt=vmdqtnew,vgs=vgs)
+            call do_sqm_davidson_update(sim,vmdqt=sim%naesmd%vmdqtnew,vgs=sim%naesmd%vgs)
             ytemp=yg(ihopavant)
             ytemp2=yg(ihopavant+sim%excN)
-            yg(ihopavant)=yg(ihop)
-            yg(ihopavant+sim%excN)=yg(ihop+sim%excN)
-            yg(ihop)=ytemp
-            yg(ihop+sim%excN)=ytemp2
+            yg(ihopavant)=yg(sim%naesmd%ihop)
+            yg(ihopavant+sim%excN)=yg(sim%naesmd%ihop+sim%excN)
+            yg(sim%naesmd%ihop)=ytemp
+            yg(sim%naesmd%ihop+sim%excN)=ytemp2
 	    call    setup(rkcomm, tend, yg, tmax, rk_tolerance, thresholds, &
 	            'M','R')
            ! if(idocontrol.eq.0) then
@@ -334,21 +336,21 @@ contains
            !     idocontrol=1
            ! end if
         end if
-        ! Evaluation of other crossings that do not involve the ihop state
+        ! Evaluation of other crossings that do not involve the sim%naesmd%ihop sim%naesmd%state
         !*************************************************************
         ininonhop=1
         do i=1,sim%excN
-            if(i.lt.iorden(i).and.i.ne.ihopavant.and.i.ne.iorden(ihopavant)) then
+            if(i.lt.sim%naesmd%iorden(i).and.i.ne.ihopavant.and.i.ne.sim%naesmd%iorden(ihopavant)) then
                 if(cross(i).eq.2) then
                     ininonhop=0
                     icheck=i
                     ! after the hop, we reinicialize the variables
                     ytemp=yg(i)
                     ytemp2=yg(i+sim%excN)
-                    yg(i)=yg(iorden(i))
-                    yg(i+sim%excN)=yg(iorden(i)+sim%excN)
-                    yg(iorden(i))=ytemp
-                    yg(iorden(i)+sim%excN)=ytemp2
+                    yg(i)=yg(sim%naesmd%iorden(i))
+                    yg(i+sim%excN)=yg(sim%naesmd%iorden(i)+sim%excN)
+                    yg(sim%naesmd%iorden(i))=ytemp
+                    yg(sim%naesmd%iorden(i)+sim%excN)=ytemp2
 		    call    setup(rkcomm, tend, yg, tmax, rk_tolerance, thresholds, &
 	            	'M','R')
                    ! if(idocontrol.eq.0) then
@@ -362,26 +364,27 @@ contains
             end if
         enddo
         ! Check the conservation of the total energy in the hop
-        ! and recalculate the kin to be printed in writeoutput.f
+        ! and recalculate the sim%naesmd%kin to be printed in writeoutput.f
         if(icheck.ne.0) then
             if(ini.eq.0.or.ininonhop.eq.0) then
-                eapres=vmdqtnew(ihop)
-                kin=0.0d0
-                do j=1,natom
-                    kin=kin+massmdqt(j)*(vx(j)**2+vy(j)**2+vz(j)**2)/2
+                eapres=sim%naesmd%vmdqtnew(sim%naesmd%ihop)
+                sim%naesmd%kin=0.0d0
+                do j=1,sim%naesmd%natom
+                    sim%naesmd%kin=sim%naesmd%kin+sim%naesmd%massmdqt(j)*(sim%naesmd%vx(j)**2+&
+			sim%naesmd%vy(j)**2+sim%naesmd%vz(j)**2)/2
                 end do
-                eapres=eapres+kin
+                eapres=eapres+sim%naesmd%kin
                 do j=1,sim%excN
-                    if(j.ne.ihop) then
-                        if(j.lt.iorden(j)) then
+                    if(j.ne.sim%naesmd%ihop) then
+                        if(j.lt.sim%naesmd%iorden(j)) then
                             if(cross(j).ne.0) then
-                                write(30,887) tfemto,cross(j),j,iorden(j),eavant,eapres
+                                write(30,887) sim%naesmd%tfemto,cross(j),j,sim%naesmd%iorden(j),eavant,eapres
                                 call flush(30)
                             end if
                         end if
                     else
-                        if(ihop.ne.ihopavant) then
-                            write(30,887) tfemto,cross(ihop),ihopavant,ihop,eavant,eapres
+                        if(sim%naesmd%ihop.ne.ihopavant) then
+                            write(30,887) sim%naesmd%tfemto,cross(sim%naesmd%ihop),ihopavant,sim%naesmd%ihop,eavant,eapres
                             call flush(30)
                         end if
                     end if
@@ -399,7 +402,6 @@ contains
     ! surface is different to the one in the older.
     ! In order to conserve the energy, we adjust the velocities
     subroutine veladjustment(sim, lprint,Na,icheck,ini)
-        use naesmd_module
         use md_module
         implicit none
         type(simulation_t),pointer::sim
@@ -417,12 +419,12 @@ contains
         !    Feed here energies and wavefunctions and geometry, get back dij
         ! if necessary here the signs of the CI coefficient matrix can be checked right here
         ! analytical calculation of nacR
-        call nacR_analytic_wrap(sim, ihop, icheck, dij)
+        call nacR_analytic_wrap(sim, sim%naesmd%ihop, icheck, dij)
         ! end of the calculation of the non-adiabatic coupling vector dij
         !*********************************
         if(lprint.ge.1) then
             j=1
-            do i=1,natom
+            do i=1,sim%naesmd%natom
                 write(29,*) i,dij(j),dij(j+1),dij(j+2)
                 j=j+3
             end do
@@ -432,40 +434,40 @@ contains
         ! and the velocities adjustment
         ihoptemp=icheck
         vicheck=vtemp(ihoptemp)
-        alpha=vmdqtnew(ihop)-vicheck
+        alpha=sim%naesmd%vmdqtnew(sim%naesmd%ihop)-vicheck
         racine = 0.0d0
 
         j=1
-        do i=1,natom
-            racine=racine+vx(i)*dij(j)+vy(i)*dij(j+1) &
-                +vz(i)*dij(j+2)
+        do i=1,sim%naesmd%natom
+            racine=racine+sim%naesmd%vx(i)*dij(j)+sim%naesmd%vy(i)*dij(j+1) &
+                +sim%naesmd%vz(i)*dij(j+2)
             j=j+3
         end do
         racine=racine**2
         j=1
-        do i=1,natom
-            racine=racine+2.0d0*alpha/massmdqt(i) &
+        do i=1,sim%naesmd%natom
+            racine=racine+2.0d0*alpha/sim%naesmd%massmdqt(i) &
                 *(dij(j)**2+dij(j+1)**2+dij(j+2)**2)
             j=j+3
         end do
         if(racine.le.0.0d0) then
             ini=1
 ! change made after Kirill
-            if(decorhop.eq.2) ini=2
+            if(sim%naesmd%decorhop.eq.2) ini=2
 ! end change made after Kirill
             goto 4321
         end if
         ctehop1=0.0d0
         j=1
-        do i=1,natom
-            ctehop1=ctehop1+vx(i)*dij(j)+vy(i)*dij(j+1)+vz(i)*dij(j+2)
+        do i=1,sim%naesmd%natom
+            ctehop1=ctehop1+sim%naesmd%vx(i)*dij(j)+sim%naesmd%vy(i)*dij(j+1)+sim%naesmd%vz(i)*dij(j+2)
             j=j+3
         end do
         ctehop1=ctehop1+dsqrt(racine)
         dctehop1=0.d0
         j=1
-        do i=1,natom
-            dctehop1=dctehop1+1.0d0/massmdqt(i) &
+        do i=1,sim%naesmd%natom
+            dctehop1=dctehop1+1.0d0/sim%naesmd%massmdqt(i) &
                 *(dij(j)**2+dij(j+1)**2+dij(j+2)**2)
             j=j+3
         end do
@@ -474,10 +476,10 @@ contains
         ! option to adjust the velocities in the direction of
         ! the nonadiabatic coupling vector
         j=1
-        do i=1,natom
-            vx(i)=vx(i)-ctehop1*dij(j)/massmdqt(i)
-            vy(i)=vy(i)-ctehop1*dij(j+1)/massmdqt(i)
-            vz(i)=vz(i)-ctehop1*dij(j+2)/massmdqt(i)
+        do i=1,sim%naesmd%natom
+            sim%naesmd%vx(i)=sim%naesmd%vx(i)-ctehop1*dij(j)/sim%naesmd%massmdqt(i)
+            sim%naesmd%vy(i)=sim%naesmd%vy(i)-ctehop1*dij(j+1)/sim%naesmd%massmdqt(i)
+            sim%naesmd%vz(i)=sim%naesmd%vz(i)-ctehop1*dij(j+2)/sim%naesmd%massmdqt(i)
             j=j+3
         end do
 4321 continue
@@ -490,7 +492,6 @@ contains
 subroutine indexx(n,arr,indx)
 ! ************************************************************************
 
-      integer icont
       integer n,indx(n),M,NSTACK
       double precision arr(n)
       parameter (M=7, NSTACK=50)
