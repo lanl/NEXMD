@@ -6,6 +6,7 @@ module communism
     use qmmm_struct_module, only       : qmmm_struct_type
     use qmmm_module, only              : qm2_structure
     use naesmd_module, only            : naesmd_structure, realp_t
+    use md_module, only            : md_structure
     use naesmd_constants
     use rksuite_90, only:rk_comm_real_1d 
           
@@ -26,6 +27,7 @@ module communism
         _REAL_::time_nact_took=0.d0 ! non-adiabatic derivatives (nact)
           
         type(naesmd_structure),pointer               :: naesmd
+        type(md_structure),pointer               :: md
         type(qm2_davidson_structure_type),pointer :: dav
         type(qmmm_struct_type),pointer            :: qmmm
         type(qm2_structure),pointer               :: qm2
@@ -43,21 +45,24 @@ contains
         a%qmmm     => null()
         a%qm2      => null()
         a%naesmd      => null()
+        a%md      => null()
         a%rk_comm      => null()
         allocate(a%naesmd)
     end subroutine
 
-    subroutine setp_simulation(a,qmmm_struct,qm2ds,qm2_struct,naesmd_struct,rk_struct)
+    subroutine setp_simulation(a,qmmm_struct,qm2ds,qm2_struct,naesmd_struct,md_struct,rk_struct)
         type(simulation_t), pointer  :: a
         type(qmmm_struct_type),target :: qmmm_struct
         type(qm2_davidson_structure_type),target :: qm2ds
         type(qm2_structure),target :: qm2_struct
         type(naesmd_structure),target :: naesmd_struct
+        type(md_structure),target :: md_struct
 	type(rk_comm_real_1d),target :: rk_struct 
         a%qmmm     => qmmm_struct
         a%dav     => qm2ds
         a%qm2     => qm2_struct
         a%naesmd  => naesmd_struct
+        a%md  => md_struct
 	a%rk_comm => rk_struct
     end subroutine
           
@@ -317,7 +322,6 @@ contains
         use file_io_dat,only:MAX_FN_LEN
         use qm2_davidson_module ! CML 7/11/12
         use Cosmo_C,only:solvent_model
-        use md_module
  
         implicit none
           

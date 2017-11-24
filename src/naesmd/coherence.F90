@@ -10,7 +10,6 @@ subroutine coherence(sim,rkcomm, Na, tend, tmax,rk_tolerance, &
     use rksuite_90, only: rk_comm_real_1d, setup 
     use qm2_davidson_module
     use communism
-    use md_module
     implicit none
 
     type(simulation_t),pointer  ::  sim

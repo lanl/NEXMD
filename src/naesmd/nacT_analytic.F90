@@ -93,7 +93,6 @@ module nacT_analytic_module
 !
    subroutine new_xstep_dtnact(sim,xxx,yyy,zzz,xs)
    use naesmd_module
-   use md_module
    implicit none
 
    type(simulation_t),pointer::sim

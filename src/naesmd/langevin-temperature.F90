@@ -20,7 +20,6 @@ contains
 
     subroutine sdterm(naesmd_struct)
         use naesmd_module, only:naesmd_structure
-        use md_module
         implicit none
         type(naesmd_structure), intent(inout) :: naesmd_struct 
 
@@ -133,7 +132,6 @@ contains
     !
     function normal (naesmd_struct)
         use naesmd_module, only:naesmd_structure
-        use md_module
 
         implicit none
         type(naesmd_structure), intent(inout) :: naesmd_struct 
@@ -171,7 +169,6 @@ end function
 
 SUBROUTINE temperature(i,naesmd_struct)
     use naesmd_module, only:naesmd_structure
-    use md_module
 
     IMPLICIT NONE
     type(naesmd_structure), intent(inout) :: naesmd_struct 
@@ -233,7 +230,6 @@ END SUBROUTINE
 
 subroutine temper(naesmd_struct)
     use naesmd_module, only:naesmd_structure
-    use md_module
 
     implicit none
     type(naesmd_structure), intent(inout) :: naesmd_struct 

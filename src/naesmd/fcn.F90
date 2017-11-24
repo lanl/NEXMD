@@ -27,7 +27,6 @@ end subroutine fcn
 !
 subroutine interpolate(n,x,naesmd_struct)
     use naesmd_module
-    use md_module
     implicit none
     type(naesmd_structure), intent(inout) :: naesmd_struct 
     integer n,k,j

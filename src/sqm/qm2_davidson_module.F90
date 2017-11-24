@@ -125,6 +125,8 @@
       ! Excited state gradient information
       _REAL_, allocatable :: dxyz(:) 
 
+      logical :: initialized = 0 ! initially zero, i.e. not initialized
+
       ! COSMO parameters do not really belong here
       ! but it is easy to have them here for time being
       !_REAL_::ceps ! COSMO dielectric permittivity
@@ -135,7 +137,6 @@
    public :: allocate_davidson, deallocate_davidson
    
 
-   logical, private :: initialized = 0 ! initially zero, i.e. not initialized
    contains
 !
 !********************************************************************
@@ -156,10 +157,10 @@
 
    REQUIRE(qm2ds%Mx .GT. 0)
 
-   if (initialized) return 
+   if (qm2ds%initialized) return 
 
 
-   initialized = .TRUE. ! allocated
+   qm2ds%initialized = .TRUE. ! allocated
 
 !-----------INITIALIZE "CONSTANTS"--------------
    ! Nb - the basis size, i.e., total number of atomic orbitals
@@ -322,7 +323,7 @@
 
    print*,'davidson deallocation'
 
-   if(.NOT. initialized) then
+   if(.NOT. qm2ds%initialized) then
       write(6,*) ' Davidson was never initialized. Exiting deallocation procedure'
       return
    end if

@@ -13,7 +13,6 @@ contains
     subroutine writeoutputini(sim,ibo,yg,lprint)
         use naesmd_constants
         use naesmd_module
-        use md_module
         use communism
         use Cosmo_C, only : solvent_model
         implicit none
@@ -272,7 +271,6 @@ contains
         use naesmd_constants
         use naesmd_module
         use langevin_temperature
-        use md_module
         use communism
         use Cosmo_C,only: solvent_model
         implicit none

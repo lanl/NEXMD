@@ -7,8 +7,6 @@ module cadiab_module
     use nacT_analytic_module
 contains
     subroutine cadiaboldcalc(sim,imdqt)
-        use naesmd_module
-        use md_module
         use qm2_davidson_module
         implicit none
  
@@ -92,8 +90,6 @@ contains
     !
     subroutine cadiabmiddlecalc(sim,iimdqt,Na,cross)
         use qm2_davidson_module
-        use naesmd_module
-        use md_module
         implicit none
         type(simulation_t),pointer::sim
         integer j,i,iimdqt,Na
@@ -273,8 +269,6 @@ contains
     !
 
     subroutine cadiabnewcalc(sim)
-        use naesmd_module
-        use md_module
         use qm2_davidson_module
         implicit none
 

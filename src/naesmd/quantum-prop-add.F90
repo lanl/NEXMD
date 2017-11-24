@@ -7,7 +7,6 @@ module quantum_prop_add
 contains
 
     subroutine checkcrossing(sim,cross,lprint)
-        use md_module
         implicit none
 
         type(simulation_t),pointer::sim
@@ -112,7 +111,6 @@ contains
     end subroutine
 
     subroutine checkcrossingmiddle(sim,cross)
-        use md_module
         implicit none
 
         type(simulation_t),pointer::sim
@@ -143,7 +141,6 @@ contains
     end subroutine
 
     subroutine vmdqtmiddlecalc(sim, iimdqt,Na)
-        use md_module
         implicit none
 
         type(simulation_t), pointer :: sim
@@ -255,7 +252,6 @@ contains
     end subroutine
 
     subroutine vmdqtlowvalue(sim,win,iimdqt,Na)
-        use md_module
         implicit none
 
         type(simulation_t), pointer :: sim

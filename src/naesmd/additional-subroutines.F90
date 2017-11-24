@@ -189,7 +189,6 @@ contains
     END SUBROUTINE
 
 !    SUBROUTINE checknorm(sim,ido,neq,tini,tend,toldivprk,param,yg,idocontrol)
-!        use md_module
 !        use communism
 !        IMPLICIT NONE
 !        type(simulation_t), pointer :: sim
@@ -223,7 +222,6 @@ contains
     ! sim%naesmd%cadiab and sim%naesmd%vmdqt during propagation
 
     SUBROUTINE fitcoef(sim)
-        use md_module
         use communism
         IMPLICIT NONE
         type(simulation_t), pointer :: sim
@@ -249,7 +247,6 @@ contains
     ! it also store the value of yg(sim%naesmd%ihop) at t to be used in the hopping evaluation
 
     SUBROUTINE initialize(sim,yg)
-        use md_module
         use communism
         IMPLICIT NONE
 

@@ -13,7 +13,6 @@ contains
         Na,yg,cross)
 !    subroutine evalhop(sim, lprint,ido,neq,tini,tend,toldivprk, &
 !        param,Na,yg,cross,idocontrol)
-        use md_module
 	use rksuite_90, only: rk_comm_real_1d, setup 
         implicit none
         type(simulation_t), pointer :: sim
@@ -402,7 +401,6 @@ contains
     ! surface is different to the one in the older.
     ! In order to conserve the energy, we adjust the velocities
     subroutine veladjustment(sim, lprint,Na,icheck,ini)
-        use md_module
         implicit none
         type(simulation_t),pointer::sim
         integer Na,lprint

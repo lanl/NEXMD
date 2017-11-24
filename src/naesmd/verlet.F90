@@ -17,7 +17,6 @@ contains
     !--------------------------------------------------------------------
     !
     subroutine verlet(sim)
-        use md_module
         implicit none
 
         type(simulation_t),pointer::sim
@@ -140,7 +139,6 @@ contains
     !--------------------------------------------------------------------
     !
     subroutine verlet1(sim)
-        use md_module
 
         implicit none
 
@@ -216,7 +214,6 @@ contains
     !--------------------------------------------------------------------
     !
     subroutine verlet2(sim)
-        use md_module
         implicit none
 
         type(simulation_t),pointer :: sim

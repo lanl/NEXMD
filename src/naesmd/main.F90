@@ -55,6 +55,7 @@ program MD_Geometry
     type(qmmm_struct_type), target :: qmmm_struct_notp
     type(qm2_structure), target :: qm2_struct_notp
     type(naesmd_structure), target :: naesmd_struct_notp
+    type(md_structure), target :: md_struct_notp
     type(rk_comm_real_1d), target :: rk_struct_notp
     type(simulation_t),target::sim_notp
     type(simulation_t),pointer::sim
@@ -106,8 +107,8 @@ program MD_Geometry
    
     call init0_simulation(sim)
     call setp_simulation(sim,qmmm_struct_notp,qm2ds_notp,&
-		qm2_struct_notp,naesmd_struct_notp, rk_struct_notp)
-    call init_main(sim%naesmd)
+		qm2_struct_notp,naesmd_struct_notp, md_struct_notp, rk_struct_notp)
+    call init_main(sim, sim%naesmd, sim%md)
 
     !Put derivative variables into module
     sim%qmmm%ideriv=moldyn_deriv_flag
@@ -144,10 +145,10 @@ program MD_Geometry
     end do
      
     !sim%naesmd%uumdqtflag=1
-    if(imdtype.eq.0) then
+    if(sim%md%imdtype.eq.0) then
         Etot=sim%naesmd%E0+Ek
     else
-        Etot=sim%naesmd%E0+sim%naesmd%Omega(imdtype)+Ek
+        Etot=sim%naesmd%E0+sim%naesmd%Omega(sim%md%imdtype)+Ek
     endif
     sim%naesmd%vgs=sim%naesmd%E0;
     sim%naesmd%vmdqt(1:sim%excN)=sim%naesmd%Omega(1:sim%excN)+sim%naesmd%vgs
@@ -178,7 +179,7 @@ program MD_Geometry
     i=1
     sim%naesmd%icontw=1
     !Open output files
-    call open_output(ibo,sim%naesmd%tfemto,imdtype,lprint)
+    call open_output(ibo,sim%naesmd%tfemto,sim%md%imdtype,lprint)
     sim%naesmd%ihop=sim%qmmm%state_of_interest !FIXME change sim%naesmd%ihop to module variable
     call writeoutputini(sim,ibo,yg,lprint)
 
@@ -571,13 +572,16 @@ contains
     !
     !********************************************************************
     !
-    subroutine init_main(naesmd_struct)
+    subroutine init_main(sim, naesmd_struct,md_struct)
         use naesmd_module
+        use md_module
         use naesmd_constants
         use md_module
 
         implicit none
+        type(simulation_t),pointer::sim
 	type(naesmd_structure), intent(inout) :: naesmd_struct	
+	type(md_structure), intent(inout) :: md_struct	
         _REAL_,allocatable::xx(:),yy(:),zz(:)
 
         !dtnact is the incremental time to be used at nact calculation
@@ -766,16 +770,16 @@ contains
         ! old parameters
         ibo=bo_dynamics_flag
    
-        imdtype=exc_state_init
-        naesmd_struct%ihop=imdtype
-        if(imdtype==0) then
+        md_struct%imdtype=exc_state_init
+        naesmd_struct%ihop=md_struct%imdtype
+        if(md_struct%imdtype==0) then
             naesmd_struct%state='fund'
         else
             naesmd_struct%state='exct'
         end if
 
         naesmd_struct%npot=n_exc_states_propagate
-        neq=2*naesmd_struct%npot !Number of equations for divprk -- could use 2*sim%excN instead
+        neq=2*naesmd_struct%npot !Number of equations for divprk -- could use excN instead
    
         naesmd_struct%icontini=out_count_init
         naesmd_struct%tfemto=time_init
@@ -794,7 +798,7 @@ contains
         d=num_deriv_step
 
         naesmd_struct%temp0=therm_temperature
-        ttt=naesmd_struct%temp0
+        md_struct%ttt=naesmd_struct%temp0
 
         ither=therm_type
         if(ither==0) naesmd_struct%ensemble ='energy'
@@ -819,7 +823,7 @@ contains
         write(6,*)"rnd_seed=",rnd_seed
         naesmd_struct%iview=out_data_cube
         lprint=verbosity
-        ideriv=moldyn_deriv_flag
+        md_struct%ideriv=moldyn_deriv_flag
 
         naesmd_struct%nstepcross=int(1.d0/quant_step_reduction_factor)
         constcoherE0=decoher_e0
@@ -832,13 +836,13 @@ contains
         write(6,*) '!!!!!!-----MD INPUT-----!!!!!!'
         write(6,*)
 
-        if (imdtype.eq.0) then
-            sim%qmmm%state_of_interest=imdtype
-            write(6,*)'Ground state MD,      imdtype=',imdtype
+        if (md_struct%imdtype.eq.0) then
+            sim%qmmm%state_of_interest=md_struct%imdtype
+            write(6,*)'Ground state MD,      imdtype=',md_struct%imdtype
     
         else
-            sim%qmmm%state_of_interest=imdtype
-            write(6,*)'Excited state MD,      state=',imdtype
+            sim%qmmm%state_of_interest=md_struct%imdtype
+            write(6,*)'Excited state MD,      state=',md_struct%imdtype
             write(6,*)'Number of states to propagate',naesmd_struct%npot
         end if
 
@@ -888,12 +892,12 @@ contains
 
         write(6,*)'NAESMD verbosity, ',lprint
 
-        if(ideriv.eq.0) then
-            write(6,*)'MD will use numerical deriv, ideriv=',ideriv
-        else if(ideriv.ge.2) then
-            write(6,*)'MD will use fast GS analytic deriv,  ideriv=',ideriv
+        if(md_struct%ideriv.eq.0) then
+            write(6,*)'MD will use numerical deriv, ideriv=',md_struct%ideriv
+        else if(md_struct%ideriv.ge.2) then
+            write(6,*)'MD will use fast GS analytic deriv,  md_struct%ideriv=',md_struct%ideriv
         else
-            write(6,*)'MD will use analytic deriv,  ideriv=',ideriv
+            write(6,*)'MD will use analytic deriv,  ideriv=',md_struct%ideriv
         end if
 
         write(6,*) 'Cartesian coordinates are used'
@@ -903,7 +907,7 @@ contains
         ! Initial allocations
         ! **************************************************
         call allocate_naesmd_module_init(naesmd_struct,natoms)
-        call allocate_md_module_init(natoms)
+        call allocate_md_module_init(md_struct,natoms)
         allocate(xx(natoms),yy(natoms),zz(natoms))
 
         ! reading atoms and modes:
@@ -930,9 +934,9 @@ contains
 
             Na=Na+1 ! counting atoms
 
-            read(txt,*,err=29) atoms(Na),r0(3*Na-2),r0(3*Na-1),r0(3*Na)
-            atmass(Na)=2*atoms(Na)
-            naesmd_struct%atomtype(Na)=atoms(Na)
+            read(txt,*,err=29) md_struct%atoms(Na),md_struct%r0(3*Na-2),md_struct%r0(3*Na-1),md_struct%r0(3*Na)
+            md_struct%atmass(Na)=2*md_struct%atoms(Na)
+            naesmd_struct%atomtype(Na)=md_struct%atoms(Na)
             !         if(naesmd_struct%atomtype(Na).eq.1) naesmd_struct%massmdqt(Na)=1.0079d0*convm
             if(naesmd_struct%atomtype(Na).eq.1) naesmd_struct%massmdqt(Na)=1.00d0*convm
             if(naesmd_struct%atomtype(Na).eq.1) naesmd_struct%atomtype2(Na)='H '
@@ -973,7 +977,7 @@ contains
         allocate(sim%coords(Na*3))
         sim%excN=naesmd_struct%npot
         call allocate_naesmd_module(naesmd_struct,Na,naesmd_struct%npot)
-        call allocate_md_module(Na)
+        call allocate_md_module(md_struct,Na)
         if(naesmd_struct%npot.gt.0) then
                 allocate(thresholds(2*sim%excN))
                 allocate(yg(2*sim%excN))
@@ -1061,24 +1065,24 @@ contains
         !--------------------------------------------------------------------
         !
         Nm=3*Na
-        v(1:Nm,1:Nm)=0.d0
+        md_struct%v(1:Nm,1:Nm)=0.d0
         do i=1,Na
-            if (atoms(i).eq.1) then
-                fo(3*i-2)=3000
-                fo(3*i-1)=3000
-                fo(3*i)=3000
+            if (md_struct%atoms(i).eq.1) then
+                md_struct%fo(3*i-2)=3000
+                md_struct%fo(3*i-1)=3000
+                md_struct%fo(3*i)=3000
             else
-                fo(3*i-2)=1000
-                fo(3*i-1)=1000
-                fo(3*i)=1000
+                md_struct%fo(3*i-2)=1000
+                md_struct%fo(3*i-1)=1000
+                md_struct%fo(3*i)=1000
             end if
    
-            fm(3*i-2)=atmass(i)
-            fm(3*i-1)=atmass(i)
-            fm(3*i)=atmass(i)
-            v(3*i-2,3*i-2)=1.0
-            v(3*i-1,3*i-1)=1.0
-            v(3*i,3*i)=1.0
+            md_struct%fm(3*i-2)=md_struct%atmass(i)
+            md_struct%fm(3*i-1)=md_struct%atmass(i)
+            md_struct%fm(3*i)=md_struct%atmass(i)
+            md_struct%v(3*i-2,3*i-2)=1.0
+            md_struct%v(3*i-1,3*i-1)=1.0
+            md_struct%v(3*i,3*i)=1.0
         end do
 
         ! initialize variables:
@@ -1088,9 +1092,9 @@ contains
 
         ! compute initial cartesian coordinates:
         do j=3,N3,3
-            xx(j/3)=r0(j-2)
-            yy(j/3)=r0(j-1)
-            zz(j/3)=r0(j)
+            xx(j/3)=md_struct%r0(j-2)
+            yy(j/3)=md_struct%r0(j-1)
+            zz(j/3)=md_struct%r0(j)
         end do
 
         ! define cartesian coordinates for mdqt
@@ -1130,7 +1134,7 @@ contains
         write(6,*)'Initial Geometry'
 
         do i=1,Na
-            write(6,100) atoms(i),xx(i),yy(i),zz(i)
+            write(6,100) md_struct%atoms(i),xx(i),yy(i),zz(i)
         end do
 100     format(I5,'     ',3F12.6)
 
@@ -1141,11 +1145,11 @@ contains
 !            write (9,*) 'Input Geometry'
 !
 !            do j = 1,Na
-!                write(9,302) ELEMNT(atoms(j)),xx(j),yy(j),zz(j)
+!                write(9,302) ELEMNT(md_struct%atoms(j)),xx(j),yy(j),zz(j)
 !            end do
 !            close (9)
 !        end if
-        sim%coords(1:3*Na)=r0(1:3*Na)
+        sim%coords(1:3*Na)=md_struct%r0(1:3*Na)
         allocate(sim%deriv_forces(3*Na))
 
         return
@@ -1165,6 +1169,7 @@ contains
 29      write(6,*) txt
 98      stop 'bad input'
     end subroutine
+
 
 
   
