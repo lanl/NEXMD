@@ -38,7 +38,7 @@ import fileinput
 
 cwd = os.getcwd()
 
-def newsim():
+def newsim(header):
 
     print 'Preparing input files for a new simulation with geometries taken from another simulation.'
 
@@ -60,56 +60,47 @@ def newsim():
     NEXMDs = glob.glob('%s/NEXMD*/' % (newdir))
     NEXMDs.sort()
     if len(NEXMDs) != 0:
-        contq = input('** WARNING ** All NEXMD folders and rseedslist inside %s will be deleted!\ndo you want to continue? answer yes [1] or no [0]: ' % (newdir))
+        contq = input('** WARNING ** All NEXMD folders and rseedslist inside %s will be deleted!\nContinue? Answer yes [1] or no [0]: ' % (newdir))
         if contq not in [1,0]:
             print 'Answer must be 1 or 0.'
             sys.exit()
         if contq == 0:
             sys.exit()
     for NEXMD in NEXMDs:
-        print 'Deleting', '%s' % (NEXMD)
+        print 'Deleting %s.' % (NEXMD)
         shutil.rmtree(NEXMD)
     rseedslist = glob.glob('%s/rseedslist*' % (newdir))
     for rseeds in rseedslist:
         os.remove(rseeds)
-        print 'Deleting', '%s' % (rseeds)
+        print 'Deleting %s.' % (rseeds)
 
-    ## Properties of previous NEXMD geometries ##
+    ## Information from old header (completed NEXMD geometries) ##
     if not os.path.exists('%s/header' % (olddir)):
         print 'Path %s/header does not exist.' % (olddir)
         sys.exit()
-    header = open('%s/header' % (olddir),'r')
-    header = header.readlines()
-    for line in header:
-        if 'time_init' in line:
-            tinit = np.float(line.split()[0][len('time_init='):-1])
-        if 'time_step' in line:
-            dt = np.float(line.split()[0][len('time_step='):-1])
-        if 'out_data_steps' in line:
-            odata = np.int(line.split()[0][len('out_data_steps='):-1])
-            if odata == 0:
-                print 'No data have been printed to files because out_data_steps = 0 in header.'
-                sys.exit()
-        if 'out_coords_steps' in line:
-            cdata = np.int(line.split()[0][len('out_coords_steps='):-1])
-            if cdata == 0:
-                print 'No coordinates have been printed to coords.xyz because out_coords_steps = 0 in header.'
-                sys.exit()
-    cprint = dt*odata*cdata
-    print 'The coordinates in %s began at %.2f fs and were printed to coords.xyz every %.2f fs.' % (olddir,tinit,cprint)
+    old_header = header('%s/header' % (oldir))
 
-    ## Check running dynamics ##
+    ## Check output data ##
+    if old_header.out_data_steps == 0:
+        print 'No data have been printed to files because out_data_steps = 0 in %s/header.' % (olddir)
+        sys.exit()
+    if old_header.out_coords_steps == 0:
+        print 'No coordinates have been printed to coords.xyz because out_coords_steps = 0 in %/header.' % (olddir)
+        sys.exit()
+
+    ## Tell user available information from header regarding coordinates ##
+    cprint = old_header.time_step*old_header.out_data_steps*old_header.out_coords_steps
+        print 'The coordinates in %s began at %.2f fs and were printed to coords.xyz every %.2f fs.' % (olddir,old_header.time_init,cprint)
+
+    ## Information from new header (desired NEXMD simulations) ##
     if not os.path.exists('%s/header' % (newdir)):
         print 'Path %s/header does not exist.' % (newdir)
         sys.exit()
-    header = open('%s/header' % (newdir),'r')
-    header = header.readlines()
-    for line in header:
-        if 'n_class_steps' in line:
-            tsmax = np.int(line.split()[0][len('n_class_steps='):-1])
-            break
-    if tsmax <= 0:
-        print 'Must change n_class_steps in %s/header to greater than 0.' % (newdir)
+    new_header = header('%s/header' % (newdir))
+
+    ## Check running dynamics ##
+    if new_header.n_class_steps <= 0:
+        print 'Must change n_class_steps in %s/header to greater than 0 to run dynamics.' % (newdir)
         sys.exit()
 
     ## Extract atomic numbers ##
@@ -118,8 +109,8 @@ def newsim():
         sys.exit()
     anum = open('%s/restart.out' % (gsdir),'r')
     anum = anum.readlines()
-    top = none
-    bottom = none
+    top = None
+    bottom = None
     index = 0
     for line in anum:
         if '$coord' in line:
@@ -128,7 +119,7 @@ def newsim():
             bottom = index
             break
         index += 1
-    if isinstance(top, int) == true and isinstance(bottom, int) == true:
+    if isinstance(top, int) == True and isinstance(bottom, int) == True:
         anum = [ line.split()[0] for line in anum[top+1:bottom:1] ]
     else:
         print 'There is a problem with %s/restart.out.' % (gsdir)
@@ -145,10 +136,10 @@ def newsim():
             if not os.path.exists('%s/dirlist1' % (NEXMD)):
                 print 'Path %sdirlist1 does not exist.' % (NEXMD)
                 sys.exit()
-            input = fileinput.input('%s/dirlist1' % (NEXMD))
-            data.writelines(input)
+            inputdata = fileinput.input('%s/dirlist1' % (NEXMD))
+            data.writelines(inputdata)
     dirlist1 = np.int_(np.genfromtxt('%s/totdirlist' % (newdir)))
-    if isinstance(dirlist1,int) == true:
+    if isinstance(dirlist1,int) == True:
         dirlist1 = np.array([dirlist1])
     os.remove('%s/totdirlist' % (newdir))
     ntraj = len(dirlist1)
@@ -159,16 +150,16 @@ def newsim():
     if randq == 1:
         rseeds = random.sample(np.arange(1,1000001), ntraj)
     else:
-        rseeds = raw_input('path to random-seeds list: ')
+        rseeds = raw_input('Path to random-seeds list: ')
         if not os.path.exists(rseeds):
             print 'Path %s does not exist.' % (rseeds)
             sys.exit()
         rseeds = np.int_(np.genfromtxt('%s' % (rseeds)))
-        if isinstance(rseeds,int) == true:
+        if isinstance(rseeds,int) == True:
             rseeds = np.array([rseeds])
-        len = len(rseeds)
-        if len < ntraj:
-            print 'Length of random-seeds list must be equal to or greater than the number of trajectories.\nUser inputted a random-seeds list of length %d, while the number of trajectories requested is %d.' % (len,ntraj)
+        lenrseeds = len(rseeds)
+        if lenrseeds < ntraj:
+            print 'Length of random-seeds list must be equal to or greater than the number of trajectories.\nUser inputted a random-seeds list of length %d, while the number of trajectories requested is %d.' % (lenrseeds,ntraj)
             sys.exit()
     for rseed in rseeds:
         if rseed < 0:
@@ -178,7 +169,7 @@ def newsim():
 
     ## Choose time at which geometries should be taken from the old simulation ##
     startq = input('At what time, in femtoseconds, should geometries be taken from %s? ' % (olddir))
-    if isinstance(startq, int) == false and isinstance(startq, float) == false:
+    if isinstance(startq, int) == False and isinstance(startq, float) == False:
         print 'Time must be integer or float'
         sys.exit()
     if startq < 0:
@@ -186,10 +177,10 @@ def newsim():
         sys.exit()
     startq = np.float(startq)
     nsteps = 0
-    while nsteps*cprint + tinit <= startq:
+    while nsteps*cprint + old_header.time_init <= startq:
         nsteps += 1
-    if (nsteps - 1)*cprint + tinit != startq:
-        print 'The time, %.2f, minus the initial time, %.2f, is not divisible by %.2f.' % (startq,tinit,cprint)
+    if (nsteps - 1)*cprint + old_header.time_init != startq:
+        print 'The time, %.2f, minus the initial time, %.2f, is not divisible by %.2f.' % (startq,old_header.time_init,cprint)
         sys.exit()
 
     ## Find geometries ##
@@ -207,7 +198,7 @@ def newsim():
         sys.exit()
     for NEXMD in NEXMDs:
         dirlist1 = np.int_(np.genfromtxt('%s/dirlist1' % (NEXMD)))
-        if isinstance(dirlist1,int) == true:
+        if isinstance(dirlist1,int) == True:
             dirlist1 = np.array([dirlist1])
         for dir in dirlist1:
             if not os.path.exists('%s/%04d/coords.xyz' % (NEXMD,dir)):
@@ -237,8 +228,8 @@ def newsim():
                 if 'time' in line:
                     if ncoords == 0:
                         dtinit = np.around(np.float(line.split()[-1]), decimals = 3)
-                        if dtinit != tinit:
-                            print >> error, 'Initial time in %s%04d/coords.xyz does not match initial time in header.' (NEXMD,dir)
+                        if dtinit != old_header.time_init:
+                            print >> error, 'Initial time in %s%04d/coords.xyz does not match initial time in %s/header.' (NEXMD,dir,olddir)
                             errflag = 1
                             terrflag = 1
                             break
@@ -299,14 +290,12 @@ def newsim():
     tarrayv = np.int_(np.split(tarrayv, traj))
 
     ## Prepare NEXMD input files ##
-    header = open('%s/header' % (newdir),'r')
-    header = header.readlines()
     errflag = 0
     traj = 0
     for NEXMD in np.arange(1, len(NEXMDs) + 1):
         os.makedirs('%s/NEXMD%d' % (newdir,NEXMD))
         dirlist1 = np.int_(np.genfromtxt('%s/NEXMD%d/dirlist1' % (olddir,NEXMD)))
-        if isinstance(dirlist1,int) == true:
+        if isinstance(dirlist1,int) == True:
             dirlist1 = np.array([dirlist1])
         dirlist = open('%s/NEXMD%d/dirlist' % (newdir,NEXMD),'w')
         for dir in dirlist1:
@@ -322,25 +311,25 @@ def newsim():
             datav = datav.readlines()
             coords = datac[tarrayc[traj][0] + 1:tarrayc[traj][1] - 1:1]
             velocs = datav[tarrayv[traj][0] + 2:tarrayv[traj][1] - 1:1]
-            input = open('%s/NEXMD%d/%04d/input.ceon' % (newdir,NEXMD,dir),'w')
-            for line in header:
+            inputfile = open('%s/NEXMD%d/%04d/input.ceon' % (newdir,NEXMD,dir),'w')
+            for line in new_header.file:
                 if 'rnd_seed' in line:
-                    input.write('   rnd_seed=%d, ! seed for the random number generator\n' % (rseeds[traj]))
+                    inputfile.write('   rnd_seed=%d, ! seed for the random number generator\n' % (rseeds[traj]))
                 else:
                     if 'nucl_coord_veloc' in line:
-                        input.write('&coord\n')
+                        inputfile.write('&coord\n')
                         aindex = 0
                         for line in coords:
                             val = line.split()
-                            input.write('{:>6}  {:>12}  {:>12}  {:>12}'.format(anum[aindex],val[1],val[2],val[3]))
-                            input.write('\n')
+                            inputfile.write('{:>6}  {:>12}  {:>12}  {:>12}'.format(anum[aindex],val[1],val[2],val[3]))
+                            inputfile.write('\n')
                             aindex += 1
-                        input.write('&endcoord\n\n&veloc\n')
+                        inputfile.write('&endcoord\n\n&veloc\n')
                         for line in velocs:
-                            input.write(line)
-                        input.write('&endveloc')
+                            inputfile.write(line)
+                        inputfile.write('&endveloc')
                     else:
-                        input.write(line)
+                        inputfile.write(line)
             print >> dirlist, '%04d' % (dir)
             print '%s/NEXMD%d/%04d' % (newdir,NEXMD,dir)
             traj += 1

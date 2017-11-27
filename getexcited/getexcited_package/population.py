@@ -33,55 +33,54 @@ import glob
 
 cwd = os.getcwd()
 
-def population():
+def population(header):
 
     print 'Collecting populations.'
 
-    ## directory names ##
+    ## Directory names ##
     NEXMDir = raw_input('NEXMD directory: ')
     if not os.path.exists(NEXMDir):
         print 'Path %s does not exist.' % (NEXMDir)
         sys.exit()
-
-    ## User-defined length of analysis and initialize arrays ##
-    if not os.path.exists('%s/header' % (NEXMDir)):
-        print 'path %s/header does not exist.' % (NEXMDir)
-        sys.exit()
-    header = open('%s/header' % (NEXMDir),'r')
-    for line in header:
-        if 'n_exc_states_propagate' in line:
-            nstates = np.int(line.split()[0][len('n_exc_states_propagate='):-1])
-        if 'time_init' in line:
-            tinith = np.float(line.split()[0][len('time_init='):-1])
-        if 'time_step' in line:
-            dt = np.float(line.split()[0][len('time_step='):-1])
-        if 'n_class_steps' in line:
-            tsmax = np.int(line.split()[0][len('n_class_steps='):-1]) + 1
-        if 'out_data_steps' in line:
-            odata = np.int(line.split()[0][len('out_data_steps='):-1])
-    tcoll = input('Collect populations up to what time in femtoseconds: ')
-    if isinstance(tcoll, int) == false and isinstance(tcoll, float) == false:
-        print 'time must be integer or float.'
-        sys.exit()
-    if tcoll < 0:
-        print 'Time must be integer or float greater than zero.'
-        sys.exit()
-    tcoll = np.float(tcoll)
-    if tcoll > (tsmax - 1)*dt:
-        tcoll = (tsmax - 1)*dt
-    tscol = 0
-    while tscol*dt*odata <= tcoll:
-        tscol += 1
-    times = np.around(np.linspace(tinith, tcoll, tscol), decimals = 3)
-    fpoph = np.zeros((tscol,nstates))
-    fpopc = np.zeros((tscol,nstates))
-
-    ## Collect populations ##
+    ## Check if NEXMD folders exist ##
     NEXMDs = glob.glob('%s/NEXMD*/' % (NEXMDir))
     NEXMDs.sort()
     if len(NEXMDs) == 0:
         print 'There are no NEXMD folders in %s.' % (NEXMDir)
         sys.exit()
+
+    ## Information from header ##
+    if not os.path.exists('%s/header' % (NEXMDir)):
+        print 'path %s/header does not exist.' % (NEXMDir)
+        sys.exit()
+    header = header('%s/header' % (NEXMDir))
+
+    ## Adding + 1 to include zeroth time-step ##
+    header.n_class_steps = header.n_class_steps + 1
+
+    ## Collection time ##
+    tcoll = input('Collect populations up to what time in femtoseconds: ')
+    if isinstance(tcoll, int) == False and isinstance(tcoll, float) == False:
+        print 'Time must be integer or float.'
+        sys.exit()
+    if tcoll < 0:
+        print 'Time must be integer or float greater than zero.'
+        sys.exit()
+    tcoll = np.float(tcoll)
+    if tcoll > (header.n_class_steps - 1)*header.time_step:
+        tcoll = (header.n_class_steps - 1)*header.time_step
+
+    ## Number of classical time-steps ##
+    tscol = 0
+    while tscol*header.time_step*header.out_data_steps <= tcoll:
+        tscol += 1
+
+    ## Collection time array ##
+    times = np.around(np.linspace(header.time_init, tcoll, tscol), decimals = 3)
+    fpoph = np.zeros((tscol,header.n_exc_states_propagate))
+    fpopc = np.zeros((tscol,header.n_exc_states_propagate))
+
+    ## Collect populations ##
     output = open('%s/pop.out' % (cwd),'w')
     error = open('%s/pop.err' % (cwd),'w')
     ttraj = 0
@@ -90,14 +89,14 @@ def population():
     errflag = 0
     for NEXMD in NEXMDs:
         if not os.path.exists('%s/dirlist1' % (NEXMD)):
-            print 'path %sdirlist1 does not exist.' % (NEXMD)
+            print 'Path %sdirlist1 does not exist.' % (NEXMD)
             sys.exit()
         dirlist1 = np.int_(np.genfromtxt('%s/dirlist1' % (NEXMD)))
-        if isinstance(dirlist1,int) == true:
+        if isinstance(dirlist1,int) == True:
             dirlist1 = np.array([dirlist1])
         for dir in dirlist1:
             if not os.path.exists('%s/%04d/coeff-n.out' % (NEXMD,dir)):
-                print >> error, '%s%04d/coeff-n.out' % (NEXMD,dir), 'does not exist'
+                print >> error, 'Path %s%04d/coeff-n.out does not exist.' % (NEXMD,dir)
                 errflag = 1
                 ttraj += 1
                 continue
@@ -106,8 +105,8 @@ def population():
             tsteps = len(data)
             tflag = 0
             if tsteps >= tscol:
-                poph = np.zeros((tscol,nstates))
-                popc = np.zeros((tscol,nstates))
+                poph = np.zeros((tscol,header.n_exc_states_propagate))
+                popc = np.zeros((tscol,header.n_exc_states_propagate))
                 index = 0
                 for line in data[0:tscol:1]:
                     val = line.split()
@@ -119,22 +118,22 @@ def population():
                         errflag = 1
                         break
                     poph[index][pes-1] = 1.0
-                    popc[index] = np.float_(val[2:2+nstates])
+                    popc[index] = np.float_(val[2:2+header.n_exc_states_propagate])
                     index += 1
                 if tflag == 0:
                     fpoph += poph
                     fpopc += popc
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((tsmax))) + 2, (tsteps - 1)*dt)
+                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
                     ctraj += 1
-                    if tsteps == tsmax:
+                    if tsteps == header.n_class_steps:
                         etraj += 1
             else:
-                print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((tsmax))) + 2, (tsteps - 1)*dt)
-                print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((tsmax))) + 2, (tsteps - 1)*dt)
+                print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
                 errflag = 1
             ttraj += 1
     if ctraj == 0:
-        print 'No trajectories completed within %0*.2f fs.' % (len(str(tsmax)),tcoll)
+        print 'No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)),tcoll)
         os.remove('%s/pop.out' % (cwd))
     else:
         fpoph = fpoph/ctraj
@@ -146,7 +145,7 @@ def population():
         print >> output, 'Completed trajectories: ', '%04d' % (ctraj)
         print >> output, 'Excellent trajectories: ', '%04d' % (etraj)
         for tstep in np.arange(tscol):
-            print >> output, '%0*.2f' % (len(str((tsmax))) + 2,dt*tstep), ' '.join(str('%.3f' % (x)) for x in fpoph[tstep]), '%.3f' % (np.sum(fpoph[tstep])), ' '.join(str('%.3f' % (x)) for x in fpopc[tstep]), '%.3f' % (np.sum(fpopc[tstep]))
+            print >> output, '%0*.2f' % (len(str((header.n_class_steps))) + 2,header.time_step*tstep), ' '.join(str('%.3f' % (x)) for x in fpoph[tstep]), '%.3f' % (np.sum(fpoph[tstep])), ' '.join(str('%.3f' % (x)) for x in fpopc[tstep]), '%.3f' % (np.sum(fpopc[tstep]))
     if errflag == 1:
         print 'One or more trajectories have experienced an error, check pop.err.'
     else:

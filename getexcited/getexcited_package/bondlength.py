@@ -44,7 +44,7 @@ import math
 
 cwd = os.getcwd()
 
-def bondlength():
+def bondlength(header):
 
     print 'Calculating a bond length as a function of time.'
 
@@ -64,7 +64,7 @@ def bondlength():
         if len(NEXMDs) == 0:
             print 'There are no NEXMD folders in %s.' % (NEXMDir)
             sys.exit()
-        ## determine mean or all ##
+        ## Determine mean or all ##
         typeq = input('Output mean bla in time or output bla at all time-steps and trajectories?\nAnswer mean [0] or all [1]: ')
         if typeq not in [0,1]:
             print 'Answer must be 0 or 1.'
@@ -81,84 +81,72 @@ def bondlength():
         if not os.path.exists('%s/header' % (NEXMDir)):
             print 'Path %s/header does not exist.' % (NEXMDir)
             sys.exit()
-        header = open('%s/header' % (NEXMDir),'r')
-        header = header.readlines()
+        header = header('%s/header' % (NEXMDir))
     if dynq == 1: ## single trajectory
         if not os.path.exists('%s/input.ceon' % (NEXMDir)):
             print 'Path %s/input.ceon does not exist.' % (NEXMDir)
             sys.exit()
-        header = open('%s/input.ceon' % (NEXMDir),'r')
-        header = header.readlines()
-    for line in header:
-        if 'time_init' in line:
-            tinith = np.float(line.split()[0][len('time_init='):-1])
-        if 'time_step' in line:
-            dt = np.float(line.split()[0][len('time_step='):-1])
-        if 'n_class_steps' in line:
-            tsmax = np.int(line.split()[0][len('n_class_steps='):-1]) + 1
-        if 'out_data_steps' in line:
-            odata = np.int(line.split()[0][len('out_data_steps='):-1])
-        if 'out_coords_steps' in line:
-            cdata = np.int(line.split()[0][len('out_coords_steps='):-1])
-        if 'natoms' in line:
-            natoms = np.int(line.split()[0][len('natoms='):-1])
+        header = header('%s/input.ceon' % (NEXMDir))
 
+    ## Adding + 1 to include zeroth time-step ##
+    header.n_class_steps = header.n_class_steps + 1
+        
     ## Collection time ##
     if typeq == 0: ## mean bond length
         if dynq == 0: ## ensemble
             tcoll = input('Calculate bond length up to what time in femtoseconds?\nNote that averaged results will only include trajectories that are complete up to this time: ')
         if dynq == 1: ## single trajectory
             tcoll = input('Calculate bond length up to what time in femtoseconds? ')
-        if isinstance(tcoll, int) == false and isinstance(tcoll, float) == false:
+        if isinstance(tcoll, int) == False and isinstance(tcoll, float) == False:
             print 'Time must be integer or float.'
             sys.exit()
         if tcoll < 0:
             print 'Time must be integer or float greater than zero.'
             sys.exit()
         tcoll = np.float(tcoll)
-        if tcoll > (tsmax - 1)*dt:
-            tcoll = (tsmax - 1)*dt
+        if tcoll > (header.n_class_steps - 1)*header.time_step:
+            tcoll = (header.n_class_steps - 1)*header.time_step
     if typeq == 1: ## all bla
-        tcoll = (tsmax - 1)*dt
+        tcoll = (header.n_class_steps - 1)*header.time_step
 
     ## Number of classical steps ##
     tscol = 0
-    while tscol*dt*odata <= tcoll:
+    while tscol*header.time_step*header.out_data_steps <= tcoll:
         tscol += 1
 
     ## Number of time-steps for coordinates ##
     ccoll = 0
     num = 0
     while ccoll <= tcoll:
-        ccoll += dt*odata*cdata
+        ccoll += header.time_step*header.out_data_steps*header.out_coords_steps
         num += 1
 
     ## Collection time ##
-    times = np.linspace(tinith, ccoll - dt*odata*cdata, num)
+    times = np.linspace(header.time_init, ccoll - header.time_step*header.out_data_steps*header.out_coords_steps, num)
 
     ## Two unique atoms defined by user ##
     lines = input('Input the line numbers labeling the coordinates of the two atoms.\nInput an array of the form [[atom1, atom2], [atom3, atom4], .. ]: ')
     for line in lines:
-        if isinstance(line, list) == false:
+        if isinstance(line, list) == False:
             print 'Subarray must be of the form [atom1, atom2], where atom# = line number of atom#.'
             sys.exit()
         if len(line) != 2:
             print 'Subarray must contain two elements labeling the line numbers of two atoms.'
             sys.exit()
         index = 0
-        for i in line:
-            if isinstance(i, int) == false:
-                print 'Element number %d of subarray must be integer.\nuser inputted [%s, %s], which is not allowed.' % (index + 1, line[0], line[1])
+        for atom in line:
+            if isinstance(atom, int) == False:
+                print 'Element number %d of subarray must be integer.\nUser inputted [%s, %s], which is not allowed.' % (index + 1, line[0], line[1])
                 sys.exit()
-            if i < 0:
-                print 'Element number %d of subarray must be a positive integer.\nuser inputted [%s, %s], which is not allowed.' % (index + 1, line[0], line[1])
+            if atom < 0:
+                print 'Element number %d of subarray must be a positive integer.\nUser inputted [%s, %s], which is not allowed.' % (index + 1, line[0], line[1])
                 sys.exit()
-            if i > natoms - 1:
-                print 'Element number %d of subarray must be less than the max number of atoms (-1).\nuser inputted [%s, %s], which is not allowed.' % (index + 1, line[0], line[1])
+            if atom > header.natoms - 1: # - 1 for python indexing
+                print 'Element number %d of subarray must be less than the max number of atoms (-1).\nUser inputted [%s, %s], which is not allowed.' % (index + 1, line[0], line[1])
                 sys.exit()
             index += 1
         if len(np.unique(line)) != 2:
-            print 'All elements of subarray must be unique.\nuser inputted [%s, %s], which is not allowed.' % (line[0], line[1])
+            print 'All elements of subarray must be unique.\nUser inputted [%s, %s], which is not allowed.' % (line[0], line[1])
             sys.exit()
     nbonds = len(lines)
 
@@ -190,7 +178,7 @@ def bondlength():
                 if 'time' in line:
                     if ncoords == 0:
                         tinit = np.float(line.split()[-1])
-                        if tinit != tinith:
+                        if tinit != header.time_init:
                             tflag1 = 1
                             break
                     else:
@@ -234,16 +222,16 @@ def bondlength():
                     a = np.subtract(vec1, vec0)
                     sbondlen[ncoord,index] = np.linalg.norm(a)
                     index += 1
-            print '%s' % (NEXMDir), '%0*.2f' % (len(str((tsmax))) + 2, (tsteps - 1)*dt)
+            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
             ctraj = 1
-            if tsteps == tsmax:
+            if tsteps == header.n_class_steps:
                 etraj = 1
         else:
-            print '%s' % (NEXMDir), '%0*.2f' % (len(str((tsmax))) + 2, (tsteps - 1)*dt)
+            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
         ttraj = 1
         ## Summary of results ##
         if ctraj == 0:
-            print 'No trajectories completed within %0*.2f.' % (len(str(tsmax)),tcoll)
+            print 'No trajectories completed within %0*.2f.' % (len(str(header.n_class_steps)),tcoll)
         else:
             print 'Total trajectories:', '%04d' % (ttraj)
             print 'Completed trajectories:', '%04d' % (ctraj)
@@ -252,7 +240,7 @@ def bondlength():
             print >> output, 'Completed trajectories: ', '%04d' % (ctraj)
             print >> output, 'Excellent trajectories: ', '%04d' % (etraj)
             for ncoord in np.arange(ncoords):
-                print >> output, '%0*.2f' % (len(str((tsmax))) + 2,dt*odata*cdata*ncoord), ' '.join('%08.3f' % (bond) for bond in sbondlen[ncoord])
+                print >> output, '%0*.2f' % (len(str((header.n_class_steps))) + 2,header.time_step*header.out_data_steps*header.out_coords_steps*ncoord), ' '.join('%08.3f' % (bond) for bond in sbondlen[ncoord])
 
     ## Calculate bond length along an ensemble of trajectories ##
     if dynq == 0 and typeq == 0: ## mean from ensemble
@@ -263,10 +251,10 @@ def bondlength():
                 if not os.path.exists('%s/dirlist1' % (NEXMD)):
                     print 'Path %sdirlist1 does not exist.' % (NEXMD)
                     sys.exit()
-                input = fileinput.input('%s/dirlist1' % (NEXMD))
-                data.writelines(input)
+                inputdata = fileinput.input('%s/dirlist1' % (NEXMD))
+                data.writelines(inputdata)
         dirlist1 = np.int_(np.genfromtxt('%s/totdirlist' % (NEXMDir)))
-        if isinstance(dirlist1,int) == true:
+        if isinstance(dirlist1,int) == True:
             dirlist1 = np.array([dirlist1])
         os.remove('%s/totdirlist' % (NEXMDir))
         ## Generate output and error files ##
@@ -284,7 +272,7 @@ def bondlength():
                 print 'Path %dirlist1 does not exist.' % (NEXMD)
                 sys.exit()
             dirlist1 = np.int_(np.genfromtxt('%s/dirlist1' % (NEXMD)))
-            if isinstance(dirlist1, int) == true:
+            if isinstance(dirlist1, int) == True:
                 dirlist1 = np.array([dirlist1])
             for dir in dirlist1:
                 ## Determine completed number of time-steps ##
@@ -314,7 +302,7 @@ def bondlength():
                         if 'time' in line:
                             if ncoords == 0:
                                 tinit = np.float(line.split()[-1])
-                                if tinit != tinith:
+                                if tinit != header.time_init:
                                     tflag1 = 1
                                     continue
                             else:
@@ -368,18 +356,18 @@ def bondlength():
                             ebondlen[ncoord,ctraj,index] = sbondlen[ncoord,index]
                             index += 1
                     fbondlen += sbondlen
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((tsmax))) + 2, (tsteps - 1)*dt)
+                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
                     ctraj += 1
-                    if tsteps == tsmax:
+                    if tsteps == header.n_class_steps:
                         etraj += 1
                 else:
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((tsmax))) + 2, (tsteps - 1)*dt)
-                    print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((tsmax))) + 2, (tsteps - 1)*dt)
+                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                    print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
                     errflag = 1
                 ttraj += 1
         ## Summary of results ##
         if ctraj == 0:
-            print 'No trajectories completed within %0*.2f.' % (len(str(tsmax)),tcoll)
+            print 'No trajectories completed within %0*.2f.' % (len(str(header.n_class_steps)),tcoll)
         else:
             ## Mean and standard deviation for bond length ##
             ebondlen = np.delete(ebondlen, np.arange(ctraj, ttraj), axis = 1)
@@ -392,9 +380,9 @@ def bondlength():
             print >> output, 'Completed trajectories: ', '%04d' % (ctraj)
             print >> output, 'Excellent trajectories: ', '%04d' % (etraj)
             for ncoord in np.arange(ncoords):
-                print >> output, '%0*.2f' % (len(str((tsmax))) + 2,dt*odata*cdata*ncoord), ' '.join('%08.3f' % (bond) for bond in fbondlen[ncoord]), ' '.join('%07.3f' % (bond) for bond in ebondlen[ncoord])
+                print >> output, '%0*.2f' % (len(str((header.n_class_steps))) + 2,header.time_step*header.out_data_steps*header.out_coords_steps*ncoord), ' '.join('%08.3f' % (bond) for bond in fbondlen[ncoord]), ' '.join('%07.3f' % (bond) for bond in ebondlen[ncoord])
         if errflag == 1:
-            print 'One or more trajectories did not finish within %0*.2f femtoseconds, check bl_mean_ensemble.err.' % (len(str(tsmax)),tcoll)
+            print 'One or more trajectories have experienced an error, check bl_mean_ensemble.err.'
         else:
             os.remove('%s/bl_mean_ensemble.err' % (cwd))
 
@@ -412,7 +400,7 @@ def bondlength():
                 print 'Path %dirlist1 does not exist.' % (NEXMD)
                 sys.exit()
             dirlist1 = np.int_(np.genfromtxt('%s/dirlist1' % (NEXMD)))
-            if isinstance(dirlist1, int) == true:
+            if isinstance(dirlist1, int) == True:
                 dirlist1 = np.array([dirlist1])
             for dir in dirlist1:
                 ## Determine completed number of time-steps ##
@@ -441,7 +429,7 @@ def bondlength():
                     if 'time' in line:
                         if ncoords == 0:
                             tinit = np.float(line.split()[-1])
-                            if tinit != tinith:
+                            if tinit != header.time_init:
                                 tflag1 = 1
                                 continue
                         else:
@@ -493,18 +481,18 @@ def bondlength():
                         a = np.subtract(vec1, vec0)
                         sbondlen[index] = np.linalg.norm(a)
                         index += 1
-                    print >> output, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((tsmax))) + 2,dt*odata*cdata*ncoord), ' '.join('%08.3f' % (bond) for bond in sbondlen)
-                print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((tsmax))) + 2, (tsteps - 1)*dt)
-                if tsteps == tsmax:
+                    print >> output, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2,header.time_step*header.out_data_steps*header.out_coords_steps*ncoord), ' '.join('%08.3f' % (bond) for bond in sbondlen)
+                print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                if tsteps == header.n_class_steps:
                     etraj += 1
                 else:
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((tsmax))) + 2, (tsteps - 1)*dt)
-                    print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((tsmax))) + 2, (tsteps - 1)*dt)
+                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                    print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
                     errflag = 1
                 ttraj += 1
         ## Summary of results ##
         if ttraj == 0:
-            print 'No trajectories completed within %0*.2f.' % (len(str(tsmax)),tcoll)
+            print 'No trajectories completed within %0*.2f.' % (len(str(header.n_class_steps)),tcoll)
         else:
             print 'Total trajectories:', '%04d' % (ttraj)
             print 'Excellent trajectories:', '%04d' % (etraj)

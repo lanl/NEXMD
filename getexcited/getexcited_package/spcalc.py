@@ -28,7 +28,7 @@ import sys
 import shutil
 import glob
 
-def spcalc():
+def spcalc(header):
 
     print 'Preparing input files for single-point calculations.'
 
@@ -46,7 +46,7 @@ def spcalc():
     NEXMDs = glob.glob('%s/NEXMD*/' % (outdir))
     NEXMDs.sort()
     if len(NEXMDs) != 0:
-        contq = input('** WARNING ** All NEXMD folders inside %s will be deleted!\nContinue? answer yes [1] or no [0]: ' % (outdir))
+        contq = input('** WARNING ** All NEXMD folders inside %s will be deleted!\nContinue? Answer yes [1] or no [0]: ' % (outdir))
         if contq not in [1,0]:
             print 'Answer must be 1 or 0.'
             sys.exit()
@@ -56,17 +56,14 @@ def spcalc():
         print 'Deleting', '%s' % (NEXMD)
         shutil.rmtree(NEXMD)
 
-    ## Check running single-point ##
+    ## Information from header ##
     if not os.path.exists('%s/header' % (outdir)):
         print 'Path %s/header does not exist.' % (outdir)
         sys.exit()
-    header = open('%s/header' % (outdir),'r')
-    header = header.readlines()
-    for line in header:
-        if 'n_class_steps' in line:
-            tsmax = np.int(line.split()[0][len('n_class_steps='):-1])
-            break
-    if tsmax != 0:
+    header = header('%s/header' % (outdir))
+
+    ## Check single-point calculation ##
+    if header.n_class_steps != 0:
         print 'User must change n_class_steps in %s/header to 0 for single-point calculations.' % (outdir)
         sys.exit()
 
@@ -125,7 +122,7 @@ def spcalc():
         sys.exit()
     index = 0
     for i in coords:
-        if isinstance(i, int) == false:
+        if isinstance(i, int) == False:
             print 'Element number %d of input array must be integer.\nUser inputted [%s, %s, %s], which is not allowed.' % (index + 1,coords[0],coords[1],coords[2])
             sys.exit()
         if index in [0,1]:
@@ -162,7 +159,7 @@ def spcalc():
 
     ## Split geometries ##
     split = input('Number of single-point calculations per NEXMD folder [e.g. 100]: ')
-    if isinstance(split, int) == false:
+    if isinstance(split, int) == False:
         print 'Number of single-point calculations per NEXMD folder must be integer.'
         sys.exit()
     if split < 0:
@@ -181,8 +178,8 @@ def spcalc():
         sys.exit()
     anum = open('%s/restart.out' % (gsdir),'r')
     anum = anum.readlines()
-    top = none
-    bottom = none
+    top = None
+    bottom = None
     index = 0
     for line in anum:
         if '$coord' in line:
@@ -191,7 +188,7 @@ def spcalc():
             bottom = index
             break
         index += 1
-    if isinstance(top, int) == true and isinstance(bottom, int) == true:
+    if isinstance(top, int) == True and isinstance(bottom, int) == True:
         anum = [ line.split()[0] for line in anum[top+1:bottom:1] ]
     else:
         print 'There is a problem with %s/restart.out.' % (gsdir)
@@ -206,22 +203,22 @@ def spcalc():
             coords = datac[arrayc[dir]+1:arrayc[dir+1]-1:1]
             velocs = datav[arrayv[dir]+2:arrayv[dir+1]-1:1]
             os.makedirs('%s/NEXMD%d/%04d' % (outdir,NEXMD,dir))
-            input = open('%s/NEXMD%d/%04d/input.ceon' % (outdir,NEXMD,dir),'w')
-            for line in header:
+            inputfile = open('%s/NEXMD%d/%04d/input.ceon' % (outdir,NEXMD,dir),'w')
+            for line in header.file:
                 if 'nucl_coord_veloc' in line:
-                    input.write('&coord\n')
+                    inputfile.write('&coord\n')
                     aindex = 0
                     for line in coords:
                         val = line.split()
-                        input.write('{:>6}  {:>12}  {:>12}  {:>12}'.format(anum[aindex],val[1],val[2],val[3]))
-                        input.write('\n')
+                        inputfile.write('{:>6}  {:>12}  {:>12}  {:>12}'.format(anum[aindex],val[1],val[2],val[3]))
+                        inputfile.write('\n')
                         aindex += 1
-                    input.write('&endcoord\n\n&veloc\n')
+                    inputfile.write('&endcoord\n\n&veloc\n')
                     for line in velocs:
-                        input.write(line)
-                    input.write('&endveloc\n')
+                        inputfile.write(line)
+                    inputfile.write('&endveloc\n')
                 else:
-                    input.write(line)
+                    inputfile.write(line)
             print >> dirlist, '%04d' % (dir)
             print '%s/NEXMD%d/%04d' % (outdir,NEXMD,dir)
         dirlist.close()

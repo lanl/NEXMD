@@ -85,58 +85,62 @@ from getexcited_package.pesnact import pesnact
 from getexcited_package.restart import restart
 from getexcited_package.newsim import newsim
 from getexcited_package.cleandir import cleandir
+from getexcited_package.angle import angle
 from getexcited_package.dihedral import dihedral
 from getexcited_package.bondlength import bondlength
 from getexcited_package.bla import bla
 from getexcited_package.timing import timing
 from getexcited_package.permdipole import permdipole
 from getexcited_package.tdiagonal import tdiagonal
+from getexcited_package.header import header
 
 funq = input('\nSelect a task from the following list:\n\n[1] Prepare input files for single-point calculations\n[2] Generate an optical spectrum from single-point calculations\n[3] Prepare input files for NEXMD\n[4] Prepare input files for adiabatic dynamics with geometries from NEXMD\n[5] Collect populations from NEXMD\n[6] Collect pess and nacts from NEXMD\n[7] Prepare restart input files for NEXMD\n[8] Clean out the directories of NEXMD trajectories that are incomplete\n[9] Access options for geometry analysis\n[10] Access options for dipole analysis\n[11] Access options for transition density analysis\n[12] Access options for pump-push-probe spectroscopy (*** UNDER DEVELOPMENT, DO NOT USE ***)\n[13] Access code testing tools\n\nEnter the number corresponding to the desired task: ')
 if funq not in [1,2,3,4,5,6,7,8,9,10,11,12,13]:
     print 'Answer must be 1 through 13.'
     sys.exit()
 if funq == 1:
-    spcalc()
+    spcalc(header)
 if funq == 2:
-    optspec(pathtopack)
+    optspec(pathtopack,header)
 if funq == 3:
-    nexmd()
+    nexmd(header)
 if funq == 4:
-    newsim()
+    newsim(header)
 if funq == 5:
-    population()
+    population(header)
 if funq == 6:
-    pesnact()
+    pesnact(header)
 if funq == 7:
-    restart(pathtopack)
+    restart(pathtopack,header)
 if funq == 8:
-    cleandir()
+    cleandir(header)
 if funq == 9:
-    advq = input('\nSelect a task from the following list:\n\n[1] Calculate dihedral angle\n[2] Calculate bond lengths\n[3] Calculate bond length alternation\n\nEnter the number corresponding to the desired task: ')
-    if advq not in [1,2,3]:
-        print 'Answer must be 1 through 3.'
+    advq = input('\nSelect a task from the following list:\n\n[1] Calculate dihedral angle\n[2] Calculate bond lengths\n[3] Calculate bond length alternation\n[4] Calculate angle between two bonds\n\nEnter the number corresponding to the desired task: ')
+    if advq not in [1,2,3,4]:
+        print 'Answer must be 1 through 4.'
         sys.exit()
     if advq == 1:
-        dihedral()
+        dihedral(header)
     if advq == 2:
-        bondlength()
+        bondlength(header)
     if advq == 3:
-        bla()
+        bla(header)
+    if advq == 4:
+        angle(header)
 if funq == 10:
     advq = input('\nSelect a task from the following list:\n\n[1] Collect excited-state permanent dipole moment\n\nEnter the number corresponding to the desired task: ')
     if advq != 1:
         print 'Answer must be 1.'
         sys.exit()
     if advq == 1:
-        permdipole(pathtopack)
+        permdipole(pathtopack,header)
 if funq == 11:
     advq = input('\nSelect a task from the following list:\n\n[1] Analyze induced charge from diagonal elements of the transition density matrix\n\nEnter the number corresponding to the desired task: ')
     if advq not in [1]:
         print 'Answer must be 1.'
         sys.exit()
     if advq == 1:
-        tdiagonal()
+        tdiagonal(header)
 if funq == 12:
     sys.exit()
     advq = input('\nSelect a task from the following list:\n\n[1] Prepare input files for single-point calculations after pump-push delay time\n[2] Generate optical spectrum from single-point calculations after pump-push delay time\n[3] Prepare input files for NEXMD after push pulse\n\nEnter the number corresponding to the desired task: ')

@@ -36,7 +36,7 @@ import glob
 
 cwd = os.getcwd()
 
-def optspec(pathtoceo):
+def optspec(pathtopack,header):
 
     print 'Generating optical spectrum.'
 
@@ -46,53 +46,53 @@ def optspec(pathtoceo):
         print 'Path %s does not exist.' % (spdir)
         sys.exit()
     
-    ## Check excitation energies ##
-    print 'Checking energies and oscillator strengths. Please wait ...'
-    if not os.path.exists('%s/getexcited_package/collectceo.sh' % (pathtoceo)):
-        print 'The script, collectceo.sh, must be in the getexcited_package.'
-        sys.exit()
-    if not os.path.exists('%s/header' % (spdir)):
-        print 'Path %s/header does not exist.' % (spdir)
-        sys.exit()
-    header = open('%s/header'% (spdir),'r')
-    for line in header:
-        if 'n_exc_states_propagate' in line:
-            nstates = np.int(line.split()[0][len('n_exc_states_propagate='):-1])
-            break
+    ## Check if NEXMD folders exist ##
     NEXMDs = glob.glob('%s/NEXMD*/' % (spdir))
     NEXMDs.sort()
     if len(NEXMDs) == 0:
         print 'There are no NEXMD folders in %s.' % (spdir)
         sys.exit()
+    
+    ## Information from header ##
+    if not os.path.exists('%s/header' % (spdir)):
+        print 'Path %s/header does not exist.' % (spdir)
+        sys.exit()
+    header = header('%s/header' % (spdir))
+
+    ## Check energies and oscillator strengths ##
+    print 'Checking energies and oscillator strengths. Please wait ...'
+    if not os.path.exists('%s/getexcited_package/collectceo.sh' % (pathtopack)):
+        print 'The script, collectceo.sh, must be in the getexcited_package.'
+        sys.exit()
     error = open('%s/ceo.err' % (cwd),'w')
-    ceoflag = 0
+    errflag = 0
     for NEXMD in NEXMDs:
         if not os.path.exists('%s/%s/dirlist1' % (cwd,NEXMD)):
             print 'Path %s/%sdirlist1 does not exist.' % (cwd,NEXMD)
             sys.exit()
         dirlist1 = np.int_(np.genfromtxt('%s/%s/dirlist1' % (cwd,NEXMD)))
-        if isinstance(dirlist1,int) == true:
+        if isinstance(dirlist1,int) == True:
             dirlist1 = np.array([dirlist1])
         for dir in dirlist1:
             if not os.path.exists('%s/%s/%04d' % (cwd,NEXMD,dir)):
-                print >> error, '%s%04d' % (NEXMD,dir), 'does not exist'
-                ceoflag = 1
+                print >> error, 'Path %s%04d does not exist.' % (NEXMD,dir)
+                errflag = 1
                 continue
             os.chdir('%s/%s/%04d' % (cwd,NEXMD,dir))
             if not os.path.exists('%s/%s/%04d/md.out' % (cwd,NEXMD,dir)):
-                print >> error, '%s%04d/md.out' % (NEXMD,dir), 'does not exist'
-                ceoflag = 1
+                print >> error, 'Path %s%04d/md.out does not exist.' % (NEXMD,dir)
+                errflag = 1
                 continue
-            subprocess.call(shlex.split('sh %s/getexcited_package/collectceo.sh %d' % (pathtoceo,nstates+1)))
+            subprocess.call(shlex.split('sh %s/getexcited_package/collectceo.sh %d' % (pathtopack,header.n_exc_states_propagate + 1)))
             if not os.path.exists('%s/%s/%04d/ceo.out' % (cwd,NEXMD,dir)):
-                print >> error, '%s/%04d/ceo.out' % (NEXMD,dir), 'does not exist'
-                ceoflag = 1
+                print >> error, 'Path %s/%04d/ceo.out does not exist.' % (NEXMD,dir)
+                errflag = 1
                 continue
             with open('%s/%s/%04d/ceo.out' % (cwd,NEXMD,dir),'r') as data:
-                if len(data.readlines()) != nstates:
+                if len(data.readlines()) != header.n_exc_states_propagate:
                     print >> error, '%s%04d/ceo.out' % (NEXMD,dir), 'is incomplete'
-                    ceoflag = 1
-    if ceoflag == 1:
+                    errflag = 1
+    if errflag == 1:
         print 'One or more single-point calculations did not finish, check ceo.err.'
         sys.exit()
     else:
@@ -107,20 +107,20 @@ def optspec(pathtoceo):
         specb = input('Spectral broadening (i.e. Gaussian standard deviation) in eV [e.g. 0.15]: ')
     else:
         specb = input('Spectral broadening (i.e. Lorentzian fwhm) in eV [e.g. 0.36]: ')
-    if isinstance(specb, int) == false and isinstance(specb, float) == false:
+    if isinstance(specb, int) == False and isinstance(specb, float) == False:
         print 'Spectral broadening must be integer or float.'
         sys.exit()
     if specb < 0:
         print 'Spectral broadening must be integer or float greater than zero.'
         sys.exit()
     npoints = 100000
-    dpoints = np.zeros((nstates+2,npoints))
+    dpoints = np.zeros((header.n_exc_states_propagate + 2,npoints))
     dpoints[0] = np.linspace(0.0,10.0,npoints)
     traj = 0
     if stype == 0:
         for NEXMD in NEXMDs:
             dirlist1 = np.int_(np.genfromtxt('%s/%s/dirlist1' % (cwd,NEXMD)))
-            if isinstance(dirlist1,int) == true:
+            if isinstance(dirlist1,int) == True:
                 dirlist1 = np.array([dirlist1])
             for dir in dirlist1:
                 data = np.genfromtxt('%s/%s/%04d/ceo.out' % (cwd,NEXMD,dir))
@@ -131,7 +131,7 @@ def optspec(pathtoceo):
     else:
         for NEXMD in NEXMDs:
             dirlist1 = np.int_(np.genfromtxt('%s/%s/dirlist1' % (cwd,NEXMD)))
-            if isinstance(dirlist1,int) == true:
+            if isinstance(dirlist1,int) == True:
                 dirlist1 = np.array([dirlist1])
             for dir in dirlist1:
                 data = np.genfromtxt('%s/%s/%04d/ceo.out' % (cwd,NEXMD,dir))
