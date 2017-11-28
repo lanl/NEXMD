@@ -178,7 +178,7 @@ contains
 
         !Passed in
         type(qm2_structure),intent(inout) :: qm2_struct
-        type(qmmm_struct_type), intent(in) :: qmmm_struct
+        type(qmmm_struct_type), intent(inout) :: qmmm_struct
         _REAL_ P(:)
         _REAL_, intent(in)  :: xyz_qmi(3),xyz_qmj(3)
         integer, intent(in) :: iqm, jqm, natqmi, natqmj, qmitype, qmjtype
@@ -314,10 +314,10 @@ contains
         !write(6,*)'P',shape(P)
         !write(6,*)'n',n_atomic_orbj,n_atomic_orbi,firstIndexAO_J,firstIndexAO_i
         call W2Fock_atompair(W, F, P, n_atomic_orbj, n_atomic_orbi,  &
-            firstIndexAO_j, firstIndexAO_i)
+            firstIndexAO_j, firstIndexAO_i, qmmm_struct%W2Fock_atompair_initialized, qmmm_struct%w_index)
         !write(6,*)'here2.1'
         call W2Fock_atompair(W, F, P, n_atomic_orbi, n_atomic_orbj,  &
-            firstIndexAO_i, firstIndexAO_j)
+            firstIndexAO_i, firstIndexAO_j, qmmm_struct%W2Fock_atompair_initialized, qmmm_struct%w_index)
         !write(6,*)'here2.2' 
         
 

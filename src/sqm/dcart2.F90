@@ -317,9 +317,9 @@ subroutine qm2_dhc2(qm2_struct,qmmm_struct,P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xy
  
     ! 2-center 2-electron contribution to the Fock matrix      
     call W2Fock_atompair(W, F, P, n_atomic_orbj, n_atomic_orbi,  &
-      firstIndexAO_j, firstIndexAO_i)
+      firstIndexAO_j, firstIndexAO_i,qmmm_struct%W2Fock_atompair_initialized, qmmm_struct%w_index)
     call W2Fock_atompair(W, F, P, n_atomic_orbi, n_atomic_orbj,  &
-      firstIndexAO_i, firstIndexAO_j)   
+      firstIndexAO_i, firstIndexAO_j,qmmm_struct%W2Fock_atompair_initialized, qmmm_struct%w_index)   
 
 	F=F*2
 

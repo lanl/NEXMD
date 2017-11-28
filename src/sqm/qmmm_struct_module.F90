@@ -29,7 +29,7 @@ module qmmm_struct_module
 !              (useful for debugging)
 ! ----------------------------------------------------------------------
 
-  use ElementOrbitalIndex, only : numberElements
+  use ElementOrbitalIndex, only : numberElements, Index1_2Electron
 
   implicit none
 
@@ -186,6 +186,14 @@ module qmmm_struct_module
      logical :: PM3MMX_INTERFACE
 
      type(corInfoType) :: cct, nsp2 
+
+    integer, allocatable::w_position(:,:)
+    logical :: w_position_initialized=.false.
+    logical :: qm2_fock1_d_initialized=.false.
+    logical :: W2Fock_atompair_initialized=.false.
+    _REAL_  :: W(Index1_2Electron)=0.0D0
+    integer :: qmType_saved=-1
+    integer :: w_index(9,9,9,9,3,3)
 
   end type qmmm_struct_type
 

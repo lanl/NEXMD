@@ -28,7 +28,7 @@ subroutine dcart1(qm2_struct, qm2ds, qmmm_struct, dxyzqm, gs_dm, ex_dm, xyz_in) 
  
        implicit none     
       type(qm2_structure),intent(inout) :: qm2_struct
-      type(qmmm_struct_type), intent(in) :: qmmm_struct
+      type(qmmm_struct_type), intent(inout) :: qmmm_struct
       type(qm2_davidson_structure_type), intent(in) :: qm2ds
  
       _REAL_, parameter :: change=2.0D-6, halfChange=change/2.0D0, oneChange=1.0D0/change
