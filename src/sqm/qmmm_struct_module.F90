@@ -35,11 +35,19 @@ module qmmm_struct_module
 
   private
   
-  public :: qmmm_struct_type
+  public :: qmmm_struct_type, corInfoType
 #ifdef MPI
   public :: broadcast
 #endif
   public :: new, delete, print
+
+  ! Data type collecting information on PM6 HOF corrections (Moved into qmmm_struct)
+  type corInfoType
+     logical :: inUse  ! correction in use ?
+     integer :: natom  ! correction for how many atoms ?
+     _REAL_  :: energy ! correction to HOF
+  end type corInfoType
+
 
   type qmmm_struct_type
 
@@ -176,6 +184,8 @@ module qmmm_struct_module
 
      ! Set to True if theory is PM3 and qmmm_int == 3 or 4
      logical :: PM3MMX_INTERFACE
+
+     type(corInfoType) :: cct, nsp2 
 
   end type qmmm_struct_type
 

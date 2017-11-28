@@ -24,8 +24,7 @@ module qm2_pm6_hof_module
 #if 0
   public :: pm6_correction
 #endif
-  public :: corInfoType, print, hofCorrection, hofCorrectionGradient
-  public :: cct, nsp2
+  public ::  print, hofCorrection, hofCorrectionGradient
   public :: strlen
 
   interface print
@@ -39,14 +38,13 @@ module qm2_pm6_hof_module
   end interface
 #endif
 
-  ! Data type collecting information on PM6 HOF corrections
-  type corInfoType
-     logical :: inUse  ! correction in use ?
-     integer :: natom  ! correction for how many atoms ?
-     _REAL_  :: energy ! correction to HOF
-  end type corInfoType
+  ! Data type collecting information on PM6 HOF corrections (Moved into qmmm_struct)
+!  type corInfoType
+!     logical :: inUse  ! correction in use ?
+!     integer :: natom  ! correction for how many atoms ?
+!     _REAL_  :: energy ! correction to HOF
+!  end type corInfoType
 
-  type(corInfoType) :: cct, nsp2
   integer, parameter :: strlen = 80
 
 contains
@@ -57,10 +55,10 @@ contains
   _REAL_ function hofCorrection(qmmm_struct)
 
     use constants, only : zero
-    use qmmm_struct_module, only : qmmm_struct_type
+    use qmmm_struct_module, only : qmmm_struct_type,corInfoType
     implicit none
 
-    type(qmmm_struct_type), intent(in) :: qmmm_struct
+    type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
     integer :: numBonds(qmmm_struct%nquant_nlink)
     integer :: bondedAtoms(qmmm_struct%nquant_nlink,qmmm_struct%nquant_nlink)
@@ -85,12 +83,12 @@ contains
     end if
 
     ! HOF CC triple bond correction
-    call ccTripleBond(qmmm_struct, natom, qmmm_struct%qm_coords, numBonds, bondedAtoms, cct)
-    hofCorrection = hofCorrection + cct%energy
+    call ccTripleBond(qmmm_struct, natom, qmmm_struct%qm_coords, numBonds, bondedAtoms, qmmm_struct%cct)
+    hofCorrection = hofCorrection + qmmm_struct%cct%energy
 
     ! HOF MM correction for nitrogen atoms with three ligands
-    call nsp2Correction(qmmm_struct, natom, qmmm_struct%qm_coords, numBonds, bondedAtoms, nsp2)
-    hofCorrection = hofCorrection + nsp2%energy
+    call nsp2Correction(qmmm_struct, natom, qmmm_struct%qm_coords, numBonds, bondedAtoms, qmmm_struct%nsp2)
+    hofCorrection = hofCorrection + qmmm_struct%nsp2%energy
 
   end function hofCorrection
 
@@ -184,11 +182,11 @@ contains
   ! ----------------------------------------------------------------
   subroutine ccTripleBond(qmmm_struct, natom, coord, numBonds, bondedAtoms, cct)
 
-    use qmmm_struct_module, only : qmmm_struct_type
+    use qmmm_struct_module, only : qmmm_struct_type,corInfoType
     use constants, only : zero
     implicit none
 
-    type(qmmm_struct_type), intent(in) :: qmmm_struct
+    type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
     integer, intent(in) :: natom
     _REAL_,  intent(in) :: coord(3,natom)
@@ -246,10 +244,10 @@ contains
   ! ----------------------------------------------------
   subroutine nsp2Correction(qmmm_struct, natom, coord, numBonds, bondedAtoms, nsp2)
 
-    use qmmm_struct_module, only : qmmm_struct_type
+    use qmmm_struct_module, only : qmmm_struct_type,corInfoType
     implicit none
 
-    type(qmmm_struct_type), intent(in) :: qmmm_struct
+    type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
     integer, intent(in) :: natom
     _REAL_,  intent(in) :: coord(3,natom)
@@ -584,6 +582,7 @@ contains
   ! ----------------------
   subroutine init(self)
     use constants, only : zero
+    use qmmm_struct_module, only : corInfoType
     implicit none
     type(corInfoType), intent(out) :: self
     self%inUse  = .false.
@@ -596,6 +595,7 @@ contains
   ! -----------------
   subroutine printCorInfoType(self, string)
     use constants, only : KCAL_TO_EV
+    use qmmm_struct_module, only : corInfoType
     implicit none
     type(corInfoType), intent(in) :: self
     character(len=strlen), intent(in) :: string
