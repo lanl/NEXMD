@@ -16,7 +16,7 @@ use constants, only : zero, half, one, two, &
 implicit none
 
 public::GetSlaterOverlap, GetSlaterCondonParameter
-private::SetupSlaterAuxiliary,CalculateOverlap, A, B, B0 
+private::SetupSlaterAuxiliary,CalculateOverlap, B0 
 
 ! Constants
 !     THE ARRAY B0(I) CONTAINS THE B INTEGRALS FOR ZERO ARGUMENT. 
@@ -26,23 +26,19 @@ _REAL_, parameter :: B0(1:15)= &
      &         0.181818181818182D0,0.0D0,0.153846153846154D0,0.0D0,     &
      &         0.133333333333333D0 /)
 
-                                                      
-
-!local variables
-_REAL_, save::A(15),B(15) 
-
 contains
 
-function GetSlaterOverlap(na, la, nb, lb, mm, zeta_a, zeta_b, rab) result (overlap)
+function GetSlaterOverlap(na, la, nb, lb, mm, zeta_a, zeta_a_old, &
+	zeta_b, zeta_b_old, rab, rab_old, ntotal, local_a, local_b) result (overlap)
     implicit none
     integer, intent(in)::na, la, nb, lb, mm
     _REAL_, intent(in)::zeta_a,zeta_b, rab
     _REAL_::overlap
+    _REAL_ , intent(inout) :: zeta_a_old, zeta_b_old, rab_old
+    _REAL_ , intent(inout) :: local_a(:), local_b(:)
+     integer, intent(inout) :: ntotal
     
     ! local variables
-    integer, save::ntotal=-1
-    _REAL_, save:: zeta_a_old=-1.0D99, zeta_b_old=-1.0D99
-    _REAL_, save:: rab_old=-1.0D99
     _REAL_, parameter:: tolerance=1.D0-16
     
     logical::resetup
@@ -67,15 +63,15 @@ function GetSlaterOverlap(na, la, nb, lb, mm, zeta_a, zeta_b, rab) result (overl
        rab_old=rab
        zeta_a_old=zeta_a
        zeta_b_old=zeta_b
-       call SetupSlaterAuxiliary(ntotal, zeta_a, zeta_b, rab)
+       call SetupSlaterAuxiliary(ntotal, zeta_a, zeta_b, rab, local_a, local_b)
     end if 
        
-    overlap=CalculateOverlap (na,la,mm,nb,lb,zeta_a*rab,zeta_b*rab)
+    overlap=CalculateOverlap (na,la,mm,nb,lb,zeta_a*rab,zeta_b*rab,local_a,local_b)
     
 end function GetSlaterOverlap
 
 
-SUBROUTINE SetupSlaterAuxiliary(N,SA,SB,RAB) 
+SUBROUTINE SetupSlaterAuxiliary(N,SA,SB,RAB,A,B) 
 !     *                                                                 
 !     CALCULATION OF AUXILIARY INTEGRALS FOR STO OVERLAPS.              
 !     *     
@@ -84,6 +80,7 @@ SUBROUTINE SetupSlaterAuxiliary(N,SA,SB,RAB)
       implicit integer (I-N)
       !explicit type to satisfy PGI v8 compiler
       DOUBLE PRECISION BETPOW(17) 
+      _REAL_ , intent(inout) :: A(:), B(:)
       
                        
 ! *** INITIALIZATION.                                                   
@@ -147,7 +144,7 @@ SUBROUTINE SetupSlaterAuxiliary(N,SA,SB,RAB)
       RETURN 
 END SUBROUTINE SetupSlaterAuxiliary                                          
 
-FUNCTION CalculateOverlap (NA,LA,MM,NB,LB,ALPHA,BETA) 
+FUNCTION CalculateOverlap (NA,LA,MM,NB,LB,ALPHA,BETA,A,B) 
 !     *                                                                 
 !     OVERLAP INTEGRALS BETWEEN SLATER TYPE ORBITALS.                   
 !     *                                                                 
@@ -166,6 +163,7 @@ FUNCTION CalculateOverlap (NA,LA,MM,NB,LB,ALPHA,BETA)
       integer,parameter:: IBINOM(1:36)= (/&
      &            1,1,1,1,2,1,1,3,3,1,1,4,6,4,1,1,5,10,10,5,1,          &
      &            1,6,15,20,15,6,1,1,7,21,35,35,21,7,1 /)                 
+      _REAL_ , intent(inout) :: A(:), B(:)
 
               
 ! *** INITIALIZATION.                                                   

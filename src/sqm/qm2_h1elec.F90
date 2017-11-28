@@ -46,6 +46,9 @@ subroutine qm2_h1elec(R2,XI,XJ, n_atomic_orbi,n_atomic_orbj,SHMAT, qmitype,qmjty
       _REAL_ ::ADBR2, TOMB
       _REAL_ ::rab
       _REAL_ ::zeta_si, zeta_sj, zeta_pi, zeta_pj, zeta_di, zeta_dj
+      _REAL_ :: zeta_a_old=-1.0D99, zeta_b_old=-1.0D99, rab_old=-1.0D99
+      _REAL_ :: local_A(15), local_B(15)
+      integer:: ntotal=-1
       integer:: i,j,k,l, ii,jj
       integer:: ng, ni, nj
 
@@ -164,8 +167,8 @@ subroutine qm2_h1elec(R2,XI,XJ, n_atomic_orbi,n_atomic_orbj,SHMAT, qmitype,qmjty
             end do
          end do
          !Multiply by S-P beta factor
-         bij_temp=GetSlaterOverlap(ni, 0, nj, 1, 0, zeta_si, zeta_pj,rab)
-         bij_temp=GetSlaterOverlap(ni, 1, nj, 0, 0, zeta_pi, zeta_sj,rab)
+         bij_temp=GetSlaterOverlap(ni, 0, nj, 1, 0, zeta_si, zeta_a_old, zeta_pj, zeta_b_old, rab, rab_old,ntotal,local_A,local_B)
+         bij_temp=GetSlaterOverlap(ni, 1, nj, 0, 0, zeta_pi, zeta_a_old, zeta_sj, zeta_b_old, rab, rab_old,ntotal,local_A,local_B)
 
          bij_temp=half*betasap
          SHMAT(1,2)=SHMAT(1,2)*bij_temp
