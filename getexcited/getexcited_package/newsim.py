@@ -90,7 +90,7 @@ def newsim(header):
 
     ## Tell user available information from header regarding coordinates ##
     cprint = old_header.time_step*old_header.out_data_steps*old_header.out_coords_steps
-        print 'The coordinates in %s began at %.2f fs and were printed to coords.xyz every %.2f fs.' % (olddir,old_header.time_init,cprint)
+    print 'The coordinates in %s began at %.2f fs and were printed to coords.xyz every %.2f fs.' % (olddir,old_header.time_init,cprint)
 
     ## Information from new header (desired NEXMD simulations) ##
     if not os.path.exists('%s/header' % (newdir)):

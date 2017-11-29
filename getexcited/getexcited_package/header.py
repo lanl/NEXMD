@@ -27,7 +27,7 @@ class header(object):
             ## Determine lines defining the moldyn block ##
             if '&moldyn' in line:
                 moldyn_block_start = line_num
-            if '&endmoldyn' in line
+            if '&endmoldyn' in line:
                 moldyn_block_end = line_num
             line_num += 1
             
@@ -110,11 +110,11 @@ class header(object):
             '''
             if 'rnd_seed=' in line:
                 self.rnd_seed = np.int(line.split()[0][len('rnd_seed='):-1])
+            '''
             if 'bo_dynamics_flag=' in line:
-                self.bo_dynamics = np.int(line.split()[0][len('bo_dynamics_flag='):-1])
+                self.bo_dynamics_flag = np.int(line.split()[0][len('bo_dynamics_flag='):-1])
             if 'exc_state_init=' in line:
                 self.exc_state_init = np.int(line.split()[0][len('exc_state_init='):-1])
-            '''
             if 'n_exc_states_propagate=' in line:
                 self.n_exc_states_propagate = np.int(line.split()[0][len('n_exc_states_propagate='):-1])
             ## End general parameters ###

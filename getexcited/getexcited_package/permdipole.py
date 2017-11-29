@@ -107,7 +107,7 @@ def permdipole(pathtopack,header):
         state_set = 1
     except AttributeError:
         state_set = 0
-    if header.bo_dynamics_flag == 1 and state_set = 0:
+    if header.bo_dynamics_flag == 1 and state_set == 0:
         print 'Dynamics are set to Born-Oppenheimer (bo_dynamics_flag = 1), but the initial state is not set.\nPlease check bo_dynamics_flag and exc_state_init in header.'
         sys.exit()
 
