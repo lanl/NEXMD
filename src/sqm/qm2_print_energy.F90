@@ -1,7 +1,7 @@
 #include "copyright.h"
 #include "dprec.fh"
 
-subroutine qm2_print_energy(qm2_struct, verbosity, qmtheory, escf, qmmm_struct)
+subroutine qm2_print_energy(cosmo_c_struct,qm2_struct, verbosity, qmtheory, escf, qmmm_struct)
 
   ! Print QM energy contributions
   ! For historic reasons the nomenclature for the energy terms is misleading:
@@ -24,11 +24,12 @@ subroutine qm2_print_energy(qm2_struct, verbosity, qmtheory, escf, qmmm_struct)
   use qmmm_module, only: qmmm_scratch,qm2_structure
   use qmmm_qmtheorymodule, only : qmTheoryType
 
-   use cosmo_C, only: ediel,onsagE,solvent_model,potential_type
+   use cosmo_C, only: cosmo_C_structure !ediel,onsagE,solvent_model,potential_type
    use qm2_davidson_module
 
   implicit none
   
+  type(cosmo_C_structure),intent(inout) :: cosmo_c_struct
   type(qm2_structure),intent(inout) :: qm2_struct
   integer, intent(in) :: verbosity
   _REAL_, intent(in) :: escf
@@ -56,12 +57,12 @@ subroutine qm2_print_energy(qm2_struct, verbosity, qmtheory, escf, qmmm_struct)
         write (6,'("QMMM:")')
         write (6,'("QMMM:        Electronic energy = ",f18.8," eV (",f18.8," KCal/mol)")') &
              qmmm_struct%elec_eng, qmmm_struct%elec_eng*EV_TO_KCAL
-        if ((solvent_model.gt.0).and.(potential_type.eq.3)) then   ! Dielectric Permittivity from COSMO module
+        if ((cosmo_c_struct%solvent_model.gt.0).and.(cosmo_c_struct%potential_type.eq.3)) then   ! Dielectric Permittivity from COSMO module
            write (6,'("QMMM: Dielectric(COSMO) energy = ",f18.8," eV (",f18.8," KCal/mol)")') &
-              ediel,ediel*EV_TO_KCAL
-        elseif ((solvent_model.gt.0).and.(potential_type.eq.2)) then !Onsager Solvent Model
+              cosmo_c_struct%ediel, cosmo_c_struct%ediel*EV_TO_KCAL
+        elseif ((cosmo_c_struct%solvent_model.gt.0).and.(cosmo_c_struct%potential_type.eq.2)) then !Onsager Solvent Model
            write (6,'("QMMM: Dielectric(Onsager) energy = ",f18.8," eV (",f18.8," KCal/mol)")') &
-              onsagE,onsagE*EV_TO_KCAL
+              cosmo_c_struct%onsagE,cosmo_c_struct%onsagE*EV_TO_KCAL
         end if
 
         if  ( qmtheory%DFTB ) then

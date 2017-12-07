@@ -45,7 +45,7 @@ contains
         !Local
 
         integer:: m,i,j, ij, ji, k, l, kl, lk, kk, ii, ia, ib, jk, kj, jj, ja, jb
-        integer:: starting, size
+        integer:: starting, size_ij
 
         if (.not.qmmm_struct%w_position_initialized) call InitializeWPosition(qmmm_struct)
  
@@ -74,9 +74,9 @@ contains
                     i=qm2_params%natomic_orbs(ii)
                     j=qm2_params%natomic_orbs(jj)
                     starting=qmmm_struct%w_position(ii,jj)
-                    size=( i*(i+1)*j*(j+1) ) /4
-                    !write(*,*) "starting ", starting,size,i,j,k,l
-                    call W2Fock_atompair(W(starting:starting+size-1), F, ptot, &
+                    size_ij=( i*(i+1)*j*(j+1) ) /4
+                    !write(*,*) "starting ", starting,size_ij,i,j,k,l
+                    call W2Fock_atompair(W(starting:starting+size_ij-1), F, ptot, &
                         i, j, k, l, qmmm_struct%W2Fock_atompair_initialized,qmmm_struct%w_index)
                 end if
             end do

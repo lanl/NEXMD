@@ -859,7 +859,7 @@ subroutine get_qm2_forces(master, calc_mchg_scf, natom, &
    call timer_stop_start(TIME_QMMMRIJEQNS,TIME_QMMMENERGY)
 
    ! Parallel: Calculate SCF Energy
-   call qm2_energy(qm2_struct,qm2ds, qmmm_struct, escf, scf_mchg, natom, born_radii, one_born_radii, coords, scaled_mm_charges)
+   call qm2_energy(cosmo_c_struct,qm2_struct,qm2ds, qmmm_struct, escf, scf_mchg, natom, born_radii, one_born_radii, coords, scaled_mm_charges)
 
    call timer_stop(TIME_QMMMENERGY)
 
@@ -923,7 +923,7 @@ subroutine get_qm2_forces(master, calc_mchg_scf, natom, &
 
    ! Print some extra information if verbosity level is > 0
    if (master) then
-      call qm2_print_energy(qm2_struct, qmmm_nml%verbosity, qmmm_nml%qmtheory, escf, qmmm_struct)
+      call qm2_print_energy(cosmo_c_struct,qm2_struct, qmmm_nml%verbosity, qmmm_nml%qmtheory, escf, qmmm_struct)
       if (qmmm_nml%verbosity > 3) then
       
         if (qmmm_nml%qm_ewald>0) then 

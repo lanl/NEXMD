@@ -11,13 +11,14 @@
 !
 !********************************************************************
 !
-subroutine dav_wrap(qm2_struct, qm2ds, qmmm_struct)
+subroutine dav_wrap(cosmo_c_struct, qm2_struct, qm2ds, qmmm_struct)
     use qm2_davidson_module
-    use cosmo_C, only: solvent_model
+    use cosmo_C, only: cosmo_C_structure !cosmo_c_struct%solvent_model
     use qmmm_struct_module, only : qmmm_struct_type
     use qmmm_module,only:qm2_structure
 
     implicit none
+    type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
     type(qm2_structure),intent(inout) :: qm2_struct
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
     type(qm2_davidson_structure_type), intent(inout) :: qm2ds
@@ -28,10 +29,10 @@ subroutine dav_wrap(qm2_struct, qm2ds, qmmm_struct)
 
     !Vacuum, Linear Response Solvent have the single Davidson routine, Nonequilibrium State Specific
     !has iterative Davidson Wrapper, Equilibrium State Specific routine has scf and Davidson wrapper above this subroutine.
-    if ((solvent_model.lt.2).or.(solvent_model.gt.3)) then
-        call davidson(qm2_struct, qm2ds, qmmm_struct);
-    elseif ((solvent_model.eq.2).or.(solvent_model.eq.3)) then
-        call solvent_scf_and_davidson_test(qm2_struct,qm2ds,qmmm_struct);
+    if ((cosmo_c_struct%solvent_model.lt.2).or.(cosmo_c_struct%solvent_model.gt.3)) then
+        call davidson(cosmo_c_struct,qm2_struct, qm2ds, qmmm_struct);
+    elseif ((cosmo_c_struct%solvent_model.eq.2).or.(cosmo_c_struct%solvent_model.eq.3)) then
+        call solvent_scf_and_davidson_test(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct);
     end if
 
     ! Total energy of the ground state

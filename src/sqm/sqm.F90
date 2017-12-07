@@ -136,7 +136,7 @@ program sqm
       ! ------------------------
 	  qm2ds%minimization = .FALSE.
 	! CML Includes call to Davidson within sqm_energy() 7/16/12
-      call sqm_energy(qm2_struct,qm2ds,qmmm_struct,atom, x, escf, born_radii, one_born_radii, &
+      call sqm_energy(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,atom, x, escf, born_radii, one_born_radii, &
                  intdiel, extdiel, Arad, qm2_struct%scf_mchg )
 
 		! CML TESTING
@@ -372,7 +372,7 @@ subroutine sqm_energy(qm2ds,qmmm_struct,natom,coords,escf, &
    !============================
    ! Calculate SCF Energy
    !============================
-   call qm2_energy(qm2_struct,qm2ds, qmmm_struct, escf, scf_mchg, natom, born_radii, one_born_radii, &
+   call qm2_energy(cosmo_c_struct,qm2_struct,qm2ds, qmmm_struct, escf, scf_mchg, natom, born_radii, one_born_radii, &
       coords,scaled_mm_charges)
 
    !===================================
@@ -380,7 +380,7 @@ subroutine sqm_energy(qm2ds,qmmm_struct,natom,coords,escf, &
    !===================================
    flush(6)
 
-   if(qm2ds%Mx>0) call dav_wrap(qm2_struct,qm2ds,qmmm_struct)
+   if(qm2ds%Mx>0) call dav_wrap(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct)
 
    !=============================
    !   Print Mulliken Charges
@@ -407,7 +407,7 @@ subroutine sqm_energy(qm2ds,qmmm_struct,natom,coords,escf, &
    !  but kept here for historical reasons)
 
    if (qmmm_mpi%commqmmm_master) then
-      call qm2_print_energy(qm2_struct, qmmm_nml%verbosity, qmmm_nml%qmtheory, escf, qmmm_struct)
+      call qm2_print_energy(cosmo_c_struct,qm2_struct, qmmm_nml%verbosity, qmmm_nml%qmtheory, escf, qmmm_struct)
    end if
 
    qmmm_struct%qm_mm_first_call = .false.

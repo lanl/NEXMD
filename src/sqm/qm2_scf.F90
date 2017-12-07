@@ -3,7 +3,8 @@
 #include "dprec.fh"
 #include "def_time.h"
 #include "assert.fh"
-subroutine qm2_scf(qm2_struct, qm2ds, qmmm_struct, fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm_calls)
+subroutine qm2_scf(cosmo_c_struct,qm2_struct, qm2ds, qmmm_struct, &
+	fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm_calls)
     !---------------------------------------------------------------------
     ! This is the main SCF routine.
     ! Written by Ross Walker (TSRI, 2005)
@@ -40,8 +41,10 @@ subroutine qm2_scf(qm2_struct, qm2ds, qmmm_struct, fock_matrix, hmatrix, W, escf
     use qm2_davidson_module
     use xlbomd_module, only : K
     use qmmm_struct_module, only : qmmm_struct_type
+    use cosmo_C, only : cosmo_C_structure
     implicit none
  
+    type(cosmo_C_structure),intent(inout) :: cosmo_c_struct
     type(qm2_structure),intent(inout) :: qm2_struct
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
     type(qm2_davidson_structure_type), intent(inout) :: qm2ds
@@ -163,7 +166,7 @@ subroutine qm2_scf(qm2_struct, qm2ds, qmmm_struct, fock_matrix, hmatrix, W, escf
     smallest_energy_diff(2) = huge(smallest_energy_diff(2))
     sm_energy_diff_step_number = 0
 
-    ! DIIS IS TURNED OFF BY DEFAULT
+    ! DIIS IS TURNED OFF BY Dcosmo_c_struct%EFAULT
     ! ONLY TURN ON IF CONVERGENCE GOES NUTTY
     !    i = remaining_diis_tokens( qmmm_nml%ndiis_attempts )
     i = remaining_diis_tokens( 0 )
@@ -228,7 +231,8 @@ subroutine qm2_scf(qm2_struct, qm2ds, qmmm_struct, fock_matrix, hmatrix, W, escf
             deallocate(density_matrix_unpacked);
         end if
 
-        CALL qm2_cpt_fock_and_energy(qm2_struct,qm2ds, qmmm_struct, SIZE(fock_matrix), fock_matrix, hmatrix, den_matrix, &
+        CALL qm2_cpt_fock_and_energy(cosmo_c_struct,qm2_struct,qm2ds, qmmm_struct, &
+            & SIZE(fock_matrix), fock_matrix, hmatrix, den_matrix, &
             & SIZE(W), W, SIZE(scf_mchg), scf_mchg, density_diff )
         !q=0
         !do o=1,qm2_struct%norb
@@ -534,7 +538,7 @@ subroutine qm2_densit( eigen_vecs,norbs,ndubl, den_matrix,matsize)
 
 #ifdef OPENMP_DEN
     !$OMP PARALLEL &
-    !$OMP DEFAULT(PRIVATE) &
+    !$OMP Dcosmo_c_struct%EFAULT(PRIVATE) &
     !$OMP SHARED(den_matrix,matsize,unoc_start,norbs,qm2_params,eigen_vecs)
     ! den_matrix can be shared since no two threads will do the same value of L.
     !$OMP DO SCHEDULE(static)
@@ -629,7 +633,7 @@ subroutine qm2_cnvg(den_matrix, old_den_matrix, old2_density,norbs, scf_iteratio
 
 #ifdef OPENMP_CNVG
     !$OMP PARALLEL &
-    !$OMP DEFAULT(PRIVATE) &
+    !$OMP Dcosmo_c_struct%EFAULT(PRIVATE) &
     !$OMP SHARED(norbs, qm2_params, scf_iteration, den_matrix, old_den_matrix, old2_density, current_den_sum, density_diff, FACA, FACB, FAC, DAMP, SUM2, SUM0, SUM3)
 #endif
     if (MOD(scf_iteration-1,3) /= 0) then
@@ -1213,7 +1217,7 @@ subroutine qm2_pseudo_diag(qm2_struct,matrix,vectors,noccupied,eigen,norbs,small
     lumo=noccupied+1
 #ifdef OPENMP
     !$OMP PARALLEL &
-    !$OMP DEFAULT(PRIVATE) &
+    !$OMP Dcosmo_c_struct%EFAULT(PRIVATE) &
     !$OMP SHARED(lumo, norbs, noccupied, matrix, vectors, scratch_matrix, matrix_workspace, veccount, eigeni, eigen, c,d, smallsum, vectmp1,vectmp2,vectmp3,vecjs)
     !workspace can be shared for OMP since no two threads should do the same value of i.
     !$OMP DO SCHEDULE(guided)
@@ -1711,7 +1715,7 @@ END SUBROUTINE qm2_diag
 !********************************************************************
 !
 
-SUBROUTINE qm2_cpt_fock_and_energy(qm2_struct,qm2ds, qmmm_struct, nfock, fock_matrix, hmatrix, den_matrix, &
+SUBROUTINE qm2_cpt_fock_and_energy(cosmo_c_struct,qm2_struct,qm2ds, qmmm_struct, nfock, fock_matrix, hmatrix, den_matrix, &
     & nW, W, nchg, scf_mchg, density_diff)
 
     USE qmmm_module, ONLY : qmmm_nml
@@ -1727,10 +1731,11 @@ SUBROUTINE qm2_cpt_fock_and_energy(qm2_struct,qm2ds, qmmm_struct, nfock, fock_ma
     use qm2_fock_d, only : qm2_fock1_d, qm2_fock2_d
     use opnq, only : Opnq_fock
     use qm2_davidson_module
-    use cosmo_C , only : ceps, SOLVENT_MODEL, potential_type, onsagE, EF, rhotzpacked_k
+    use cosmo_C , only : cosmo_C_structure !cosmo_c_struct%ceps, cosmo_c_struct%SOLVENT_MODEL, cosmo_c_struct%potential_type, cosmo_c_struct%onsagE, cosmo_c_struct%EF, cosmo_c_struct%rhotzpacked_k
     use qmmm_struct_module, only : qmmm_struct_type
 
     IMPLICIT NONE
+    type(cosmo_C_structure),intent(inout) :: cosmo_c_struct
     type(qm2_structure),intent(inout) :: qm2_struct
     type(qm2_davidson_structure_type), intent(inout) :: qm2ds
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
@@ -1775,43 +1780,45 @@ SUBROUTINE qm2_cpt_fock_and_energy(qm2_struct,qm2ds, qmmm_struct, nfock, fock_ma
 
     ! Add Solvent Model or Electric Field
     ! SOLVENT MODEL BLOCK !!JAB
-    if ((solvent_model.gt.0).and.(solvent_model.ne.10)) then !IF USING SOLVENT MODEL
+    if ((cosmo_c_struct%solvent_model.gt.0).and.(cosmo_c_struct%solvent_model.ne.10)) then !IF USING SOLVENT MODEL
         allocate(temp_op(nfock))
-        if (((solvent_model.eq.4).or.(solvent_model.eq.5)).and.(.not.qmmm_struct%qm_mm_first_call)) then !Use the excited state density matrix
-            if (potential_type.eq.3) then !USE COSMO
-                call addfck( fock_matrix,den_matrix+rhotzpacked_k);
-                if(solvent_model.eq.5) then !Variational term
+        if (((cosmo_c_struct%solvent_model.eq.4).or.(cosmo_c_struct%solvent_model.eq.5)) &
+		&.and.(.not.qmmm_struct%qm_mm_first_call)) then !Use the excited state density matrix
+            if (cosmo_c_struct%potential_type.eq.3) then !USE COSMO
+                call addfck(cosmo_c_struct,  fock_matrix,den_matrix+cosmo_c_struct%rhotzpacked_k);
+                if(cosmo_c_struct%solvent_model.eq.5) then !Variational term
                     qm2ds%tz_scratch=0.d0; temp_op=0.d0; qm2ds%eta=0.d0
-                    call addfck( temp_op,den_matrix);
+                    call addfck(cosmo_c_struct, temp_op,den_matrix);
                     call unpacking(qm2ds%nb,temp_op,qm2ds%tz_scratch(1),'s')
-                    call calc_xicommutator(qm2ds,qm2ds%tz_scratch(1))
+                    call calc_xicommutator(cosmo_c_struct,qm2ds,qm2ds%tz_scratch(1))
                     call packing(qm2ds%nb,qm2ds%tz_scratch(1),qm2ds%eta,'s')
                     fock_matrix=fock_matrix+qm2ds%eta(1:nfock)
                     call packing(qm2ds%Nb,qm2ds%tz_scratch(1),qm2ds%eta,'u')
                     fock_matrix=fock_matrix+qm2ds%eta(1:nfock)
                 endif
-            else if (potential_type.eq.2) then !USE ONSAGER
+            else if (cosmo_c_struct%potential_type.eq.2) then !USE ONSAGER
                 qm2ds%tz_scratch=0.d0; temp_op=0.d0; qm2ds%eta=0.d0
-                call rcnfld_fock(qm2_struct,qmmm_struct,fock_matrix,den_matrix+rhotzpacked_k,qm2_struct%norbs);
-                call rcnfld_fock(qm2_struct,qmmm_struct,temp_op,den_matrix,qm2_struct%norbs);
+                call rcnfld_fock(cosmo_c_struct, qm2_struct,qmmm_struct, &
+			fock_matrix,den_matrix+cosmo_c_struct%rhotzpacked_k,qm2_struct%norbs);
+                call rcnfld_fock(cosmo_c_struct, qm2_struct,qmmm_struct,temp_op,den_matrix,qm2_struct%norbs);
                 call unpacking(qm2ds%nb,temp_op,qm2ds%tz_scratch(1),'s')
-                call calc_xicommutator(qm2ds,qm2ds%tz_scratch(1))
+                call calc_xicommutator(cosmo_c_struct,qm2ds,qm2ds%tz_scratch(1))
                 call packing(qm2ds%nb,qm2ds%tz_scratch(1),qm2ds%eta,'s')
                 fock_matrix=fock_matrix+qm2ds%eta(1:qm2ds%Nb*(qm2ds%Nb+1)/2)
             endif
         else !Use the ground state density matrix
-            if (potential_type.eq.3) then !USE COSMOO
-                call addfck( fock_matrix,den_matrix);
-            else if (potential_type.eq.2) then !USE ONSAGER
-                call rcnfld_fock(qm2_struct,qmmm_struct,fock_matrix,den_matrix,qm2_struct%norbs);
+            if (cosmo_c_struct%potential_type.eq.3) then !USE COSMOO
+                call addfck(cosmo_c_struct, fock_matrix,den_matrix);
+            else if (cosmo_c_struct%potential_type.eq.2) then !USE ONSAGER
+                call rcnfld_fock(cosmo_c_struct, qm2_struct,qmmm_struct,fock_matrix,den_matrix,qm2_struct%norbs);
             endif
         endif
         deallocate(temp_op)
     endif
-    if (EF.eq.1) then !USE CONSTANT ELECTRIC FIELD
+    if (cosmo_c_struct%EF.eq.1) then !USE CONSTANT ELECTRIC FIELD
         allocate(temp_op(nfock))
         temp_op=0.d0
-        call efield_fock(qm2_struct,qm2ds,qmmm_struct,temp_op,qm2_struct%norbs);
+        call efield_fock(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,temp_op,qm2_struct%norbs);
         fock_matrix=fock_matrix+2.d0*temp_op
         deallocate(temp_op)
     end if

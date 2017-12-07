@@ -2,7 +2,8 @@
 #include "copyright.h"
 #include "dprec.fh"
 #include "def_time.h"
-subroutine qm2_energy(qm2_struct, qm2ds,qmmm_struct, escf,scf_mchg,natom,born_radii, one_born_radii, coords, scaled_mm_charges)
+subroutine qm2_energy(cosmo_c_struct,qm2_struct, qm2ds,qmmm_struct, escf,scf_mchg,&
+	natom,born_radii, one_born_radii, coords, scaled_mm_charges)
 
    ! qm2_energy calculates the energy of the QMMM system in KCal/mol and places
    ! the answer in escf.
@@ -19,7 +20,7 @@ subroutine qm2_energy(qm2_struct, qm2ds,qmmm_struct, escf,scf_mchg,natom,born_ra
    use qm2_pm6_hof_module
    use dh_correction_module, only : dh_correction
    use constants, only : EV_TO_KCAL, zero
-   use cosmo_C, only : solvent_model, potential_type
+   use cosmo_C, only : cosmo_C_structure !cosmo_c_struct%solvent_model, cosmo_c_struct%potential_type
    use xlbomd_module, only : predictdens_xlbomd
   use qmmm_struct_module, only : qmmm_struct_type
    use qm2_davidson_module, only : qm2_davidson_structure_type
@@ -35,6 +36,7 @@ subroutine qm2_energy(qm2_struct, qm2ds,qmmm_struct, escf,scf_mchg,natom,born_ra
    type(qm2_structure),intent(inout) :: qm2_struct
    type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
+   type(cosmo_C_structure),intent(inout) :: cosmo_c_struct
    integer, intent(in) :: natom
    _REAL_, intent(out) :: escf
    _REAL_, intent(inout) :: scf_mchg(qmmm_struct%nquant_nlink)
@@ -215,7 +217,8 @@ subroutine qm2_energy(qm2_struct, qm2ds,qmmm_struct, escf,scf_mchg,natom,born_ra
       
       call timer_start(TIME_QMMMENERGYHCOREQM)
       !Parallel
-      call qm2_hcore_qmqm(qm2_struct,qmmm_struct, qmmm_struct%qm_coords,qm2_struct%hmatrix,qm2_struct%qm_qm_2e_repul, &
+      call qm2_hcore_qmqm(cosmo_c_struct,qm2_struct,qmmm_struct, &
+	    qmmm_struct%qm_coords,qm2_struct%hmatrix,qm2_struct%qm_qm_2e_repul, &
             qmmm_struct%enuclr_qmqm)
 
       call timer_stop_start(TIME_QMMMENERGYHCOREQM,TIME_QMMMENERGYHCOREQMMM)
@@ -288,7 +291,8 @@ subroutine qm2_energy(qm2_struct, qm2ds,qmmm_struct, escf,scf_mchg,natom,born_ra
       !   Calculate SCF Energy
       !==========================
       !Parallel
-      call qm2_scf(qm2_struct, qm2ds, qmmm_struct, qm2_struct%fock_matrix, qm2_struct%hmatrix,qm2_struct%qm_qm_2e_repul,escf, &
+      call qm2_scf(cosmo_c_struct,qm2_struct, qm2ds, qmmm_struct, &
+            qm2_struct%fock_matrix, qm2_struct%hmatrix,qm2_struct%qm_qm_2e_repul,escf, &
             qm2_struct%den_matrix,scf_mchg,qmmm_struct%num_qmmm_calls)
       !==========================
       ! End calculate SCF Energy

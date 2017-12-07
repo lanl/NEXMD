@@ -9,7 +9,7 @@
    include 'mpif.h'
 #endif
     
-subroutine sqm_energy(qm2_struct,qm2ds,qmmm_struct, natom,coords,escf,born_radii,one_born_radii, &
+subroutine sqm_energy(cosmo_c_struct, qm2_struct,qm2ds,qmmm_struct, natom,coords,escf,born_radii,one_born_radii, &
     intdiel,extdiel,Arad,scf_mchg, &
     time_sqm_took,time_davidson_took)
     !
@@ -38,7 +38,7 @@ subroutine sqm_energy(qm2_struct,qm2ds,qmmm_struct, natom,coords,escf,born_radii
         qm_gb, qmmm_mpi, qmmm_scratch, qm2_params
     use constants,only:EV_TO_KCAL,KCAL_TO_EV,zero,one,alpb_alpha
     use qm2_davidson_module
-    use cosmo_C,only:EF,nps,tri_2D,potential_type,solvent_model,onsagE;
+    use cosmo_C,only:cosmo_C_structure !,cosmo_c_struct%EF,cosmo_c_struct%nps,cosmo_c_struct%tri_2D,cosmo_c_struct%potential_type,cosmo_c_struct%solvent_model,cosmo_c_struct%onsagE;
     use xlbomd_module,only:init_xlbomd
     use qmmm_struct_module, only : qmmm_struct_type
 
@@ -47,6 +47,7 @@ subroutine sqm_energy(qm2_struct,qm2ds,qmmm_struct, natom,coords,escf,born_radii
     ! Passed in
 
     integer,intent(in)::natom
+    type(cosmo_C_structure),intent(inout) :: cosmo_c_struct
     type(qm2_structure),intent(inout) :: qm2_struct
     type(qm2_davidson_structure_type), intent(inout) :: qm2ds
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
@@ -130,9 +131,9 @@ subroutine sqm_energy(qm2_struct,qm2ds,qmmm_struct, natom,coords,escf,born_radii
             if(qm2ds%dav_guess.gt.1) call init_xlbomd(qm2ds%Nb**2*qm2ds%Mx)
         endif
 
-        !ceps-Dielectric Permittivity from COSMO module
-        if((solvent_model.gt.0).or.(EF.gt.0)) then !
-            call cosini(qm2_struct,qmmm_struct)
+        !cosmo_c_struct%ceps-Dielectric Permittivity from COSMO module
+        if((cosmo_c_struct%solvent_model.gt.0).or.(cosmo_c_struct%EF.gt.0)) then !
+            call cosini(cosmo_c_struct,qm2_struct,qmmm_struct)
         end if
 
     end if !if (qmmm_struct%qm_mm_first_call)
@@ -150,17 +151,17 @@ subroutine sqm_energy(qm2_struct,qm2ds,qmmm_struct, natom,coords,escf,born_radii
     !============================
     ! Constructing/updating COSMO cavity
     !============================
-    !ceps-Dielectric Permittivity from COSMO module
-    if((solvent_model.gt.0).and.(potential_type.eq.3)) then ! non-default non-vacuum permittivity
-        call coscav(qmmm_struct) ! constructing COSMO cavity
-        call mkbmat(qmmm_struct) ! constructing B matrix
+    !cosmo_c_struct%ceps-Dielectric Permittivity from COSMO module
+    if((cosmo_c_struct%solvent_model.gt.0).and.(cosmo_c_struct%potential_type.eq.3)) then ! non-default non-vacuum permittivity
+        call coscav(cosmo_c_struct,qmmm_struct) ! constructing COSMO cavity
+        call mkbmat(cosmo_c_struct,qmmm_struct) ! constructing B matrix
     end if
 
     !============================
     !  Calculate SCF Energy (ground state)
     !============================
     call cpu_time(t_start)
-    call qm2_energy(qm2_struct,qm2ds, qmmm_struct, escf,scf_mchg,natom,born_radii,one_born_radii, &
+    call qm2_energy(cosmo_c_struct,qm2_struct,qm2ds, qmmm_struct, escf,scf_mchg,natom,born_radii,one_born_radii, &
         coords,scaled_mm_charges)
     call cpu_time(t_finish)
     ! Incrementing the cumulative sqm time
@@ -220,7 +221,7 @@ subroutine sqm_energy(qm2_struct,qm2ds,qmmm_struct, natom,coords,escf,born_radii
  		
     if(qm2ds%Mx>0) then
         call cpu_time(t_start)
-        call dav_wrap(qm2_struct,qm2ds,qmmm_struct)
+        call dav_wrap(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct)
         call cpu_time(t_finish)
         ! Incrementing cumulative Davidson execution time
         time_davidson_took=time_davidson_took+t_finish-t_start
@@ -233,7 +234,7 @@ subroutine sqm_energy(qm2_struct,qm2ds,qmmm_struct, natom,coords,escf,born_radii
     qmmm_struct%qm_mm_first_call=.false.
     if ((qmmm_nml%printdipole>0).or.(qmmm_nml%printcharges)) then
         if((qmmm_nml%printdipole<3).and.(qm2ds%Mx>0)) then
-            call qm2_calc_molecular_dipole_in_excited_state(qm2_struct,qm2ds,qmmm_struct)
+            call qm2_calc_molecular_dipole_in_excited_state(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct)
             
         else if (qmmm_nml%printdipole>2) then
             call qm2_calc_dipole(qm2_struct,qm2ds, qmmm_struct,coords)
@@ -245,7 +246,7 @@ subroutine sqm_energy(qm2_struct,qm2ds,qmmm_struct, natom,coords,escf,born_radii
     !  but kept here for historical reasons)
 
     if(qmmm_mpi%commqmmm_master) then
-        call qm2_print_energy(qm2_struct, qmmm_nml%verbosity,qmmm_nml%qmtheory,escf,qmmm_struct)
+        call qm2_print_energy(cosmo_c_struct,qm2_struct, qmmm_nml%verbosity,qmmm_nml%qmtheory,escf,qmmm_struct)
     end if
     return
 end subroutine sqm_energy
@@ -479,7 +480,7 @@ end subroutine getsqmx
 !
 !********************************************************************
 !
-subroutine sqm_read_and_alloc(qm2_struct,qm2ds,qmmm_struct,fdes_in,fdes_out,natom_inout,igb,atnam, &
+subroutine sqm_read_and_alloc(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,fdes_in,fdes_out,natom_inout,igb,atnam, &
     atnum,maxcyc,grms_tol,ntpr,ncharge_in, &
     excharge,chgatnum, &
     excNin,struct_opt_state,exst_method,dav_guess, & ! Excited state
@@ -495,8 +496,9 @@ subroutine sqm_read_and_alloc(qm2_struct,qm2ds,qmmm_struct,fdes_in,fdes_out,nato
     use qmmm_qmtheorymodule
     use ElementOrbitalIndex, only : numberElements
     use ParameterReader, only : ReadParameterFile
-    use cosmo_C, only: solvent_model,potential_type,ceps,cosmo_scf_ftol,cosmo_scf_maxcyc,doZ,&
-        index_of_refraction,nspa,onsager_radius,Ex,Ey,Ez,EF,linmixparam !COSMO parameters
+    use cosmo_C, only: cosmo_C_structure!
+!cosmo_c_struct%solvent_model,cosmo_c_struct%potential_type,cosmo_c_struct%ceps,cosmo_c_struct%cosmo_scf_ftol,cosmo_c_struct%cosmo_scf_maxcyc,cosmo_c_struct%doZ,&
+!        cosmo_c_struct%index_of_refraction,cosmo_c_struct%nspa,cosmo_c_struct%onsager_radius,Ex,Ey,Ez,cosmo_c_struct%EF,linmixparam !COSMO parameters
     use xlbomd_module, only: xlbomd_flag,K,dt2w2,xlalpha,coef
     use qm2_davidson_module
     use naesmd_constants
@@ -508,6 +510,7 @@ subroutine sqm_read_and_alloc(qm2_struct,qm2ds,qmmm_struct,fdes_in,fdes_out,nato
     type(qm2_davidson_structure_type), intent(inout) :: qm2ds
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
     type(qm2_structure),intent(inout) :: qm2_struct
+    type(cosmo_C_structure),intent(inout) :: cosmo_c_struct
 
     !STATIC MEMORY
     integer :: max_quantum_atoms  !Needed in read qmmm namelist since
@@ -660,6 +663,10 @@ subroutine sqm_read_and_alloc(qm2_struct,qm2ds,qmmm_struct,fdes_in,fdes_out,nato
     character(len=80) :: parameter_file
     logical :: qxd
     logical :: calcxdens
+    real(8) :: ceps, cosmo_scf_ftol,cosmo_scf_maxcyc,index_of_refraction,onsager_radius
+    real(8) :: Ex, Ey, Ez, linmixparam  
+    integer :: nspa, solvent_model, potential_type, EF
+    logical :: doZ   
 
     namelist /qmmm/ qmcut, iqmatoms,qmmask,qmgb,qm_theory, qmtheory, &
         qmcharge, qmqmdx, qmqmdx_exc, verbosity, tight_p_conv, scfconv, & ! CML 7/10/12
@@ -684,7 +691,7 @@ subroutine sqm_read_and_alloc(qm2_struct,qm2ds,qmmm_struct,fdes_in,fdes_out,nato
         !Excited state and davidson
         exst_method,dav_guess,dav_maxcyc,ftol0,ftol1,printtd, &
         !Solvent Model and E-Field parameters
-        ceps, chg_lambda, vsolv, nspa, solvent_model,potential_type,cosmo_scf_ftol,cosmo_scf_maxcyc,&
+        ceps, chg_lambda, vsolv, nspa, solvent_model, potential_type, cosmo_scf_ftol, cosmo_scf_maxcyc,&
         doZ,index_of_refraction,onsager_radius,EF,Ex,Ey,Ez,linmixparam, &
         !XL-BOMD parameters
         xlbomd_flag,K,dt2w2,xlalpha, &
@@ -830,6 +837,20 @@ subroutine sqm_read_and_alloc(qm2_struct,qm2ds,qmmm_struct,fdes_in,fdes_out,nato
         write(fdes_out, '(1x,a,/)') 'Could not find qmmm namelist'
         call mexit(fdes_out,1)
     endif
+    cosmo_c_struct%ceps=ceps
+    cosmo_c_struct%nspa=nspa
+    cosmo_c_struct%solvent_model=solvent_model
+    cosmo_c_struct%potential_type=potential_type
+    cosmo_c_struct%cosmo_scf_ftol=cosmo_scf_ftol
+    cosmo_c_struct%cosmo_scf_maxcyc=cosmo_scf_maxcyc
+    cosmo_c_struct%doZ=doZ
+    cosmo_c_struct%index_of_refraction=index_of_refraction
+    cosmo_c_struct%onsager_radius=onsager_radius
+    cosmo_c_struct%EF=EF
+    cosmo_c_struct%Ex=Ex
+    cosmo_c_struct%Ey=Ey
+    cosmo_c_struct%Ez=Ez
+    cosmo_c_struct%linmixparam=linmixparam
     
     !Begin qmmm input checks
     if(printbondorders>0) then
@@ -847,7 +868,7 @@ subroutine sqm_read_and_alloc(qm2_struct,qm2ds,qmmm_struct,fdes_in,fdes_out,nato
         stop
     endif
     
-    if(abs(index_of_refraction-100)>1d-1) then
+    if(abs(cosmo_c_struct%index_of_refraction-100)>1d-1) then
         write(6,*) "Index of refraction has unverified effects. Do not use."
         stop
     endif
@@ -859,20 +880,20 @@ subroutine sqm_read_and_alloc(qm2_struct,qm2ds,qmmm_struct,fdes_in,fdes_out,nato
     !Set Solvent_model
     !The input format is: (0) None, (1) Linear response, (2) Vertical excitation, ! or (3) State-specific [0]
     !Going forward the code treats: (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi [0]
-    if(solvent_model==3) then
-        solvent_model=4
-    else if(solvent_model>4) then
-        write(fdes_out,*) 'Invalid solvent_model'
+    if(cosmo_c_struct%solvent_model==3) then
+        cosmo_c_struct%solvent_model=4
+    else if(cosmo_c_struct%solvent_model>4) then
+        write(fdes_out,*) 'Invalid cosmo_c_struct%solvent_model'
         call mexit(fdes_out,1)
     endif
     
-    !Set potential_type
+    !Set cosmo_c_struct%potential_type
     !The input format is:  (1) COSMO or (2) Onsager [1]
     !Going forward the code treats:  (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
-    if(potential_type==1) then
-        potential_type=3
-    elseif(potential_type==2) then
-        potential_type=2
+    if(cosmo_c_struct%potential_type==1) then
+        cosmo_c_struct%potential_type=3
+    elseif(cosmo_c_struct%potential_type==2) then
+        cosmo_c_struct%potential_type=2
     endif
 
     !set verbosity if not set at read
@@ -1035,7 +1056,7 @@ subroutine sqm_read_and_alloc(qm2_struct,qm2ds,qmmm_struct,fdes_in,fdes_out,nato
     call int_legal_range('QMMM: (QM-MM use -10-500 for max cycles of Davidson, negative for fixed number) ', dav_maxcyc,-10,500)
 
     ! Checking COSMO parameters
-    call float_legal_range('QMMM: (COSMO eps)',ceps,1.0d0,1.0d6)
+    call float_legal_range('QMMM: (COSMO eps)',cosmo_c_struct%ceps,1.0d0,1.0d6)
 
     if (dftb_3rd_order /= 'NONE') then
         call check_dftb_3rd_order(dftb_3rd_order)

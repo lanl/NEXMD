@@ -14,7 +14,6 @@ contains
         use naesmd_constants
         use naesmd_module
         use communism
-        use Cosmo_C, only : solvent_model
         implicit none
 
         type(simulation_t) sim
@@ -29,8 +28,8 @@ contains
         _REAL_ yg(:)
         _REAL_ energy !!JAB VE model
 
-        if(solvent_model.eq.2) then
-            call calc_excsolven(sim%qmmm,energy) !JAB Test
+        if(sim%cosmo%solvent_model.eq.2) then
+            call calc_excsolven(sim%cosmo,sim%dav,sim%qmmm,energy) !JAB Test
             sim%naesmd%vmdqt(sim%naesmd%ihop)=sim%naesmd%vmdqt(sim%naesmd%ihop)-0.5*energy/feVmdqt !JAB Test
         endif
 
@@ -272,7 +271,6 @@ contains
         use naesmd_module
         use langevin_temperature
         use communism
-        use Cosmo_C,only: solvent_model
         implicit none
  
         type(simulation_t),pointer::sim
@@ -289,8 +287,8 @@ contains
         data first /.true./
         save first
 
-        if(solvent_model.eq.2) then
-            call calc_excsolven(sim%qmmm,energy) !JAB Test
+        if(sim%cosmo%solvent_model.eq.2) then
+            call calc_excsolven(sim%cosmo,sim%dav,sim%qmmm,energy) !JAB Test
             sim%naesmd%vmdqt(sim%naesmd%ihop)=sim%naesmd%vmdqt(sim%naesmd%ihop)-0.5*energy/feVmdqt !JAB Test
         endif
 

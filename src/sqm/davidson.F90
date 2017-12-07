@@ -12,13 +12,14 @@
 !
 !********************************************************************
 !   
-   subroutine davidson(qm2_struct,qm2ds, qmmm_struct)
+   subroutine davidson(cosmo_c_struct,qm2_struct,qm2ds, qmmm_struct)
    use qmmm_module,only:qm2_structure !cml-test
    use qm2_davidson_module
    use qmmm_struct_module, only : qmmm_struct_type
-
+   use cosmo_C, only : cosmo_C_structure
 
    implicit none
+   type(cosmo_C_structure), intent (inout) :: cosmo_c_struct
    type(qm2_structure),intent(inout) :: qm2_struct
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
    type(qm2_davidson_structure_type), intent(inout) :: qm2ds
@@ -177,7 +178,7 @@
 
 ! try to find vector new vectors in the batch:
 !write(6,*) 'Entering davidson0'
-   call davidson0(qm2_struct,qm2ds,qmmm_struct,qm2ds%Ncis,lprint,qm2ds%ftol0,qm2ds%ftol1,qm2ds%ferr, &
+   call davidson0(cosmo_c_struct, qm2_struct,qm2ds,qmmm_struct,qm2ds%Ncis,lprint,qm2ds%ftol0,qm2ds%ftol1,qm2ds%ferr, &
       qm2ds%Np,qm2ds%Nh,j0,j1, &
       qm2ds%e0,qm2ds%v0,kflag,qm2ds%ix, &
       qm2ds%rrwork(1),qm2ds%rrwork(2*qm2ds%Ncis+1), &
@@ -363,16 +364,17 @@
 !
 !********************************************************************
 !
-   subroutine davidson0(qm2_struct,qm2ds,qmmm_struct,M4,lprint,ftol0,ftol1,ferr, &
+   subroutine davidson0(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,M4,lprint,ftol0,ftol1,ferr, &
       Np,Nh,j0,j1,e0,v0,kflag,iee2,ee2,eta,xi, &
       nd,nd1,vexp1,vexp,ray,rayv,rayvL,rayvR,raye,raye1, &
       ray1,ray1a,ray2,idav,istore)
    use qm2_davidson_module   
-  use cosmo_C,only:solvent_model 
-  use qmmm_struct_module, only : qmmm_struct_type
+   use cosmo_C,only:cosmo_C_structure
+   use qmmm_struct_module, only : qmmm_struct_type
    use qmmm_module,only:qm2_structure
 
    implicit none
+     type(cosmo_C_structure), intent (inout) :: cosmo_c_struct
      type(qmmm_struct_type), intent(inout) :: qmmm_struct
      type(qm2_davidson_structure_type), intent(inout) :: qm2ds
      type(qm2_structure),intent(inout) :: qm2_struct
@@ -650,7 +652,7 @@
    do i=nd1_old+1,nd1
       call clearing (2*M4,eta)
       call dcopy(M4,vexp1(1,i),one,eta,one)
-      call Lxi_testing(qm2_struct, qm2ds,qmmm_struct,eta,vexp(1,i),solvent_model)
+      call Lxi_testing(cosmo_c_struct,qm2_struct, qm2ds,qmmm_struct,eta,vexp(1,i),cosmo_c_struct%solvent_model)
       !call Lxi(eta,vexp(1,i),solvent_model)	
        
 ! CIS - set Y=0
@@ -889,7 +891,7 @@
 
    do j=j0+1,j0+j1
       
-      call Lxi_testing(qm2_struct,qm2ds,qmmm_struct,v0(1,j),eta,solvent_model) !L(xi) output in eta !!JAB
+      call Lxi_testing(cosmo_c_struct, qm2_struct,qm2ds,qmmm_struct,v0(1,j),eta,cosmo_c_struct%solvent_model) !L(xi) output in eta !!JAB
       !call Lxi(v0(1,j),eta,solvent_model)	
       !write(6,*)"loc(v0(1,j))=",j,loc(v0(1,j))	
       f1=ddot(M4,v0(1,j),one,eta(1),one) &

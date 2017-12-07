@@ -23,6 +23,7 @@ program MD_Geometry
     use naesmd_module!,only: allocate_naesmd_module2
     use md_module
     use rksuite_90, only:setup, range_integrate, rk_comm_real_1d
+    use cosmo_C, only : cosmo_C_structure
     implicit none
     !
     !--------------------------------------------------------------------
@@ -54,6 +55,7 @@ program MD_Geometry
     type(qm2_davidson_structure_type),target :: qm2ds_notp
     type(qmmm_struct_type), target :: qmmm_struct_notp
     type(qm2_structure), target :: qm2_struct_notp
+    type(cosmo_C_structure), target :: cosmo_C_struct_notp
     type(naesmd_structure), target :: naesmd_struct_notp
     type(md_structure), target :: md_struct_notp
     type(rk_comm_real_1d), target :: rk_struct_notp
@@ -107,7 +109,7 @@ program MD_Geometry
    
     call init0_simulation(sim)
     call setp_simulation(sim,qmmm_struct_notp,qm2ds_notp,&
-		qm2_struct_notp,naesmd_struct_notp, md_struct_notp, rk_struct_notp)
+		qm2_struct_notp,naesmd_struct_notp, md_struct_notp, rk_struct_notp,cosmo_c_struct_notp)
     call init_main(sim, sim%naesmd, sim%md)
 
     !Put derivative variables into module

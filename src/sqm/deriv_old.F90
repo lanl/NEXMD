@@ -315,7 +315,7 @@
          if((ceps.gt.1.d0).and.(solvent_model.gt.0).and.(potential_type.eq.3)) then
                  !call addfck(f,p) with correct density matrix to fill once
                  !center charge matrix qdenet for diegrd
-                 call addfck( qm2ds%tz_scratch(qm2ds%Nb**2+1),qm2ds%tz_scratch(1))
+                 call addfck(cosmo_c_struct, qm2ds%tz_scratch(qm2ds%Nb**2+1),qm2ds%tz_scratch(1))
                  call diegrd_testing(dxyz1,.true.)
          end if
          !same as above loop now commented out
@@ -369,7 +369,7 @@
       if((ceps.gt.1.d0).and.(solvent_model.gt.0).and.(potential_type.eq.3)) then
                  !call addfck(f,p) with correct density matrix to fill once
                  !center charge matrix qdenet for diegrd
-                 call addfck( qm2ds%tz_scratch(qm2ds%Nb**2+1),qm2ds%tz_scratch(1))
+                 call addfck(cosmo_c_struct, qm2ds%tz_scratch(qm2ds%Nb**2+1),qm2ds%tz_scratch(1))
                  call diegrd_testing(dxyz1,.false.)
       end if
 
@@ -391,7 +391,7 @@
       if((ceps.gt.1.d0).and.(solvent_model.gt.0).and.(potential_type.eq.3)) then
                  !call addfck(f,p) with correct density matrix to fill once
                  !center charge matrix qdenet for diegrd
-                 call addfck( qm2ds%tz_scratch(qm2ds%Nb**2+1),qm2ds%tz_scratch(1))
+                 call addfck(cosmo_c_struct, qm2ds%tz_scratch(qm2ds%Nb**2+1),qm2ds%tz_scratch(1))
                  call diegrd_testing(dxyz1,.false.)
       end if
 

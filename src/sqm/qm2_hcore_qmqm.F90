@@ -1,7 +1,7 @@
 ! <compile=optimized>
 #include "copyright.h"
 #include "dprec.fh"
-subroutine qm2_hcore_qmqm(qm2_struct,qmmm_struct,COORD,H,W,ENUCLR)
+subroutine qm2_hcore_qmqm(cosmo_c_struct, qm2_struct,qmmm_struct,COORD,H,W,ENUCLR)
 !***********************************************************************/R
 ! Current code, optimisation and inlining by: Ross Walker (TSRI, 2005)
 !
@@ -23,7 +23,7 @@ subroutine qm2_hcore_qmqm(qm2_struct,qmmm_struct,COORD,H,W,ENUCLR)
 !***********************************************************************
 
       use qm2_davidson_module
-      use cosmo_C, only: solvent_model,ceps,potential_type,EF
+      use cosmo_C, only: cosmo_C_structure !cosmo_c_struct%solvent_model,cosmo_c_struct%ceps,cosmo_c_struct%potential_type,cosmo_c_struct%EF
       use constants, only : zero, one, A2_TO_BOHRS2, A_TO_BOHRS
       use ElementOrbitalIndex, only: MaxValenceOrbitals, MaxValenceDimension
       use qmmm_module, only : qmmm_nml, qm2_structure, qm2_params, qm2_rij_eqns, &
@@ -35,6 +35,7 @@ subroutine qm2_hcore_qmqm(qm2_struct,qmmm_struct,COORD,H,W,ENUCLR)
       implicit none
       type(qmmm_struct_type), intent(inout) :: qmmm_struct
       type(qm2_structure),intent(inout) :: qm2_struct
+      type(cosmo_C_structure),intent(inout) :: cosmo_c_struct
 
 !Passed in
       _REAL_, intent(in) :: COORD(3,qmmm_struct%nquant_nlink)
@@ -235,24 +236,24 @@ subroutine qm2_hcore_qmqm(qm2_struct,qmmm_struct,COORD,H,W,ENUCLR)
       end do !  I=1,qmmm_struct%nquant_nlink
   
    ! SOLVENT block
-   if ((solvent_model>0).and.(solvent_model.ne.10)) then ! Use solvent
-      if (potential_type.eq.3) then ! Use COSMO
+   if ((cosmo_c_struct%solvent_model>0).and.(cosmo_c_struct%solvent_model.ne.10)) then ! Use solvent
+      if (cosmo_c_struct%potential_type.eq.3) then ! Use COSMO
       ! dielectric corrections are added to the core-core interaction
       ! and on-SAS charges due to core are evaluated [qscnet(:,1)]
-      call addnuc(enuclr) 
+      call addnuc(cosmo_c_struct,enuclr) 
 
       ! Dielectric corrections are add to the electron-core interactions
       ! - single-electron part of Hamiltonian
-      call addhcr(H)
+      call addhcr(cosmo_c_struct,H)
 
-      elseif(potential_type.eq.2) then !Onsager model
-      call rcnfldnuc(qm2_struct,qmmm_struct,enuclr)
-      call rcnfldhcr(qm2_struct,qmmm_struct,H)
+      elseif(cosmo_c_struct%potential_type.eq.2) then !Onsager model
+      call rcnfldnuc(cosmo_c_struct,qm2_struct,qmmm_struct,enuclr)
+      call rcnfldhcr(cosmo_c_struct,qm2_struct,qmmm_struct,H)
       endif
    endif
 
-   if (EF.eq.1) then !USE CONSTANT ELECTRIC FIELD
-        call efield_nuc(qm2_struct,qmmm_struct,enuclr);
+   if (cosmo_c_struct%EF.eq.1) then !USE CONSTANT ELECTRIC FIELD
+        call efield_nuc(cosmo_c_struct,qm2_struct,qmmm_struct,enuclr);
    end if
 
 !DEBUG      call print ('One-electron matrix',H,.true.)

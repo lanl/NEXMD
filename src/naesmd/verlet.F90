@@ -8,7 +8,6 @@ module verlet_module
     use naesmd_constants
     use langevin_temperature
     use communism
-    use cosmo_C,only:solvent_model
     use qmmm_module, only:qm2_params
     implicit none
 
@@ -84,7 +83,7 @@ contains
         !     Get the potential energy, atomic forces and accelerations
         !     Newton second law to get the next accelerations;
         !     the accelerations and forces are calculated at deriv.f
-        if((solvent_model.eq.4).or.(solvent_model.eq.5)) then
+        if((sim%cosmo%solvent_model.eq.4).or.(sim%cosmo%solvent_model.eq.5)) then
             call calc_cosmo_4(sim)
         else
             if(sim%excn>0) then

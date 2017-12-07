@@ -116,13 +116,14 @@ end subroutine trans_dipole
 !*************************************************************************
 !Calcualtes the ground and excited state dipoles
 !*************************************************************************
-subroutine qm2_calc_molecular_dipole_in_excited_state(qm2_struct, qm2ds, qmmm_struct)
+subroutine qm2_calc_molecular_dipole_in_excited_state(cosmo_c_struct, qm2_struct, qm2ds, qmmm_struct)
 	use qm2_davidson_module
 	use qmmm_module, only: qm2_structure, qm2_params, qmmm_nml
 	use constants, only : light_speed, charge_on_elec
         use qmmm_struct_module, only : qmmm_struct_type
-
+	use cosmo_C, only: cosmo_C_structure
 	implicit none
+        type(cosmo_C_structure),intent(inout) :: cosmo_c_struct
         type(qm2_structure),intent(inout) :: qm2_struct
         type(qmmm_struct_type), intent(inout) :: qmmm_struct
         type(qm2_davidson_structure_type), intent(inout) :: qm2ds
@@ -178,8 +179,8 @@ if (qm2ds%Mx>0) then
         allocate(ESDM(qm2ds%Nb,qm2ds%Nb));
 
 	do state=1,qm2ds%Mx
-	        call calc_rhotz(qm2_struct,qm2ds,qmmm_struct,state,qm2ds%rhoTZ,.true.); 
-                call calc_rhotz(qm2_struct,qm2ds,qmmm_struct,state,qm2ds%rhoT,.false.);
+	        call calc_rhotz(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,state,qm2ds%rhoTZ,.true.); 
+                call calc_rhotz(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,state,qm2ds%rhoT,.false.);
 		call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,TZ,qm2ds%tz_scratch)		
                 call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoT,T,tmp)
 

@@ -9,7 +9,7 @@ module communism
     use md_module, only            : md_structure
     use naesmd_constants
     use rksuite_90, only:rk_comm_real_1d 
-          
+    use cosmo_C, only : cosmo_C_structure          
     implicit none
           
     type:: simulation_t
@@ -26,11 +26,12 @@ module communism
         _REAL_::time_deriv_took=0.d0 ! adiabatic derivatives (i.e., forces)
         _REAL_::time_nact_took=0.d0 ! non-adiabatic derivatives (nact)
           
-        type(naesmd_structure),pointer               :: naesmd
-        type(md_structure),pointer               :: md
+        type(naesmd_structure),pointer            :: naesmd
+        type(md_structure),pointer                :: md
         type(qm2_davidson_structure_type),pointer :: dav
         type(qmmm_struct_type),pointer            :: qmmm
         type(qm2_structure),pointer               :: qm2
+        type(cosmo_C_structure),pointer           :: cosmo
 	type(rk_comm_real_1d),pointer :: rk_comm !quantum coeff ode solver common variables
     end type simulation_t
           
@@ -47,14 +48,16 @@ contains
         a%naesmd      => null()
         a%md      => null()
         a%rk_comm      => null()
+        a%cosmo      => null()
         allocate(a%naesmd)
     end subroutine
 
-    subroutine setp_simulation(a,qmmm_struct,qm2ds,qm2_struct,naesmd_struct,md_struct,rk_struct)
+    subroutine setp_simulation(a,qmmm_struct,qm2ds,qm2_struct,naesmd_struct,md_struct,rk_struct, cosmo_c_struct)
         type(simulation_t), pointer  :: a
         type(qmmm_struct_type),target :: qmmm_struct
         type(qm2_davidson_structure_type),target :: qm2ds
         type(qm2_structure),target :: qm2_struct
+        type(cosmo_C_structure),target :: cosmo_c_struct
         type(naesmd_structure),target :: naesmd_struct
         type(md_structure),target :: md_struct
 	type(rk_comm_real_1d),target :: rk_struct 
@@ -64,6 +67,7 @@ contains
         a%naesmd  => naesmd_struct
         a%md  => md_struct
 	a%rk_comm => rk_struct
+	a%cosmo => cosmo_c_struct
     end subroutine
           
     !
@@ -220,7 +224,7 @@ contains
         endif
 
         ! CML Includes call to Davidson within sqm_energy() 7/16/12
-        call sqm_energy(sim%qm2,sim%dav,sim%qmmm,sim%Na,sim%coords,sim%escf,born_radii, &
+        call sqm_energy(sim%cosmo,sim%qm2,sim%dav,sim%qmmm,sim%Na,sim%coords,sim%escf,born_radii, &
             one_born_radii,intdiel,extdiel,Arad,sim%qm2%scf_mchg, &
             sim%time_sqm_took,sim%time_davidson_took) !The use of sim here is a hack right now and could be fixed
         ! ground state energy
@@ -321,7 +325,6 @@ contains
         use constants,only:KCAL_TO_EV,EV_TO_KCAL
         use file_io_dat,only:MAX_FN_LEN
         use qm2_davidson_module ! CML 7/11/12
-        use Cosmo_C,only:solvent_model
  
         implicit none
           
@@ -350,7 +353,7 @@ contains
         ncharge=0;
         igb = 0
    
-        call sqm_read_and_alloc(sim%qm2,sim%dav,sim%qmmm,fdes_in, fdes_out, &
+        call sqm_read_and_alloc(sim%cosmo,sim%qm2,sim%dav,sim%qmmm,fdes_in, fdes_out, &
             sim%Na,igb,atnam,sim%naesmd%atomtype,maxcyc, &
             grms_tol,ntpr, ncharge,excharge,chgatnum, &
             sim%excN,sim%dav%struct_opt_state,sim%dav%idav,sim%dav%dav_guess, &
@@ -387,7 +390,7 @@ contains
             call naesmd2qmmm_r(sim)
             !sim%dav%Mx = sim%excN
             !sim%dav%mdflag=2
-            if ((solvent_model.eq.4).or.(solvent_model.eq.5)) then !solvent model that loops over ground sim%naesmd%state
+            if ((sim%cosmo%solvent_model.eq.4).or.(sim%cosmo%solvent_model.eq.5)) then !solvent model that loops over ground sim%naesmd%state
                 call calc_cosmo_4(sim)
             else
                 call do_sqm_davidson_update(sim,sim%naesmd%cmdqt,sim%naesmd%vmdqt,sim%naesmd%vgs)
@@ -425,7 +428,7 @@ contains
         use qmmm_module, only : qmmm_nml
         use constants, only : zero, AU_TO_EV
         use iso_c_binding
-        use Cosmo_C, only : solvent_model
+    !    use Cosmo_C, only : solvent_model
 
         implicit none
           
@@ -576,7 +579,7 @@ contains
                     is_error = status_flag < 0
                     if ( .not. is_error ) then
                         call qmmm2naesmd_r(sim_pass)
-                        if((solvent_model.eq.4).or.(solvent_model.eq.5)) then
+                        if((sim_pass%cosmo%solvent_model.eq.4).or.(sim_pass%cosmo%solvent_model.eq.5)) then
                             call calc_cosmo_4(sim_pass)
                         else
                             call do_sqm_davidson_update(sim_pass)
@@ -604,7 +607,7 @@ contains
                             write(6,'(a,i5,f16.6,a,f16.6,a)') 'xmin ', xmin_iter, energy,' eV', grms, ' eV/A'
                         end if
                         call qmmm2naesmd_r(sim_pass);
-                        if((solvent_model.eq.4).or.(solvent_model.eq.5)) then
+                        if((sim_pass%cosmo%solvent_model.eq.4).or.(sim_pass%cosmo%solvent_model.eq.5)) then
                             call calc_cosmo_4(sim_pass)
                         else
                             call do_sqm_davidson_update(sim_pass)
@@ -624,7 +627,7 @@ contains
                     if ( .not. is_error ) then
                         call qmmm2naesmd_r(sim_pass);
                         call do_sqm_davidson_update(sim_pass);
-                        if((solvent_model.eq.4).or.(solvent_model.eq.5)) then
+                        if((sim_pass%cosmo%solvent_model.eq.4).or.(sim_pass%cosmo%solvent_model.eq.5)) then
                             call calc_cosmo_4(sim_pass)
                         else
                             call do_sqm_davidson_update(sim_pass)
