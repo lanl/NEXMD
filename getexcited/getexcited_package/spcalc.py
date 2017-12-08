@@ -182,12 +182,15 @@ def spcalc(header):
     bottom = None
     index = 0
     for line in anum:
-        if '$coord' in line:
+        if '$COORD' in line:
             top = index
-        if '$endcoord' in line:
+        if '$ENDCOORD' in line:
             bottom = index
             break
         index += 1
+    if top == None or bottom == None:
+        print 'There is a problem with %s/restart.out.' % (gsdir)
+        sys.exit()
     if isinstance(top, int) == True and isinstance(bottom, int) == True:
         anum = [ line.split()[0] for line in anum[top+1:bottom:1] ]
     else:
