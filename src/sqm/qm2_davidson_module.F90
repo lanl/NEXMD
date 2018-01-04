@@ -145,11 +145,14 @@
 !
 !********************************************************************
 !
-   subroutine allocate_davidson(qm2_struct, qm2ds, qmmm_struct)
-   use qmmm_module,only:qmmm_scratch,qmmm_nml, qm2_structure
+   subroutine allocate_davidson(qmmm_scratch,qmmm_nml,qm2_struct, qm2ds, qmmm_struct)
+   use qmmm_nml_module   , only : qmmm_nml_type
+   use qmmm_module,only: qmmm_scratch_structure, qm2_structure
    use qmmm_struct_module, only : qmmm_struct_type
 
    implicit none
+   type(qmmm_scratch_structure),intent(inout) :: qmmm_scratch
+   type(qmmm_nml_type),intent(inout) :: qmmm_nml
    type(qm2_structure),intent(inout) :: qm2_struct
    type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    type(qmmm_struct_type), intent(in) :: qmmm_struct

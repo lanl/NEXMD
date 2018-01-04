@@ -2,14 +2,18 @@
 #include "copyright.h"
 #include "dprec.fh"
 
-subroutine qm2_calc_dipole(qm2_struct, qm2ds, qmmm_struct, coord)
- use qmmm_module, only : qm2_params, qm2_structure,  qmmm_nml
+subroutine qm2_calc_dipole(qmmm_nml,qm2_params,qm2_struct, qm2ds, qmmm_struct, coord)
+ use qm2_params_module,  only : qm2_params_type
+ use qmmm_nml_module   , only : qmmm_nml_type
+ use qmmm_module, only : qm2_structure
  use constants, only : light_speed, bohr_radius, charge_on_elec, CODATA08_AU_TO_DEBYE, BOHRS_TO_A
  use qm2_davidson_module
  use qmmm_struct_module, only : qmmm_struct_type
 
 ! use findmask
       implicit none
+      type(qmmm_nml_type), intent(inout) :: qmmm_nml
+      type(qm2_params_type),intent(inout) :: qm2_params
       type(qm2_structure),intent(inout) :: qm2_struct
       type(qmmm_struct_type), intent(inout) :: qmmm_struct
       type(qm2_davidson_structure_type), intent(inout) :: qm2ds

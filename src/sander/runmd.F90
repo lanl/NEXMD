@@ -3155,7 +3155,7 @@ subroutine runmd(xx,ix,ih,ipairs,x,winv,amass,f, &
          !     to keep the PDB file in sync with the mdcrd file, which
          !     makes it easier to check later.
          if (qmmm_nml%vsolv > 0 .and. qmmm_nml%verbosity == 0) &
-            call qm_print_coords(nstep,.false.)
+            call qm_print_coords(qmmm_nml,nstep,.false.)
       end if  ! (itdump)
 
       !     Velocity archive:
@@ -3338,7 +3338,7 @@ subroutine runmd(xx,ix,ih,ipairs,x,winv,amass,f, &
          !--- Print QMMM Muliken Charges if needed ---
          if (qmmm_nml%ifqnt) then
            if (qmmm_nml%printcharges .and. qmmm_mpi%commqmmm_master) then
-             call qm2_print_charges(qmmm_struct, 0,nstep,qmmm_nml%dftb_chg,qmmm_struct%nquant_nlink, &
+             call qm2_print_charges(qmmm_nml,qmmm_mpi, qmmm_struct, 0,nstep,qmmm_nml%dftb_chg,qmmm_struct%nquant_nlink, &
                                     qm2_struct%scf_mchg,qmmm_struct%iqm_atomic_numbers)
            end if
          end if

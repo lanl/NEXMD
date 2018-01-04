@@ -14,7 +14,7 @@ private AIJL, POIJ
 
 contains
 
-subroutine GetDDAndPho(qmmm_struct, qmtype, DD, PO)
+subroutine GetDDAndPho(qm2_params,qmmm_struct, qmtype, DD, PO)
 
 !C     *
 !C     CALCULATION OF CHARGE SEPARATIONS AND ADDITIVE TERMS USED
@@ -43,11 +43,12 @@ subroutine GetDDAndPho(qmmm_struct, qmtype, DD, PO)
 !C     *
 
   use constants  , only : zero, half, one, two, three, AU_TO_EV
-  use qmmm_module, only : qm2_params
+  use qm2_params_module, only : qm2_params_type
   use qmmm_struct_module, only : qmmm_struct_type 
   implicit none
 
-  type(qmmm_struct_type), intent(in) :: qmmm_struct
+  type(qmmm_struct_type), intent(inout) :: qmmm_struct
+  type(qm2_params_type), intent(inout) :: qm2_params
   integer, intent(in)::qmtype
   _REAL_, intent(out)::DD(6), PO(9)
   
@@ -116,7 +117,7 @@ subroutine GetDDAndPho(qmmm_struct, qmtype, DD, PO)
 
       D        = SQRT(AIJ43*SQRT(ONE/15.0D0))*SQRT(TWO)
       DD(4) = D
-      FG=GetOneCenter2Electron(qmtype, 19)
+      FG=GetOneCenter2Electron(qm2_params,qmtype, 19)
       PO(4) = POIJ(2,D,FG)
 
 !C     PD
@@ -125,15 +126,15 @@ subroutine GetDDAndPho(qmmm_struct, qmtype, DD, PO)
 !C     NEXT STATEMENT AS A POSSIBLE ALTERNATIVE.
 !C     FG       = REPD(33)-1.6D0*REPD(35) 
       DD(5) = D
-      FG=GetOneCenter2Electron(qmtype, 23)
-      FG1=GetOneCenter2Electron(qmtype, 35)
+      FG=GetOneCenter2Electron(qm2_params,qmtype, 23)
+      FG1=GetOneCenter2Electron(qm2_params,qmtype, 35)
       PO(5) = POIJ(1,D,FG-1.8D0*FG1)
       HYFPD= D*DIPFAC
       
 !C     DD
-      FG=GetOneCenter2Electron(qmtype, 29)
-      FG1=GetOneCenter2Electron(qmtype, 30)
-      FG2=GetOneCenter2Electron(qmtype, 31)     
+      FG=GetOneCenter2Electron(qm2_params,qmtype, 29)
+      FG1=GetOneCenter2Electron(qm2_params,qmtype, 30)
+      FG2=GetOneCenter2Electron(qm2_params,qmtype, 31)     
       PO(8) = POIJ(0,ONE,0.2D0*(FG+TWO*FG1+TWO*FG2))
 !CDEC  NEXT TWO STATEMENTS RUN INTO COMPILER BUG ON DEC ALPHA (OSF1).
 !C     THEY ARE REPLACED BY TWO MATHEMATICALLY EQUIVALENT STATEMENTS.
@@ -142,8 +143,8 @@ subroutine GetDDAndPho(qmmm_struct, qmtype, DD, PO)
       D        = AIJ63/7.0D0
       D        = SQRT(TWO*D)
       DD(6) = D
-      FG=GetOneCenter2Electron(qmtype, 44)      
-      FG1=GetOneCenter2Electron(qmtype, 52)
+      FG=GetOneCenter2Electron(qm2_params,qmtype, 44)      
+      FG1=GetOneCenter2Electron(qm2_params,qmtype, 52)
       PO(6) = POIJ(2,D,FG-(20.0D0/35.0D0)*FG1)
       
       !  this one was added in param.f in Thiel's mndo implementation
@@ -181,7 +182,7 @@ function AIJL(Z1,Z2,N1,N2,L)
         
 end function AIJL
 
-function GetOneCenter2Electron(qmType, index) result(integral)
+function GetOneCenter2Electron(qm2_params,qmType, index) result(integral)
 
 ! The one-center two-electron integrals should be calculated only
 ! once for each atom type--Need to be changed later..
@@ -189,10 +190,10 @@ function GetOneCenter2Electron(qmType, index) result(integral)
 !
    use constants, only : half, one, two, three, four
    use SlaterOverlap
-   use qmmm_module, only :  qm2_params
+  use qm2_params_module,  only : qm2_params_type
    
    implicit none
-   
+   type(qm2_params_type), intent(inout) :: qm2_params 
    integer, intent(in)::qmType, index
    _REAL_::integral
    

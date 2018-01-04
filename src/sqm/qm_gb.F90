@@ -8,13 +8,13 @@
 ! Written by Ross Walker (TSRI 2005)
 !----------------------------------------------------------
 
-subroutine allocate_qmgb(nquant_nlink)
+subroutine allocate_qmgb(qm_gb, nquant_nlink)
 
-  use qmmm_module, only : qm_gb
+  use qmmm_module, only : qm_gb_structure
   implicit none
 
   integer, intent(in) :: nquant_nlink
-
+  type(qm_gb_structure), intent(inout) :: qm_gb
   integer :: ier=0
 
   allocate (qm_gb%gb_mmpot(nquant_nlink), stat=ier )
@@ -36,7 +36,7 @@ subroutine allocate_qmgb(nquant_nlink)
 
 end subroutine allocate_qmgb
 
-subroutine qmgb_calc_qmqm_onefij(nquant_nlink, qmqm_onefij, iqmatoms, born_radii, one_born_radii, qm_coords )
+subroutine qmgb_calc_qmqm_onefij(qm_gb, qmmm_mpi,nquant_nlink, qmqm_onefij, iqmatoms, born_radii, one_born_radii, qm_coords )
 
 !Calculates GB Fij term for each QM-QM pair. This is required
 !on every step of the SCF but only depends on the distance between
@@ -44,13 +44,15 @@ subroutine qmgb_calc_qmqm_onefij(nquant_nlink, qmqm_onefij, iqmatoms, born_radii
 
 !Assumes the effective Born radii have been calculated.
 
-  use qmmm_module, only : qm_gb, qmmm_mpi
+  use qmmm_module, only : qm_gb_structure, qmmm_mpi_structure
   use constants, only : fourth
   implicit none
 
 #include "qm2_array_locations.h"
 
 !Passed in
+  type(qm_gb_structure), intent(inout) :: qm_gb
+  type(qmmm_mpi_structure), intent(inout) :: qmmm_mpi
   integer, intent(in) :: nquant_nlink
   integer, intent(in) :: iqmatoms(nquant_nlink) !Index into born_radii - amber atom number of QM atom
   _REAL_, intent(out) :: qmqm_onefij(*)
@@ -111,7 +113,8 @@ subroutine qmgb_calc_qmqm_onefij(nquant_nlink, qmqm_onefij, iqmatoms, born_radii
 
 end subroutine qmgb_calc_qmqm_onefij
 
-subroutine qmgb_calc_mm_pot(qmmm_struct, natom,gb_mmpot,qm_atom_mask,scaled_mm_charges, &
+subroutine qmgb_calc_mm_pot(qm_gb, qmmm_mpi, qmmm_nml, &
+                            qmmm_struct, natom,gb_mmpot,qm_atom_mask,scaled_mm_charges, &
                             real_scratch1,real_scratch2, int_scratch1, &
                             qm_coords,mm_coords,born_radii,one_born_radii, iqmatoms)
 
@@ -127,12 +130,16 @@ subroutine qmgb_calc_mm_pot(qmmm_struct, natom,gb_mmpot,qm_atom_mask,scaled_mm_c
 
 ! Needs two real scratch arrays of at least natom long.
   use qmmm_struct_module, only : qmmm_struct_type
-  use qmmm_module, only : qm_gb, qmmm_mpi, qmmm_nml
+  use qmmm_module, only : qm_gb_structure, qmmm_mpi_structure
+  use qmmm_nml_module   , only : qmmm_nml_type
   use constants, only : fourth
   implicit none
 
 ! Passed in
-  type(qmmm_struct_type), intent(in) :: qmmm_struct
+  type(qmmm_struct_type), intent(inout) :: qmmm_struct
+  type(qm_gb_structure), intent(inout) :: qm_gb
+  type(qmmm_mpi_structure), intent(inout) :: qmmm_mpi
+  type(qmmm_nml_type), intent(inout) :: qmmm_nml
   integer, intent(in) :: natom
   _REAL_, intent(out) :: gb_mmpot(*) !nquant_nlink
   _REAL_, intent(in) :: scaled_mm_charges(natom)
@@ -222,7 +229,7 @@ subroutine qmgb_calc_mm_pot(qmmm_struct, natom,gb_mmpot,qm_atom_mask,scaled_mm_c
 end subroutine qmgb_calc_mm_pot
 
 
-subroutine qmgb_calc_qm_pot(gb_qmpot,qmqm_onefij, scf_mchg )
+subroutine qmgb_calc_qm_pot(qm_gb, qmmm_mpi, gb_qmpot,qmqm_onefij, scf_mchg )
 !Calculates the GB potential at each QM atom due to all the QM atoms.
 !                 1     1        q(qm)
 ! gb_qmpot(i) = (--- - ---) sum(-------)
@@ -231,9 +238,10 @@ subroutine qmgb_calc_qm_pot(gb_qmpot,qmqm_onefij, scf_mchg )
 ! Units are q in electrons, f(i,j) in angstroms
 !
 
-  use qmmm_module, only : qm_gb, qmmm_mpi
+  use qmmm_module, only :qm_gb_structure, qmmm_mpi_structure 
   implicit none
-
+  type(qm_gb_structure), intent(inout) :: qm_gb
+  type(qmmm_mpi_structure), intent(inout) :: qmmm_mpi
 ! Passed in
   _REAL_, intent(out) :: gb_qmpot(*) !nquant_nlink
   _REAL_, intent(in) :: qmqm_onefij(*)
@@ -278,16 +286,17 @@ subroutine qmgb_calc_qm_pot(gb_qmpot,qmqm_onefij, scf_mchg )
 
 end subroutine qmgb_calc_qm_pot
 
-subroutine qmgb_add_fock(loop_extent,fock_matrix, gb_mmpot, gb_qmpot)
+subroutine qmgb_add_fock(qm2_params,loop_extent,fock_matrix, gb_mmpot, gb_qmpot)
 !Author: Ross Walker, TSRI 2005
 
 !Adds GB potential info (mmpot and qmpot) to the diagonal elements of the fock matrix
 
   use constants, only : AU_TO_EV, BOHRS_TO_A
-  use qmmm_module, only : qm2_params
+  use qm2_params_module, only : qm2_params_type
   implicit none
 
 !Passed in
+  type(qm2_params_type), intent(inout) :: qm2_params
   integer, intent(in) :: loop_extent
   _REAL_, intent(in) :: gb_mmpot(loop_extent) !Potential at each QM atom due to MM GB
   _REAL_, intent(in) :: gb_qmpot(loop_extent) !Potential at each QM atom due to QM GB

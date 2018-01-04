@@ -20,7 +20,7 @@ module qm2_fock_d
 contains 
 
   
-    subroutine qm2_fock2_d(qm2_struct, qmmm_struct, F, PTOT, W)
+    subroutine qm2_fock2_d(qm2_params,qmmm_mpi,qm2_struct, qmmm_struct, F, PTOT, W)
         !***********************************************************************
         !
         ! FOCK2 FORMS THE TWO-ELECTRON TWO-CENTER REPULSION PART OF THE FOCK
@@ -32,11 +32,14 @@ contains
         !
         !  Why isn't this used for excited states? !JAB !FIXME
         !***********************************************************************
-        use qmmm_module, only : qm2_params, qmmm_mpi, qm2_structure
+        use qm2_params_module,  only : qm2_params_type
+        use qmmm_module, only : qmmm_mpi_structure, qm2_structure
         use qmmm_struct_module, only : qmmm_struct_type
 	implicit none
 
          type(qmmm_struct_type), intent(inout) :: qmmm_struct
+         type(qmmm_mpi_structure), intent(inout) :: qmmm_mpi
+         type(qm2_params_type), intent(inout) :: qm2_params
          type(qm2_structure), intent(inout) :: qm2_struct
         _REAL_, intent(inout) :: F(:)
         _REAL_, intent(in) :: ptot(:)
@@ -47,7 +50,7 @@ contains
         integer:: m,i,j, ij, ji, k, l, kl, lk, kk, ii, ia, ib, jk, kj, jj, ja, jb
         integer:: starting, size_ij
 
-        if (.not.qmmm_struct%w_position_initialized) call InitializeWPosition(qmmm_struct)
+        if (.not.qmmm_struct%w_position_initialized) call InitializeWPosition(qm2_params, qmmm_struct)
  
         do ii=1,qmmm_struct%nquant_nlink
             IA=qm2_params%orb_loc(1,ii)
@@ -87,19 +90,22 @@ contains
 
 
 
-    subroutine qm2_fock1_d(qmmm_struct, F, PTOT)
+    subroutine qm2_fock1_d(qmmm_mpi, qm2_params , qmmm_struct, F, PTOT)
 
         use constants          , only : fourth
         use ElementOrbitalIndex, only : MaxValenceDimension, &
             Index1_2Electron, IntRep,  &
             IntRf1, IntRf2, IntIJ, IntKL
         use MNDOChargeSeparation, only: GetOneCenter2Electron
-        use qmmm_module         , only : qmmm_mpi, qm2_params
+  	use qm2_params_module,  only : qm2_params_type
+        use qmmm_module, only : qmmm_mpi_structure
         use qmmm_struct_module, only : qmmm_struct_type
 
         implicit none
 
         type(qmmm_struct_type), intent(inout) :: qmmm_struct
+         type(qmmm_mpi_structure), intent(inout) :: qmmm_mpi
+         type(qm2_params_type), intent(inout) :: qm2_params
 
         _REAL_, intent(inout) :: F(:)
         _REAL_, intent(in) :: PTOT(:)
@@ -112,10 +118,10 @@ contains
         integer::qmType
   
   
-        if (.not.qmmm_struct%w_position_initialized) call InitializeWPosition(qmmm_struct)
+        if (.not.qmmm_struct%w_position_initialized) call InitializeWPosition(qm2_params, qmmm_struct)
 
         ! first calculate the SP contributions
-        call qm2_fock1(qmmm_struct, F,PTOT)
+        call qm2_fock1(qmmm_mpi,qm2_params,qmmm_struct, F,PTOT)
     
         do i=1,qmmm_struct%nquant_nlink
             qmType=qmmm_struct%qm_atom_type(i)
@@ -128,9 +134,9 @@ contains
                     do j=1,Index1_2Electron
                         i1 = IntRf1(j)
                         i2 = IntRf2(j)
-                        qmmm_struct%W(j) = GetOneCenter2Electron(qmType, IntRep(j))
-                        if(i1>0) qmmm_struct%W(j) = qmmm_struct%W(j)-fourth*GetOneCenter2Electron(qmType,i1)
-                        if(i2>0) qmmm_struct%W(j) = qmmm_struct%W(j)-fourth*GetOneCenter2Electron(qmType,i2)
+                        qmmm_struct%W(j) = GetOneCenter2Electron(qm2_params,qmType, IntRep(j))
+                        if(i1>0) qmmm_struct%W(j) = qmmm_struct%W(j)-fourth*GetOneCenter2Electron(qm2_params,qmType,i1)
+                        if(i2>0) qmmm_struct%W(j) = qmmm_struct%W(j)-fourth*GetOneCenter2Electron(qm2_params,qmType,i2)
                     end do
                     qmmm_struct%qmType_saved=qmType
                     qmmm_struct%qm2_fock1_d_initialized=.true.
@@ -381,12 +387,13 @@ contains
 
     end subroutine W2Fock_atompair
 
-    subroutine InitializeWPosition(qmmm_struct)
+    subroutine InitializeWPosition(qm2_params,qmmm_struct)
 
         use qmmm_struct_module, only : qmmm_struct_type
-	use qmmm_module, only : qm2_params
+        use qm2_params_module,  only : qm2_params_type
     
         type(qmmm_struct_type), intent(inout) :: qmmm_struct
+        type(qm2_params_type), intent(inout) :: qm2_params
 
         integer::i,j,k,ii,jj,kk,n
     

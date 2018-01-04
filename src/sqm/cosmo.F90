@@ -12,12 +12,14 @@
 !  Augmenting Fock matrix by terms coming from the COSMO
 !  cavity screening
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine addfck(cosmo_c_struct, f,p)
+subroutine addfck(qm2_params, qmmm_nml, cosmo_c_struct, f,p)
     use cosmo_C, only : cosmo_C_structure, a0, ev
-!   use cosmo_C,only:cosmo_c_struct%ediel,cosmo_c_struct%fepsi,cosmo_c_struct%nps,cosmo_c_struct%lm61,cosmo_c_struct%numat,cosmo_c_struct%mpack,a0,ev, &
-!      cosmo_c_struct%amat,cosmo_c_struct%bmat,cosmo_c_struct%iatsp,cosmo_c_struct%nsetf,cosmo_c_struct%phinet,cosmo_c_struct%qscnet,cosmo_c_struct%qdenet,cosmo_c_struct%ipiden,cosmo_c_struct%gden,cosmo_c_struct%qscat,cosmo_c_struct%mmat,cosmo_c_struct%idenat
-   use qmmm_module,only:qm2_params,qmmm_nml
+    use qm2_params_module,  only : qm2_params_type
+    use qmmm_nml_module   , only : qmmm_nml_type
+   
    implicit none
+    type(qm2_params_type),intent(inout) :: qm2_params
+    type(qmmm_nml_type),intent(inout) :: qmmm_nml
    type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
    _REAL_,dimension(cosmo_c_struct%mpack),intent(in)::p ! density matrix
    _REAL_,dimension(cosmo_c_struct%mpack),intent(inout)::f ! Fock matrix
@@ -167,7 +169,7 @@ him = him + cosmo_c_struct%bmat(i, j) * cosmo_c_struct%qscnet(j, 1)
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	!COSMO NUCLEAR INTERACTION TERM AND GENERATION OF NUCLEAR CAVITY CHARGES
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine addnuc(cosmo_c_struct,enuclr)
+subroutine addnuc(qm2_params,qmmm_nml,cosmo_c_struct,enuclr)
 	!
 	!********************************************************************
 	!
@@ -192,17 +194,15 @@ subroutine addnuc(cosmo_c_struct,enuclr)
 	!use funcon_C, only: a0, ev
 	!use common_arrays_c, only : nat
         use cosmo_C, only : cosmo_C_structure, a0, ev
-
-!	use cosmo_C, only : cosmo_c_struct%nps, cosmo_c_struct%fepsi, &
-!	cosmo_c_struct%amat, cosmo_c_struct%bmat, cosmo_c_struct%nsetf, cosmo_c_struct%phinet, cosmo_c_struct%qscnet, cosmo_c_struct%qdenet, cosmo_c_struct%idenat, &
-!	cosmo_c_struct%numat,cosmo_c_struct%lm61,a0,ev
-
-	use qmmm_module,only:qm2_params,qmmm_nml
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
 
 	!use parameters_C, only: tore
 
 	implicit none
         type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
+        type(qm2_params_type), intent(inout) :: qm2_params
+        type(qmmm_nml_type), intent(inout) :: qmmm_nml
 
 	real(8) enuclr
 	integer i,j,ips;
@@ -271,7 +271,7 @@ enclr=enclr+cosmo_c_struct%qscnet(i,1)*cosmo_c_struct%phinet(i,1)
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	!COSMO GRADIENT TERM USING ONE SET OF CHARGES STORED IN MODULE
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine diegrd(cosmo_c_struct, qmmm_struct, dxyz)
+subroutine diegrd(qm2_params,qmmm_nml,cosmo_c_struct, qmmm_struct, dxyz)
 
 	!use cosmo_C, only: cosmo_c_struct%nps, cosmo_c_struct%fepsi, cosmo_c_struct%nipc, &
 	!cosmo_c_struct%cosurf, cosmo_c_struct%iatsp, cosmo_c_struct%isude, cosmo_c_struct%sude, cosmo_c_struct%qscnet, &
@@ -280,12 +280,15 @@ subroutine diegrd(cosmo_c_struct, qmmm_struct, dxyz)
 	use constants, only: EV_TO_KCAL
 	!use parameters_C, only: dd, qq
 	!use common_arrays_c, only : coord, nfirst, nlast, nat
-	use qmmm_module,only:qm2_params,qmmm_nml
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
         use qmmm_struct_module, only : qmmm_struct_type
 	implicit none
  
         type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
         type(qmmm_struct_type), intent(in) :: qmmm_struct
+        type(qmmm_nml_type), intent(in) :: qmmm_nml
+        type(qm2_params_type), intent(in) :: qm2_params
 
 	integer :: i, ia, iak, ial, ib, idel, iden, ix, j, k, l, nati, iii
 	double precision :: bsurf, ddi, deab, dist2, dx, fact, ff, ff0, &
@@ -415,7 +418,7 @@ ff = ff-ff0 * cosmo_c_struct%qdenet(iden+(iii*(iii+1))/2, 3)
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !COSMO GRADIENT TERM WITH TWO SETS OF CHARGES, i.e. tr(F(rho)(T+Z))
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine diegrd2(cosmo_c_struct, qmmm_struct, dxyz,density2,charges2,acharges2)
+subroutine diegrd2(qm2_params,qmmm_nml,cosmo_c_struct, qmmm_struct, dxyz,density2,charges2,acharges2)
 	!This subroutine calculated COSMO derivatives for terms with two different
 	!density matrices
 	!cosmo_c_struct%qdenet:one center charge from density matrix filled by addfock routine
@@ -430,11 +433,14 @@ subroutine diegrd2(cosmo_c_struct, qmmm_struct, dxyz,density2,charges2,acharges2
 	use constants, only: EV_TO_KCAL
 	!use parameters_C, only: dd, qq
 	!use common_arrays_c, only : coord, nfirst, nlast, nat
-	use qmmm_module,only:qm2_params,qmmm_nml
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
         use qmmm_struct_module, only : qmmm_struct_type
 	implicit none
         type(qmmm_struct_type), intent(inout) :: qmmm_struct
         type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
+        type(qmmm_nml_type), intent(inout) :: qmmm_nml
+        type(qm2_params_type), intent(inout) :: qm2_params
 
 	integer :: i, ia, iak, ial, ib, idel, iden, ix, j, k, l, nati, iii
 	double precision :: bsurf, ddi, deab, dist2, dx, dxt, fact, ff, fft, ff0, ff0t, &
@@ -582,16 +588,20 @@ dx = (xx(ix)*db(0, j)-db(ix, j)) * (ff + fft)
 	!CALCULATE CAVITY CHARGES FOR FULL DENSITY MATRIX AND 
 	!STORE IN MODULE VARIABLES
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine cosmo_1(cosmo_c_struct, qm2_struct, exc_p)
+subroutine cosmo_1(qm2_params,qmmm_nml,cosmo_c_struct, qm2_struct, exc_p)
         use cosmo_C, only : cosmo_C_structure, a0,ev
 !	use cosmo_C,only:cosmo_c_struct%fepsi,cosmo_c_struct%nps,cosmo_c_struct%lm61,cosmo_c_struct%numat,cosmo_c_struct%mpack,a0,ev, &
 !	cosmo_c_struct%amat,cosmo_c_struct%bmat,cosmo_c_struct%iatsp,cosmo_c_struct%nsetf,cosmo_c_struct%phinet,cosmo_c_struct%qscnet,cosmo_c_struct%qdenet,cosmo_c_struct%ipiden,cosmo_c_struct%gden,cosmo_c_struct%qscat,cosmo_c_struct%mmat,cosmo_c_struct%idenat
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
 
-	use qmmm_module,only:qm2_params,qm2_structure,qmmm_nml
+	use qmmm_module,only:qm2_structure
 
 	implicit none
         type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
         type(qm2_structure),intent(inout) :: qm2_struct
+        type(qmmm_nml_type),intent(inout) :: qmmm_nml
+        type(qm2_params_type),intent(inout) :: qm2_params
 	_REAL_,dimension(cosmo_c_struct%mpack)::p ! triaungular density matrix
 	_REAL_,dimension(qm2_struct%norbs,qm2_struct%norbs), intent(in) ::exc_p !
 	_REAL_, dimension(:,:), allocatable :: A;
@@ -646,13 +656,16 @@ iat=cosmo_c_struct%iatsp(i)
 	!CALCULATE CAVITY CHARGES FOR TRIANGULAR DENSITY MATRIX
 	!AND STORE IN MODULE VARIABLES
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine cosmo_1_tri(cosmo_c_struct,p)
+subroutine cosmo_1_tri(qm2_params,qmmm_nml,cosmo_c_struct,p)
         use cosmo_C, only : cosmo_C_structure, a0, ev
 !	use cosmo_C,only:cosmo_c_struct%fepsi,cosmo_c_struct%nps,cosmo_c_struct%lm61,cosmo_c_struct%numat,cosmo_c_struct%mpack,a0,ev, &
 !	cosmo_c_struct%amat,cosmo_c_struct%bmat,cosmo_c_struct%iatsp,cosmo_c_struct%nsetf,cosmo_c_struct%phinet,cosmo_c_struct%qscnet,cosmo_c_struct%qdenet,cosmo_c_struct%ipiden,cosmo_c_struct%gden,cosmo_c_struct%qscat,cosmo_c_struct%mmat,cosmo_c_struct%idenat
-	use qmmm_module,only:qm2_params,qmmm_nml
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
 
 	implicit none
+        type(qmmm_nml_type),intent(inout) :: qmmm_nml
+        type(qm2_params_type),intent(inout) :: qm2_params
         type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
 	_REAL_,dimension(cosmo_c_struct%mpack)::p ! triangular density matrix
 	_REAL_, dimension(:,:), allocatable :: A
@@ -729,14 +742,17 @@ iat=cosmo_c_struct%iatsp(i)
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	!Calcualte charges without storing in module variable for calculating excited state !derivatives involving two density matrices
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine cosmo_1_tri_2(cosmo_c_struct, p,density2,charges2,acharges2)
+subroutine cosmo_1_tri_2(qm2_params,qmmm_nml,cosmo_c_struct, p,density2,charges2,acharges2)
         use cosmo_C, only : cosmo_C_structure, a0, ev
 	!use cosmo_C,only:cosmo_c_struct%fepsi,cosmo_c_struct%nps,cosmo_c_struct%lm61,cosmo_c_struct%mpack,a0,ev,cosmo_c_struct%nsetf, &
 	!cosmo_c_struct%amat,cosmo_c_struct%bmat,cosmo_c_struct%qdenet,cosmo_c_struct%ipiden,cosmo_c_struct%gden,cosmo_c_struct%iatsp,cosmo_c_struct%numat,cosmo_c_struct%qscnet,cosmo_c_struct%qscat
 
-	use qmmm_module,only:qm2_params, qmmm_nml
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
 
 	implicit none
+        type(qmmm_nml_type),intent(inout) :: qmmm_nml
+        type(qm2_params_type),intent(inout) :: qm2_params
         type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
 	_REAL_, intent(in)::p(cosmo_c_struct%mpack) ! triangular density matrix
 	_REAL_, dimension(:,:), allocatable :: A;
@@ -836,7 +852,7 @@ a(k+indi) = summe * a(kk)
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	!  Initializaton of cosmo
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-	subroutine cosini(cosmo_c_struct,qm2_struct, qmmm_struct)
+	subroutine cosini(qm2_params, qmmm_nml, cosmo_c_struct,qm2_struct, qmmm_struct)
 	!use cosmo_C, only: n0, ioldcv, fnsq, nps, rsolv, nspa, disex2, &
 	!dirsm, dirvec, srad, ipiden, gden, idenat, qdenet, amat, &
 	!cmat, lenabc, arat, sude, isude, bh,qden, nar_csm, nsetf, phinet, &
@@ -844,9 +860,11 @@ a(k+indi) = summe * a(kk)
 	!coserr, lm61, numat,mpack,fepsi,mmat,tri_2D,v_solvent_difdens,xi_k, &
 	!ceps, v_solvent_xi, rhotzpacked_k
         use cosmo_C, only : cosmo_C_structure
-	use qmmm_module,only:qm2_params, qm2_structure,qmmm_nml
+	use qmmm_module,only: qm2_structure
 	use qm2_davidson_module
         use qmmm_struct_module, only : qmmm_struct_type
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
 
 	!use common_arrays_C, only : nat, nfirst, nlast
 	!    nat will be substituted with iqm_atomic_numbers
@@ -861,6 +879,8 @@ a(k+indi) = summe * a(kk)
           type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
           type(qm2_structure),intent(inout) :: qm2_struct
           type(qmmm_struct_type), intent(in) :: qmmm_struct
+          type(qmmm_nml_type),intent(inout) :: qmmm_nml
+          type(qm2_params_type),intent(inout) :: qm2_params
 	
 	!Cosmo_C Namelist input
 	integer, dimension (2) :: n0
@@ -1153,9 +1173,10 @@ end subroutine cosini
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !Constructs or updates the solvent-acessible surface (SAS)
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine coscav(cosmo_c_struct, qmmm_struct)
+subroutine coscav(qm2_params, qmmm_nml, cosmo_c_struct, qmmm_struct)
     !use molkst_C, only : numat
-    use qmmm_module,only:qm2_params,qmmm_nml
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
 
     use cosmo_C, only : cosmo_C_structure
     !use cosmo_C, only: cosmo_c_struct%lenabc, cosmo_c_struct%nps, cosmo_c_struct%area, cosmo_c_struct%isude, cosmo_c_struct%sude, &
@@ -1169,6 +1190,8 @@ subroutine coscav(cosmo_c_struct, qmmm_struct)
     implicit none
     type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
     type(qmmm_struct_type), intent(in) :: qmmm_struct
+    type(qmmm_nml_type),intent(inout) :: qmmm_nml
+    type(qm2_params_type),intent(inout) :: qm2_params
 
     integer :: i, i0, ik, ilipa, info, inset, ipm, ips, ix, j, jmax, jps, k, &
    & l, nara, narea, nfl1, nfl2, niter, nps0, maxrs
@@ -1519,7 +1542,7 @@ subroutine coscav(cosmo_c_struct, qmmm_struct)
    ! NOW THE SEGMENT FORMATION ON ALL ATOMS IS FINISHED
    ! NOW THE CLOSURE OF THE CONCAVE REGIONS OF THE SURFACE WILL BE DONE
     if (cosmo_c_struct%ioldcv == 0) then
-      call surclo(cosmo_c_struct,qmmm_struct, coord, nipa, lipa, din, rsc, isort, ipsrs, &
+      call surclo(qm2_params,qmmm_nml,cosmo_c_struct,qmmm_struct, coord, nipa, lipa, din, rsc, isort, ipsrs, &
          nipsrs,qmmm_struct%iqm_atomic_numbers, &
          cosmo_c_struct%srad, cosmo_c_struct%cosurf, cosmo_c_struct%iatsp, cosmo_c_struct%nar_csm, &
          cosmo_c_struct%nsetf, cosmo_c_struct%isude, cosmo_c_struct%sude, maxrs)
@@ -1766,20 +1789,23 @@ end subroutine dvfill
 !
 !********************************************************************
 !
-subroutine surclo (cosmo_c_struct,qmmm_struct,coord, nipa, lipa, din, rsc, isort, ipsrs, nipsrs, nat, &
+subroutine surclo (qm2_params,qmmm_nml,cosmo_c_struct,qmmm_struct,coord, nipa, lipa, din, rsc, isort, ipsrs, nipsrs, nat, &
 & srad, cosurf, iatsp, nar_csm, nsetf, isude, sude, maxrs)
    ! CREATES SEGMENTS WHICH CLOSE THE CONCAVE REGIONS OF THE CAVITY
     use cosmo_C, only : cosmo_C_structure
     use qmmm_struct_module, only : qmmm_struct_type
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
     !use cosmo_C, only: cosmo_c_struct%n0, cosmo_c_struct%lenabc, cosmo_c_struct%nipc, cosmo_c_struct%rsolv, cosmo_c_struct%area, &
     !   & cosmo_c_struct%cosvol, cosmo_c_struct%nps, cosmo_c_struct%numat
 
-   use qmmm_module,only:qm2_params,qmmm_nml
     
    !use molkst_C, only: cosmo_c_struct%numat
    !use funcon_C, only: pi, twopi
     
    implicit none
+        type(qmmm_nml_type),intent(inout) :: qmmm_nml
+        type(qm2_params_type),intent(inout) :: qm2_params
    type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
     type(qmmm_struct_type), intent(in) :: qmmm_struct
     integer numat_p;
@@ -2414,19 +2440,22 @@ end subroutine memory_error
 !
 !********************************************************************
 !
-subroutine mkbmat(cosmo_c_struct, qmmm_struct) 
+subroutine mkbmat(qm2_params,qmmm_nml,cosmo_c_struct, qmmm_struct) 
     !use molkst_C, only: cosmo_c_struct%numat
     !use cosmo_C, only : cosmo_c_struct%nps, cosmo_c_struct%bmat, cosmo_c_struct%cosurf,a0,cosmo_c_struct%numat,cosmo_c_struct%lm61,cosmo_c_struct%idenat
 
     !use parameters_C, only: dd, qq
     use cosmo_C, only : cosmo_C_structure, a0
-    use qmmm_module,only:qm2_params,qmmm_nml
     use qmmm_struct_module, only : qmmm_struct_type
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
    !use funcon_C, only: a0
 
     !use common_arrays_C, only : coord, nfirst, nlast, nat
 
     implicit none
+        type(qmmm_nml_type),intent(inout) :: qmmm_nml
+        type(qm2_params_type),intent(inout) :: qm2_params
    type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
    type(qmmm_struct_type), intent(in) :: qmmm_struct
    integer :: i, ia, idel, iden, ips, ix, nati, iii
@@ -2519,8 +2548,9 @@ end subroutine mkbmat
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 !Subroutine for creating a test cavity consiting of single cavity charges for each atom
-subroutine coscav_test(cosmo_c_struct,qmmm_struct)
-    use qmmm_module,only:qm2_params,qmmm_nml
+subroutine coscav_test(qm2_params,qmmm_nml,cosmo_c_struct,qmmm_struct)
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
 
     use cosmo_C, only : cosmo_C_structure
     !use cosmo_C, only: cosmo_c_struct%lenabc, cosmo_c_struct%nps, cosmo_c_struct%nipc, cosmo_c_struct%area, cosmo_c_struct%isude, cosmo_c_struct%sude, &
@@ -2528,6 +2558,8 @@ subroutine coscav_test(cosmo_c_struct,qmmm_struct)
     !   cosmo_c_struct%cosurf, cosmo_c_struct%amat, cosmo_c_struct%iatsp, cosmo_c_struct%nar_csm, cosmo_c_struct%nsetf, cosmo_c_struct%phinet, cosmo_c_struct%arat
     use qmmm_struct_module, only : qmmm_struct_type
     implicit none
+    type(qmmm_nml_type),intent(inout) :: qmmm_nml
+    type(qm2_params_type),intent(inout) :: qm2_params
     type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
     type(qmmm_struct_type), intent(in) :: qmmm_struct
 
@@ -2559,7 +2591,7 @@ subroutine coscav_test(cosmo_c_struct,qmmm_struct)
     end do
 end subroutine coscav_test
 
-subroutine cosini_testing(cosmo_c_struct,qm2_struct,qmmm_struct) 
+subroutine cosini_testing(qm2_params,qmmm_nml,cosmo_c_struct,qm2_struct,qmmm_struct) 
     use cosmo_C, only : cosmo_C_structure
     !use cosmo_C, only: cosmo_c_struct%n0, cosmo_c_struct%ioldcv, cosmo_c_struct%fnsq, cosmo_c_struct%nps, cosmo_c_struct%rsolv, cosmo_c_struct%nspa, cosmo_c_struct%disex2, &
     !cosmo_c_struct%dirsm, cosmo_c_struct%dirvec, cosmo_c_struct%srad, cosmo_c_struct%ipiden, cosmo_c_struct%gden, cosmo_c_struct%idenat, cosmo_c_struct%qdenet, cosmo_c_struct%amat, &
@@ -2569,9 +2601,11 @@ subroutine cosini_testing(cosmo_c_struct,qm2_struct,qmmm_struct)
     !cosmo_c_struct%ceps, cosmo_c_struct%v_solvent_xi
 !    use cosmo_C
     
-    use qmmm_module,only:qm2_params, qm2_structure,qmmm_nml
+    use qmmm_module,only: qm2_structure
     use qm2_davidson_module
     use qmmm_struct_module, only : qmmm_struct_type
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
 
     !use common_arrays_C, only : nat, nfirst, nlast
     !    nat will be substituted with iqm_atomic_numbers
@@ -2586,6 +2620,8 @@ subroutine cosini_testing(cosmo_c_struct,qm2_struct,qmmm_struct)
     type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
     type(qm2_structure),intent(inout) :: qm2_struct
     type(qmmm_struct_type), intent(in) :: qmmm_struct
+    type(qmmm_nml_type),intent(inout) :: qmmm_nml
+    type(qm2_params_type),intent(inout) :: qm2_params
 
     integer :: i, i0, iat, idel, iden, incif, indise, inrsol, j, k, n1, &
       n2, nfi, nfj

@@ -1,7 +1,7 @@
 ! <compile=optimized>
 #include "copyright.h"
 #include "dprec.fh"
-subroutine qm2_h1elec_d(qm2_struct,R2,XI,XJ, n_atomic_orbi,n_atomic_orbj,indexi, indexj, qmitype,qmjtype,  &
+subroutine qm2_h1elec_d(qm2_params,qm2_struct,R2,XI,XJ, n_atomic_orbi,n_atomic_orbj,indexi, indexj, qmitype,qmjtype,  &
                         totalNumberOrbitals, H)
 
 !***********************************************************************
@@ -25,12 +25,14 @@ subroutine qm2_h1elec_d(qm2_struct,R2,XI,XJ, n_atomic_orbi,n_atomic_orbj,indexi,
       use Rotation           , only : GetRotationMatrix, Rotate1Elec
       use ElementOrbitalIndex, only: MaxValenceOrbitals,MaxGaussianExpansion, MaxValenceDimension
       use SlaterOverlap      , only :GetSlaterOverlap
-      use qmmm_module        , only : qm2_params, qm2_structure, EXPONENTIAL_CUTOFF
+      use qmmm_module        , only : qm2_structure, EXPONENTIAL_CUTOFF
       use utilitiesmodule, only : print
+      use qm2_params_module,  only : qm2_params_type
 
       implicit none
 
 !Passed In
+      type(qm2_params_type),intent(inout) :: qm2_params
       type(qm2_structure),intent(inout) :: qm2_struct
       _REAL_, intent(in) :: R2,XI(3),XJ(3) 
       integer, intent(in) :: n_atomic_orbi, n_atomic_orbj

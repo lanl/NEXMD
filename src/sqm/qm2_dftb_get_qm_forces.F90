@@ -4,7 +4,7 @@
 #include "copyright.h"
 #include "dprec.fh"
 #include "def_time.h"
-subroutine qm2_dftb_get_qm_forces(qm2_struct, qmmm_struct, dxyzqm)
+subroutine qm2_dftb_get_qm_forces(qmmm_nml,qmmm_mpi,qm2_struct, qmmm_struct, dxyzqm)
 
 !     Gets the forces from the DFTB calculation
 !
@@ -22,12 +22,15 @@ subroutine qm2_dftb_get_qm_forces(qm2_struct, qmmm_struct, dxyzqm)
 !     qmmm_struct%nquant_nlink    - Total number of qm atoms. (Real + link)
 
       use qm2_dftb_module, only : izp_str, mcharge, mol, lmax
-      use qmmm_module, only : qmmm_nml, qmmm_mpi, qm2_structure
+      use qmmm_module, only : qmmm_mpi_structure, qm2_structure
       use constants, only: AU_TO_KCAL, A_TO_BOHRS
       use qmmm_struct_module, only : qmmm_struct_type
+      use qmmm_nml_module   , only : qmmm_nml_type
 
       implicit none
       type(qm2_structure),intent(inout) :: qm2_struct
+      type(qmmm_mpi_structure), intent(in) :: qmmm_mpi
+      type(qmmm_nml_type), intent(in) :: qmmm_nml
       type(qmmm_struct_type), intent(in) :: qmmm_struct
       _REAL_, intent(out) :: dxyzqm(3,qmmm_struct%nquant_nlink)
 
@@ -48,7 +51,7 @@ subroutine qm2_dftb_get_qm_forces(qm2_struct, qmmm_struct, dxyzqm)
 
         call timer_start(TIME_QMMMDFTBHZEROF)
         ! Gradient due to H zero. (Non charge dependent part)
-        call dftb_hzero_grad(qmmm_struct%nquant_nlink, izp_str%izp,lmax,qmmm_struct%qm_coords,dxyzqm)
+        call dftb_hzero_grad(qmmm_nml,qmmm_struct%nquant_nlink, izp_str%izp,lmax,qmmm_struct%qm_coords,dxyzqm)
         call timer_stop(TIME_QMMMDFTBHZEROF)
 
         call timer_start(TIME_QMMMDFTBGAMMAF)
@@ -189,14 +192,15 @@ end subroutine dftb_gammamatrix_deriv
 !
 ! Does the gradient of the Hamiltonian part of the SCC-DFTB energy.
 !
-subroutine dftb_hzero_grad(nquant_nlink,izp,lmax,qm_coords,grad)
+subroutine dftb_hzero_grad(qmmm_nml, nquant_nlink,izp,lmax,qm_coords,grad)
 
    use constants, only : BOHRS_TO_A
    use qm2_dftb_module, only: NDIM,LDIM, ks_struct
-   use qmmm_module, only : qmmm_nml
+   use qmmm_nml_module, only : qmmm_nml_type
    implicit none
 
 ! Passed in:
+   type(qmmm_nml_type), intent(in) :: qmmm_nml
    integer, intent(in ) :: nquant_nlink
    integer, intent(in ) :: izp(*)
    integer, intent(in ) :: lmax(*)

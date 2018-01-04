@@ -104,12 +104,15 @@
 !
 !********************************************************************
 !
-   subroutine Vxi(qm2_struct,qm2ds,qmmm_struct,xi,eta)
+   subroutine Vxi(qm2_params,qmmm_mpi,qm2_struct,qm2ds,qmmm_struct,xi,eta)
    use qm2_davidson_module
    use qmmm_struct_module, only : qmmm_struct_type
-   use qmmm_module,only:qm2_structure
+   use qmmm_module,only:qm2_structure, qmmm_mpi_structure
+   use qm2_params_module,  only : qm2_params_type
 
    implicit none
+   type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
+   type(qm2_params_type),intent(inout) :: qm2_params
    type(qm2_structure),intent(inout) :: qm2_struct
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
    type(qm2_davidson_structure_type), intent(inout) :: qm2ds
@@ -128,7 +131,7 @@
     end do
    end do
 
-   call Vxi_pack(qm2_struct,qm2ds,qmmm_struct,qm2ds%xis,qm2ds%etas)
+   call Vxi_pack(qm2_params,qmmm_mpi,qm2_struct,qm2ds,qmmm_struct,qm2ds%xis,qm2ds%etas)
     l=0
     do i=1,qm2ds%Nb
       do j=1,i-1
@@ -149,7 +152,7 @@
     end do
    end do
 
-   call Vxi_packA(qm2_struct,qm2ds,qmmm_struct,qm2ds%xis,qm2ds%etas)
+   call Vxi_packA(qm2_params,qmmm_mpi,qm2_struct,qm2ds,qmmm_struct,qm2ds%xis,qm2ds%etas)
    l=0
    do i=1,qm2ds%Nb
       do j = 1,i-1
@@ -174,7 +177,7 @@
    end do
 
 !  multiply:
-   call Vxi_pack(qm2_struct,qm2ds,qmmm_struct,qm2ds%xis,qm2ds%etas)
+   call Vxi_pack(qm2_params,qmmm_mpi,qm2_struct,qm2ds,qmmm_struct,qm2ds%xis,qm2ds%etas)
 !  unpack:
    l = 0
    do i = 1,qm2ds%Nb
@@ -190,15 +193,18 @@
 !
 !********************************************************************
 !
-   subroutine Vxi_pack(qm2_struct,qm2ds,qmmm_struct,xi,eta)
-   use qmmm_module,only: qm2_params, qm2_structure
+   subroutine Vxi_pack(qm2_params,qmmm_mpi,qm2_struct,qm2ds,qmmm_struct,xi,eta)
+   use qmmm_module,only: qm2_structure, qmmm_mpi_structure
    use qm2_davidson_module
    use qmmm_struct_module, only : qmmm_struct_type
+   use qm2_params_module,  only : qm2_params_type
 
    implicit none
+   type(qm2_params_type),intent(inout) :: qm2_params
    type(qm2_structure),intent(inout) :: qm2_struct
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
    type(qm2_davidson_structure_type), intent(inout) :: qm2ds
+   type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
    _REAL_ xi(qm2ds%Lt),eta(qm2ds%Lt)
    character keywr*6
    common /keywr/ keywr
@@ -216,9 +222,9 @@
          first=.false.
       endif
       eta(:)=0.0
-      call qm2_fock2(qm2_struct, qmmm_struct,eta,xi,qm2ds%W,qm2_params%orb_loc)
+      call qm2_fock2(qmmm_mpi,qm2_params,qm2_struct, qmmm_struct,eta,xi,qm2ds%W,qm2_params%orb_loc)
    if (qm2ds%iderivfl.eq.0) then ! We are not in analytic derivatives     
-      call qm2_fock1(qmmm_struct, eta,xi) 
+      call qm2_fock1(qmmm_mpi,qm2_params,qmmm_struct, eta,xi) 
       endif
       eta(:)=eta(:)*2.0 !Why *2.0? Is it for the commutator in L(xi)?
    return
@@ -228,12 +234,15 @@
 !
 !********************************************************************
 !
-   subroutine Vxi_packA(qm2_struct,qm2ds,qmmm_struct,xi,eta)
-   use qmmm_module,only: qm2_params, qm2_structure
+   subroutine Vxi_packA(qm2_params,qmmm_mpi,qm2_struct,qm2ds,qmmm_struct,xi,eta)
+   use qmmm_module,only: qm2_structure, qmmm_mpi_structure
    use qm2_davidson_module
    use qmmm_struct_module, only : qmmm_struct_type
+   use qm2_params_module,  only : qm2_params_type
 
    implicit none
+   type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
+   type(qm2_params_type),intent(inout) :: qm2_params
    type(qm2_structure),intent(inout) :: qm2_struct
    type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
@@ -254,9 +263,9 @@
          first=.false.
       endif
       eta(:)=0.0
-      call qm2_fock2(qm2_struct,qmmm_struct, eta,xi,qm2ds%W,qm2_params%orb_loc)
+      call qm2_fock2(qmmm_mpi,qm2_params,qm2_struct,qmmm_struct, eta,xi,qm2ds%W,qm2_params%orb_loc)
    if (qm2ds%iderivfl.eq.0) then ! We are not in analytic derivatives
-      call qm2_fock1_skew(qmmm_struct, eta,xi)
+      call qm2_fock1_skew(qm2_params,qmmm_mpi,qmmm_struct, eta,xi)
       endif
       eta(:)=eta(:)*2.0
    return

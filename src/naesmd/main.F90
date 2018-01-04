@@ -57,8 +57,20 @@ program MD_Geometry
     type(qm2_structure), target :: qm2_struct_notp
     type(cosmo_C_structure), target :: cosmo_C_struct_notp
     type(naesmd_structure), target :: naesmd_struct_notp
+    type(xlbomd_structure), target :: xlbomd_struct_notp
     type(md_structure), target :: md_struct_notp
     type(rk_comm_real_1d), target :: rk_struct_notp
+    type(qm2_params_type),target :: qparams_struct_notp
+    type(qmmm_nml_type),target :: qnml_struct_notp
+    type(qm2_rij_eqns_structure),target:: rij_struct_notp
+    type(qm_gb_structure),target :: gb_struct_notp
+    type(qmmm_mpi_structure),target :: qmpi_struct_notp
+    type(qmmm_opnq_structure),target :: opnq_struct_notp
+    type(qmmm_div_structure), target :: div_struct_notp
+    type(qmmm_vsolv_type), target :: vsolv_struct_notp
+    type(qmmm_scratch_structure), target:: scratch_struct_notp
+    type(qm_ewald_structure), target :: ewald_struct_notp
+
     type(simulation_t),target::sim_notp
     type(simulation_t),pointer::sim
     ! variables of the moldyn namelist
@@ -108,8 +120,12 @@ program MD_Geometry
     sim=>sim_notp
    
     call init0_simulation(sim)
-    call setp_simulation(sim,qmmm_struct_notp,qm2ds_notp,&
-		qm2_struct_notp,naesmd_struct_notp, md_struct_notp, rk_struct_notp,cosmo_c_struct_notp)
+    call setp_simulation(sim,qmmm_struct_notp,qm2ds_notp, &
+                qm2_struct_notp,naesmd_struct_notp,md_struct_notp,rk_struct_notp, &
+                cosmo_c_struct_notp,xlbomd_struct_notp,qparams_struct_notp, &
+                qnml_struct_notp,rij_struct_notp,gb_struct_notp,qmpi_struct_notp, &
+                opnq_struct_notp,div_struct_notp,vsolv_struct_notp,scratch_struct_notp, &
+                ewald_struct_notp)
     call init_main(sim, sim%naesmd, sim%md)
 
     !Put derivative variables into module

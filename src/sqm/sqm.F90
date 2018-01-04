@@ -136,7 +136,9 @@ program sqm
       ! ------------------------
 	  qm2ds%minimization = .FALSE.
 	! CML Includes call to Davidson within sqm_energy() 7/16/12
-      call sqm_energy(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,atom, x, escf, born_radii, one_born_radii, &
+      call sqm_energy(qmewald, qmmm_opnq,qm2_rij_eqns,qmmm_mpi,qm_gb, qmmm_scratch, qmmm_nml, qm2_params &
+                 xlbomd_struct,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,atom, x, &
+                 escf, born_radii, one_born_radii, &
                  intdiel, extdiel, Arad, qm2_struct%scf_mchg )
 
 		! CML TESTING
@@ -183,22 +185,22 @@ program sqm
     end if
 
    write(6,*) ''
-   call qm2_print_charges(qmmm_struct, 1,qmmm_nml%dftb_chg,qmmm_struct%nquant_nlink, &
+   call qm2_print_charges(qmmm_nml,qmmm_mpi, qmmm_struct, 1,qmmm_nml%dftb_chg,qmmm_struct%nquant_nlink, &
                             qm2_struct%scf_mchg,qmmm_struct%iqm_atomic_numbers)
 
    write(6,*) ''
    
    
-   call qm2_calc_dipole(qm2_struct,qm2ds,qmmm_struct, x)
+   call qm2_calc_dipole(qmmm_nml,qm2_params,qm2_struct,qm2ds,qmmm_struct, x)
    
    write(6,*) ''
    
    write(6,*) 'Final Structure'
-   call qm_print_coords(0,.true.)
+   call qm_print_coords(qmmm_nml,0,.true.)
    if ( qmmm_nml%printbondorders ) then
       write(6,*) ''
       write(6,*) 'Bond Orders'
-      call qm2_print_bondorders(qm2_struct,qmmm_struct)
+      call qm2_print_bondorders(qm2_params,qm2_struct,qmmm_struct)
    end if
 
    if (qmmm_nml%verbosity > 3) then
@@ -215,7 +217,8 @@ program sqm
    write(6,*) '          --------- Calculation Completed ----------'
    write(6,*)
 
-   call deallocate_qmmm(qmmm_nml, qmmm_struct, qmmm_vsolv, qm2_params)
+   call deallocate_qmmm(qm2_rij_eqns,qmmm_mpi,qm_gb, qmmm_scratch,  &
+        qmewald, qm2_struct,qmmm_nml, qmmm_struct, qmmm_vsolv, qm2_params)
 
    if (qm2ds%Mx > 0) call deallocate_davidson(qm2ds)		! CML should be wrapped into above call 7/11/12
 
@@ -345,18 +348,20 @@ subroutine sqm_energy(qm2ds,qmmm_struct,natom,coords,escf, &
           write(6,'(/80(1H-)/''  QM CALCULATION INFO'',/80(1H-))')
        end if
 
-       call qm2_load_params_and_allocate(qm2_struct,qmmm_struct) !Load the parameters
+       call qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opnq, qmmm_scratch, &
+                                         xlbomd_struct,qm2_struct,qmmm_struct) !Load the parameters
              !Also does a lot of memory allocation and pre-calculates all
              !the STO-6G orbital expansions.
 
        if (qmmm_mpi%commqmmm_master) then
-          ! call qm_print_dyn_mem(qm2_struct,qmmm_struct,natom,qmmm_struct%qm_mm_pairs)
-          call qm_print_coords(0,.true.)
+          ! call qm_print_dyn_mem(qm2_params,qmmm_nml,qmewald, qm_gb, qmmm_mpi, qmmm_scratch,qm2_rij_eqns, &
+          !                       qm2_struct,qmmm_struct,natom,qmmm_struct%qm_mm_pairs)
+          call qm_print_coords(qmmm_nml,0,.true.)
           !Finally print the result header that was skipped in sander.
           write(6,'(/80(1H-)/''  RESULTS'',/80(1H-)/)')
        end if
 
-      if (qm2ds%Mx > 0) call allocate_davidson(qm2_struct,qm2ds,qmmm_struct)   ! CML 7/16/12
+      if (qm2ds%Mx > 0) call allocate_davidson(qmmm_scratch,qmmm_nml,qm2_struct,qm2ds,qmmm_struct)   ! CML 7/16/12
 
    end if !if (qmmm_struct%qm_mm_first_call)
 
@@ -365,14 +370,16 @@ subroutine sqm_energy(qm2ds,qmmm_struct,natom,coords,escf, &
    !Calculate RIJ and many related equations here. Necessary memory allocation
    !is done inside the routine.
 !Parallel
-   call qm2_calc_rij_and_eqns(qmmm_struct, qmmm_struct%qm_coords, qmmm_struct%nquant_nlink, &
+   call qm2_calc_rij_and_eqns(qm2_params,qmmm_nml,qmmm_mpi,qm2_rij_eqns, &
+          qmmm_struct, qmmm_struct%qm_coords, qmmm_struct%nquant_nlink, &
           qmmm_struct%qm_xcrd, natom, qmmm_struct%qm_mm_pairs)
                                 !and store them in memory to save time later.
 
    !============================
    ! Calculate SCF Energy
    !============================
-   call qm2_energy(cosmo_c_struct,qm2_struct,qm2ds, qmmm_struct, escf, scf_mchg, natom, born_radii, one_born_radii, &
+   call qm2_energy(qm2_params,qmmm_nml,qmewald,qm2_rij_eqns, qm_gb, qmmm_mpi, qmmm_opnq, qmmm_scratch, &
+      xlbomd_struct,cosmo_c_struct,qm2_struct,qm2ds, qmmm_struct, escf, scf_mchg, natom, born_radii, one_born_radii, &
       coords,scaled_mm_charges)
 
    !===================================
@@ -380,14 +387,14 @@ subroutine sqm_energy(qm2ds,qmmm_struct,natom,coords,escf, &
    !===================================
    flush(6)
 
-   if(qm2ds%Mx>0) call dav_wrap(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct)
+   if(qm2ds%Mx>0) call dav_wrap(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct)
 
    !=============================
    !   Print Mulliken Charges
    !=============================
 
    if (qmmm_nml%printcharges .and. qmmm_mpi%commqmmm_master) then
-     call qm2_print_charges(qmmm_struct,1,qmmm_nml%dftb_chg,qmmm_struct%nquant_nlink, &
+     call qm2_print_charges(qmmm_nml,qmmm_mpi, qmmm_struct,1,qmmm_nml%dftb_chg,qmmm_struct%nquant_nlink, &
                             scf_mchg,qmmm_struct%iqm_atomic_numbers)
    end if
    !=============================
@@ -396,7 +403,7 @@ subroutine sqm_energy(qm2ds,qmmm_struct,natom,coords,escf, &
 
    select case (qmmm_nml%printdipole)
       case (1)
-         call qm2_calc_dipole(qm2_struct,qm2ds,qmmm_struct, coords)
+         call qm2_calc_dipole(qmmm_nml,qm2_params,qm2_struct,qm2ds,qmmm_struct, coords)
       case (2)
          write (6,'("QMMM: Not MM part; please check your selection")')
       case default
@@ -407,7 +414,7 @@ subroutine sqm_energy(qm2ds,qmmm_struct,natom,coords,escf, &
    !  but kept here for historical reasons)
 
    if (qmmm_mpi%commqmmm_master) then
-      call qm2_print_energy(cosmo_c_struct,qm2_struct, qmmm_nml%verbosity, qmmm_nml%qmtheory, escf, qmmm_struct)
+      call qm2_print_energy(qmmm_scratch,cosmo_c_struct,qm2_struct, qmmm_nml%verbosity, qmmm_nml%qmtheory, escf, qmmm_struct)
    end if
 
    qmmm_struct%qm_mm_first_call = .false.
@@ -432,10 +439,10 @@ subroutine sqm_forces(natom, forces)
 
   qmmm_struct%dxyzqm=zero
    if (qmmm_nml%qmtheory%DFTB) then
-     call qm2_dftb_get_qm_forces(qm2_struct,qmmm_struct, qmmm_struct%dxyzqm)
+     call qm2_dftb_get_qm_forces(qmmm_nml,qmmm_mpi,qm2_struct,qmmm_struct, qmmm_struct%dxyzqm)
    else
      !standard semi-empirical
-     call qm2_get_qm_forces(qm2_struct,qmmm_struct, qmmm_struct%dxyzqm)
+     call qm2_get_qm_forces(qmmm_mpi, qmmm_nml, qm2_params, qm2_struct,qmmm_struct, qmmm_struct%dxyzqm)
    end if
 
    !NOW PUT THE CALCULATED gradient (not force!) INTO THE SANDER FORCE ARRAY

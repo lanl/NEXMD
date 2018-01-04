@@ -1,7 +1,7 @@
 ! <compile=optimized>
 #include "copyright.h"
 #include "dprec.fh"
-subroutine qm2_h1elec(R2,XI,XJ, n_atomic_orbi,n_atomic_orbj,SHMAT, qmitype,qmjtype)
+subroutine qm2_h1elec(qm2_params,R2,XI,XJ, n_atomic_orbi,n_atomic_orbj,SHMAT, qmitype,qmjtype)
 
 !***********************************************************************
 !
@@ -21,10 +21,11 @@ subroutine qm2_h1elec(R2,XI,XJ, n_atomic_orbi,n_atomic_orbj,SHMAT, qmitype,qmjty
       use constants          , only : A2_TO_BOHRS2, A_TO_BOHRS, half
       use ElementOrbitalIndex, only : MaxValenceOrbitals,MaxGaussianExpansion
       use SlaterOverlap      , only : GetSlaterOverlap
-      use qmmm_module        , only : qm2_params, EXPONENTIAL_CUTOFF
+      use qmmm_module        , only : EXPONENTIAL_CUTOFF
+      use qm2_params_module,  only : qm2_params_type
 
       implicit none
-
+      type(qm2_params_type), intent(inout) :: qm2_params
       _REAL_ , intent(in) :: R2,XI(3),XJ(3)
       integer, intent(in) :: n_atomic_orbi, n_atomic_orbj
       integer, intent(in) :: qmitype,qmjtype      

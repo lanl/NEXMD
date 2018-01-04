@@ -243,7 +243,7 @@ module nacT_analytic_module
    call packing(Nb,sim%dav%eta,sim%dav%nacr_scratch,'s')
 
 
-   nacT_direct_ihc=dcart1_xpm(sim%qm2, sim%dav, sim%qmmm, sim%dav%nacr_scratch,xstep%Rp,xstep%Rm) 
+   nacT_direct_ihc=dcart1_xpm(sim%qnml, sim%qparams, sim%qmpi, sim%qm2, sim%dav, sim%qmmm, sim%dav%nacr_scratch,xstep%Rp,xstep%Rm) 
 
 
    nacT_direct_ihc=nacT_direct_ihc*kcalev &
@@ -267,7 +267,6 @@ module nacT_analytic_module
    use dcart_xpm_module
    use constants          , only : EV_TO_KCAL
    use ElementOrbitalIndex, only: MaxValenceOrbitals
-   use qmmm_module        , only : qmmm_nml, qm2_params, qmmm_mpi
    use qm2_pm6_hof_module
    use dh_correction_module, only : dh_correction_grad
    use qm2_davidson_module ! CML 7/13/12
@@ -295,29 +294,29 @@ module nacT_analytic_module
    !BTN Start here
    
 #ifdef MPI
-   do ii = qmmm_mpi%nquant_nlink_istart, qmmm_mpi%nquant_nlink_iend
-      jstart =  qmmm_mpi%nquant_nlink_jrange(1,ii)
-      jend = qmmm_mpi%nquant_nlink_jrange(2,ii)
+   do ii = sim%qmpi%nquant_nlink_istart, sim%qmpi%nquant_nlink_iend
+      jstart =  sim%qmpi%nquant_nlink_jrange(1,ii)
+      jend = sim%qmpi%nquant_nlink_jrange(2,ii)
 #else
    do II=2,sim%qmmm%nquant_nlink
        jstart = 1
        jend = ii-1
 #endif
        !Loop over all pairs of quantum atoms
-       iif=qm2_params%orb_loc(1,II)
-       iil=qm2_params%orb_loc(2,II)
+       iif=sim%qparams%orb_loc(1,II)
+       iil=sim%qparams%orb_loc(2,II)
        qmitype = sim%qmmm%qm_atom_type(ii)
        natqmi=sim%qmmm%iqm_atomic_numbers(II)
        do JJ=jstart,jend !jj=1,ii-1
            !  FORM DIATOMIC MATRICES
-           jjf=qm2_params%orb_loc(1,JJ)
-           jjl=qm2_params%orb_loc(2,JJ)
+           jjf=sim%qparams%orb_loc(1,JJ)
+           jjl=sim%qparams%orb_loc(2,JJ)
            !   GET FIRST ATOM
            qmjtype = sim%qmmm%qm_atom_type(jj)
            natqmj=sim%qmmm%iqm_atomic_numbers(JJ)
            IJ=0
            do I=jjf,jjl
-               K=qm2_params%pascal_tri1(i)+jjf-1
+               K=sim%qparams%pascal_tri1(i)+jjf-1
                do J=jjf,I
                    IJ=IJ+1
                    K=K+1
@@ -326,7 +325,7 @@ module nacT_analytic_module
            end do
            ! GET SECOND ATOM FIRST ATOM INTERSECTION
            do I=iif,iil
-               L=qm2_params%pascal_tri1(i)
+               L=sim%qparams%pascal_tri1(i)
                K=L+jjf-1
                do J=jjf,jjl
                    IJ=IJ+1
@@ -348,16 +347,18 @@ module nacT_analytic_module
            
            xyz_qmi(:)=xs%rm(:,ii)
            xyz_qmj(:)=xs%rm(:,jj)
-           call qm2_dhc1(sim%qm2, sim%qmmm, psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+           call qm2_dhc1(sim%rij,sim%qparams, sim%qnml, sim%qm2, sim%qmmm, psum,ii,jj, &
+              qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
               jjl,Fm)
                     
            xyz_qmi(:)=xs%rp(:,ii)
            xyz_qmj(:)=xs%rp(:,jj)
-           call qm2_dhc1(sim%qm2, sim%qmmm, psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
-              jjl,sim%qm2%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:))
+           call qm2_dhc1(sim%rij,sim%qparams, sim%qnml, sim%qm2, sim%qmmm, psum,ii,jj,&
+              qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+              jjl,sim%qm2%fock_matrix_dp(sim%qparams%pascal_tri1(ii-1)+jj,:))
               
-           sim%qm2%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:)= &
-              sim%qm2%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:)-Fm(:)
+           sim%qm2%fock_matrix_dp(sim%qparams%pascal_tri1(ii-1)+jj,:)= &
+              sim%qm2%fock_matrix_dp(sim%qparams%pascal_tri1(ii-1)+jj,:)-Fm(:)
            
        end do
    end do
@@ -380,6 +381,7 @@ module nacT_analytic_module
    
    return
    end subroutine nacT_direct
+
 
   ! Kind of a useless wrapper for nact_direct isn't it?
    subroutine nacT_analytic(sim,nact,xstep)

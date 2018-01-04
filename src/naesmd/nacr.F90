@@ -1,14 +1,20 @@
 #include "dprec.fh"
 
-subroutine nacR_analytic(qm2_struct,qm2ds,qmmm_struct, xyz_in, ihop, icheck)
-    use qmmm_module, only : qm2_structure, qmmm_nml
+subroutine nacR_analytic(qm2_params,qmmm_nml,qmmm_mpi,qm2_rij_eqns,qm2_struct,qm2ds,qmmm_struct, xyz_in, ihop, icheck)
+    use qmmm_module, only : qm2_structure, qmmm_mpi_structure, qm2_rij_eqns_structure
     use qm2_davidson_module
     use constants, only : KCAL_TO_EV
     use qmmm_struct_module, only : qmmm_struct_type
+    use qmmm_nml_module   , only : qmmm_nml_type
+    use qm2_params_module,  only : qm2_params_type
 
     implicit none
-    type(qmmm_struct_type), intent(inout) :: qmmm_struct
-    type(qm2_structure),intent(inout) :: qm2_struct
+   type(qm2_rij_eqns_structure),intent(inout) :: qm2_rij_eqns
+   type(qmmm_struct_type), intent(inout) :: qmmm_struct
+   type(qm2_structure),intent(inout) :: qm2_struct
+   type(qm2_params_type),intent(inout) :: qm2_params
+   type(qmmm_nml_type),intent(inout) :: qmmm_nml
+   type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
 
 
     ! NEW OR MODIFIED VARIABLES
@@ -106,7 +112,8 @@ subroutine nacR_analytic(qm2_struct,qm2ds,qmmm_struct, xyz_in, ihop, icheck)
         end do
         ! Term Tr(F^x rho_ij) (only symmetric part contributes)
         call packing(Nb,qm2ds%eta,qm2ds%nacr_scratch,'s')
-        call DCART1(qm2_struct,qm2ds,qmmm_struct, dxyz1,qm2_struct%den_matrix,qm2ds%nacr_scratch,xyz)
+        call DCART1(qmmm_nml, qm2_params, qmmm_mpi, qm2_rij_eqns, qm2_struct,qm2ds,qmmm_struct, &
+		 dxyz1,qm2_struct%den_matrix,qm2ds%nacr_scratch,xyz)
 
         ! Convert from kcal/A to eV/A
         do j = 3,N3,3

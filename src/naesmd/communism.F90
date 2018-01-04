@@ -4,12 +4,18 @@
 module communism
     use qm2_davidson_module, only      : qm2_davidson_structure_type
     use qmmm_struct_module, only       : qmmm_struct_type
-    use qmmm_module, only              : qm2_structure
+    use qmmm_module, only : qm2_structure, qm_ewald_structure, &
+         qm2_rij_eqns_structure, qm_gb_structure, qmmm_mpi_structure, &
+         qmmm_opnq_structure, qmmm_scratch_structure, qmmm_div_structure 
+    use qmmm_vsolv_module , only : qmmm_vsolv_type
     use naesmd_module, only            : naesmd_structure, realp_t
     use md_module, only            : md_structure
+    use xlbomd_module, only            : xlbomd_structure
     use naesmd_constants
     use rksuite_90, only:rk_comm_real_1d 
     use cosmo_C, only : cosmo_C_structure          
+    use qm2_params_module,  only : qm2_params_type
+    use qmmm_nml_module   , only : qmmm_nml_type
     implicit none
           
     type:: simulation_t
@@ -31,8 +37,19 @@ module communism
         type(qm2_davidson_structure_type),pointer :: dav
         type(qmmm_struct_type),pointer            :: qmmm
         type(qm2_structure),pointer               :: qm2
+        type(xlbomd_structure),pointer            :: xlbomd
         type(cosmo_C_structure),pointer           :: cosmo
 	type(rk_comm_real_1d),pointer :: rk_comm !quantum coeff ode solver common variables
+        type(qm2_params_type),pointer :: qparams
+        type(qmmm_nml_type),pointer :: qnml
+        type(qm2_rij_eqns_structure),pointer :: rij
+        type(qm_gb_structure),pointer :: gb
+        type(qmmm_mpi_structure),pointer :: qmpi
+        type(qmmm_opnq_structure),pointer :: opnq
+        type(qmmm_div_structure),pointer :: div
+        type(qmmm_vsolv_type),pointer :: vsolv
+        type(qmmm_scratch_structure),pointer:: scratch
+        type(qm_ewald_structure),pointer :: ewald
     end type simulation_t
           
 contains
@@ -49,18 +66,44 @@ contains
         a%md      => null()
         a%rk_comm      => null()
         a%cosmo      => null()
+        a%xlbomd      => null()
+        a%qparams => null() 
+        a%qnml => null() 
+        a%rij => null() 
+        a%gb => null() 
+        a%qmpi => null() 
+        a%opnq => null()   
+        a%div => null()   
+        a%vsolv => null() 
+        a%scratch => null()  
+        a%ewald => null() 
         allocate(a%naesmd)
     end subroutine
 
-    subroutine setp_simulation(a,qmmm_struct,qm2ds,qm2_struct,naesmd_struct,md_struct,rk_struct, cosmo_c_struct)
+    subroutine setp_simulation(a,qmmm_struct,qm2ds,qm2_struct,naesmd_struct,md_struct,rk_struct, &
+		cosmo_c_struct, xlbomd_struct, qparams_struct, &
+                qnml_struct, rij_struct, gb_struct, qmpi_struct, &
+                opnq_struct, div_struct, vsolv_struct, scratch_struct, &
+                ewald_struct)
         type(simulation_t), pointer  :: a
         type(qmmm_struct_type),target :: qmmm_struct
         type(qm2_davidson_structure_type),target :: qm2ds
         type(qm2_structure),target :: qm2_struct
+        type(xlbomd_structure),target :: xlbomd_struct
         type(cosmo_C_structure),target :: cosmo_c_struct
         type(naesmd_structure),target :: naesmd_struct
         type(md_structure),target :: md_struct
-	type(rk_comm_real_1d),target :: rk_struct 
+	type(rk_comm_real_1d),target :: rk_struct
+        type(qm2_params_type),target :: qparams_struct
+        type(qmmm_nml_type),target :: qnml_struct
+        type(qm2_rij_eqns_structure),target:: rij_struct
+        type(qm_gb_structure),target :: gb_struct
+        type(qmmm_mpi_structure),target :: qmpi_struct
+        type(qmmm_opnq_structure),target :: opnq_struct
+        type(qmmm_div_structure), target :: div_struct
+        type(qmmm_vsolv_type), target :: vsolv_struct
+        type(qmmm_scratch_structure), target:: scratch_struct
+        type(qm_ewald_structure), target :: ewald_struct 
         a%qmmm     => qmmm_struct
         a%dav     => qm2ds
         a%qm2     => qm2_struct
@@ -68,6 +111,17 @@ contains
         a%md  => md_struct
 	a%rk_comm => rk_struct
 	a%cosmo => cosmo_c_struct
+	a%xlbomd => xlbomd_struct
+        a%qparams => qparams_struct
+        a%qnml => qnml_struct
+        a%rij => rij_struct
+        a%gb => gb_struct
+        a%qmpi => qmpi_struct 
+        a%opnq => opnq_struct  
+        a%div => div_struct  
+        a%vsolv => vsolv_struct  
+        a%scratch => scratch_struct  
+        a%ewald => ewald_struct
     end subroutine
           
     !
@@ -224,7 +278,8 @@ contains
         endif
 
         ! CML Includes call to Davidson within sqm_energy() 7/16/12
-        call sqm_energy(sim%cosmo,sim%qm2,sim%dav,sim%qmmm,sim%Na,sim%coords,sim%escf,born_radii, &
+        call sqm_energy(sim%ewald,sim%opnq, sim%rij,sim%qmpi,sim%gb,sim%scratch,sim%qnml,sim%qparams, sim%xlbomd,sim%cosmo,&
+            sim%qm2,sim%dav,sim%qmmm,sim%Na,sim%coords,sim%escf,born_radii, &
             one_born_radii,intdiel,extdiel,Arad,sim%qm2%scf_mchg, &
             sim%time_sqm_took,sim%time_davidson_took) !The use of sim here is a hack right now and could be fixed
         ! ground state energy
@@ -305,7 +360,7 @@ contains
         integer :: mn
           
         call qmmm2coords_r(sim)
-        call nacR_analytic(sim%qm2,sim%dav,sim%qmmm, sim%coords,ihop,icheck)
+        call nacR_analytic(sim%qparams,sim%qnml,sim%qmpi,sim%rij,sim%qm2,sim%dav,sim%qmmm, sim%coords,ihop,icheck)
         if(present(dij))  then
             mn = min(size(dij), size(sim%dav%dij))
             dij(:mn) = -sim%dav%dij(:mn)
@@ -319,8 +374,7 @@ contains
     !********************************************************************
     !
     subroutine init_sqm(sim,fdes_in,fdes_out)
-        use qmmm_module,only:qmmm_nml, qmmm_mpi, &
-            deallocate_qmmm
+        use qmmm_module,only: deallocate_qmmm
           
         use constants,only:KCAL_TO_EV,EV_TO_KCAL
         use file_io_dat,only:MAX_FN_LEN
@@ -353,7 +407,8 @@ contains
         ncharge=0;
         igb = 0
    
-        call sqm_read_and_alloc(sim%cosmo,sim%qm2,sim%dav,sim%qmmm,fdes_in, fdes_out, &
+        call sqm_read_and_alloc(sim%qnml,sim%scratch,sim%div,sim%opnq,sim%vsolv,sim%xlbomd,sim%cosmo,&
+            sim%qm2,sim%dav,sim%qmmm,fdes_in, fdes_out, &
             sim%Na,igb,atnam,sim%naesmd%atomtype,maxcyc, &
             grms_tol,ntpr, ncharge,excharge,chgatnum, &
             sim%excN,sim%dav%struct_opt_state,sim%dav%idav,sim%dav%dav_guess, &
@@ -364,14 +419,14 @@ contains
         ! Set default QMMM MPI parameters - for single cpu operation.
         ! These will get overwritten by qmmm_mpi_setup if MPI is on.
         ! qmmm_mpi%master = master
-        qmmm_mpi%commqmmm_master = master
-        qmmm_mpi%numthreads = 1
-        qmmm_mpi%mytaskid = 0
-        qmmm_mpi%natom_start = 1
-        qmmm_mpi%natom_end = sim%naesmd%natom
-        qmmm_mpi%nquant_nlink_start = 1
-        qmmm_mpi%nquant_nlink_end = sim%qmmm%nquant_nlink
-        call allocate_qmgb(sim%qmmm%nquant_nlink)
+        sim%qmpi%commqmmm_master = master
+        sim%qmpi%numthreads = 1
+        sim%qmpi%mytaskid = 0
+        sim%qmpi%natom_start = 1
+        sim%qmpi%natom_end = sim%naesmd%natom
+        sim%qmpi%nquant_nlink_start = 1
+        sim%qmpi%nquant_nlink_end = sim%qmmm%nquant_nlink
+        call allocate_qmgb(sim%gb,sim%qmmm%nquant_nlink)
           
         allocate( sim%qmmm%dxyzqm(3, sim%qmmm%nquant_nlink), stat = ier )
         REQUIRE(ier == 0)
@@ -401,9 +456,9 @@ contains
             sim%Ncharge  = ncharge
             !sim%qm2 => qm2_struct
           
-            if (qmmm_nml%verbosity<5) then
+            if (sim%qnml%verbosity<5) then
                 sim%dav%verbosity=0 !don't print output from scf calculations
-                qmmm_nml%verbosity=0
+                sim%qnml%verbosity=0
             endif
             call naesmd2qmmm_r(sim)
             call xmin(sim%naesmd%natom, sim%qmmm%qm_coords, xmin_iter, maxcyc, grms_tol, ntpr,sim)
@@ -425,13 +480,12 @@ contains
     subroutine xmin(natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
           
         use qm2_davidson_module
-        use qmmm_module, only : qmmm_nml
         use constants, only : zero, AU_TO_EV
         use iso_c_binding
     !    use Cosmo_C, only : solvent_model
 
         implicit none
-          
+   
         ! ------ External functions -----------------
         !_REAL_   xminC
         !external xminC
@@ -563,15 +617,15 @@ contains
                         write(6,'(a)') '  ... geometry converged!'
                         write(6,*)
                         write(6,*) 'Final Structure'
-                        !call qm_print_coords(0,.true.)
+                        !call qm_print_coords(sim_pass%qnml,0,.true.)
                         do i=1,natom !NAESMD format
                             write(6,100) sim_pass%qmmm%iqm_atomic_numbers(i),x(3*(i-1)+1),x(3*(i-1)+2),x(3*(i-1)+3)
                         end do
           
-                        if ( qmmm_nml%printbondorders ) then
+                        if ( sim_pass%qnml%printbondorders ) then
                             write(6,*) ''
                             write(6,*) 'Bond Orders'
-                            call qm2_print_bondorders(sim_pass%qm2,sim_pass%qmmm)
+                            call qm2_print_bondorders(sim_pass%qparams,sim_pass%qm2,sim_pass%qmmm)
                         end if
                     endif
                 case ( CALCENRG, CALCGRAD, CALCBOTH )

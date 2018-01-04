@@ -6,13 +6,17 @@
 !*************************************************
 ! Produces the dipole operator matrix for semiemirical methods
 !*****************************************************
-subroutine get_dipole_matrix(qm2_struct, qmmm_struct, coord, dpmat)
- 	use qmmm_module, only : qm2_params, qm2_structure, qmmm_nml
+subroutine get_dipole_matrix(qm2_params,qmmm_nml,qm2_struct, qmmm_struct, coord, dpmat)
+ 	use qmmm_module, only : qm2_structure
  	use constants, only : BOHRS_TO_A
         use qmmm_struct_module, only : qmmm_struct_type
+        use qm2_params_module,  only : qm2_params_type
+        use qmmm_nml_module   , only : qmmm_nml_type
 
 	! use findmask
       	implicit none
+        type(qm2_params_type),intent(inout) :: qm2_params
+        type(qmmm_nml_type),intent(inout) :: qmmm_nml
         type(qmmm_struct_type), intent(in) :: qmmm_struct
         type(qm2_structure),intent(inout) :: qm2_struct
 
@@ -68,13 +72,17 @@ endsubroutine get_dipole_matrix
 ! Calculates the transition dipole
 !******************************************************************
 
-subroutine trans_dipole(qm2_struct, qm2ds, qmmm_struct, mu, alpha)
+subroutine trans_dipole(qm2_params,qmmm_nml,qm2_struct, qm2ds, qmmm_struct, mu, alpha)
 	use qm2_davidson_module
 	use constants, only : BOHRS_TO_A, SQRT2
         use qmmm_struct_module, only : qmmm_struct_type
         use qmmm_module, only : qm2_structure
+        use qm2_params_module,  only : qm2_params_type
+        use qmmm_nml_module   , only : qmmm_nml_type
 
 	implicit none
+        type(qm2_params_type),intent(inout) :: qm2_params
+        type(qmmm_nml_type),intent(inout) :: qmmm_nml
         type(qm2_structure),intent(inout) :: qm2_struct
         type(qmmm_struct_type), intent(inout) :: qmmm_struct
         type(qm2_davidson_structure_type), intent(inout) :: qm2ds
@@ -92,7 +100,7 @@ subroutine trans_dipole(qm2_struct, qm2ds, qmmm_struct, mu, alpha)
 	mu = 0.d0
 	alpha = 0.d0
 
-	call get_dipole_matrix(qm2_struct,qmmm_struct,qmmm_struct%qm_coords, dip)
+	call get_dipole_matrix(qm2_params,qmmm_nml,qm2_struct,qmmm_struct,qmmm_struct%qm_coords, dip)
 
 	do j = 1,qm2ds%Mx	
 		call mo2site(qm2ds,qm2ds%v0(1,j), qm2ds%xi_scratch, qm2ds%eta_scratch)
@@ -116,13 +124,18 @@ end subroutine trans_dipole
 !*************************************************************************
 !Calcualtes the ground and excited state dipoles
 !*************************************************************************
-subroutine qm2_calc_molecular_dipole_in_excited_state(cosmo_c_struct, qm2_struct, qm2ds, qmmm_struct)
+subroutine qm2_calc_molecular_dipole_in_excited_state(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct, qm2_struct, qm2ds, qmmm_struct)
 	use qm2_davidson_module
-	use qmmm_module, only: qm2_structure, qm2_params, qmmm_nml
+	use qmmm_module, only: qm2_structure, qmmm_mpi_structure
 	use constants, only : light_speed, charge_on_elec
         use qmmm_struct_module, only : qmmm_struct_type
 	use cosmo_C, only: cosmo_C_structure
+        use qm2_params_module,  only : qm2_params_type
+        use qmmm_nml_module   , only : qmmm_nml_type
 	implicit none
+        type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
+	type(qm2_params_type),intent(inout) :: qm2_params
+	type(qmmm_nml_type),intent(inout) :: qmmm_nml
         type(cosmo_C_structure),intent(inout) :: cosmo_c_struct
         type(qm2_structure),intent(inout) :: qm2_struct
         type(qmmm_struct_type), intent(inout) :: qmmm_struct
@@ -146,7 +159,7 @@ subroutine qm2_calc_molecular_dipole_in_excited_state(cosmo_c_struct, qm2_struct
         end if
 
 !nuclear part
-	call get_nuc_dip(qm2_struct,qmmm_struct,qmmm_struct%qm_coords, dip) !return nuclear dipole operator in angstroms
+	call get_nuc_dip(qm2_params,qmmm_nml,qm2_struct,qmmm_struct,qmmm_struct%qm_coords, dip) !return nuclear dipole operator in angstroms
 	do k=1,3 ! loop over x,y,z
 		call unpacking(qm2ds%Nb,dip(k,:),tmp,'s')
 		summc=0.d0
@@ -160,7 +173,7 @@ subroutine qm2_calc_molecular_dipole_in_excited_state(cosmo_c_struct, qm2_struct
 !end nuclear part
 
 !ground state
-	call get_dipole_matrix(qm2_struct,qmmm_struct,qmmm_struct%qm_coords, dip);
+	call get_dipole_matrix(qm2_params,qmmm_nml,qm2_struct,qmmm_struct,qmmm_struct%qm_coords, dip);
 	call unpacking(qm2ds%Nb,qm2_struct%den_matrix,GSDM,'s')
         do k=1,3  ! loop over x,y,z
 		call unpacking(qm2ds%Nb,dip(k,:),qm2ds%eta_scratch,'s')
@@ -179,8 +192,8 @@ if (qm2ds%Mx>0) then
         allocate(ESDM(qm2ds%Nb,qm2ds%Nb));
 
 	do state=1,qm2ds%Mx
-	        call calc_rhotz(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,state,qm2ds%rhoTZ,.true.); 
-                call calc_rhotz(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,state,qm2ds%rhoT,.false.);
+	        call calc_rhotz(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,state,qm2ds%rhoTZ,.true.); 
+                call calc_rhotz(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,state,qm2ds%rhoT,.false.);
 		call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,TZ,qm2ds%tz_scratch)		
                 call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoT,T,tmp)
 
@@ -189,11 +202,11 @@ if (qm2ds%Mx>0) then
 		!The mulliken charges are here but this is a bad place for them
 		if(qmmm_nml%printcharges) then		
 	        	do i=1,qmmm_struct%nquant_nlink
-				call qm2_calc_mulliken(qm2_struct,i,ex_mchg(i),ESDM)
+				call qm2_calc_mulliken(qm2_params,qm2_struct,i,ex_mchg(i),ESDM)
 	        	end do
 			write (6,*)
 			write (6,'("QMMM: Mulliken Charges")')
-			call qm2_print_charges(qmmm_struct, state,1,qmmm_nml%dftb_chg,qmmm_struct%nquant_nlink, &
+			call qm2_print_charges(qmmm_nml,qmmm_mpi, qmmm_struct, state,1,qmmm_nml%dftb_chg,qmmm_struct%nquant_nlink, &
                                         ex_mchg,qmmm_struct%iqm_atomic_numbers)
 		end if
 
@@ -332,14 +345,18 @@ end
 !end subroutine md_trans_dipole
 
 
-subroutine get_nuc_dip(qm2_struct, qmmm_struct, coord, dpmat)
+subroutine get_nuc_dip(qm2_params,qmmm_nml,qm2_struct, qmmm_struct, coord, dpmat)
 
-	 use qmmm_module, only : qm2_params, qm2_structure, qmmm_nml
+	 use qmmm_module, only : qm2_structure
 	 use constants, only : CODATA08_A_TO_BOHRS, bohr_radius
          use qmmm_struct_module, only : qmmm_struct_type
+         use qm2_params_module,  only : qm2_params_type
+         use qmmm_nml_module   , only : qmmm_nml_type
 
 ! use findmask
       implicit none
+      type(qm2_params_type),intent(inout) :: qm2_params
+      type(qmmm_nml_type),intent(inout) :: qmmm_nml
       type(qm2_structure),intent(inout) :: qm2_struct
       type(qmmm_struct_type), intent(in) :: qmmm_struct
 

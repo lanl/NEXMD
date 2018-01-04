@@ -8,7 +8,6 @@ module verlet_module
     use naesmd_constants
     use langevin_temperature
     use communism
-    use qmmm_module, only:qm2_params
     implicit none
 
 contains

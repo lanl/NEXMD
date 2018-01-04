@@ -25,9 +25,9 @@ subroutine check_dftb_3rd_order(dftb_3rd_order)
    
 end subroutine check_dftb_3rd_order
 
-subroutine qm2_dftb_read_3rd_order(qmmm_struct, qm_natoms,qm_ntypes,izp,skroot) 
+subroutine qm2_dftb_read_3rd_order(qmmm_nml, qmmm_struct, qm_natoms,qm_ntypes,izp,skroot) 
 
-   use qmmm_module, only : qmmm_nml
+   use qmmm_nml_module   , only : qmmm_nml_type
    use ElementOrbitalIndex, only : elementSymbol
    use qm2_dftb_module, only: mol, DFTB_3rd_order_str
    use qmmm_struct_module, only : qmmm_struct_type
@@ -36,6 +36,7 @@ subroutine qm2_dftb_read_3rd_order(qmmm_struct, qm_natoms,qm_ntypes,izp,skroot)
 
 
 !! Passed in:
+   type(qmmm_nml_type), intent(inout) :: qmmm_nml
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
    integer, intent(in ) :: qm_natoms ! qmmm_struct%nquant_nlink
    integer, intent(in ) :: qm_ntypes ! qmmm_struct%qm_ntypes

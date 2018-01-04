@@ -5,15 +5,16 @@
 #include "copyright.h"
 #include "assert.fh"
 #include "dprec.fh"
-subroutine qm2_setup_orb_exp(qmmm_struct)
+subroutine qm2_setup_orb_exp(qm2_params,qmmm_struct)
 
       use constants, only : A_TO_BOHRS, A2_TO_BOHRS2, A3_TO_BOHRS3
-      use qmmm_module, only : qm2_params
       use ElementOrbitalIndex, only: MaxAngularQuantumNumber, MaxGaussianExpansion
       use qmmm_struct_module, only : qmmm_struct_type
+      use qm2_params_module,  only : qm2_params_type
 
       implicit none
       type(qmmm_struct_type), intent(inout) :: qmmm_struct
+      type(qm2_params_type),intent(inout) :: qm2_params
 
 !Local
       _REAL_:: ALLC(MaxGaussianExpansion,MaxGaussianExpansion,MaxAngularQuantumNumber+1)

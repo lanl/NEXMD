@@ -9,7 +9,8 @@
    include 'mpif.h'
 #endif
     
-subroutine sqm_energy(cosmo_c_struct, qm2_struct,qm2ds,qmmm_struct, natom,coords,escf,born_radii,one_born_radii, &
+subroutine sqm_energy(qmewald, qmmm_opnq, qm2_rij_eqns,qmmm_mpi,qm_gb, qmmm_scratch, qmmm_nml, qm2_params, &
+    xlbomd_struct,cosmo_c_struct, qm2_struct,qm2ds,qmmm_struct, natom,coords,escf,born_radii,one_born_radii, &
     intdiel,extdiel,Arad,scf_mchg, &
     time_sqm_took,time_davidson_took)
     !
@@ -34,20 +35,32 @@ subroutine sqm_energy(cosmo_c_struct, qm2_struct,qm2ds,qmmm_struct, natom,coords
     !    one_born_radii(1->natom)  - 1.0d0/born_radii(i)
     !    scf_mchg                  - nquant long, gets filled with the mulliken charges during scf.
 
-    use qmmm_module,only:qmmm_nml,qm2_structure,qm2_rij_eqns, &
-        qm_gb, qmmm_mpi, qmmm_scratch, qm2_params
+    use qmmm_module,only:qm2_structure,qmmm_scratch_structure, qm2_rij_eqns_structure, &
+                         qm_gb_structure, qmmm_mpi_structure, qmmm_opnq_structure, &
+                         qm_ewald_structure
     use constants,only:EV_TO_KCAL,KCAL_TO_EV,zero,one,alpb_alpha
     use qm2_davidson_module
     use cosmo_C,only:cosmo_C_structure !,cosmo_c_struct%EF,cosmo_c_struct%nps,cosmo_c_struct%tri_2D,cosmo_c_struct%potential_type,cosmo_c_struct%solvent_model,cosmo_c_struct%onsagE;
-    use xlbomd_module,only:init_xlbomd
+    use xlbomd_module,only:init_xlbomd, xlbomd_structure
     use qmmm_struct_module, only : qmmm_struct_type
-
+    use qmmm_nml_module   , only : qmmm_nml_type
+    use qm2_params_module , only : qm2_params_type
+    
     implicit none
 
     ! Passed in
 
     integer,intent(in)::natom
+   type(qm_ewald_structure),intent(inout) :: qmewald
+   type(qmmm_opnq_structure),intent(inout) :: qmmm_opnq
+   type(qmmm_scratch_structure),intent(inout) :: qmmm_scratch
+    type(qm2_rij_eqns_structure),intent(inout)  :: qm2_rij_eqns
+    type(qmmm_mpi_structure),intent(inout)      :: qmmm_mpi
+    type(qm_gb_structure), intent(inout)        :: qm_gb
+    type(qmmm_nml_type)   , intent(inout) :: qmmm_nml
+    type(qm2_params_type), intent(inout) :: qm2_params
     type(cosmo_C_structure),intent(inout) :: cosmo_c_struct
+    type(xlbomd_structure),intent(inout) :: xlbomd_struct
     type(qm2_structure),intent(inout) :: qm2_struct
     type(qm2_davidson_structure_type), intent(inout) :: qm2ds
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
@@ -113,27 +126,29 @@ subroutine sqm_energy(cosmo_c_struct, qm2_struct,qm2ds,qmmm_struct, natom,coords
         if (qmmm_mpi%commqmmm_master) then
             write(6,'(/80(1H-)/''  QM CALCULATION INFO'',/80(1H-))')
         end if
-        call qm2_load_params_and_allocate(qm2_struct,qmmm_struct) !Load the parameters
+        call qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opnq, qmmm_scratch, &
+                                          xlbomd_struct,qm2_struct,qmmm_struct) !Load the parameters
            ! Also does a lot of memory allocation and pre-calculates all
            ! the STO-6G orbital expansions.
 
         if(qmmm_mpi%commqmmm_master) then
 
-            ! call qm_print_dyn_mem(qm2_struct,qmmm_struct,natom,qmmm_struct%qm_mm_pairs)
-            call qm_print_coords(qmmm_struct,0,.true.)
+            ! call qm_print_dyn_mem(qm2_params,qmmm_nml,qmewald, qm_gb, qmmm_mpi, qmmm_scratch, qm2_rij_eqns, &
+	    !                       qm2_struct,qmmm_struct,natom,qmmm_struct%qm_mm_pairs)
+            call qm_print_coords(qmmm_nml,qmmm_struct,0,.true.)
 
             !Finally print the result header that was skipped in sander.
             write(6,'(/80(1H-)/''  RESULTS'',/80(1H-)/)')
         end if
 
         if(qm2ds%Mx>0) then
-            call allocate_davidson(qm2_struct, qm2ds, qmmm_struct) ! Davidson allocation
-            if(qm2ds%dav_guess.gt.1) call init_xlbomd(qm2ds%Nb**2*qm2ds%Mx)
+            call allocate_davidson(qmmm_scratch,qmmm_nml,qm2_struct, qm2ds, qmmm_struct) ! Davidson allocation
+            if(qm2ds%dav_guess.gt.1) call init_xlbomd(xlbomd_struct,qm2ds%Nb**2*qm2ds%Mx)
         endif
 
         !cosmo_c_struct%ceps-Dielectric Permittivity from COSMO module
         if((cosmo_c_struct%solvent_model.gt.0).or.(cosmo_c_struct%EF.gt.0)) then !
-            call cosini(cosmo_c_struct,qm2_struct,qmmm_struct)
+            call cosini(qm2_params, qmmm_nml, cosmo_c_struct,qm2_struct,qmmm_struct)
         end if
 
     end if !if (qmmm_struct%qm_mm_first_call)
@@ -144,7 +159,8 @@ subroutine sqm_energy(cosmo_c_struct, qm2_struct,qm2ds,qmmm_struct, natom,coords
     ! is done inside the routine.
     ! Parallel
 
-    call qm2_calc_rij_and_eqns(qmmm_struct, qmmm_struct%qm_coords,qmmm_struct%nquant_nlink, &
+    call qm2_calc_rij_and_eqns(qm2_params,qmmm_nml,qmmm_mpi,qm2_rij_eqns, &
+        qmmm_struct, qmmm_struct%qm_coords,qmmm_struct%nquant_nlink, &
         qmmm_struct%qm_xcrd,natom,qmmm_struct%qm_mm_pairs)
        !and store them in memory to save time later.
 
@@ -153,15 +169,16 @@ subroutine sqm_energy(cosmo_c_struct, qm2_struct,qm2ds,qmmm_struct, natom,coords
     !============================
     !cosmo_c_struct%ceps-Dielectric Permittivity from COSMO module
     if((cosmo_c_struct%solvent_model.gt.0).and.(cosmo_c_struct%potential_type.eq.3)) then ! non-default non-vacuum permittivity
-        call coscav(cosmo_c_struct,qmmm_struct) ! constructing COSMO cavity
-        call mkbmat(cosmo_c_struct,qmmm_struct) ! constructing B matrix
+        call coscav(qm2_params, qmmm_nml, cosmo_c_struct,qmmm_struct) ! constructing COSMO cavity
+        call mkbmat(qm2_params,qmmm_nml,cosmo_c_struct,qmmm_struct) ! constructing B matrix
     end if
 
     !============================
     !  Calculate SCF Energy (ground state)
     !============================
     call cpu_time(t_start)
-    call qm2_energy(cosmo_c_struct,qm2_struct,qm2ds, qmmm_struct, escf,scf_mchg,natom,born_radii,one_born_radii, &
+    call qm2_energy(qm2_params,qmmm_nml,qmewald,qm2_rij_eqns, qm_gb, qmmm_mpi, qmmm_opnq, qmmm_scratch, &
+        xlbomd_struct,cosmo_c_struct,qm2_struct,qm2ds, qmmm_struct, escf,scf_mchg,natom,born_radii,one_born_radii, &
         coords,scaled_mm_charges)
     call cpu_time(t_finish)
     ! Incrementing the cumulative sqm time
@@ -178,7 +195,7 @@ subroutine sqm_energy(cosmo_c_struct, qm2_struct,qm2ds,qmmm_struct, natom,coords
     if(qmmm_nml%printcharges.and.qmmm_mpi%commqmmm_master) then
         write (6,*)
         write (6,'("QMMM: Mulliken Charges")')
-        call qm2_print_charges(qmmm_struct, 0,1,qmmm_nml%dftb_chg,qmmm_struct%nquant_nlink, &
+        call qm2_print_charges(qmmm_nml,qmmm_mpi, qmmm_struct, 0,1,qmmm_nml%dftb_chg,qmmm_struct%nquant_nlink, &
             scf_mchg,qmmm_struct%iqm_atomic_numbers)
         !write (6,'("QMMM: End of Mulliken Charges calculation")')
         write(6,*)
@@ -221,7 +238,7 @@ subroutine sqm_energy(cosmo_c_struct, qm2_struct,qm2ds,qmmm_struct, natom,coords
  		
     if(qm2ds%Mx>0) then
         call cpu_time(t_start)
-        call dav_wrap(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct)
+        call dav_wrap(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct)
         call cpu_time(t_finish)
         ! Incrementing cumulative Davidson execution time
         time_davidson_took=time_davidson_took+t_finish-t_start
@@ -234,10 +251,11 @@ subroutine sqm_energy(cosmo_c_struct, qm2_struct,qm2ds,qmmm_struct, natom,coords
     qmmm_struct%qm_mm_first_call=.false.
     if ((qmmm_nml%printdipole>0).or.(qmmm_nml%printcharges)) then
         if((qmmm_nml%printdipole<3).and.(qm2ds%Mx>0)) then
-            call qm2_calc_molecular_dipole_in_excited_state(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct)
+            call qm2_calc_molecular_dipole_in_excited_state(qm2_params,qmmm_nml,qmmm_mpi,&
+                 cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct)
             
         else if (qmmm_nml%printdipole>2) then
-            call qm2_calc_dipole(qm2_struct,qm2ds, qmmm_struct,coords)
+            call qm2_calc_dipole(qmmm_nml,qm2_params,qm2_struct,qm2ds, qmmm_struct,coords)
         end if
     end if
 
@@ -246,7 +264,7 @@ subroutine sqm_energy(cosmo_c_struct, qm2_struct,qm2ds,qmmm_struct, natom,coords
     !  but kept here for historical reasons)
 
     if(qmmm_mpi%commqmmm_master) then
-        call qm2_print_energy(cosmo_c_struct,qm2_struct, qmmm_nml%verbosity,qmmm_nml%qmtheory,escf,qmmm_struct)
+        call qm2_print_energy(qmmm_scratch,cosmo_c_struct,qm2_struct, qmmm_nml%verbosity,qmmm_nml%qmtheory,escf,qmmm_struct)
     end if
     return
 end subroutine sqm_energy
@@ -480,7 +498,8 @@ end subroutine getsqmx
 !
 !********************************************************************
 !
-subroutine sqm_read_and_alloc(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,fdes_in,fdes_out,natom_inout,igb,atnam, &
+subroutine sqm_read_and_alloc(qmmm_nml, qmmm_scratch, qmmm_div, qmmm_opnq, qmmm_vsolv, xlbomd_struct,cosmo_c_struct,qm2_struct,&
+    qm2ds,qmmm_struct,fdes_in,fdes_out,natom_inout,igb,atnam, &
     atnum,maxcyc,grms_tol,ntpr,ncharge_in, &
     excharge,chgatnum, &
     excNin,struct_opt_state,exst_method,dav_guess, & ! Excited state
@@ -488,27 +507,31 @@ subroutine sqm_read_and_alloc(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,fdes_i
 
     use findmask
     use constants, only : RETIRED_INPUT_OPTION
-    use qmmm_module, only : qm2_structure, qmmm_nml, &
+    use qmmm_module, only : qm2_structure, &
         validate_qm_atoms, qmsort, &
-        allocate_qmmm, get_atomic_number, qmmm_div, &
-        qmmm_opnq, qmmm_vsolv
-    use qmmm_vsolv_module, only : read_vsolv_nml
+        allocate_qmmm, get_atomic_number, qmmm_div_structure, &
+        qmmm_opnq_structure, qmmm_scratch_structure
+    use qmmm_vsolv_module, only : read_vsolv_nml, qmmm_vsolv_type
     use qmmm_qmtheorymodule
     use ElementOrbitalIndex, only : numberElements
     use ParameterReader, only : ReadParameterFile
-    use cosmo_C, only: cosmo_C_structure!
-!cosmo_c_struct%solvent_model,cosmo_c_struct%potential_type,cosmo_c_struct%ceps,cosmo_c_struct%cosmo_scf_ftol,cosmo_c_struct%cosmo_scf_maxcyc,cosmo_c_struct%doZ,&
-!        cosmo_c_struct%index_of_refraction,cosmo_c_struct%nspa,cosmo_c_struct%onsager_radius,Ex,Ey,Ez,cosmo_c_struct%EF,linmixparam !COSMO parameters
-    use xlbomd_module, only: xlbomd_flag,K,dt2w2,xlalpha,coef
+    use cosmo_C, only: cosmo_C_structure
+    use xlbomd_module, only: xlbomd_structure 
     use qm2_davidson_module
     use naesmd_constants
     use qmmm_struct_module, only : qmmm_struct_type
+    use qmmm_nml_module   , only : qmmm_nml_type
 
     !XL-BOMD parameters
     implicit none
-
+   type(qmmm_scratch_structure),intent(inout) :: qmmm_scratch
+   type(qmmm_nml_type),intent(inout) :: qmmm_nml
+   type(qmmm_opnq_structure),intent(inout) :: qmmm_opnq
+   type(qmmm_div_structure),intent(inout) :: qmmm_div
+   type(qmmm_vsolv_type),intent(inout) :: qmmm_vsolv
     type(qm2_davidson_structure_type), intent(inout) :: qm2ds
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
+    type(xlbomd_structure),intent(inout) :: xlbomd_struct
     type(qm2_structure),intent(inout) :: qm2_struct
     type(cosmo_C_structure),intent(inout) :: cosmo_c_struct
 
@@ -666,7 +689,9 @@ subroutine sqm_read_and_alloc(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,fdes_i
     real(8) :: ceps, cosmo_scf_ftol,cosmo_scf_maxcyc,index_of_refraction,onsager_radius
     real(8) :: Ex, Ey, Ez, linmixparam  
     integer :: nspa, solvent_model, potential_type, EF
-    logical :: doZ   
+    logical :: doZ
+    integer :: xlbomd_flag,K
+    _REAL_  :: dt2w2,xlalpha   
 
     namelist /qmmm/ qmcut, iqmatoms,qmmask,qmgb,qm_theory, qmtheory, &
         qmcharge, qmqmdx, qmqmdx_exc, verbosity, tight_p_conv, scfconv, & ! CML 7/10/12
@@ -851,7 +876,10 @@ subroutine sqm_read_and_alloc(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,fdes_i
     cosmo_c_struct%Ey=Ey
     cosmo_c_struct%Ez=Ez
     cosmo_c_struct%linmixparam=linmixparam
-    
+    xlbomd_struct%xlbomd_flag=xlbomd_flag 
+    xlbomd_struct%xlalpha=xlalpha 
+    xlbomd_struct%dt2w2=dt2w2 
+    xlbomd_struct%K=K 
     !Begin qmmm input checks
     if(printbondorders>0) then
         write(6,*) "Print bonding orders under development. Do not use."
@@ -921,7 +949,8 @@ subroutine sqm_read_and_alloc(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,fdes_i
    
     !  Read-in the user-defined parameter file
     !  TL (Rutgers, 2011)
-    call ReadParameterFile(parameter_file)
+    call ReadParameterFile(parameter_file, qm2_struct%parameterEntries, &
+	qm2_struct%ParameterFileExisting)
     ! turn on OPNQ if necessary 
     qmmm_opnq%useOPNQ=qxd
 
@@ -1319,7 +1348,7 @@ subroutine sqm_read_and_alloc(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,fdes_i
     !Note non master mpi threads need to call this allocation routine manually themselves.
     qmmm_nml%nquant = qmmm_struct%nquant
     qmmm_struct%natom = natom
-    call allocate_qmmm( qmmm_nml, qmmm_struct, natom )
+    call allocate_qmmm(qmmm_scratch, qmmm_nml, qmmm_struct, natom )
     qmmm_struct%iqm_atomic_numbers(1:qmmm_struct%nquant_nlink) = atnum(1:qmmm_struct%nquant_nlink)
     qmmm_nml%iqmatoms(1:qmmm_struct%nquant_nlink) = iqmatoms(1:qmmm_struct%nquant_nlink)
     if (ncharge_in > 0) then

@@ -1,7 +1,8 @@
 ! <compile=optimized>
 #include "copyright.h"
 #include "dprec.fh"
-subroutine qm2_get_qmmm_forces(qm2_struct,qmmm_struct, dxyzqm,qm_xcrd,dxyzmm,scf_mchg)
+subroutine qm2_get_qmmm_forces(qm2_rij_eqns, qm2_params, qmmm_nml, qmmm_mpi,qmmm_opnq,&
+		 qm2_struct,qmmm_struct, dxyzqm,qm_xcrd,dxyzmm,scf_mchg)
 
 ! This routine calculates force on the MM atoms due to the QM atoms
 ! and vice versa. The forces are added to dxyzmm and dxyzqm respectively.
@@ -30,16 +31,23 @@ subroutine qm2_get_qmmm_forces(qm2_struct,qmmm_struct, dxyzqm,qm_xcrd,dxyzmm,scf
       use constants  , only : zero, one, A_TO_BOHRS, A2_TO_BOHRS2, EV_TO_KCAL, &
                               AU_TO_EV, BOHRS_TO_A
       use Rotation   , only : GetRotationMatrix, RotateCore         
-      use qmmm_module, only : qmmm_nml, qm2_structure, qm2_params, &
-        qmmm_mpi, alph_MM, qmmm_opnq
+      use qmmm_module, only : qm2_structure, &
+        qmmm_mpi_structure, alph_MM, qmmm_opnq_structure, qm2_rij_eqns_structure
       use opnq, only: Opnq_fock_atom_pair, Opnq_LJ_atom_pair  
       use qmmm_struct_module, only : qmmm_struct_type
+      use qm2_params_module,  only : qm2_params_type
+      use qmmm_nml_module   , only : qmmm_nml_type
 
       implicit none
 
 !Passed in
+      type(qm2_params_type),intent(inout) :: qm2_params
+      type(qmmm_nml_type), intent(inout) :: qmmm_nml
       type(qm2_structure),intent(inout) :: qm2_struct
       type(qmmm_struct_type), intent(inout) :: qmmm_struct
+      type(qmmm_mpi_structure), intent(inout) :: qmmm_mpi
+      type(qmmm_opnq_structure), intent(inout) :: qmmm_opnq
+      type(qm2_rij_eqns_structure), intent(inout) :: qm2_rij_eqns
       _REAL_ , intent(out) :: dxyzqm(3,qmmm_struct%nquant_nlink)
       _REAL_ , intent(in) :: qm_xcrd(4,qmmm_struct%qm_mm_pairs)
       _REAL_ , intent(out) :: dxyzmm(*)
@@ -118,7 +126,7 @@ subroutine qm2_get_qmmm_forces(qm2_struct,qmmm_struct, dxyzqm,qm_xcrd,dxyzmm,scf
                     oneOverRij=one/rij
                     r2InAu=r2*A2_TO_BOHRS2
                     call GetRotationMatrix(temp(1:3), rotationMatrix, spd_atom)   
-                    call qm2_repp_d(qmmm_struct, qmmm_struct%qm_atom_type(jj),0,rijInAu,RI,CORE,W,45,1,0) 
+                    call qm2_repp_d(qm2_params,qmmm_struct, qmmm_struct%qm_atom_type(jj),0,rijInAu,RI,CORE,W,45,1,0) 
                     core=core*qm_xcrd(4,j)
                     call RotateCore(1,0, n_atomic_orb,0,1, 0            &
                         ,core,rotationMatrix,H)
@@ -137,7 +145,7 @@ subroutine qm2_get_qmmm_forces(qm2_struct,qmmm_struct, dxyzqm,qm_xcrd,dxyzmm,scf
                     oneOverRij=one/rij
                     r2InAu=r2*A2_TO_BOHRS2                   
                     call GetRotationMatrix(temp(1:3), rotationMatrix, spd_atom)   
-                    call qm2_repp_d(qmmm_struct, qmmm_struct%qm_atom_type(jj),0,rijInAu,RI,CORE,W,45,1,0) 
+                    call qm2_repp_d(qm2_params,qmmm_struct, qmmm_struct%qm_atom_type(jj),0,rijInAu,RI,CORE,W,45,1,0) 
                     core=core*qm_xcrd(4,j)
                     call RotateCore(1,0, n_atomic_orb,0, 1, 0            &
                         ,core,rotationMatrix,H)
@@ -162,7 +170,7 @@ subroutine qm2_get_qmmm_forces(qm2_struct,qmmm_struct, dxyzqm,qm_xcrd,dxyzmm,scf
                  oneOverRij=one/rij
                  r2InAu=r2*A2_TO_BOHRS2
                  call GetRotationMatrix(temp(1:3), rotationMatrix, spd_atom)   
-                 call qm2_repp_d(qmmm_struct, qmmm_struct%qm_atom_type(jj),0,rijInAu,RI,CORE,W,45,1,0) 
+                 call qm2_repp_d(qm2_params,qmmm_struct, qmmm_struct%qm_atom_type(jj),0,rijInAu,RI,CORE,W,45,1,0) 
                  core=core*qm_xcrd(4,j)
                  call RotateCore(1,0, n_atomic_orb,0,1, 0            &
                      ,core,rotationMatrix,H)
@@ -228,7 +236,8 @@ subroutine qm2_get_qmmm_forces(qm2_struct,qmmm_struct, dxyzqm,qm_xcrd,dxyzmm,scf
               loop_count=loop_count+1
 !             Get analytical derivatives with respect to x, y, and z
 !             directions for the interaction of the current QM-MM pair.
-              call qm2_deriv_qmmm_heavy(qm2_struct,qmmm_struct, jj,loop_count, &
+              call qm2_deriv_qmmm_heavy(qm2_params,qmmm_nml,qm2_rij_eqns, qm2_struct,&
+				  qmmm_struct, jj,loop_count, &
                                   psum,qm_atom_coord,qm_xcrd(1,ii),n_atomic_orb, &
                                   pair_force,qm_atom_core,qm_atom_alpa,scf_mchg(jj))
   
@@ -247,8 +256,9 @@ subroutine qm2_get_qmmm_forces(qm2_struct,qmmm_struct, dxyzqm,qm_xcrd,dxyzmm,scf
            inner_loop_count=1
            do ii=1,qmmm_struct%qm_mm_pairs
               loop_count=loop_count+1
-              call qm2_deriv_qmmm_light(qm2_struct,qmmm_struct, jj,ii,loop_count,psum_light,qm_atom_coord,qm_xcrd(1,ii), &
-                                        pair_force,qm_atom_core,qm_atom_alpa,scf_mchg(jj))
+              call qm2_deriv_qmmm_light(qm2_params,qmmm_nml,qm2_rij_eqns, qm2_struct,&
+		qmmm_struct, jj,ii,loop_count,psum_light,qm_atom_coord,qm_xcrd(1,ii), &
+                pair_force,qm_atom_core,qm_atom_alpa,scf_mchg(jj))
               dxyzmm(inner_loop_count:inner_loop_count+2) = &
                 dxyzmm(inner_loop_count:inner_loop_count+2) - pair_force(1:3)
               fqm(1:3) = fqm(1:3) + pair_force(1:3)
@@ -288,12 +298,14 @@ subroutine qm2_get_qmmm_forces(qm2_struct,qmmm_struct, dxyzqm,qm_xcrd,dxyzmm,scf
               
               ! opnq 
               pair_force=0.d0
-              call Opnq_fock_atom_pair(qm2_struct,qmmm_struct,jj, j, opnq_pair, fock_opnq_pair, temp(1), temp(2), temp(3))
+              call Opnq_fock_atom_pair(qmmm_opnq, qm2_params,qm2_struct,qmmm_struct,jj, &
+			j, opnq_pair, fock_opnq_pair, temp(1), temp(2), temp(3))
               temp=temp*EV_TO_KCAL
               pair_force=pair_force + temp
                
               ! LJ
-              call Opnq_LJ_atom_pair(qm2_struct,qmmm_struct, jj, j, LJ_pair, temp(1), temp(2), temp(3))
+              call Opnq_LJ_atom_pair(qmmm_opnq, qm2_params, qm2_struct,qmmm_struct, jj, &
+			j, LJ_pair, temp(1), temp(2), temp(3))
               temp= - temp*EV_TO_KCAL
               pair_force=pair_force + temp       
                
@@ -312,13 +324,16 @@ subroutine qm2_get_qmmm_forces(qm2_struct,qmmm_struct, dxyzqm,qm_xcrd,dxyzmm,scf
 
 end subroutine qm2_get_qmmm_forces
 
-subroutine qm2_deriv_qmmm_light(qm2_struct, qmmm_struct, iqm,jpair,loop_count,psum_light,xyz_qm,xyz_mm,pair_force, &
+subroutine qm2_deriv_qmmm_light(qm2_params,qmmm_nml,qm2_rij_eqns, qm2_struct, qmmm_struct, &
+	 iqm,jpair,loop_count,psum_light,xyz_qm,xyz_mm,pair_force, &
                          qm_atom_core,alpa,qm_charge)
 !For light atoms
 !See heavy version of routine for comments
 !  Current Version: Ross Walker (TSRI, 2005)
 
-      use qmmm_module, only : qmmm_nml,qm2_params, qm2_structure, qm2_rij_eqns, &
+  use qm2_params_module,  only : qm2_params_type
+  use qmmm_nml_module   , only : qmmm_nml_type
+      use qmmm_module, only : qm2_structure, qm2_rij_eqns_structure, &
                               alph_mm, EXPONENTIAL_CUTOFF
       use constants  , only : A_TO_BOHRS, A2_TO_BOHRS2, AU_TO_EV, A2_TO_BOHRS2xAU_TO_EV, &
                               EV_TO_KCAL, AU_TO_KCAL, BOHRS_TO_A, zero, one, two
@@ -329,6 +344,9 @@ subroutine qm2_deriv_qmmm_light(qm2_struct, qmmm_struct, iqm,jpair,loop_count,ps
 ! ON return, pair_force HOLDS ANALYTICAL DERIVATIVES                                   
 
 !Passed in
+      type(qm2_rij_eqns_structure),intent(inout) :: qm2_rij_eqns
+      type(qm2_params_type),intent(inout) :: qm2_params
+      type(qmmm_nml_type), intent(in) :: qmmm_nml
       type(qm2_structure),intent(inout) :: qm2_struct
       type(qmmm_struct_type), intent(in) :: qmmm_struct
       _REAL_, intent(in) :: xyz_qm(3),xyz_mm(4),psum_light
@@ -537,7 +555,8 @@ subroutine qm2_deriv_qmmm_light(qm2_struct, qmmm_struct, iqm,jpair,loop_count,ps
 
 end subroutine qm2_deriv_qmmm_light
 
-subroutine qm2_deriv_qmmm_heavy(qm2_struct, qmmm_struct, iqm,loop_count,psum,xyz_qm,xyz_mm,n_atomic_orb,pair_force, &
+subroutine qm2_deriv_qmmm_heavy(qm2_params,qmmm_nml,qm2_rij_eqns,qm2_struct, &
+	qmmm_struct, iqm,loop_count,psum,xyz_qm,xyz_mm,n_atomic_orb,pair_force, &
                          qm_atom_core,alpa,qm_charge)
 
 !     This routine computes the analytical energy derivatives for the QM-MM
@@ -557,18 +576,23 @@ subroutine qm2_deriv_qmmm_heavy(qm2_struct, qmmm_struct, iqm,loop_count,psum,xyz
 !
 !  Current Version: Ross Walker (TSRI, 2004)
     use ElementOrbitalIndex, only : ElementSymbol, MaxValenceOrbitals, MaxValenceDimension
-    use qmmm_module        , only : qmmm_nml,qm2_params, qm2_structure, qm2_rij_eqns, &
+    use qmmm_module        , only : qm2_structure, qm2_rij_eqns_structure, &
                                     alph_mm, AXIS_TOL, EXPONENTIAL_CUTOFF
     use constants          , only : A_TO_BOHRS, A2_TO_BOHRS2, AU_TO_EV, HALF_AU_TO_EV, FOURTH_AU_TO_EV, &
                                     A2_TO_BOHRS2xAU_TO_EV, one, zero, four, two, half, EV_TO_KCAL, &
                                     BOHRS_TO_A
     use qmmm_struct_module, only : qmmm_struct_type
+    use qm2_params_module,  only : qm2_params_type
+    use qmmm_nml_module   , only : qmmm_nml_type
 
     implicit none
 
 ! ON return, pair_force HOLDS ANALYTICAL DERIVATIVES                                   
 
 !Passed in
+      type(qm2_rij_eqns_structure),intent(inout) :: qm2_rij_eqns
+      type(qm2_params_type),intent(inout) :: qm2_params
+      type(qmmm_nml_type), intent(in) :: qmmm_nml
       type(qm2_structure),intent(inout) :: qm2_struct
       type(qmmm_struct_type), intent(in) :: qmmm_struct
       _REAL_, intent(in) :: xyz_qm(3),xyz_mm(4),psum(45)

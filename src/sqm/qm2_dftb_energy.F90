@@ -2,7 +2,7 @@
 
 #include "copyright.h"
 #include "dprec.fh"
-subroutine qm2_dftb_energy(qm2_struct, qmmm_struct, escf,scf_mchg)
+subroutine qm2_dftb_energy(qm2_params,qmmm_nml,qmmm_scratch, qmmm_mpi,qm_gb, qmewald, qm2_struct, qmmm_struct, escf,scf_mchg)
 
 ! Calculates the self-consistent-charge (SCC) DFTB energy.
 ! The energy is returned in 'escf'.
@@ -19,15 +19,23 @@ subroutine qm2_dftb_energy(qm2_struct, qmmm_struct, escf,scf_mchg)
   
 !In parallel all threads enter here.
 
-   use qmmm_module, only : qmmm_nml, qm2_structure , qmmm_mpi
+   use qmmm_module, only :  qm2_structure , qmmm_mpi_structure, qm_gb_structure, qm_ewald_structure, qmmm_scratch_structure
    use ElementOrbitalIndex, only : elementSymbol
    use qm2_dftb_module, only: disper,mol, lmax, izp_str,mcharge
    use constants, only: AU_TO_EV, AU_TO_KCAL, A_TO_BOHRS, BOHRS_TO_A
    use qmmm_struct_module, only : qmmm_struct_type
+   use qmmm_nml_module   , only : qmmm_nml_type
+   use qm2_params_module,  only : qm2_params_type
 
    implicit none
+   type(qm2_params_type),intent(inout) :: qm2_params
    type(qm2_structure),intent(inout) :: qm2_struct
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
+   type(qmmm_nml_type),intent(inout) :: qmmm_nml
+   type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
+   type(qm_gb_structure),intent(inout) :: qm_gb
+   type(qm_ewald_structure),intent(inout) :: qmewald
+   type(qmmm_scratch_structure),intent(inout) :: qmmm_scratch
 
    !Passed in
    _REAL_, intent(out)   :: escf
@@ -103,7 +111,8 @@ subroutine qm2_dftb_energy(qm2_struct, qmmm_struct, escf,scf_mchg)
    escf = 0.0d0
 
    !do the SCF
-   call qm2_dftb_scf(qm2_struct,qmmm_struct, escf, qmmm_struct%elec_eng,qmmm_struct%enuclr_qmqm,scf_mchg)
+   call qm2_dftb_scf(qm2_params,qmmm_nml, qmmm_scratch, qmmm_mpi, qm_gb, qmewald, qm2_struct,qmmm_struct, escf, &
+                     qmmm_struct%elec_eng,qmmm_struct%enuclr_qmqm,scf_mchg)
 
    return
 end subroutine qm2_dftb_energy

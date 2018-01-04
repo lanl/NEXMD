@@ -1,12 +1,17 @@
 #include "dprec.fh"
 
-subroutine calc_rhotz(cosmo_c_struct, qm2_struct,qm2ds,qmmm_struct, state, rhoTZ,calc_Z)
+subroutine calc_rhotz(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct, qm2_struct,qm2ds,qmmm_struct, state, rhoTZ,calc_Z)
         use qm2_davidson_module
         use qmmm_module
         use cosmo_C,only:cosmo_C_structure !cosmo_c_struct%ceps,cosmo_c_struct%potential_type,cosmo_c_structcosmo_c_struct%%solvent_model,v_solvent_difdens,v_solvent_xi
         use qmmm_struct_module, only : qmmm_struct_type
+        use qm2_params_module,  only : qm2_params_type
+        use qmmm_nml_module   , only : qmmm_nml_type
 
         implicit none
+        type(qmmm_nml_type),intent(inout) :: qmmm_nml
+        type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
+        type(qm2_params_type),intent(inout) :: qm2_params
         type(cosmo_C_structure), intent (inout) :: cosmo_c_struct
         type(qm2_structure),intent(inout) :: qm2_struct
         type(qm2_davidson_structure_type), intent(inout) :: qm2ds
@@ -56,14 +61,14 @@ if (calc_Z) then
         call mo2sitef(qm2ds%Nb,qm2ds%vhf,rhoTZ, &
                 qm2ds%eta_tz,qm2ds%tz_scratch(qm2ds%Nb**2+1))
         qm2ds%tz_scratch(:)=0.d0;
-        call Vxi(qm2_struct,qm2ds,qmmm_struct, qm2ds%eta_tz,qm2ds%tz_scratch(1))
+        call Vxi(qm2_params,qmmm_mpi,qm2_struct,qm2ds,qmmm_struct, qm2ds%eta_tz,qm2ds%tz_scratch(1))
 !**************SOLVENT BLOCK !!JAB
         if(cosmo_c_struct%solvent_model.gt.0) then
         	tmp=0.d0
         if (cosmo_c_struct%potential_type.eq.3) then !COSMO Potential
         	call VxiM(cosmo_c_struct,qm2ds,qm2ds%eta_tz,tmp); 
         else if (cosmo_c_struct%potential_type.eq.2) then !Onsager Potential
-        	call rcnfld(cosmo_c_struct,qm2_struct,qmmm_struct,tmp,qm2ds%eta_tz,qm2ds%nb); 
+        	call rcnfld(qm2_params,qmmm_nml,cosmo_c_struct,qm2_struct,qmmm_struct,tmp,qm2ds%eta_tz,qm2ds%nb); 
         end if
 		tmp=2.d0*tmp !linear response
         	call VxiM_end(qm2_struct,qm2ds%tz_scratch(1),tmp); !Add selected potential to vacuum correlation
@@ -83,7 +88,7 @@ if (calc_Z) then
         call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%xi_tz,qm2ds%tz_scratch(1), &
                         qm2ds%tz_scratch(qm2ds%Nb**2+1))
                 qm2ds%eta_tz(:)=0.d0;
-        call Vxi(qm2_struct,qm2ds,qmmm_struct,qm2ds%tz_scratch(1),qm2ds%eta_tz)
+        call Vxi(qm2_params,qmmm_mpi,qm2_struct,qm2ds,qmmm_struct,qm2ds%tz_scratch(1),qm2ds%eta_tz)
 
 !**************END GAS PHASE BLOCK
 
@@ -93,7 +98,7 @@ if((cosmo_c_struct%solvent_model.eq.1)) then !Linear Response solvent
         if (cosmo_c_struct%potential_type.eq.3) then !COSMO Potential
         	call VxiM(cosmo_c_struct,qm2ds,qm2ds%tz_scratch(1),tmp); 
         elseif (cosmo_c_struct%potential_type.eq.2) then !Onsager Potential
-        	call rcnfld(cosmo_c_struct,qm2_struct,qmmm_struct,tmp,qm2ds%tz_scratch(1),qm2ds%nb);
+        	call rcnfld(qm2_params,qmmm_nml,cosmo_c_struct,qm2_struct,qmmm_struct,tmp,qm2ds%tz_scratch(1),qm2ds%nb);
         end if
         call VxiM_end(qm2_struct,qm2ds%eta_tz,tmp); !Add selected potential to vacuum correlation
 endif
@@ -167,7 +172,8 @@ endif
                                 call summing(2*qm2ds%Np*qm2ds%Nh,qm2ds%eta_tz, &
                                         qm2ds%tz_scratch(2*qm2ds%Np*qm2ds%Nh+1))
                         end if
-                        call Lxi_testing(cosmo_c_struct, qm2_struct,qm2ds,qmmm_struct,qm2ds%tz_scratch(2*qm2ds%Np*qm2ds%Nh+1), &
+                        call Lxi_testing(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct, qm2_struct,qm2ds,&
+                                qmmm_struct,qm2ds%tz_scratch(2*qm2ds%Np*qm2ds%Nh+1), &
                                 qm2ds%tz_scratch(4*qm2ds%Np*qm2ds%Nh+1),solvent_model_1)
 ! Check for convergency
                         f=0.0

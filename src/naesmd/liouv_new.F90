@@ -11,17 +11,22 @@
 !
 !********************************************************************
 !
-subroutine dav_wrap(cosmo_c_struct, qm2_struct, qm2ds, qmmm_struct)
+subroutine dav_wrap(qm2_params,qmmm_nml,qmmm_mpi, cosmo_c_struct, qm2_struct, qm2ds, qmmm_struct)
     use qm2_davidson_module
     use cosmo_C, only: cosmo_C_structure !cosmo_c_struct%solvent_model
     use qmmm_struct_module, only : qmmm_struct_type
-    use qmmm_module,only:qm2_structure
+    use qmmm_module,only:qm2_structure, qmmm_mpi_structure
+    use qm2_params_module,  only : qm2_params_type
+    use qmmm_nml_module   , only : qmmm_nml_type
 
     implicit none
+    type(qmmm_nml_type),intent(inout) :: qmmm_nml
+    type(qm2_params_type),intent(inout) :: qm2_params
     type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
     type(qm2_structure),intent(inout) :: qm2_struct
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
     type(qm2_davidson_structure_type), intent(inout) :: qm2ds
+    type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
 
     _REAL_ f,ddot
     integer i
@@ -30,9 +35,9 @@ subroutine dav_wrap(cosmo_c_struct, qm2_struct, qm2ds, qmmm_struct)
     !Vacuum, Linear Response Solvent have the single Davidson routine, Nonequilibrium State Specific
     !has iterative Davidson Wrapper, Equilibrium State Specific routine has scf and Davidson wrapper above this subroutine.
     if ((cosmo_c_struct%solvent_model.lt.2).or.(cosmo_c_struct%solvent_model.gt.3)) then
-        call davidson(cosmo_c_struct,qm2_struct, qm2ds, qmmm_struct);
+        call davidson(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct, qm2ds, qmmm_struct);
     elseif ((cosmo_c_struct%solvent_model.eq.2).or.(cosmo_c_struct%solvent_model.eq.3)) then
-        call solvent_scf_and_davidson_test(cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct);
+        call solvent_scf_and_davidson_test(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct);
     end if
 
     ! Total energy of the ground state
@@ -64,12 +69,12 @@ subroutine dav_wrap(cosmo_c_struct, qm2_struct, qm2ds, qmmm_struct)
 
     ! Output
     if (qm2ds%verbosity>0) then
-        call outDavidson(qm2_struct,qm2ds,qmmm_struct)
+        call outDavidson(qm2_params,qmmm_nml,qm2_struct,qm2ds,qmmm_struct)
     endif
         
     if (qm2ds%calcxdens) then
         write(6,*)'Calculating cross densities and printing to CEO.out'
-        call polarizab(qm2_struct,qm2ds,qmmm_struct)
+        call polarizab(qm2_params,qmmm_nml,qm2_struct,qm2ds,qmmm_struct)
     endif
 
     qm2ds%has_been_run = .TRUE.
@@ -83,15 +88,19 @@ endsubroutine dav_wrap
 !
 !********************************************************************
 !
-subroutine outDavidson(qm2_struct,qm2ds,qmmm_struct)
+subroutine outDavidson(qm2_params,qmmm_nml,qm2_struct,qm2ds,qmmm_struct)
     use qm2_davidson_module
-    use qmmm_module, only : qmmm_nml,qm2_structure
+    use qmmm_module, only : qm2_structure
     use constants, only : ONE_AU
     use qmmm_struct_module, only : qmmm_struct_type
+    use qm2_params_module,  only : qm2_params_type
+    use qmmm_nml_module   , only : qmmm_nml_type
 
     implicit none
 
     integer i
+    type(qm2_params_type),intent(inout) :: qm2_params
+    type(qmmm_nml_type),intent(inout) :: qmmm_nml
     type(qm2_structure),intent(inout) :: qm2_struct
     type(qm2_davidson_structure_type), intent(inout) :: qm2ds
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
@@ -102,7 +111,7 @@ subroutine outDavidson(qm2_struct,qm2ds,qmmm_struct)
     write(6,*) 'Frequencies (eV) and Oscillator strengths (unitless)'
     write(6,"(8x,'Omega',12x,'fx',14x,'fy',14x,'fz',10x,'ftotal')")
 
-    call trans_dipole(qm2_struct,qm2ds,qmmm_struct, mu, alpha) ! cml-test
+    call trans_dipole(qm2_params,qmmm_nml,qm2_struct,qm2ds,qmmm_struct, mu, alpha) ! cml-test
     do i=1,qm2ds%Mx
         ft = (2.d0/3.d0)*(qm2ds%e0(i)/ONE_AU)*(mu(1,i)**2 + mu(2,i)**2 + mu(3,i)**2)
         write(6,"(i4,5g25.15)") i,qm2ds%e0(i), &
@@ -157,7 +166,7 @@ subroutine outDavidson(qm2_struct,qm2ds,qmmm_struct)
                 !close(76)
                 open(76,file='normalmodes-cfit.out')
                 write(6,*) 'Printing Charges for Normal Modes to file'
-                call printCfitNM(qm2ds,qmmm_struct,76)
+                call printCfitNM(qm2_params,qm2ds,qmmm_struct,76)
                 close(76)
             endif
         endif

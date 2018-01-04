@@ -1,7 +1,7 @@
 ! <compile=optimized>
 #include "copyright.h"
 #include "dprec.fh"
-subroutine qm2_fock1(qmmm_struct, F, PTOT)
+subroutine qm2_fock1(qmmm_mpi,qm2_params,qmmm_struct, F, PTOT)
 ! *********************************************************************         
 !                                                                               
 ! *** COMPUTE THE REMAINING CONTRIBUTIONS TO THE ONE-CENTRE ELEMENTS. 
@@ -9,10 +9,13 @@ subroutine qm2_fock1(qmmm_struct, F, PTOT)
 ! Current routine streamlined and optimised by Ross Walker (TSRI, 2005)         
 !                                                                               
 ! *********************************************************************         
-   use qmmm_module, only : qmmm_mpi, qm2_params
+   use qmmm_module, only : qmmm_mpi_structure
+   use qm2_params_module,  only : qm2_params_type
    use qmmm_struct_module, only : qmmm_struct_type
 
    implicit none
+   type(qm2_params_type), intent(inout) :: qm2_params
+   type(qmmm_mpi_structure), intent(inout) :: qmmm_mpi
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
    _REAL_, intent(inout) :: F(*)
    _REAL_, intent(in) :: PTOT(*)
@@ -85,7 +88,7 @@ subroutine qm2_fock1(qmmm_struct, F, PTOT)
 
 end subroutine qm2_fock1
 
-subroutine qm2_fock2(qm2_struct, qmmm_struct, F, PTOT, W, orb_loc)
+subroutine qm2_fock2(qmmm_mpi,qm2_params,qm2_struct, qmmm_struct, F, PTOT, W, orb_loc)
 !***********************************************************************        
 !                                                                               
 ! FOCK2 FORMS THE TWO-ELECTRON TWO-CENTER REPULSION PART OF THE FOCK            
@@ -95,10 +98,13 @@ subroutine qm2_fock2(qm2_struct, qmmm_struct, F, PTOT, W, orb_loc)
 !                                                                               
 !  ON OUTPUT F   = PARTIAL FOCK MATRIX                                          
 !***********************************************************************        
-   use qmmm_module, only : qm2_structure, qm2_params, qmmm_mpi
+   use qmmm_module, only : qm2_structure, qmmm_mpi_structure
+   use qm2_params_module,  only : qm2_params_type
    use qmmm_struct_module, only : qmmm_struct_type
    implicit none
 
+   type(qm2_params_type),intent(inout) :: qm2_params
+   type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
    type(qm2_structure),intent(inout) :: qm2_struct
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
    _REAL_, intent(inout) :: F(*)
@@ -184,7 +190,7 @@ subroutine qm2_fock2(qm2_struct, qmmm_struct, F, PTOT, W, orb_loc)
             PJA(1:16)=qm2_struct%fock2_PTOT2(1:16,ii)
             PJB(1:16)=qm2_struct%fock2_PTOT2(1:16,jj)
             !  COULOMB TERMS
-            call qm2_jab(IA,JA,PJA,PJB,W(KK+1),F) 
+            call qm2_jab(qm2_params,IA,JA,PJA,PJB,W(KK+1),F) 
             !  EXCHANGE TERMS
             !  EXTRACT INTERSECTION OF ATOMS II AND JJ IN THE SPIN 
             !      DENSITY MATRIX
@@ -196,7 +202,7 @@ subroutine qm2_fock2(qm2_struct, qmmm_struct, F, PTOT, W, orb_loc)
                   PK(L)=PTOT(J)*0.5D0
                end do
             end do
-            call qm2_kab(IA,JA, PK, W(KK+1), F) 
+            call qm2_kab(qm2_params, IA,JA, PK, W(KK+1), F) 
             KK=KK+100
         elseif(IA /= IB)then ! S-ATOM  - SP-ATOM
             !   COULOMB TERMS
@@ -286,10 +292,11 @@ subroutine qm2_fock2(qm2_struct, qmmm_struct, F, PTOT, W, orb_loc)
    
 end subroutine qm2_fock2
 
-subroutine qm2_jab(IA,JA,PJA,PJB,W, F)
-   use qmmm_module, only : qm2_params
+subroutine qm2_jab(qm2_params,IA,JA,PJA,PJB,W, F)
+   use qm2_params_module,  only : qm2_params_type
    implicit none
 
+   type(qm2_params_type), intent(inout) :: qm2_params
    _REAL_, intent(in) :: PJA(16), PJB(16), W(100)
    _REAL_, intent(inout) :: F(*)
 
@@ -413,9 +420,11 @@ subroutine qm2_jab(IA,JA,PJA,PJB,W, F)
 
 end subroutine qm2_jab
                         
-subroutine qm2_kab(IA,JA, PK, W, F)
-   use qmmm_module, only : qm2_params
+subroutine qm2_kab(qm2_params,IA,JA, PK, W, F)
+   use qm2_params_module,  only : qm2_params_type
    implicit none
+   
+   type(qm2_params_type), intent(inout) :: qm2_params
 
    _REAL_, intent(in) :: PK(*), W(100)
    _REAL_, intent(inout) :: F(*)
@@ -527,7 +536,7 @@ subroutine qm2_kab(IA,JA, PK, W, F)
 
 end subroutine qm2_kab
 
-subroutine qm2_fock2_2atm(qm2_struct,qmmm_struct, F, PTOT, W, orb_loc)
+subroutine qm2_fock2_2atm(qm2_params,qm2_struct,qmmm_struct, F, PTOT, W, orb_loc)
 !***********************************************************************        
 ! 
 ! This subroutine is a repetition of qm2_fock2 but for the explicit case
@@ -539,10 +548,12 @@ subroutine qm2_fock2_2atm(qm2_struct,qmmm_struct, F, PTOT, W, orb_loc)
 !***********************************************************************        
 
    use ElementOrbitalIndex, only : MaxValenceOrbitals, MaxValenceDimension
-   use qmmm_module, only : qm2_structure, qm2_params
+   use qm2_params_module,  only : qm2_params_type
+   use qmmm_module, only : qm2_structure
    use qmmm_struct_module, only : qmmm_struct_type
    implicit none
 
+   type(qm2_params_type), intent(inout) :: qm2_params
    type(qm2_structure),intent(inout) :: qm2_struct
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
@@ -624,7 +635,7 @@ subroutine qm2_fock2_2atm(qm2_struct,qmmm_struct, F, PTOT, W, orb_loc)
    if(IB /= IA .AND. JA /= JB) then ! SP-ATOM  - SP-ATOM
       !   EXTRACT COULOMB TERMS
       !  COULOMB TERMS
-        call qm2_jab(IA,JA,fock2_ptot2_2,fock2_ptot2_1,W,F) 
+        call qm2_jab(qm2_params,IA,JA,fock2_ptot2_2,fock2_ptot2_1,W,F) 
       !  EXCHANGE TERMS
       !  EXTRACT INTERSECTION OF ATOMS II AND JJ IN THE SPIN 
       !      DENSITY MATRIX
@@ -636,7 +647,7 @@ subroutine qm2_fock2_2atm(qm2_struct,qmmm_struct, F, PTOT, W, orb_loc)
             PK(L)=PTOT(J)*0.5D0
          end do
       end do
-        call qm2_kab(IA,JA, PK, W, F) 
+        call qm2_kab(qm2_params, IA,JA, PK, W, F) 
   elseif(IA /= IB)then ! S-ATOM  - SP-ATOM
       !   COULOMB TERMS
       SUMDIA=0.D0
@@ -721,7 +732,7 @@ subroutine qm2_fock2_2atm(qm2_struct,qmmm_struct, F, PTOT, W, orb_loc)
 end subroutine qm2_fock2_2atm
 
 ! CML Added to SQM12
-subroutine qm2_fock1_skew(qmmm_struct, F, PTOT)
+subroutine qm2_fock1_skew(qm2_params,qmmm_mpi,qmmm_struct, F, PTOT)
 !
 ! *********************************************************************         
 !                                                                               
@@ -747,11 +758,14 @@ subroutine qm2_fock1_skew(qmmm_struct, F, PTOT)
 !                                                                               
 ! *********************************************************************
 !
-   use qmmm_module, only : qmmm_mpi, qm2_params
+   use qm2_params_module,  only : qm2_params_type
+   use qmmm_module, only : qmmm_mpi_structure
    use qmmm_struct_module, only : qmmm_struct_type
 
    implicit none
 
+   type(qmmm_mpi_structure), intent(inout) :: qmmm_mpi
+   type(qm2_params_type), intent(inout) :: qm2_params
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
    _REAL_, intent(inout) :: F(*)

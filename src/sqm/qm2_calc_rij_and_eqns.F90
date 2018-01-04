@@ -2,7 +2,7 @@
 #include "copyright.h"
 #include "dprec.fh"
 #include "assert.fh"
-subroutine qm2_calc_rij_and_eqns(qmmm_struct, coords, nquant_nlink, crdsmm, natom, npairs)
+subroutine qm2_calc_rij_and_eqns(qm2_params,qmmm_nml,qmmm_mpi,qm2_rij_eqns,qmmm_struct, coords, nquant_nlink, crdsmm, natom, npairs)
 
 !-----------------------------------------------------------------
 ! Written by Ross Walker (TSRI, 2005)
@@ -20,14 +20,20 @@ subroutine qm2_calc_rij_and_eqns(qmmm_struct, coords, nquant_nlink, crdsmm, nato
 !
 !-----------------------------------------------------------------
 
-  use qmmm_module, only : qmmm_nml, qm2_rij_eqns, qm2_params, &
-                          qmmm_mpi,alph_mm
+  use qmmm_module, only : qm2_rij_eqns_structure, &
+                          qmmm_mpi_structure,alph_mm
   use constants, only : A_TO_BOHRS, A2_TO_BOHRS2, one, two
   use qmmm_struct_module, only : qmmm_struct_type
+  use qm2_params_module,  only : qm2_params_type
+  use qmmm_nml_module   , only : qmmm_nml_type
 
   implicit none
 
 ! Passed in
+   type(qm2_params_type),intent(inout) :: qm2_params
+   type(qmmm_nml_type),intent(inout) :: qmmm_nml
+   type(qm2_rij_eqns_structure),intent(inout) :: qm2_rij_eqns
+   type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
    integer, intent(in) :: nquant_nlink, natom, npairs
    _REAL_, intent(in) :: coords(3,nquant_nlink), crdsmm(4,npairs)
@@ -55,7 +61,7 @@ subroutine qm2_calc_rij_and_eqns(qmmm_struct, coords, nquant_nlink, crdsmm, nato
      !if we need to re-allocate.
      num_per_thread = qmmm_mpi%nquant_nlink_end-qmmm_mpi%nquant_nlink_start+1
      if (qmmm_struct%qm2_calc_rij_eqns_first_call) then
-       call qm2_allocate_qm2_qmmm_rij_eqns(qmmm_struct, natom,npairs)
+       call qm2_allocate_qm2_qmmm_rij_eqns(qmmm_nml,qm2_rij_eqns, qmmm_mpi, qmmm_struct, natom,npairs)
        qmmm_struct%qm2_calc_rij_eqns_first_call = .false.
      else if (min(npairs*(num_per_thread)+npairs, &
               (num_per_thread) * (natom - qmmm_struct%nquant)) > qm2_rij_eqns%qmmmrij_allocated) then
@@ -63,7 +69,7 @@ subroutine qm2_calc_rij_and_eqns(qmmm_struct, coords, nquant_nlink, crdsmm, nato
        !allocated larger.
        deallocate(qm2_rij_eqns%qmmmrijdata,stat=ier)
        REQUIRE(ier==0)
-       call qm2_allocate_qm2_qmmm_rij_eqns(qmmm_struct, natom,npairs)
+       call qm2_allocate_qm2_qmmm_rij_eqns(qmmm_nml,qm2_rij_eqns, qmmm_mpi,qmmm_struct, natom,npairs)
      end if
 
      loop_count = 0
@@ -122,13 +128,17 @@ subroutine qm2_calc_rij_and_eqns(qmmm_struct, coords, nquant_nlink, crdsmm, nato
 
 end subroutine qm2_calc_rij_and_eqns
 
-subroutine qm2_allocate_qm2_qmmm_rij_eqns(qmmm_struct,natom,npairs)
+subroutine qm2_allocate_qm2_qmmm_rij_eqns(qmmm_nml,qm2_rij_eqns, qmmm_mpi, qmmm_struct,natom,npairs)
 
-   use qmmm_module, only : qmmm_nml,qm2_rij_eqns, qmmm_mpi
+   use qmmm_nml_module   , only : qmmm_nml_type
+   use qmmm_module, only : qm2_rij_eqns_structure, qmmm_mpi_structure
    use qmmm_struct_module, only : qmmm_struct_type
 
    implicit none
 !Passed in
+   type(qmmm_nml_type),intent(inout) :: qmmm_nml
+   type(qm2_rij_eqns_structure),intent(inout) :: qm2_rij_eqns
+   type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
   type(qmmm_struct_type), intent(inout) :: qmmm_struct
   integer, intent(in) :: natom, npairs
 

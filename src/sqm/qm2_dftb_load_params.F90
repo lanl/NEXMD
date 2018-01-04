@@ -8,12 +8,12 @@
 #include "copyright.h"
 #include "dprec.fh"
 
-subroutine qm2_dftb_load_params(qm2_struct, qmmm_struct)
+subroutine qm2_dftb_load_params(qmmm_mpi,qmmm_nml,qm2_struct, qmmm_struct)
 
 !In parallel all threads call this routine
 
-   use qmmm_module, only : qmmm_nml, qm2_structure, &
-                           qmmm_mpi
+   use qmmm_module, only : qm2_structure, &
+                           qmmm_mpi_structure
    use ElementOrbitalIndex, only : elementSymbol
    use constants, only: EV_TO_KCAL, AU_TO_EV, AU_TO_KCAL, A_TO_BOHRS
    use qm2_dftb_module, only: NDIM, LDIM, MDIM, &     ! Fixed parameters
@@ -21,8 +21,11 @@ subroutine qm2_dftb_load_params(qm2_struct, qmmm_struct)
          NNDIM, MAXSIZ, mol, lmax, mcharge, izp_str, &
          sktab, log_racc, dacc, dispfile, ks_struct, fermi_str, DFTB_3rd_order_str
    use qmmm_struct_module, only : qmmm_struct_type
+  use qmmm_nml_module   , only : qmmm_nml_type
    
    implicit none
+   type(qmmm_nml_type), intent(inout) :: qmmm_nml
+   type(qmmm_mpi_structure), intent(inout) :: qmmm_mpi
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
    type(qm2_structure),intent(inout) :: qm2_struct
 
@@ -213,7 +216,7 @@ if (qmmm_mpi%commqmmm_master) then
 !!=================================
    if (qmmm_nml%dftb_disper == 1) then
       disp_file = TRIM(skroot)//"DISPERSION.INP_ONCHSP"
-      call dispersionread(qmmm_struct, qmmm_struct%nquant_nlink,qmmm_struct%qm_ntypes, &
+      call dispersionread(qmmm_nml, qmmm_struct, qmmm_struct%nquant_nlink,qmmm_struct%qm_ntypes, &
             izp_str%izp, &
             disp_file)
    end if
@@ -222,7 +225,7 @@ if (qmmm_mpi%commqmmm_master) then
 !!    Third order
 !!=================================
    if (DFTB_3rd_order_str%do_3rd_order) then
-      call qm2_dftb_read_3rd_order(qmmm_struct, qmmm_struct%nquant_nlink,qmmm_struct%qm_ntypes, & 
+      call qm2_dftb_read_3rd_order(qmmm_nml,qmmm_struct, qmmm_struct%nquant_nlink,qmmm_struct%qm_ntypes, & 
             izp_str%izp,skroot)
    end if
 
@@ -235,7 +238,7 @@ if (qmmm_mpi%commqmmm_master) then
       write(6,*) "READING CM3 CHARGES PARAMETERS..."
 
       cm3_file = TRIM(skroot)//"CM3_PARAMETERS.DAT"
-      call read_cm3(qmmm_struct%nquant_nlink, qmmm_struct%qm_ntypes, izp_str%izp, cm3_file)
+      call read_cm3(qmmm_nml, qmmm_struct%nquant_nlink, qmmm_struct%qm_ntypes, izp_str%izp, cm3_file)
    end if
 
 !!=================================

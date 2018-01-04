@@ -1,7 +1,7 @@
 ! <compile=optimized>
 #include "copyright.h"
 #include "dprec.fh"
-subroutine qm2_rotate_qmqm(qm2_struct, qmmm_struct, loop_count,IQM, JQM,NI,NJ,XI,XJ,W,KI,&
+subroutine qm2_rotate_qmqm(qmmm_nml, qm2_params, qm2_rij_eqns, qm2_struct, qmmm_struct, loop_count,IQM, JQM,NI,NJ,XI,XJ,W,KI,&
                        RI, core)
 
 !********************************************************
@@ -39,12 +39,17 @@ subroutine qm2_rotate_qmqm(qm2_struct, qmmm_struct, loop_count,IQM, JQM,NI,NJ,XI
 !
 !***********************************************************************
       use constants  , only : one, A_TO_BOHRS, A2_TO_BOHRS2 
-      use qmmm_module, only : qmmm_nml,  qm2_structure, qm2_params, &
-                              qm2_rij_eqns, EXPONENTIAL_CUTOFF
+      use qmmm_module, only : qm2_structure, &
+                              qm2_rij_eqns_structure, EXPONENTIAL_CUTOFF
       use qmmm_struct_module, only : qmmm_struct_type
+      use qm2_params_module,  only : qm2_params_type
+      use qmmm_nml_module   , only : qmmm_nml_type
 
       implicit none
 !Passed in
+      type(qm2_rij_eqns_structure),intent(inout) :: qm2_rij_eqns
+      type(qm2_params_type),intent(inout) :: qm2_params
+      type(qmmm_nml_type),intent(inout) :: qmmm_nml
       type(qm2_structure),intent(inout) :: qm2_struct
       type(qmmm_struct_type), intent(in) :: qmmm_struct
       integer, intent(in) :: loop_count, iqm, jqm, ni, nj
@@ -79,7 +84,7 @@ subroutine qm2_rotate_qmqm(qm2_struct, qmmm_struct, loop_count,IQM, JQM,NI,NJ,XI
       SQRTAEE = 1.0d0/sqrt(RR2+bdd1ij)
       X(1:3) = X(1:3)*oneRIJ
 
-      call qm2_repp(qmmm_struct, iqm,jqm,rr,rr2,RI,core,SQRTAEE)
+      call qm2_repp(qmmm_nml, qm2_params,qmmm_struct, iqm,jqm,rr,rr2,RI,core,SQRTAEE)
       if(qmmm_nml%qmqm_erep_incore .and. loop_count>0 ) then
 ! Ross Walker - We will need these repulsion integrals later to
 !               calculate qm-qm analytical derivatives so store them

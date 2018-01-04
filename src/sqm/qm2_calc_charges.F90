@@ -5,7 +5,7 @@
 !Subroutines for the calculation of charges on QM
 !atoms in QMMM calculations.
 
-subroutine qm2_calc_mulliken(qm2_struct,iqm,mul_chg,density_matrix)
+subroutine qm2_calc_mulliken(qm2_params,qm2_struct,iqm,mul_chg,density_matrix)
 
 ! Calculates the Mulliken atom charge for QM atom iqm regions.
 ! Written by Ross Walker (TSRI, 2005)
@@ -14,11 +14,12 @@ subroutine qm2_calc_mulliken(qm2_struct,iqm,mul_chg,density_matrix)
 ! Mulliken charge in electron units is returned in mul_chg
 
 ! Requires a converged density matrix stored in qm2_struct%den_matrix
-
-      use qmmm_module, only : qm2_params, qm2_structure
+      use qm2_params_module,  only : qm2_params_type
+      use qmmm_module, only : qm2_structure
       implicit none
 
 !Passed in
+      type(qm2_params_type),intent(inout) :: qm2_params
       type(qm2_structure),intent(inout) :: qm2_struct
       integer, intent(in) :: iqm;
       _REAL_, intent(out) :: mul_chg;

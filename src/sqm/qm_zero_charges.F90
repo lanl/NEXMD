@@ -4,14 +4,14 @@
 #include "assert.fh"
 !QMMM Charge adjustment routines: Written by Ross Walker (TSRI 2005)
 !Zeros out charges on QM atoms
-subroutine qm_zero_charges(qmmm_struct, charge,scaled_mm_charges,save_charges)
+subroutine qm_zero_charges(qmmm_nml,qmmm_struct, charge,scaled_mm_charges,save_charges)
 
 !Zero's the Q charges in array charges - before it does this though
 !it copies the current QM atom charges to the array qmmm_struct%qm_resp_charges
 
-  use qmmm_module, only : qmmm_nml
   use constants, only : zero
   use qmmm_struct_module, only : qmmm_struct_type
+  use qmmm_nml_module   , only : qmmm_nml_type
 
   implicit none
 
@@ -19,6 +19,7 @@ subroutine qm_zero_charges(qmmm_struct, charge,scaled_mm_charges,save_charges)
   _REAL_ charge(*), scaled_mm_charges(*)
   logical, intent(in) :: save_charges
   type(qmmm_struct_type), intent(inout) :: qmmm_struct
+  type(qmmm_nml_type),intent(inout) :: qmmm_nml
 
 !local
   integer i, iatom
@@ -54,18 +55,19 @@ subroutine qm_zero_charges(qmmm_struct, charge,scaled_mm_charges,save_charges)
 
 end subroutine qm_zero_charges
 
-subroutine qm_zero_mm_link_pair_main_chg(qmmm_struct, nlink,link_pairs,charges,scaled_mm_charges,save_charges)
+subroutine qm_zero_mm_link_pair_main_chg(qmmm_nml,qmmm_struct, nlink,link_pairs,charges,scaled_mm_charges,save_charges)
 !This subroutine is used to zero the charge on any MM atom that is part
 !of a QM-MM link pair. The charge is zeroed in the main charge array and the
 !scaled mm charge array. This has the
 !effect of removing the interaction between the MM link pair atom and all the Real
 !QM atoms AND MM-MMlinkpair interactions.
 
-  use qmmm_module, only : qmmm_nml 
+  use qmmm_nml_module   , only : qmmm_nml_type
   use qmmm_struct_module, only : qmmm_struct_type
 
   implicit none
   type(qmmm_struct_type), intent(inout) :: qmmm_struct
+  type(qmmm_nml_type),intent(inout) :: qmmm_nml
 
 !Passed in
   integer, intent(in) :: nlink
@@ -249,13 +251,14 @@ subroutine qmmm_adjust_q(adjust_q, natom, nquant, nquant_nlink, nlink, charge, i
 
 end subroutine qmmm_adjust_q
 
-subroutine qmmm_restore_mm_charges(nquant,qm_resp_charges,charge,scaled_mm_charges,iqmatoms,chg_lambda, &
+subroutine qmmm_restore_mm_charges(qmmm_nml,nquant,qm_resp_charges,charge,scaled_mm_charges,iqmatoms,chg_lambda, &
                                    nlink,link_pairs,mm_link_pair_resp_charges,restore_mmlink)
 
   use constants, only : INV_AMBER_ELECTROSTATIC
-  use qmmm_module, only: qmmm_nml
+   use qmmm_nml_module   , only : qmmm_nml_type
 
   implicit none
+   type(qmmm_nml_type),intent(inout) :: qmmm_nml
 
   integer, intent(in) :: nquant
   _REAL_, intent(in) :: qm_resp_charges(nquant)

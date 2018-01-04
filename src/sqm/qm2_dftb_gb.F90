@@ -11,7 +11,7 @@
 ! E-Mail: seabra@qtp.ufl.edu
 ! Url:    http://www.qtp.ufl.edu/~seabra
 !------------------------------------------------
-subroutine qm2_dftb_gb_shift(qmmm_struct, scf_mchg)
+subroutine qm2_dftb_gb_shift(qm_gb, qmmm_mpi, qmmm_scratch, qmmm_struct, scf_mchg)
    ! Calculates the contribution from GB potential to the Shift vector. and
    ! updates the shift vector.
    !
@@ -24,7 +24,7 @@ subroutine qm2_dftb_gb_shift(qmmm_struct, scf_mchg)
 
 
 !! Modules
-   use qmmm_module, only: qm_gb, qmmm_mpi, qmmm_scratch
+   use qmmm_module, only: qm_gb_structure, qmmm_mpi_structure, qmmm_scratch_structure
    use qm2_dftb_module, only: ks_struct
    use constants, only: BOHRS_TO_A, zero
    use qmmm_struct_module, only : qmmm_struct_type
@@ -32,6 +32,9 @@ subroutine qm2_dftb_gb_shift(qmmm_struct, scf_mchg)
    implicit none
 
 !! Passed in
+   type(qm_gb_structure),intent(inout) :: qm_gb
+   type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
+   type(qmmm_scratch_structure),intent(inout) :: qmmm_scratch
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
    _REAL_, intent(in) :: scf_mchg(qmmm_struct%nquant_nlink) ! Mulliken charges per atom
 
@@ -46,7 +49,7 @@ subroutine qm2_dftb_gb_shift(qmmm_struct, scf_mchg)
    !Parallel
    qm_gb%gb_qmpot(1:qmmm_struct%nquant_nlink)=zero
 !Parallel
-   call qmgb_calc_qm_pot(qm_gb%gb_qmpot,qm_gb%qmqm_onefij,scf_mchg)
+   call qmgb_calc_qm_pot(qm_gb, qmmm_mpi, qm_gb%gb_qmpot,qm_gb%qmqm_onefij,scf_mchg)
 #ifdef MPI
    !Since only the master thread does most of DFTB at present we need to reduce
    !the gb_qmpot array from it's current distributed form. Hopefully

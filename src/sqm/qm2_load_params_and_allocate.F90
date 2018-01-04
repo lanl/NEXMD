@@ -3,7 +3,8 @@
 #include "assert.fh"
 #include "dprec.fh"
 
-subroutine qm2_load_params_and_allocate(qm2_struct, qmmm_struct)
+subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opnq, qmmm_scratch, &
+                                        xlbomd_struct,qm2_struct, qmmm_struct)
 
 
     ! Written by: Ross Walker (TSRI, 2005)
@@ -32,16 +33,24 @@ subroutine qm2_load_params_and_allocate(qm2_struct, qmmm_struct)
             
     use QM2_parameters
     use qm2_params_module, only : new
-    use qmmm_module, only : qmmm_nml, qm2_structure, qm2_params, &
-        qmmm_mpi, qmmm_scratch, qmmm_opnq
+    use qmmm_module, only : qm2_structure, &
+        qmmm_mpi_structure, qmmm_scratch_structure, qmmm_opnq_structure
     use MNDOChargeSeparation, only : GetDDAndPho
     use qm2_diagonalizer_module, only : qm2_diagonalizer_setup
-    use xlbomd_module, only : init_xlbomd                                
+    use xlbomd_module, only : init_xlbomd, xlbomd_structure                                
     use qmmm_struct_module, only : qmmm_struct_type
+    use qm2_params_module,  only : qm2_params_type
+    use qmmm_nml_module   , only : qmmm_nml_type
 
     implicit none
     type(qm2_structure),intent(inout) :: qm2_struct
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
+    type(xlbomd_structure),intent(inout) :: xlbomd_struct
+   type(qm2_params_type),intent(inout) :: qm2_params
+   type(qmmm_nml_type),intent(inout) :: qmmm_nml
+   type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
+   type(qmmm_opnq_structure),intent(inout) :: qmmm_opnq
+   type(qmmm_scratch_structure),intent(inout) :: qmmm_scratch
 
     !Locals
     _REAL_ :: pdiag_guess1, pdiag_guess2, pddg_zaf, pddg_zbf
@@ -66,7 +75,7 @@ subroutine qm2_load_params_and_allocate(qm2_struct, qmmm_struct)
     logical :: test
 
     !  Initialize the parameter module
-    call InitializeParameter(qmmm_nml%qmtheory)
+    call InitializeParameter(qm2_struct,qmmm_nml%qmtheory)
     call new(qm2_params, qmmm_struct%qm_ntypes, qmmm_struct%nquant_nlink, &
         qmmm_nml%qmtheory, qmmm_struct%PM3MMX_INTERFACE, qmmm_opnq%useOPNQ)
     !Zero the total heat of formation before calculating it.
@@ -128,7 +137,7 @@ subroutine qm2_load_params_and_allocate(qm2_struct, qmmm_struct)
 
     !QMMM e-repul memory depends on QM-MM pair list size so is
     !allocated later on and checked on every call.
-    call qm2_allocate_qmqm_e_repul(qm2_struct,qmmm_struct, qm2_struct%n2el)
+    call qm2_allocate_qmqm_e_repul(qmmm_nml, qmmm_mpi, qm2_struct,qmmm_struct, qm2_struct%n2el)
 
     !Protect DUMB users from STUPID errors
     if (nelectrons > 2*qm2_struct%norbs) then
@@ -220,7 +229,7 @@ subroutine qm2_load_params_and_allocate(qm2_struct, qmmm_struct)
         REQUIRE ( ier == 0 )
     elseif (qmmm_nml%density_predict == 2) then
         !We are using XL-BOMD
-        call init_xlbomd(qm2_struct%matsize)
+        call init_xlbomd(xlbomd_struct,qm2_struct%matsize)
     end if
 
     if (qmmm_nml%fock_predict == 1) then
@@ -656,7 +665,7 @@ subroutine qm2_load_params_and_allocate(qm2_struct, qmmm_struct)
            
             DD=0.0D0
             PO=0.0D0
-            call GetDDAndPho(qmmm_struct,i, DD, PO)
+            call GetDDAndPho(qm2_params,qmmm_struct,i, DD, PO)
 
             qm2_params%dd(1:6,i)=DD
             qm2_params%po(1:9,i)=PO
@@ -991,7 +1000,7 @@ subroutine qm2_load_params_and_allocate(qm2_struct, qmmm_struct)
            
             DD=0.0D0
             PO=0.0D0
-            call GetDDAndPho(qmmm_struct,i, DD, PO)
+            call GetDDAndPho(qm2_params,qmmm_struct,i, DD, PO)
            
             qm2_params%dd(1:6,i)=DD
             qm2_params%po(1:9,i)=PO
@@ -1435,7 +1444,7 @@ subroutine qm2_load_params_and_allocate(qm2_struct, qmmm_struct)
            
             DD=0.0D0
             PO=0.0D0
-            call GetDDAndPho(qmmm_struct,i, DD, PO)
+            call GetDDAndPho(qm2_params,qmmm_struct,i, DD, PO)
 
             qm2_params%dd(1:6,i)=DD
             qm2_params%po(1:9,i)=PO
@@ -2142,7 +2151,7 @@ if (.not. qmmm_nml%qmtheory%DFTB) then
     ! Setup the STO-6G orbital expansions and pre-calculate as many overlaps by type
     ! as we can and store these in memory. This will help a lot with speed in the
     ! energy and derivative code.
-    call qm2_setup_orb_exp(qmmm_struct)
+    call qm2_setup_orb_exp(qm2_params, qmmm_struct)
 
 end if
 
@@ -2154,12 +2163,12 @@ if (qmmm_mpi%commqmmm_master) then
     ! modularize the code first and/or adjust the DFTB test outputs
     ! because qm2_dftb_load_params (called below) prints stuff as well...
     if ( .not. qmmm_nml%qmtheory%EXTERN ) then
-        call qm2_print_info(qm2_struct,qmmm_struct)
+        call qm2_print_info(qmmm_nml,qm2_struct,qmmm_struct)
     end if
 end if
 
 if (qmmm_nml%qmtheory%DFTB) then
-    call qm2_dftb_load_params(qm2_struct, qmmm_struct)
+    call qm2_dftb_load_params(qmmm_mpi,qmmm_nml,qm2_struct, qmmm_struct)
 end if
 
 !In Parallel calculate the offset into the two electron array for each thread.
@@ -2261,7 +2270,7 @@ qmmm_mpi%two_e_offset = 0
 ! Choose diagonalizer and allocate required memory
 ! ------------------------------------------------
 if (.not. ( qmmm_nml%qmtheory%DFTB .or. qmmm_nml%qmtheory%EXTERN ) ) then
-    call qm2_diagonalizer_setup(qmmm_nml%diag_routine, qmmm_nml%allow_pseudo_diag, &
+    call qm2_diagonalizer_setup(qm2_params,qmmm_mpi,qmmm_nml,qmmm_nml%diag_routine, qmmm_nml%allow_pseudo_diag, &
         qmmm_nml%verbosity, &
         qmmm_mpi%commqmmm_master, qmmm_mpi%commqmmm, &
         qm2_struct, qmmm_scratch)

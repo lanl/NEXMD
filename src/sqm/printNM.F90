@@ -71,13 +71,15 @@
 !----------------------------------------------------------------------
 
 
-subroutine printCfitNM(qm2ds,qmmm_struct,filenumber)
+subroutine printCfitNM(qm2_params,qm2ds,qmmm_struct,filenumber)
  use qmmm_module
 ! use constants
  use qm2_davidson_module
  use qmmm_struct_module, only : qmmm_struct_type
+   use qm2_params_module,  only : qm2_params_type
 
       implicit none
+      type(qm2_params_type),intent(inout) :: qm2_params
       type(qm2_davidson_structure_type), intent(inout) :: qm2ds
       type(qmmm_struct_type), intent(in) :: qmmm_struct
       real :: dipd(3),dipod(3,2),coords(3),coords0(3),charge,D1,D2,tcharge,trace,&

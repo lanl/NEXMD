@@ -2,14 +2,15 @@
 !  -*- mode: f90; coding: iso-8859-15; -*-
 
 #include "dprec.fh"
-subroutine dispersionread(qmmm_struct, nn,ntype,izp,disp_file) 
+subroutine dispersionread(qmmm_nml, qmmm_struct, nn,ntype,izp,disp_file) 
 ! This is in the dispfile structure: ,read_DISP_DOT_INP,h1,h2,Ni0,scale)
 
-   use qmmm_module, only : qmmm_nml
+  use qmmm_nml_module   , only : qmmm_nml_type
    use ElementOrbitalIndex, only : elementSymbol
    use qm2_dftb_module, only: mol, dispertmp,dispfile
    use qmmm_struct_module, only : qmmm_struct_type
    implicit none
+   type(qmmm_nml_type), intent(inout) :: qmmm_nml
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
    
    integer:: i, j

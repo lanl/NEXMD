@@ -30,12 +30,12 @@ CONTAINS
   END FUNCTION scf_iterator_value
 
 
-  FUNCTION diis_iterator_value() RESULT(val)
+  FUNCTION diis_iterator_value(qmmm_nml) RESULT(val)
     ! this is a circular iterator
 
-    use qmmm_module, only : qmmm_nml
+  use qmmm_nml_module   , only : qmmm_nml_type
     IMPLICIT NONE
-
+    type(qmmm_nml_type), intent(inout) :: qmmm_nml
     integer :: val
 !    integer :: scf_iterator_value
 
@@ -45,12 +45,13 @@ CONTAINS
 
 
 
-  FUNCTION diis_iterator_prev_value() RESULT(val)
+  FUNCTION diis_iterator_prev_value(qmmm_nml) RESULT(val)
     ! this is a circular iterator
 
-    use qmmm_module, only : qmmm_nml
+  use qmmm_nml_module   , only : qmmm_nml_type
     IMPLICIT NONE
-
+    
+    type(qmmm_nml_type), intent(inout) :: qmmm_nml
     integer :: val
 !    integer :: scf_iterator_value
 

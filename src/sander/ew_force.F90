@@ -279,7 +279,7 @@ subroutine ewald_force(crd,numatoms,iac,ico,charge, &
            call mpi_comm_rank(recip_comm,mytaskid,ierr)
 #endif
            if (qm_pot_only) then
-             call adj_mm_link_pair_crd(qmmm_struct, crd) !Replace the MM atom's coordinates 
+             call adj_mm_link_pair_crd(qmmm_nml,qmmm_struct, crd) !Replace the MM atom's coordinates 
                                           !      with the link atom.
 
              call do_pme_recip(mpoltype,numatoms,crd,charge, &
@@ -287,7 +287,7 @@ subroutine ewald_force(crd,numatoms,iac,ico,charge, &
                    X(linddip),x(lfield),x(lprefac1),x(lprefac2),    &
                    X(lprefac3),x(lfftable),qm_pot_only )
 
-             call rst_mm_link_pair_crd(qmmm_stuct, crd)
+             call rst_mm_link_pair_crd(qmmm_nml,qmmm_stuct, crd)
              !-- store the reciprocal energy so that we can subtract off 
              !   the QM-QM reciprocal energy
              !   when we next come through.
@@ -300,7 +300,7 @@ subroutine ewald_force(crd,numatoms,iac,ico,charge, &
            end if
 
            qmmm_scratch%qm_real_scratch(1:3*natom) = zero
-           call adj_mm_link_pair_crd(qmmm_struct, crd) !Replace the MM atom's coordinates 
+           call adj_mm_link_pair_crd(qmmm_nml,qmmm_struct, crd) !Replace the MM atom's coordinates 
                                           !      with the link atom.
            call do_pme_recip(mpoltype,numatoms,crd,charge, &
                  qmmm_scratch%qm_real_scratch,  &
@@ -308,7 +308,7 @@ subroutine ewald_force(crd,numatoms,iac,ico,charge, &
                  X(lprefac3),x(lfftable),qm_pot_only )
 
 
-           call rst_mm_link_pair_crd(qmmm_stuct, crd)
+           call rst_mm_link_pair_crd(qmmm_nml,qmmm_stuct, crd)
            !We need to redistribute the force on link atoms
            do i=1,qmmm_struct%nlink
              mm_no = qmmm_struct%link_pairs(1,i)  !location of atom in x array
@@ -359,7 +359,7 @@ subroutine ewald_force(crd,numatoms,iac,ico,charge, &
  
              ! Calculate QM-QM PME forces to remove from 
              !   the full PME we did above.
-             call adj_mm_link_pair_crd(qmmm_struct, crd)
+             call adj_mm_link_pair_crd(qmmm_nml,qmmm_struct, crd)
              call do_pme_recip(mpoltype,numatoms,crd, &
                   qmmm_scratch%qm_pme_scratch, &
                   qmmm_scratch%qm_real_scratch, &
@@ -369,7 +369,7 @@ subroutine ewald_force(crd,numatoms,iac,ico,charge, &
              ! Now subtract out the QM-QM forces from the pme.
   
              ! Redistribute the force on link atoms
-             call rst_mm_link_pair_crd(qmmm_struct, crd)
+             call rst_mm_link_pair_crd(qmmm_nml,qmmm_struct, crd)
              do i=1,qmmm_struct%nlink
                 mm_no = qmmm_struct%link_pairs(1,i)  !location in x array
                 lnk_no = qmmm_struct%link_pairs(2,i) !Nquant number of QM atom 

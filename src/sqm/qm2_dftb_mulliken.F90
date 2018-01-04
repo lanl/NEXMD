@@ -6,15 +6,18 @@
 !! =============================================================================
 !!                         MULLIKEN POPULATION ANALYSIS
 !! =============================================================================
-subroutine mulliken(qm2_struct,qmmm_struct, nquant_nlink,NDIM,izp,lmax,dacc,qmat,qzero,scf_mchg)
+subroutine mulliken(qmmm_nml, qmmm_mpi, qm2_struct,qmmm_struct, nquant_nlink,NDIM,izp,lmax,dacc,qmat,qzero,scf_mchg)
 
-   use qmmm_module, only : qm2_structure, qmmm_nml, qmmm_mpi
+   use qmmm_module, only : qm2_structure, qmmm_mpi_structure
    use qm2_dftb_module, only: MDIM, ks_struct, izp_str, cm3, mol
    use qmmm_struct_module, only : qmmm_struct_type
+   use qmmm_nml_module   , only : qmmm_nml_type
 
    implicit none
 
 !!Passed in:
+   type(qmmm_nml_type),intent(inout) :: qmmm_nml
+   type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
    type(qm2_structure),intent(inout) :: qm2_struct
    type(qmmm_struct_type), intent(in) :: qmmm_struct
    integer, intent(in)  :: nquant_nlink
