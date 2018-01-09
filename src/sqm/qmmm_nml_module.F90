@@ -297,7 +297,11 @@ module qmmm_nml_module
      ! Default = true     
      logical :: qm_pme
   
-  end type qmmm_nml_type
+     !qm2_iterator_mod save values
+     integer :: iter_val_saved
+     integer :: saved_val
+      
+     end type qmmm_nml_type
 
   interface new
      module procedure new_qmmm_nml_type

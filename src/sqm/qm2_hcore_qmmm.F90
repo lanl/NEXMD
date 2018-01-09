@@ -137,7 +137,7 @@ subroutine  qm2_hcore_qmmm(qm2_params,qmmm_nml,qmmm_mpi, qm2_rij_eqns, qm2_struc
                 oneOverRij=one/rij
                 r2InAu=r2*A2_TO_BOHRS2
 
-                call GetRotationMatrix(qm_xcrd(1:3,j)-qm_atom_coord(1:3), rotationMatrix, spd_atom)   
+                call GetRotationMatrix(qm2_params,qm_xcrd(1:3,j)-qm_atom_coord(1:3), rotationMatrix, spd_atom)   
                 call qm2_repp_d(qm2_params,qmmm_struct, qmmm_struct%qm_atom_type(i),0,rijInAu,RI,CORE,W,45,1,0) 
                 core(1,2)=0.d0
                 core=core*qm_xcrd(4,j)

@@ -59,9 +59,7 @@ subroutine polarizab(qm2_params,qmmm_nml,qm2_struct,qm2ds,qmmm_struct)
       integer i,j                              
       real time11                              
       character*20 datetime
-      character*(150) txt, txt1*15, machname*36, keywr*6
-      common /keywr/ keywr                     
-    
+      character*(150) txt, txt1*15, machname*36    
       _REAL_ dip(3,qm2ds%Lt) !added            
     
       call get_date(datetime)
@@ -208,7 +206,7 @@ if(1==1) then
        time11=real(itime2-itime1)/100
        print *
        print *, 'Computed mu_alpha_beta, time',time11, 'sec'
-       open (13,file='muab.out')
+       open (qm2ds%muab_unit,file=trim(qm2ds%muab_out))
       print *
       print *, 'mu_alpha_beta'
       print *, 'j i e(ji) fabx(ji) faby(ji) fabz(ji) fab(ji)'
@@ -218,26 +216,26 @@ if(1==1) then
             write(6,140) j,i,qm2ds%e0(i)-qm2ds%e0(-j),2*(qm2ds%e0(i)-qm2ds%e0(-j))*muabx(j,i)**2/21.0, &
             2*(qm2ds%e0(i)-qm2ds%e0(-j))*muaby(j,i)**2/21.0, &
             2*(qm2ds%e0(i)-qm2ds%e0(-j))*muabz(j,i)**2/21.0,2*(qm2ds%e0(i)-qm2ds%e0(-j))*f**2/21.0
-            write(13,140) abs(j),i,qm2ds%e0(i)-qm2ds%e0(-j),2*(qm2ds%e0(i)-qm2ds%e0(-j))*muabx(j,i)**2/21.0, &
+            write(qm2ds%muab_unit,140) abs(j),i,qm2ds%e0(i)-qm2ds%e0(-j),2*(qm2ds%e0(i)-qm2ds%e0(-j))*muabx(j,i)**2/21.0, &
             2*(qm2ds%e0(i)-qm2ds%e0(-j))*muaby(j,i)**2/21.0, &
             2*(qm2ds%e0(i)-qm2ds%e0(-j))*muabz(j,i)**2/21.0,2*(qm2ds%e0(i)-qm2ds%e0(-j))*f**2/21.0
          enddo
       enddo
-      close(13)
+      close(qm2ds%muab_unit)
 
 140   format(2I5,5F12.4)
 
-      open (13,file='ceo.out')
+      open (qm2ds%ceo_unit,file=trim(qm2ds%ceo_out))
       j=-qmmm_struct%state_of_interest
-      write(13,*)
-      write(13,*) 'Energies (eV) and oscillator strengths for transitions'
-      write(13,*) 'from state ',abs(j),' to all other states'
+      write(qm2ds%ceo_unit,*)
+      write(qm2ds%ceo_unit,*) 'Energies (eV) and oscillator strengths for transitions'
+      write(qm2ds%ceo_unit,*) 'from state ',abs(j),' to all other states'
       do i=1,qm2ds%Mx
          f=sqrt(muabx(j,i)**2+muaby(j,i)**2+muabz(j,i)**2)
-         write(13,130) i,qm2ds%e0(i)-qm2ds%e0(-j),2*(qm2ds%e0(i)-qm2ds%e0(-j))*f**2/21.0
+         write(qm2ds%ceo_unit,130) i,qm2ds%e0(i)-qm2ds%e0(-j),2*(qm2ds%e0(i)-qm2ds%e0(-j))*f**2/21.0
       enddo
-      flush(13)
-      close(13)
+      flush(qm2ds%ceo_unit)
+      close(qm2ds%ceo_unit)
 
       itime11=get_time()
       time11=real(itime11-itime1)/100

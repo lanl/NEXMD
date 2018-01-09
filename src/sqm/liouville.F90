@@ -206,20 +206,15 @@
    type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
    _REAL_ xi(qm2ds%Lt),eta(qm2ds%Lt)
-   character keywr*6
-   common /keywr/ keywr
-   logical first
-      data first /.true./
-      save first
 
 ! --- if this is the first time in this routine, load coulomb matrix
-      if (first) then
-   if (index(keywr,'INDO').NE.0.AND.index(keywr,'MINDO').EQ.0) then
-     write(6,*)  keywr,' hamiltonian requested'
-     write(6,*)  'Use *Z program for ', keywr
+      if (qm2_params%vxi_first) then
+   if (index(qm2_params%keywr,'INDO').NE.0.AND.index(qm2_params%keywr,'MINDO').EQ.0) then
+     write(6,*) qm2_params%keywr,' hamiltonian requested'
+     write(6,*)  'Use *Z program for ', qm2_params%keywr
      stop
    endif 
-         first=.false.
+         qm2_params%vxi_first=.false.
       endif
       eta(:)=0.0
       call qm2_fock2(qmmm_mpi,qm2_params,qm2_struct, qmmm_struct,eta,xi,qm2ds%W,qm2_params%orb_loc)
@@ -247,20 +242,15 @@
    type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    type(qmmm_struct_type), intent(inout) :: qmmm_struct
    _REAL_ xi(qm2ds%Lt),eta(qm2ds%Lt)
-   character keywr*6
-   common /keywr/ keywr
-   logical first
-      data first /.true./
-      save first
 
 ! --- if this is the first time in this routine, load coulomb matrix
-      if (first) then
-   if (index(keywr,'INDO').NE.0.AND.index(keywr,'MINDO').EQ.0) then
-     write(6,*)  keywr,' hamiltonian requested'
-     write(6,*)  'Use *Z program for ', keywr
+      if (qm2_params%vxia_first) then
+   if (index(qm2_params%keywr,'INDO').NE.0.AND.index(qm2_params%keywr,'MINDO').EQ.0) then
+     write(6,*)  qm2_params%keywr,' hamiltonian requested'
+     write(6,*)  'Use *Z program for ', qm2_params%keywr
      stop
    endif 
-         first=.false.
+         qm2_params%vxia_first=.false.
       endif
       eta(:)=0.0
       call qm2_fock2(qmmm_mpi,qm2_params,qm2_struct,qmmm_struct, eta,xi,qm2ds%W,qm2_params%orb_loc)

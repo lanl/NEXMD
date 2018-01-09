@@ -52,11 +52,6 @@ subroutine GetDDAndPho(qm2_params,qmmm_struct, qmtype, DD, PO)
   integer, intent(in)::qmtype
   _REAL_, intent(out)::DD(6), PO(9)
   
-   !local 
-  integer, save:: qmtype_saved=-1
-  _REAL_, save::DD_saved(6), PO_saved(9)
-  logical, save::initialized=.false. 
-  
   integer::NS, NP, ND, atomic_number
   _REAL_::ZS,ZP,ZD
   _REAL_::D, FG, FG1, FG2, AIJ22, AIJ43, AIJ52, AIJ63
@@ -81,7 +76,7 @@ subroutine GetDDAndPho(qm2_params,qmmm_struct, qmtype, DD, PO)
 
 
 
-    if ((qmtype_saved.ne.qmtype) .or. (.not.initialized)) then
+    if ((qm2_params%DDP_qmtype_saved.ne.qmtype) .or. (.not.qm2_params%DDP_initialized)) then
        
 !C *** SECTION FOR AN S BASIS.
 !C     THERE IS ONLY ONE ADDITIVE TERM.   
@@ -124,7 +119,7 @@ subroutine GetDDAndPho(qm2_params,qmmm_struct, qmtype, DD, PO)
       D        = AIJ52/SQRT(5.0D0)
 !C     PREVIOUS STATEMENT AS IN THE TCA PAPER,
 !C     NEXT STATEMENT AS A POSSIBLE ALTERNATIVE.
-!C     FG       = REPD(33)-1.6D0*REPD(35) 
+!C     FG       = qm2_params%REPD(33)-1.6D0*qm2_params%REPD(35) 
       DD(5) = D
       FG=GetOneCenter2Electron(qm2_params,qmtype, 23)
       FG1=GetOneCenter2Electron(qm2_params,qmtype, 35)
@@ -150,15 +145,15 @@ subroutine GetDDAndPho(qm2_params,qmmm_struct, qmtype, DD, PO)
       !  this one was added in param.f in Thiel's mndo implementation
       PO(9)=PO(1)
       
-      qmtype_saved=qmtype
-      DD_saved=DD
-      PO_saved=PO
-      initialized=.true.
+      qm2_params%DDP_qmtype_saved=qmtype
+      qm2_params%DD_saved=DD
+      qm2_params%PO_saved=PO
+      qm2_params%DDP_initialized=.true.
       
     end if
 
-    DD=DD_saved
-    PO=PO_saved    
+    DD=qm2_params%DD_saved
+    PO=qm2_params%PO_saved    
     
 
 end subroutine
@@ -203,9 +198,6 @@ function GetOneCenter2Electron(qm2_params,qmType, index) result(integral)
    _REAL_, parameter::S5 =0.22360679774998D+01   
    _REAL_, parameter::S15=0.38729833462074D+01
     
-   _REAL_, save::REPD(52)=0.0D0
-   logical, save::initialized=.false.
-   integer, save::qmType_saved=-1
  
    integer::NS, ND
    _REAL_::ES, EP, ED
@@ -213,7 +205,7 @@ function GetOneCenter2Electron(qm2_params,qmType, index) result(integral)
    _REAL_::R355, R466
    _REAL_::F0DD, F2DD, F0PD, F2FD, F4DD, F2PD, G1PD, G3PD
   
-   if((qmType_saved.ne.qmType) .or. (.not.initialized)) then
+   if((qm2_params%OC2E_qmType_saved.ne.qmType) .or. (.not.qm2_params%OC2E_initialized)) then
 
       NS     = qm2_params%sp_quantum_number(qmtype)
       ND     = qm2_params%d_quantum_number(qmtype)
@@ -264,65 +256,65 @@ function GetOneCenter2Electron(qm2_params,qmType, index) result(integral)
 !      ENDIF
 ! *** COMPUTE ONE-CENTER TWO-ELECTRON INTEGRALS
 !     FROM THE SLATER-CONDON PARAMETERS.
-      REPD( 1) = R016
-      REPD( 2) = (TWO/(THREE*S5))*R125
-      REPD( 3) = (ONE/S15)*R125
-      REPD( 4) = (TWO/(5.D0*S5))*R234
-      REPD( 5) = R036 + (FOUR/35.D0)*R236
-      REPD( 6) = R036 + (TWO /35.D0)*R236
-      REPD( 7) = R036 - (FOUR/35.D0)*R236
-      REPD( 8) = -(ONE/(THREE*S5))*R125
-      REPD( 9) = SQRT(THREE/125.D0)*R234
-      REPD(10) = (S3   /35.D0)*R236
-      REPD(11) = (THREE/35.D0)*R236
-      REPD(12) = -(0.2D0/S5)*R234
-      REPD(13) = R036 - (TWO/35.D0)*R236
-      REPD(14) = -(TWO*S3/35.D0)*R236
-      REPD(15) = -REPD( 3)
-      REPD(16) = -REPD(11)
-      REPD(17) = -REPD( 9)
-      REPD(18) = -REPD(14)
-      REPD(19) = 0.2D0*R244
-      REPD(20) = (TWO/(7.D0*S5))*R246
-      REPD(21) =  REPD(20)*half
-      REPD(22) = -REPD(20)
-      REPD(23) = (FOUR  /15.D0)*R155 + (27.D0  /245.D0)*R355
-      REPD(24) = (TWO*S3/15.D0)*R155 - (9.D0*S3/245.D0)*R355
-      REPD(25) = (ONE/15.D0)*R155 + (18.D0   /245.D0)*R355
-      REPD(26) = -(S3/15.D0)*R155 + (12.D0*S3/245.D0)*R355
-      REPD(27) = -(S3/15.D0)*R155 - (THREE*S3/245.D0)*R355
-      REPD(28) = -REPD(27)
-      REPD(29) = R066 + (FOUR/49.D0)*R266 + (FOUR / 49.D0)*R466
-      REPD(30) = R066 + (TWO /49.D0)*R266 - (24.D0/441.D0)*R466
-      REPD(31) = R066 - (FOUR/49.D0)*R266 + ( 6.D0/441.D0)*R466
-      REPD(32) = SQRT(THREE/245.D0)*R246
-      REPD(33) = 0.2D0*R155 + (24.D0/245.D0)*R355
-      REPD(34) = 0.2D0*R155 - ( 6.D0/245.D0)*R355
-      REPD(35) = (THREE/49.D0)*R355
-      REPD(36) = (ONE/49.D0)*R266 + (30.D0  /441.D0)*R466
-      REPD(37) = (S3 /49.D0)*R266 - (5.D0*S3/441.D0)*R466
-      REPD(38) = R066 - (TWO/49.D0)*R266 -  (FOUR/441.D0)*R466
-      REPD(39) = -(TWO*S3/49.D0)*R266 + (10.D0*S3/441.D0)*R466
-      REPD(40) = -REPD(32)
-      REPD(41) = -REPD(34)
-      REPD(42) = -REPD(35)
-      REPD(43) = -REPD(37)
-      REPD(44) = (THREE/49.D0)*R266 + (20.D0/441.D0)*R466
-      REPD(45) = -REPD(39)
-      REPD(46) = 0.2D0*R155-(THREE/35.D0)*R355
-      REPD(47) = -REPD(46)
-      REPD(48) = (FOUR /49.D0)*R266 + (15.D0/441.D0)*R466
-      REPD(49) = (THREE/49.D0)*R266 - ( 5.D0/147.D0)*R466
-      REPD(50) = -REPD(49)
-      REPD(51) = R066 + (FOUR/49.D0)*R266 - (34.D0/441.D0)*R466
-      REPD(52) = (35.D0/441.D0)*R466
+      qm2_params%REPD( 1) = R016
+      qm2_params%REPD( 2) = (TWO/(THREE*S5))*R125
+      qm2_params%REPD( 3) = (ONE/S15)*R125
+      qm2_params%REPD( 4) = (TWO/(5.D0*S5))*R234
+      qm2_params%REPD( 5) = R036 + (FOUR/35.D0)*R236
+      qm2_params%REPD( 6) = R036 + (TWO /35.D0)*R236
+      qm2_params%REPD( 7) = R036 - (FOUR/35.D0)*R236
+      qm2_params%REPD( 8) = -(ONE/(THREE*S5))*R125
+      qm2_params%REPD( 9) = SQRT(THREE/125.D0)*R234
+      qm2_params%REPD(10) = (S3   /35.D0)*R236
+      qm2_params%REPD(11) = (THREE/35.D0)*R236
+      qm2_params%REPD(12) = -(0.2D0/S5)*R234
+      qm2_params%REPD(13) = R036 - (TWO/35.D0)*R236
+      qm2_params%REPD(14) = -(TWO*S3/35.D0)*R236
+      qm2_params%REPD(15) = -qm2_params%REPD( 3)
+      qm2_params%REPD(16) = -qm2_params%REPD(11)
+      qm2_params%REPD(17) = -qm2_params%REPD( 9)
+      qm2_params%REPD(18) = -qm2_params%REPD(14)
+      qm2_params%REPD(19) = 0.2D0*R244
+      qm2_params%REPD(20) = (TWO/(7.D0*S5))*R246
+      qm2_params%REPD(21) =  qm2_params%REPD(20)*half
+      qm2_params%REPD(22) = -qm2_params%REPD(20)
+      qm2_params%REPD(23) = (FOUR  /15.D0)*R155 + (27.D0  /245.D0)*R355
+      qm2_params%REPD(24) = (TWO*S3/15.D0)*R155 - (9.D0*S3/245.D0)*R355
+      qm2_params%REPD(25) = (ONE/15.D0)*R155 + (18.D0   /245.D0)*R355
+      qm2_params%REPD(26) = -(S3/15.D0)*R155 + (12.D0*S3/245.D0)*R355
+      qm2_params%REPD(27) = -(S3/15.D0)*R155 - (THREE*S3/245.D0)*R355
+      qm2_params%REPD(28) = -qm2_params%REPD(27)
+      qm2_params%REPD(29) = R066 + (FOUR/49.D0)*R266 + (FOUR / 49.D0)*R466
+      qm2_params%REPD(30) = R066 + (TWO /49.D0)*R266 - (24.D0/441.D0)*R466
+      qm2_params%REPD(31) = R066 - (FOUR/49.D0)*R266 + ( 6.D0/441.D0)*R466
+      qm2_params%REPD(32) = SQRT(THREE/245.D0)*R246
+      qm2_params%REPD(33) = 0.2D0*R155 + (24.D0/245.D0)*R355
+      qm2_params%REPD(34) = 0.2D0*R155 - ( 6.D0/245.D0)*R355
+      qm2_params%REPD(35) = (THREE/49.D0)*R355
+      qm2_params%REPD(36) = (ONE/49.D0)*R266 + (30.D0  /441.D0)*R466
+      qm2_params%REPD(37) = (S3 /49.D0)*R266 - (5.D0*S3/441.D0)*R466
+      qm2_params%REPD(38) = R066 - (TWO/49.D0)*R266 -  (FOUR/441.D0)*R466
+      qm2_params%REPD(39) = -(TWO*S3/49.D0)*R266 + (10.D0*S3/441.D0)*R466
+      qm2_params%REPD(40) = -qm2_params%REPD(32)
+      qm2_params%REPD(41) = -qm2_params%REPD(34)
+      qm2_params%REPD(42) = -qm2_params%REPD(35)
+      qm2_params%REPD(43) = -qm2_params%REPD(37)
+      qm2_params%REPD(44) = (THREE/49.D0)*R266 + (20.D0/441.D0)*R466
+      qm2_params%REPD(45) = -qm2_params%REPD(39)
+      qm2_params%REPD(46) = 0.2D0*R155-(THREE/35.D0)*R355
+      qm2_params%REPD(47) = -qm2_params%REPD(46)
+      qm2_params%REPD(48) = (FOUR /49.D0)*R266 + (15.D0/441.D0)*R466
+      qm2_params%REPD(49) = (THREE/49.D0)*R266 - ( 5.D0/147.D0)*R466
+      qm2_params%REPD(50) = -qm2_params%REPD(49)
+      qm2_params%REPD(51) = R066 + (FOUR/49.D0)*R266 - (34.D0/441.D0)*R466
+      qm2_params%REPD(52) = (35.D0/441.D0)*R466
       
-      qmType_saved=qmType
-      initialized=.true.
+      qm2_params%OC2E_qmType_saved=qmType
+      qm2_params%OC2E_initialized=.true.
       
    end if   
       
-  integral=REPD(index)
+  integral=qm2_params%REPD(index)
   return
    
 end function GetOneCenter2Electron 

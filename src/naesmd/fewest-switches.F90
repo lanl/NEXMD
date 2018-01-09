@@ -11,26 +11,19 @@ module fewest_switches
 contains
     subroutine evalhop(sim, rkcomm, lprint, tend,tmax,rk_tolerance,thresholds, &
         Na,yg,cross)
-!    subroutine evalhop(sim, lprint,ido,neq,tini,tend,toldivprk, &
-!        param,Na,yg,cross,idocontrol)
 	use rksuite_90, only: rk_comm_real_1d, setup 
         implicit none
         type(simulation_t), pointer :: sim
         type(rk_comm_real_1d) :: rkcomm 
         integer Na,lprint,excNtemp,ipn,indx(Na)
         integer k,i,j,jj,icheck,itest,ini,ihopavant
-        !integer ido,neq,idocontrol
         _REAL_ tmax,tend,rk_tolerance,pn,kavant
-        !_REAL_ tini,tend,toldivprk,param(50),pn,kavant
         _REAL_ g(sim%excN),gacum(sim%excN)
         _REAL_ iseedhop,eavant, eapres
         _REAL_ xx(Na),yy(Na),zz(Na)
         _REAL_ yg(sim%excN*2),ytemp,ytemp2, thresholds(sim%excN*2)
         _REAL_ t_start,t_finish
         integer cross(sim%excN),crosstemp,ininonhop
-        !external fcn
-        ! sim%naesmd%conthop is used to not allow crossing inmediately after a hop
-        ! sim%naesmd%conthop2 is used to not allow hoppings inmediately after a crossing
         if(sim%naesmd%conthop.eq.3) sim%naesmd%conthop=0
         if(sim%naesmd%conthop2.eq.3) sim%naesmd%conthop2=0
         if(sim%naesmd%conthop.gt.0) sim%naesmd%conthop=sim%naesmd%conthop+1
@@ -59,14 +52,12 @@ contains
             end if
         end do
         icheck=0
-        write(6,*)'gacum:',j,gacum(j),iseedhop
         do j=1,sim%excN
             gacum(j)=0.0d0
             if(j.ne.sim%naesmd%ihop) then
                 do k=1,j
                     if(k.ne.sim%naesmd%ihop) gacum(j)=gacum(j)+g(k)
                 end do
-                write(6,*)'gacum:',j,gacum(j),iseedhop
             end if
         end do
         itest=0
@@ -88,8 +79,8 @@ contains
             if(sim%naesmd%conthop2.eq.0) then
                 call veladjustment(sim, lprint,Na,icheck,ini)
                 if(lprint.ge.2) then
-                    write(33,*) sim%naesmd%tfemto,icheck,ini
-                    call flush(33)
+                    write(sim%outfile_10,*) sim%naesmd%tfemto,icheck,ini
+                    call flush(sim%outfile_10)
                 end if
             else
                 ini=1
@@ -109,10 +100,6 @@ contains
 !                        yg(j+sim%excN)=rranf1(sim%naesmd%iseedmdqt)
 !                    end do
 !                    yg(sim%naesmd%ihop)=1.d0
-!                    ido=3
-!                    call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
-!                    ido=1
-!                    idocontrol=1
 !                end if
 
 !Added for patch JAKB
@@ -125,20 +112,13 @@ contains
                   enddo
                   yg(sim%naesmd%ihop)=1.0d0
 	          call    setup(rkcomm, tend, yg, tmax, rk_tolerance, thresholds, 'M','R')
-                  !if(idocontrol.eq.0) then
-                  !   ido=3
-                  !   write(6,*)'Test DIVPRK called 1'
-                  !   call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
-                  !   ido=1
-                  !   idocontrol=1
-                 !endif
 ! after kirill
 ! check the reduction of sim%excN
                  if(sim%naesmd%iredpot.eq.1) then
                    if((sim%naesmd%ihop+sim%naesmd%nstates).lt.sim%excN) then
                       sim%excN=sim%naesmd%ihop+sim%naesmd%nstates
-                      write(34,887) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN
-                      call flush(34)
+                      write(sim%outfile_23,887) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN
+                      call flush(sim%outfile_23)
                    endif
                  endif
                  if(sim%naesmd%iredpot.eq.2) then
@@ -149,8 +129,8 @@ contains
                       endif
                    enddo
                    sim%excN=excNtemp
-                   write(34,887) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN
-                   call flush(34)
+                   write(sim%outfile_23,887) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN
+                   call flush(sim%outfile_23)
                  endif
 ! after Josiah
                  if(sim%naesmd%iredpot.eq.3) then
@@ -174,9 +154,9 @@ contains
                    call indexx(sim%naesmd%natom,sim%naesmd%cicoeffao3,indx)
                    sim%naesmd%deltared=0.0d0
                    do jj=1,sim%naesmd%natom
-                      write(110,*) ipn,sim%naesmd%atomtype(indx(jj)),sim%naesmd%cicoeffao3(indx(jj))
+                      write(sim%outfile_24,*) ipn,sim%naesmd%atomtype(indx(jj)),sim%naesmd%cicoeffao3(indx(jj))
                    enddo
-                   call flush(110)
+                   call flush(sim%outfile_24)
                    do jj=1,sim%naesmd%natom
                       if(indx(jj).ge.(sim%naesmd%natom-ipn)) then
                         sim%naesmd%deltared = sim%naesmd%deltared + &
@@ -191,9 +171,9 @@ contains
                      endif
                    enddo
                    sim%excN=excNtemp
-                   write(34,884) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN, &
+                   write(sim%outfile_23,884) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN, &
 				ipn,sim%naesmd%deltared*feVmdqt,kavant*feVmdqt
-                   call flush(34)
+                   call flush(sim%outfile_23)
                  endif
 ! end after josiah
 ! after kirill
@@ -217,20 +197,13 @@ contains
                yg(ihopavant)=1.0d0
 		    call    setup(rkcomm, tend, yg, tmax, rk_tolerance, thresholds, &
 			    'M','R')
-               !if(idocontrol.eq.0) then 
-               !        ido=3
-               !        write(6,*)'test divprk called 2'
-               !        call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
-               !        ido=1
-               !        idocontrol=1
-               !endif
                sim%naesmd%conthop=1
 ! check the reduction of sim%excN
                if(sim%naesmd%iredpot.eq.1) then
                    if((ihopavant+sim%naesmd%nstates).lt.sim%excN) then
                       sim%excN=ihopavant+sim%naesmd%nstates
-                      write(34,887) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN
-                      call flush(34)
+                      write(sim%outfile_23,887) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN
+                      call flush(sim%outfile_23)
                    endif
                endif
                if(sim%naesmd%iredpot.eq.2) then
@@ -241,8 +214,8 @@ contains
                      endif
                   enddo
                   sim%excN=excNtemp
-                  write(34,887) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN
-                  call flush(34)
+                  write(sim%outfile_23,887) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN
+                  call flush(sim%outfile_23)
                endif
 ! after Josiah
                if(sim%naesmd%iredpot.eq.3) then
@@ -266,9 +239,9 @@ contains
                   call indexx(sim%naesmd%natom,sim%naesmd%cicoeffao3,indx)
                   sim%naesmd%deltared=0.0d0
               do jj=1,sim%naesmd%natom
-                write(110,*) ipn,sim%naesmd%atomtype(indx(jj)),sim%naesmd%cicoeffao3(indx(jj))
+                write(sim%outfile_24,*) ipn,sim%naesmd%atomtype(indx(jj)),sim%naesmd%cicoeffao3(indx(jj))
              enddo
-              call flush(110)
+              call flush(sim%outfile_24)
                   do jj=1,sim%naesmd%natom
                      if(indx(jj).ge.(sim%naesmd%natom-ipn)) then
                         sim%naesmd%deltared = sim%naesmd%deltared + 0.5d0*sim%naesmd%massmdqt(jj)*&
@@ -282,9 +255,9 @@ contains
                      endif
                   enddo
                   sim%excN=excNtemp
-                  write(34,884) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN,ipn,&
+                  write(sim%outfile_23,884) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN,ipn,&
                                 sim%naesmd%deltared*feVmdqt,kavant*feVmdqt
-                  call flush(34)
+                  call flush(sim%outfile_23)
                endif
 !###############################################3       
             endif
@@ -327,13 +300,6 @@ contains
             yg(sim%naesmd%ihop+sim%excN)=ytemp2
 	    call    setup(rkcomm, tend, yg, tmax, rk_tolerance, thresholds, &
 	            'M','R')
-           ! if(idocontrol.eq.0) then
-           !     ido=3
-           !     write(6,*)'call divprk test 3'
-           !     call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
-           !     ido=1
-           !     idocontrol=1
-           ! end if
         end if
         ! Evaluation of other crossings that do not involve the sim%naesmd%ihop sim%naesmd%state
         !*************************************************************
@@ -352,13 +318,6 @@ contains
                     yg(sim%naesmd%iorden(i)+sim%excN)=ytemp2
 		    call    setup(rkcomm, tend, yg, tmax, rk_tolerance, thresholds, &
 	            	'M','R')
-                   ! if(idocontrol.eq.0) then
-                   !     ido=3
-                   !     write(6,*)'call divprk test 4'
-                   !     call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
-                   !     ido=1
-                   !     idocontrol=1
-                   ! end if
                 end if
             end if
         enddo
@@ -377,14 +336,15 @@ contains
                     if(j.ne.sim%naesmd%ihop) then
                         if(j.lt.sim%naesmd%iorden(j)) then
                             if(cross(j).ne.0) then
-                                write(30,887) sim%naesmd%tfemto,cross(j),j,sim%naesmd%iorden(j),eavant,eapres
-                                call flush(30)
+                                write(sim%outfile_3,887) sim%naesmd%tfemto,cross(j),j,sim%naesmd%iorden(j),eavant,eapres
+                                call flush(sim%outfile_3)
                             end if
                         end if
                     else
                         if(sim%naesmd%ihop.ne.ihopavant) then
-                            write(30,887) sim%naesmd%tfemto,cross(sim%naesmd%ihop),ihopavant,sim%naesmd%ihop,eavant,eapres
-                            call flush(30)
+                            write(sim%outfile_3,887) sim%naesmd%tfemto,cross(sim%naesmd%ihop), &
+                                                     & ihopavant,sim%naesmd%ihop,eavant,eapres
+                            call flush(sim%outfile_3)
                         end if
                     end if
                 end do
@@ -423,10 +383,10 @@ contains
         if(lprint.ge.1) then
             j=1
             do i=1,sim%naesmd%natom
-                write(29,*) i,dij(j),dij(j+1),dij(j+2)
+                write(sim%outfile_6,*) i,dij(j),dij(j+1),dij(j+2)
                 j=j+3
             end do
-            call flush(29)
+            call flush(sim%outfile_6)
         end if
         ! calculation of the current energy
         ! and the velocities adjustment
@@ -486,6 +446,24 @@ contains
      !********************************************************
      return
  end subroutine
+
+subroutine decoherence_E0_and_C(sim)
+        type(simulation_t),pointer::sim
+            
+            if(sim%constcoherE0.ne.0.d0.and.sim%constcoherC.ne.0.d0) then
+                if(sim%naesmd%conthop.ne.1.and.sim%naesmd%conthop2.ne.1) then
+                    !BTN: I have not had time to investigate this fully, but the simulation object gets garbled when passed to coherence. 
+                    !My guess is that one of the variables passed (though it does not appear to be sim) is not defined identically correctly inside coherence.
+                    !For now, just exit.
+                    write(6,*) 'Your choices for decoher_e0 and decoher_c &
+                        are not currently available'
+                    stop
+                    call coherence(sim,sim%rk_comm, sim%Na, sim%rk_comm%tend,sim%rk_comm%tmax, &
+                                   sim%rk_comm%rk_tol, &
+                         sim%rk_comm%thresholds,sim%naesmd%yg,sim%constcoherE0,sim%constcoherC,sim%cohertype)
+                end if
+            end if
+end subroutine
 
 subroutine indexx(n,arr,indx)
 ! ************************************************************************

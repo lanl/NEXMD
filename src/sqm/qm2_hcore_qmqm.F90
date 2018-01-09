@@ -181,7 +181,7 @@ subroutine qm2_hcore_qmqm(qm2_params,qmmm_nml, qmmm_mpi, qm2_rij_eqns, cosmo_c_s
             RI=0.0D0
             core=0.0D0
             hasDOrbital=((n_atomic_orbi.ge.9) .or. (n_atomic_orbj.ge.9)) 
-            call GetRotationMatrix(coord(1:3,j)-coord(1:3,i), rotationMatrix, hasDOrbital)   
+            call GetRotationMatrix(qm2_params,coord(1:3,j)-coord(1:3,i), rotationMatrix, hasDOrbital)   
             
             call qm2_rotate_qmqm(qmmm_nml, qm2_params, qm2_rij_eqns,qm2_struct,qmmm_struct, &
                        loop_count,i,j,NI,qmmm_struct%iqm_atomic_numbers(J),&

@@ -1211,17 +1211,16 @@ subroutine coscav(qm2_params, qmmm_nml, cosmo_c_struct, qmmm_struct)
 
    real(8),parameter::pi=3.14159265358979323846d0
    integer numat
-   real(8),allocatable,save::coord(:,:)
    integer iw
 
 
    if (qmmm_nml%verbosity > 5) print*,'cosmo_call coscav'
    iw=6 ! standard output
 
-   if(.not.allocated(coord)) then
-      allocate(coord(3,qmmm_struct%nquant))
+   if(.not.allocated(cosmo_c_struct%coord)) then
+      allocate(cosmo_c_struct%coord(3,qmmm_struct%nquant))
    end if
-   coord(1:3,1:qmmm_struct%nquant)= &
+   cosmo_c_struct%coord(1:3,1:qmmm_struct%nquant)= &
       qmmm_struct%qm_coords(1:3,1:qmmm_struct%nquant)
     numat=qmmm_struct%nquant
 
@@ -1235,7 +1234,7 @@ subroutine coscav(qm2_params, qmmm_nml, cosmo_c_struct, qmmm_struct)
    ! SYMMETRY PROBLEMS WITH CAVITY CONSTRUCTION
     do i = 1, numat
       do j = 1, 3
-        coord(j, i) = coord(j, i) + Cos (i*j*.1d0) * 3.0d-9
+        cosmo_c_struct%coord(j, i) = cosmo_c_struct%coord(j, i) + Cos (i*j*.1d0) * 3.0d-9
       end do
     end do
    !
@@ -1246,13 +1245,13 @@ subroutine coscav(qm2_params, qmmm_nml, cosmo_c_struct, qmmm_struct)
       rr = r + cosmo_c_struct%rsolv
       ri2 = ri * ri
       do ix = 1, 3
-        xa(ix) = coord(ix, i)
+        xa(ix) = cosmo_c_struct%coord(ix, i)
       end do
       do j = 1, numat
         if (j /= i) then
           dist = 0.d0
           do ix = 1, 3
-            dist = dist + (xa(ix)-coord(ix, j)) ** 2
+            dist = dist + (xa(ix)-cosmo_c_struct%coord(ix, j)) ** 2
           end do
           if (dist < (rr+cosmo_c_struct%srad(j))**2) then
             ilipa = ilipa + 1
@@ -1277,14 +1276,14 @@ subroutine coscav(qm2_params, qmmm_nml, cosmo_c_struct, qmmm_struct)
       rr = r + cosmo_c_struct%rsolv
       ri2 = ri * ri
       do ix = 1, 3
-        xa(ix) = coord(ix, i)
+        xa(ix) = cosmo_c_struct%coord(ix, i)
       end do
       nps0 = cosmo_c_struct%nps + 1
       do j = 1, numat
         if (j /= i) then
           dist = 0.d0
           do ix = 1, 3
-            dist = dist + (xa(ix)-coord(ix, j)) ** 2
+            dist = dist + (xa(ix)-cosmo_c_struct%coord(ix, j)) ** 2
           end do
           if (dist < (rr+cosmo_c_struct%srad(j))**2) then
             ilipa = ilipa + 1
@@ -1311,7 +1310,7 @@ subroutine coscav(qm2_params, qmmm_nml, cosmo_c_struct, qmmm_struct)
         if (j /= i) then
           dist = 0.d0
           do ix = 1, 3
-            dist = dist + (xa(ix)-coord(ix, j)) ** 2
+            dist = dist + (xa(ix)-cosmo_c_struct%coord(ix, j)) ** 2
           end do
           if (dist+0.05d0 < dist3) then
             dist3 = dist
@@ -1341,12 +1340,12 @@ subroutine coscav(qm2_params, qmmm_nml, cosmo_c_struct, qmmm_struct)
       else
         dist1 = 0.d0
         do ix = 1, 3
-          dist1 = dist1 + (xa(ix)-coord(ix, nn(1, i))) ** 2
+          dist1 = dist1 + (xa(ix)-cosmo_c_struct%coord(ix, nn(1, i))) ** 2
         end do
         dist = 1.d0 / Sqrt (dist1)
-        tm(1, 1, i) = (coord(1, nn(1, i))-xa(1)) * dist
-        tm(1, 2, i) = (coord(2, nn(1, i))-xa(2)) * dist
-        tm(1, 3, i) = (coord(3, nn(1, i))-xa(3)) * dist
+        tm(1, 1, i) = (cosmo_c_struct%coord(1, nn(1, i))-xa(1)) * dist
+        tm(1, 2, i) = (cosmo_c_struct%coord(2, nn(1, i))-xa(2)) * dist
+        tm(1, 3, i) = (cosmo_c_struct%coord(3, nn(1, i))-xa(3)) * dist
       end if
       do
         if (nn(2, i) == 0) then
@@ -1357,12 +1356,12 @@ subroutine coscav(qm2_params, qmmm_nml, cosmo_c_struct, qmmm_struct)
         else
           dist2 = 0.d0
           do ix = 1, 3
-            dist2 = dist2 + (xa(ix)-coord(ix, nn(2, i))) ** 2
+            dist2 = dist2 + (xa(ix)-cosmo_c_struct%coord(ix, nn(2, i))) ** 2
           end do
           dist = 1.d0 / Sqrt (dist2)
-          xx(1) = (coord(1, nn(2, i))-xa(1)) * dist
-          xx(2) = (coord(2, nn(2, i))-xa(2)) * dist
-          xx(3) = (coord(3, nn(2, i))-xa(3)) * dist
+          xx(1) = (cosmo_c_struct%coord(1, nn(2, i))-xa(1)) * dist
+          xx(2) = (cosmo_c_struct%coord(2, nn(2, i))-xa(2)) * dist
+          xx(3) = (cosmo_c_struct%coord(3, nn(2, i))-xa(3)) * dist
           sp = xx(1) * tm(1, 1, i) + xx(2) * tm(1, 2, i) + xx(3) * tm(1, &
          & 3, i)
           if (sp*sp > 0.99d0) then
@@ -1403,7 +1402,7 @@ subroutine coscav(qm2_params, qmmm_nml, cosmo_c_struct, qmmm_struct)
           k = lipa(ik)
           dist = 0.d0
           do ix = 1, 3
-            dist = dist + (xx(ix)-coord(ix, k)) ** 2
+            dist = dist + (xx(ix)-cosmo_c_struct%coord(ix, k)) ** 2
           end do
           dist = Sqrt (dist) - cosmo_c_struct%rsolv - cosmo_c_struct%srad(k)
           if (dist < 0) cycle loop
@@ -1542,7 +1541,7 @@ subroutine coscav(qm2_params, qmmm_nml, cosmo_c_struct, qmmm_struct)
    ! NOW THE SEGMENT FORMATION ON ALL ATOMS IS FINISHED
    ! NOW THE CLOSURE OF THE CONCAVE REGIONS OF THE SURFACE WILL BE DONE
     if (cosmo_c_struct%ioldcv == 0) then
-      call surclo(qm2_params,qmmm_nml,cosmo_c_struct,qmmm_struct, coord, nipa, lipa, din, rsc, isort, ipsrs, &
+      call surclo(qm2_params,qmmm_nml,cosmo_c_struct,qmmm_struct, cosmo_c_struct%coord, nipa, lipa, din, rsc, isort, ipsrs, &
          nipsrs,qmmm_struct%iqm_atomic_numbers, &
          cosmo_c_struct%srad, cosmo_c_struct%cosurf, cosmo_c_struct%iatsp, cosmo_c_struct%nar_csm, &
          cosmo_c_struct%nsetf, cosmo_c_struct%isude, cosmo_c_struct%sude, maxrs)
@@ -1557,7 +1556,7 @@ subroutine coscav(qm2_params, qmmm_nml, cosmo_c_struct, qmmm_struct)
       i = cosmo_c_struct%iatsp(ips)
       ri = cosmo_c_struct%srad(i)
       do ix = 1, 3
-        xi(ix) = coord(ix, i)
+        xi(ix) = cosmo_c_struct%coord(ix, i)
         xa(ix) = cosmo_c_struct%cosurf(ix, ips)
       end do
       cosmo_c_struct%arat(i) = cosmo_c_struct%arat(i) + cosmo_c_struct%cosurf(4, ips); !cosmo_c_struct%arat surface cosmo_c_struct%area all tessera which beongs to i-th atom
@@ -1581,7 +1580,7 @@ subroutine coscav(qm2_params, qmmm_nml, cosmo_c_struct, qmmm_struct)
         j = cosmo_c_struct%iatsp(jps)
         d2 = 0.d0
         do ix = 1, 3
-          xj(ix) = coord(ix, j)
+          xj(ix) = cosmo_c_struct%coord(ix, j)
           xb(ix) = cosmo_c_struct%cosurf(ix, jps)
           d2 = d2 + (xb(ix)-xa(ix)) ** 2
         end do
@@ -1624,6 +1623,7 @@ subroutine coscav(qm2_params, qmmm_nml, cosmo_c_struct, qmmm_struct)
     deallocate(rdat,rsc,tm,nn,isort,ipsrs,nipsrs,nset,nipa,lipa,dirtm,finel)
     100 continue
 end subroutine coscav
+
 
 
 

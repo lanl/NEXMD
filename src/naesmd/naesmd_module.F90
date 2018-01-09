@@ -8,7 +8,7 @@ module naesmd_module
     private
 
     ! data types
-    public :: naesmd_structure, realp_t
+    public :: naesmd_structure, realp_t, apc_common_struct
     
     ! functions and subroutines
     public :: allocate_naesmd_module_init
@@ -18,9 +18,22 @@ module naesmd_module
     type realp_t
         _REAL_, dimension(:), pointer :: p
     end type realp_t
+    type apc_common_struct
+	integer U(260),V(260),FB(260),RC(260),P(260) 
+    end type
     
     type naesmd_structure
-
+	    !data from main.f90
+            integer crosstot
+            integer,allocatable :: cross(:)
+            _REAL_, dimension(:), allocatable :: yg, ygprime
+            integer lprint
+	    
+            !common data from apc.f90
+	    type(apc_common_struct) :: apc_common 
+	    !save data from function normal
+	    _REAL_ store
+            logical :: compute = .true.
 	    !stolen from naesmd_data_t
 	    _REAL_,allocatable:: Omega(:)
             _REAL_ E0

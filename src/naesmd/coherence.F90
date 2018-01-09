@@ -5,8 +5,6 @@
 
 subroutine coherence(sim,rkcomm, Na, tend, tmax,rk_tolerance, &
     thresholds,yg,constcoherE0,constcoherC,cohertype)
-!subroutine coherence(sim,Na,ido,neq,tini,tend,toldivprk, &
-!    param,yg,constcoherE0,constcoherC,cohertype,idocontrol)
     use rksuite_90, only: rk_comm_real_1d, setup 
     use qm2_davidson_module
     use communism
@@ -16,12 +14,9 @@ subroutine coherence(sim,rkcomm, Na, tend, tmax,rk_tolerance, &
     type(rk_comm_real_1d) :: rkcomm 
    
     integer cohertype
-    !integer cohertype,idocontrol
     integer Na,kk
     _REAL_ xx(Na),yy(Na),zz(Na)
     integer k,i,j
-    !integer ido,neq
-    !_REAL_ tini,tend,toldivprk,param(50)
     _REAL_ tend,tmax,rk_tolerance
     _REAL_ constcoherE0,constcoherC
     _REAL_ yg(sim%excN*2), thresholds(sim%excN*2) 
@@ -32,8 +27,6 @@ subroutine coherence(sim,rkcomm, Na, tend, tmax,rk_tolerance, &
         ,vecs(Na*3)
     _REAL_ kinec(sim%excN)
     _REAL_ dij(Na*3)
-
-    !external fcn
 
     do j=1,sim%excN
         kinec(j)=0.0d0
@@ -186,9 +179,9 @@ subroutine coherence(sim,rkcomm, Na, tend, tmax,rk_tolerance, &
                 end if
             end if
         end do
-
-        write(111,888) sim%naesmd%tfemto,(kinec(k),k=1,sim%excN)
-        call flush(111)
+        !111 unit is not opened
+        !write(111,888) sim%naesmd%tfemto,(kinec(k),k=1,sim%excN)
+        !call flush(111)
     end if
 
     norm=0.d0
@@ -202,12 +195,6 @@ subroutine coherence(sim,rkcomm, Na, tend, tmax,rk_tolerance, &
 
     call    setup(rkcomm, tend, yg, tmax, rk_tolerance, thresholds, &
 	    'M','R')
-    !if(idocontrol.eq.0) then
-    !    ido=3
-    !    call divprk(ido,neq,fcn,tini,tend,toldivprk,param,yg)
-    !    ido=1
-    !    idocontrol=1
-    !end if
     ! end modified by Seba
 
 

@@ -254,11 +254,11 @@ subroutine qm2_get_qm_forces(qm2_rij_eqns, qmmm_mpi, qmmm_nml, qm2_params, qm2_s
             end do
             do K=1,3
               xyz_qmi(K)=xyz_qmi(K)+halfChange
-              call qm2_dhc(qm2_params, qmmm_nml, qm2_struct, qmmm_struct, &
+              call qm2_dhc(qm2_rij_eqns,qm2_params, qmmm_nml, qm2_struct, qmmm_struct, &
               psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
                        jjl,AA)
               xyz_qmi(K)=xyz_qmi(K)-change
-              call qm2_dhc(qm2_params, qmmm_nml, qm2_struct, qmmm_struct, &
+              call qm2_dhc(qm2_rij_eqns,qm2_params, qmmm_nml, qm2_struct, qmmm_struct, &
                psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
                        jjl,EE)
               xyz_qmi(K)=xyz_qmi(K)+halfChange
@@ -1578,7 +1578,7 @@ subroutine qm2_dhc(qm2_rij_eqns, qm2_params, qmmm_nml, qm2_struct, qmmm_struct, 
 
       KR=1
       hasDOrbital=((n_atomic_orbi.ge.9) .or. (n_atomic_orbj.ge.9))
-      call GetRotationMatrix(xyz_qmj-xyz_qmi, rotationMatrix, hasDOrbital)        
+      call GetRotationMatrix(qm2_params,xyz_qmj-xyz_qmi, rotationMatrix, hasDOrbital)        
       call qm2_rotate_qmqm(qmmm_nml, qm2_params, qm2_rij_eqns,qm2_struct,qmmm_struct,&
                  -1,iqm,jqm,natqmi,natqmj,xyz_qmi,xyz_qmj,&
                   W(KR),KR, RI, core)

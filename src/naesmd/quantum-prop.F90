@@ -21,62 +21,64 @@ public :: setup, range_integrate, step_integrate, interpolate, &
 !starta!
 public :: rk_comm_real_1d
 type rk_comm_real_1d
+        _REAL_ :: tend,tmax,tgot
+        integer :: rk_flag
+        _REAL_,allocatable:: thresholds(:)
+	_REAL_ :: rk_tol
+	_REAL_ :: t, t_old, t_start, t_end, dir                       !indep!
+	_REAL_ :: h, h_old, h_start, h_average                        !indep!
+	_REAL_ :: tol
+	integer :: f_count, full_f_count, step_count, bad_step_count
+	logical :: at_t_start, at_t_end
 
-!private
-_REAL_ :: t, t_old, t_start, t_end, dir                       !indep!
-_REAL_ :: h, h_old, h_start, h_average                        !indep!
-_REAL_ :: tol
-integer :: f_count, full_f_count, step_count, bad_step_count
-logical :: at_t_start, at_t_end
 
+	_REAL_, dimension(:), pointer :: thresh, weights, ymax        !shp-dep!
 
-_REAL_, dimension(:), pointer :: thresh, weights, ymax        !shp-dep!
+	_REAL_, dimension(:), pointer :: scratch, y, yp, y_new        !dep!
+	_REAL_, dimension(:), pointer :: y_old, yp_old, v0, v1        !dep!
+	_REAL_, dimension(:), pointer :: err_estimates, v2, v3        !dep!
+	_REAL_, dimension(:), pointer ::  vtemp                       !dep!
+	_REAL_, dimension(:,:), pointer :: stages                     !dep!
 
-_REAL_, dimension(:), pointer :: scratch, y, yp, y_new        !dep!
-_REAL_, dimension(:), pointer :: y_old, yp_old, v0, v1        !dep!
-_REAL_, dimension(:), pointer :: err_estimates, v2, v3        !dep!
-_REAL_, dimension(:), pointer ::  vtemp                       !dep!
-_REAL_, dimension(:,:), pointer :: stages                     !dep!
+	_REAL_ :: a(13,13), b(13), c(13), bhat(13), r(11,6), e(7)
+	integer :: ptr(13), no_of_stages, rk_method, intrp_degree
+	logical :: intrp_able, intrp_needs_stages
 
-_REAL_ :: a(13,13), b(13), c(13), bhat(13), r(11,6), e(7)
-integer :: ptr(13), no_of_stages, rk_method, intrp_degree
-logical :: intrp_able, intrp_needs_stages
+	_REAL_ :: toosml, cost, safety, expon, stability_radius, tan_angle, &
+	    rs, rs1, rs2, rs3, rs4
+	integer :: order, last_stage, max_stiff_iters, no_of_ge_steps
+	logical :: fsal
 
-_REAL_ :: toosml, cost, safety, expon, stability_radius, tan_angle, &
-    rs, rs1, rs2, rs3, rs4
-integer :: order, last_stage, max_stiff_iters, no_of_ge_steps
-logical :: fsal
+	_REAL_ :: ge_max_contrib
+	_REAL_ :: t_ge_max_contrib                                    !indep!
+	integer :: ge_f_count
+	_REAL_, dimension(:), pointer :: ge_assess                    !shp-dep!
 
-_REAL_ :: ge_max_contrib
-_REAL_ :: t_ge_max_contrib                                    !indep!
-integer :: ge_f_count
-_REAL_, dimension(:), pointer :: ge_assess                    !shp-dep!
+	_REAL_, dimension(:), pointer :: ge_y, ge_yp, ge_y_new        !dep!
+	_REAL_, dimension(:), pointer :: ge_err_estimates             !dep!
+	_REAL_, dimension(:,:), pointer :: ge_stages                  !dep!
 
-_REAL_, dimension(:), pointer :: ge_y, ge_yp, ge_y_new        !dep!
-_REAL_, dimension(:), pointer :: ge_err_estimates             !dep!
-_REAL_, dimension(:,:), pointer :: ge_stages                  !dep!
+	logical :: erason, erasfl
 
-logical :: erason, erasfl
+	_REAL_ :: mcheps, dwarf, round_off, sqrrmc, cubrmc, sqtiny
+	integer :: outch
 
-_REAL_ :: mcheps, dwarf, round_off, sqrrmc, cubrmc, sqtiny
-integer :: outch
+	logical :: print_message, use_range
 
-logical :: print_message, use_range
+	character(len=80) :: rec(10)
 
-character(len=80) :: rec(10)
+	_REAL_ :: tlast, range_t_end                                  !indep!
 
-_REAL_ :: tlast, range_t_end                                  !indep!
+	_REAL_, dimension(:), pointer :: xstage, ytemp                !dep!
+	_REAL_, dimension(:,:), pointer :: p                          !dep!
 
-_REAL_, dimension(:), pointer :: xstage, ytemp                !dep!
-_REAL_, dimension(:,:), pointer :: p                          !dep!
+	integer :: stiff_bad_step_count, hit_t_end_count
+	_REAL_ :: errold
+	logical :: chkeff, phase2
 
-integer :: stiff_bad_step_count, hit_t_end_count
-_REAL_ :: errold
-logical :: chkeff, phase2
+	integer, dimension(7) :: save_states
 
-integer, dimension(7) :: save_states
-
-logical :: stop_on_fatal, saved_fatal_err
+	logical :: stop_on_fatal, saved_fatal_err
 
 end type rk_comm_real_1d
 !enda!

@@ -83,7 +83,6 @@ subroutine sqm_energy(qmewald, qmmm_opnq, qm2_rij_eqns,qmmm_mpi,qm_gb, qmmm_scra
     ! Locals for link atoms
     _REAL_::forcemod(3)
     integer::lnk_no,mm_no
-    _REAL_,allocatable,save::ev_old(:,:)
     _REAL_ ctest
     integer quir_ev,quir_cmdqt,l
     _REAL_ t_start,t_finish ! to monitor execution time
@@ -203,9 +202,9 @@ subroutine sqm_energy(qmewald, qmmm_opnq, qm2_rij_eqns,qmmm_mpi,qm_gb, qmmm_scra
 
     ! preserving the quirality of the HF orbitals
     ! important for non-adiabatic dynamics
-    if(.not.allocated(ev_old)) then ! first call
-        allocate(ev_old(qm2_struct%norbs,qm2_struct%norbs))
-        ev_old(:,:)=0.d0
+    if(.not.allocated(qm2_struct%ev_old)) then ! first call
+        allocate(qm2_struct%ev_old(qm2_struct%norbs,qm2_struct%norbs))
+        qm2_struct%ev_old(:,:)=0.d0
     end if
       
     quir_ev=0
@@ -213,7 +212,7 @@ subroutine sqm_energy(qmewald, qmmm_opnq, qm2_rij_eqns,qmmm_mpi,qm_gb, qmmm_scra
         ctest=0.d0
 
         do i=1,qm2_struct%norbs
-            ctest=ctest+ev_old(i,j)*qm2_struct%eigen_vectors(i,j)
+            ctest=ctest+qm2_struct%ev_old(i,j)*qm2_struct%eigen_vectors(i,j)
         end do
 
         if(ctest<0.d0) then
@@ -230,7 +229,7 @@ subroutine sqm_energy(qmewald, qmmm_opnq, qm2_rij_eqns,qmmm_mpi,qm_gb, qmmm_scra
     flush(6)
 
     ! updating
-    ev_old(:,:)=qm2_struct%eigen_vectors(:,:)
+    qm2_struct%ev_old(:,:)=qm2_struct%eigen_vectors(:,:)
       
     !===================================
     !  Calculate Excited State Energies (Davidson)

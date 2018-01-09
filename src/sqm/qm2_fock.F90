@@ -113,7 +113,6 @@ subroutine qm2_fock2(qmmm_mpi,qm2_params,qm2_struct, qmmm_struct, F, PTOT, W, or
    integer, intent(in) :: orb_loc(2,qmmm_struct%nquant_nlink)
 
 !Local
-   integer JINDEX(256)
    integer w_index(qmmm_struct%nquant_nlink,qmmm_struct%nquant_nlink)
    _REAL_ PK(16),PJA(16),PJB(16)
    integer m,i,j, ij, ji, k, l, kl, lk, kk, ii, ia, ib, jk, kj, jj, ja, jb
@@ -122,7 +121,6 @@ subroutine qm2_fock2(qmmm_mpi,qm2_params,qm2_struct, qmmm_struct, F, PTOT, W, or
     
    _REAL_::Ftest(10000)
 
-   SAVE jindex
 
    if(qmmm_struct%fock_first_call)then
       qmmm_struct%fock_first_call = .false.
@@ -142,7 +140,7 @@ subroutine qm2_fock2(qmmm_mpi,qm2_params,qm2_struct, qmmm_struct, F, PTOT, W, or
                   M=M+1
                   KL=MIN(K,L)
                   LK=K+L-KL
-                  JINDEX(M)=(qm2_params%pascal_tri1(JI) + IJ)*10 &
+                  qm2_struct%fock2_JINDEX(M)=(qm2_params%pascal_tri1(JI) + IJ)*10 &
                              + qm2_params%pascal_tri1(LK) + KL - 10
                end do
             end do
@@ -236,7 +234,7 @@ subroutine qm2_fock2(qmmm_mpi,qm2_params,qm2_struct, qmmm_struct, F, PTOT, W, or
                do J=IA,IB
                   K=K+1
                   J1=qm2_params%pascal_tri1(J)+JA
-                  SUM=SUM+PTOT(J1)*0.5D0*W(KK+JINDEX(K))
+                  SUM=SUM+PTOT(J1)*0.5D0*W(KK+qm2_struct%fock2_JINDEX(K))
                end do
                F(I1)=F(I1)-SUM
             end do
@@ -272,7 +270,7 @@ subroutine qm2_fock2(qmmm_mpi,qm2_params,qm2_struct, qmmm_struct, F, PTOT, W, or
                SUM=0.D0
                do L=K,K+3
                   J=J+1
-                  SUM=SUM+PTOT(L)*0.5D0*W(KK+JINDEX(J))
+                  SUM=SUM+PTOT(L)*0.5D0*W(KK+qm2_struct%fock2_JINDEX(J))
                end do
                F(I)=F(I)-SUM
             end do
@@ -567,12 +565,10 @@ subroutine qm2_fock2_2atm(qm2_params,qm2_struct,qmmm_struct, F, PTOT, W, orb_loc
    integer, intent(in) :: orb_loc(2,2)
 
 !Local
-   integer JINDEX(MaxValenceDimension**2)
    _REAL_ PK(MaxValenceOrbitals**2),fock2_ptot2_1(MaxValenceOrbitals**2),fock2_ptot2_2(MaxValenceOrbitals**2)
    integer m,i,j, ij, ji, k, l, kl, lk, ia, ib, jk, kj, ja, jb
    integer i1, ll, j1
    _REAL_ sumdia, sumoff, sum, wkk
-   SAVE jindex
 
    if(qmmm_struct%fock2_2atm_first_call)then
       qmmm_struct%fock2_2atm_first_call = .false.
@@ -592,7 +588,7 @@ subroutine qm2_fock2_2atm(qm2_params,qm2_struct,qmmm_struct, F, PTOT, W, orb_loc
                   M=M+1
                   KL=MIN(K,L)
                   LK=K+L-KL
-                  JINDEX(M)=(qm2_params%pascal_tri1(JI) + IJ)*10 &
+                  qm2_struct%fock_2atm_JINDEX(M)=(qm2_params%pascal_tri1(JI) + IJ)*10 &
                              + qm2_params%pascal_tri1(LK) + KL - 10
                end do
             end do
@@ -680,7 +676,7 @@ subroutine qm2_fock2_2atm(qm2_params,qm2_struct,qmmm_struct, F, PTOT, W, orb_loc
          do J=IA,IB
             K=K+1
             J1=qm2_params%pascal_tri1(J)+JA
-            SUM=SUM+PTOT(J1)*0.5D0*W(JINDEX(K))
+            SUM=SUM+PTOT(J1)*0.5D0*W(qm2_struct%fock_2atm_JINDEX(K))
          end do
          F(I1)=F(I1)-SUM
       end do
@@ -715,7 +711,7 @@ subroutine qm2_fock2_2atm(qm2_params,qm2_struct,qmmm_struct, F, PTOT, W, orb_loc
          SUM=0.D0
          do L=K,K+3
             J=J+1
-            SUM=SUM+PTOT(L)*0.5D0*W(JINDEX(J))
+            SUM=SUM+PTOT(L)*0.5D0*W(qm2_struct%fock_2atm_JINDEX(J))
          end do
          F(I)=F(I)-SUM
       end do

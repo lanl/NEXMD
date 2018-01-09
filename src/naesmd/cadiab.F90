@@ -1,5 +1,15 @@
 #include "dprec.fh"
 #include "assert.fh"
+            !*******************************************************
+            ! The analytic NAC for t.
+            ! are calculated inside of cadiaboldcalc,cadiabmiddlecalc, and cadiabnewcalc
+            ! Input should be xxp,yyp,zzp 'plus' xyz at t+dt
+            ! xxm,yym,zzm 'minus' - xyz at t-dt, dt should correspond ~10^-4 10^-5 A shift
+            ! Vectors and frequencies from the above ceo, at xx,yy,zz geometry
+            ! The routine will output sim%naesmd%cadiab_analt - an array of NA couplings for T
+            ! from sim%naesmd%state sim%naesmd%ihop to all other states sim%naesmd%npot
+            ! xxp,yyp, and zzp are xyz at t + sim%naesmd%dtnact
+            ! xxm,yym, and zzm are xyz at t - sim%naesmd%dtnact
 
 module cadiab_module
     use naesmd_constants

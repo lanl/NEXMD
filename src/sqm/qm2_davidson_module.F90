@@ -17,10 +17,24 @@
 !
 !  Global variables/arrays/user-defined types and structures
 !
-!--------------------------------------------------------------------
 !
    type qm2_davidson_structure_type
 
+
+      character*1000 :: muab_out
+      character*1000 :: ceo_out
+      character*1000 :: normalmodesao
+      character*1000 :: normalmodesmo
+      character*1000 :: normalmodescf
+      character*1000 :: modes_b 
+      character*1000 :: ee_b 
+      integer        :: ceo_unit
+      integer        :: muab_unit
+      integer        :: modes_unit
+      integer        :: ee_unit
+      integer        :: normmodesao_unit
+      integer        :: normmodesmo_unit
+      integer        :: normmodescf_unit
       logical :: calcxdens ! flag for calculating cross densities !JAKB
 
       logical :: has_been_run = .FALSE. ! Has the Davidson calculation been run at least once?
@@ -125,12 +139,16 @@
       ! Excited state gradient information
       _REAL_, allocatable :: dxyz(:) 
 
-      logical :: initialized = 0 ! initially zero, i.e. not initialized
+      logical :: initialized = .false. ! initially zero, i.e. not initialized
 
       ! COSMO parameters do not really belong here
       ! but it is easy to have them here for time being
       !_REAL_::ceps ! COSMO dielectric permittivity
 
+      !save data from subroutine davidson
+      integer ::istore=0 ! zero initially
+      integer ::istore_M=0
+   
    end type qm2_davidson_structure_type
 
 

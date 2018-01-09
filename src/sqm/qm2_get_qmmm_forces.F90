@@ -125,7 +125,7 @@ subroutine qm2_get_qmmm_forces(qm2_rij_eqns, qm2_params, qmmm_nml, qmmm_mpi,qmmm
                     rijInAu=rij*A_TO_BOHRS
                     oneOverRij=one/rij
                     r2InAu=r2*A2_TO_BOHRS2
-                    call GetRotationMatrix(temp(1:3), rotationMatrix, spd_atom)   
+                    call GetRotationMatrix(qm2_params,temp(1:3), rotationMatrix, spd_atom)   
                     call qm2_repp_d(qm2_params,qmmm_struct, qmmm_struct%qm_atom_type(jj),0,rijInAu,RI,CORE,W,45,1,0) 
                     core=core*qm_xcrd(4,j)
                     call RotateCore(1,0, n_atomic_orb,0,1, 0            &
@@ -144,7 +144,7 @@ subroutine qm2_get_qmmm_forces(qm2_rij_eqns, qm2_params, qmmm_nml, qmmm_mpi,qmmm
                     rijInAu=rij*A_TO_BOHRS
                     oneOverRij=one/rij
                     r2InAu=r2*A2_TO_BOHRS2                   
-                    call GetRotationMatrix(temp(1:3), rotationMatrix, spd_atom)   
+                    call GetRotationMatrix(qm2_params,temp(1:3), rotationMatrix, spd_atom)   
                     call qm2_repp_d(qm2_params,qmmm_struct, qmmm_struct%qm_atom_type(jj),0,rijInAu,RI,CORE,W,45,1,0) 
                     core=core*qm_xcrd(4,j)
                     call RotateCore(1,0, n_atomic_orb,0, 1, 0            &
@@ -169,7 +169,7 @@ subroutine qm2_get_qmmm_forces(qm2_rij_eqns, qm2_params, qmmm_nml, qmmm_mpi,qmmm
                  rijInAu=rij*A_TO_BOHRS
                  oneOverRij=one/rij
                  r2InAu=r2*A2_TO_BOHRS2
-                 call GetRotationMatrix(temp(1:3), rotationMatrix, spd_atom)   
+                 call GetRotationMatrix(qm2_params,temp(1:3), rotationMatrix, spd_atom)   
                  call qm2_repp_d(qm2_params,qmmm_struct, qmmm_struct%qm_atom_type(jj),0,rijInAu,RI,CORE,W,45,1,0) 
                  core=core*qm_xcrd(4,j)
                  call RotateCore(1,0, n_atomic_orb,0,1, 0            &

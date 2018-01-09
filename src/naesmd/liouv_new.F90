@@ -150,24 +150,24 @@ subroutine outDavidson(qm2_params,qmmm_nml,qm2_struct,qm2ds,qmmm_struct)
     !Printing of transition densities to files
     !Print normal modes, etc. to file ! JAB
     if(qmmm_nml%printtd.gt.0) then
-        open(76,file='normalmodes-ao.out')
+        open(qm2ds%normmodesao_unit,file=trim(qm2ds%normalmodesao))
         write(6,*) 'Printing Normal Modes in ao rep to file'
-        call printNM_ao(qm2ds,76)
-        close(76)
+        call printNM_ao(qm2ds,qm2ds%normmodesao_unit)
+        close(qm2ds%normmodesao_unit)
         if(qmmm_nml%printtd.gt.1) then
-            open(76,file='normalmodes-mo.out')
+            open(qm2ds%normmodesmo_unit,file=trim(qm2ds%normalmodesmo))
             write(6,*) 'Printing Normal Modes in mo rep to file'
-            call printNM_mo(qm2ds,76)
-            close(76)
+            call printNM_mo(qm2ds,qm2ds%normmodesmo_unit)
+            close(qm2ds%normmodesmo_unit)
             if (qmmm_nml%printtd.gt.2) then
                 !open(76,file='2eri.out')
                 !write(6,*) 'Printing 2e Repulsion integrals to file'
                 !call print2eri()
                 !close(76)
-                open(76,file='normalmodes-cfit.out')
+                open(qm2ds%normmodescf_unit,file=trim(qm2ds%normalmodescf))
                 write(6,*) 'Printing Charges for Normal Modes to file'
-                call printCfitNM(qm2_params,qm2ds,qmmm_struct,76)
-                close(76)
+                call printCfitNM(qm2_params,qm2ds,qmmm_struct,qm2ds%normmodescf_unit)
+                close(qm2ds%normmodescf_unit)
             endif
         endif
     elseif(qmmm_nml%printtd.eq.-1) then !print all TD's to binary

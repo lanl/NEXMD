@@ -150,7 +150,7 @@ subroutine qm2_h1elec_d(qm2_params,qm2_struct,R2,XI,XJ, n_atomic_orbi,n_atomic_o
        end if
      
       xij=xj-xi
-      call GetRotationMatrix(xij, matrix, .true.)   
+      call GetRotationMatrix(qm2_params,xij, matrix, .true.)   
       call Rotate1Elec(indexi,indexj,n_atomic_orbi,n_atomic_orbj,Z,matrix, &
                totalNumberOrbitals, H, totalNumberOrbitals*(totalNumberOrbitals+1)/2)     
  

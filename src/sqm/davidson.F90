@@ -37,9 +37,6 @@
    integer iseed,ip,ih,j0,Mx0,imin,one,iloops
    integer kflag,nd,nd1,nd1_old,j1
 
-   integer,save::istore=0 ! zero initially
-   integer,save::istore_M=0
-
    integer Lt,Mb
 !
 !--------------------------------------------------------------------
@@ -58,7 +55,7 @@
    iloops=0
 
    if(qm2ds%dav_guess==0) then
-      istore=0 ! overwriting istore to not use guess
+      qm2ds%istore=0 ! overwriting qm2ds%istore to not use guess
    end if
 
 ! Split Mx into batches of j1 size
@@ -84,16 +81,16 @@
       end if
 
 !     Read irflag-1 states 
-      open (10,file='modes.b',form='unformatted',status='old')
-      open (12,file='ee.b',status='old')
+      open (qm2ds%modes_unit,file=trim(qm2ds%modes_b),form='unformatted',status='old')
+      open (qm2ds%ee_unit,file=trim(qm2ds%ee_b),status='old')
 
       do j=1,j0
-         read (10) (qm2ds%v0(i,j),i=1,qm2ds%Nrpa)
-         read (12,*) qm2ds%e0(j)
+         read (qm2ds%modes_unit) (qm2ds%v0(i,j),i=1,qm2ds%Nrpa)
+         read (qm2ds%ee_unit,*) qm2ds%e0(j)
       enddo
    
-      close(10)
-      close(12)
+      close(qm2ds%modes_unit)
+      close(qm2ds%ee_unit)
 
       if (j0.eq.qm2ds%Mx) goto 70
 
@@ -113,24 +110,24 @@
       write(6,*) 'nd=',nd 
       write(6,*) 'nd1=',nd1
       write(6,*) 'j1=',j1
-      write(6,*)'istore=',istore
-      write(6,*)'istore_M=',istore_M
+      write(6,*)'qm2ds%istore=',qm2ds%istore
+      write(6,*)'qm2ds%istore_M=',qm2ds%istore_M
    end if
 
 !	if (irflag.gt.1.and.Nb.gt.100.and.mdflag.gt.0) then
-!	   istore=min(Mx,Mx_ss)
+!	   qm2ds%istore=min(Mx,Mx_ss)
 ! --- read stored modes from the previous calculations in MD run
 !         open (10,file='modes-ao.b',form='unformatted',status='old')       
-!         do j=1,istore
+!         do j=1,qm2ds%istore
 !	    read (10) (v2(i,j),i=1,Nb*Nb) 
 !	   enddo
 !	   close(10)	  
 !	endif	 
 
-   if(istore.gt.0) then ! MD point only!!!!	 
+   if(qm2ds%istore.gt.0) then ! MD point only!!!!	 
 !     recover excited state vectors from AO representation in v2
 !     recovered state vectors are put to v0
-      do j=1,istore
+      do j=1,qm2ds%istore
          call site2mo(qm2ds,qm2ds%rrwork,qm2ds%v2(1,j),qm2ds%v0(1,j))
       end do
    endif
@@ -138,8 +135,8 @@
 ! kav: the lines below are commented out since they are not present in original davidson
 ! 
 ! CML TEST 7/15/12
-   !if(qm2ds%mdflag /= 0) istore = qm2ds%Mx ! If first run, don't try and recover vectors. Do it on future calls.
-   !if (qm2ds%mdflag /= 0) istore = 0 ! If first run, don't try and recover vectors. Do it on future calls. ! KGB
+   !if(qm2ds%mdflag /= 0) qm2ds%istore = qm2ds%Mx ! If first run, don't try and recover vectors. Do it on future calls.
+   !if (qm2ds%mdflag /= 0) qm2ds%istore = 0 ! If first run, don't try and recover vectors. Do it on future calls. ! KGB
 !
 !--------------------------------------------------------------------
 !  Begin big loop
@@ -191,7 +188,7 @@
       qm2ds%rrwork(4*qm2ds%Ncis+1), &
       nd,nd1,qm2ds%vexp1,qm2ds%vexp,qm2ds%ray,qm2ds%rayv,qm2ds%rayvL, &
       qm2ds%rayvR,qm2ds%raye,qm2ds%raye1, &
-      qm2ds%ray1,qm2ds%ray1a,qm2ds%ray2,qm2ds%idav,istore)
+      qm2ds%ray1,qm2ds%ray1a,qm2ds%ray2,qm2ds%idav,qm2ds%istore)
 
 ! Printing out found eigenvalues, error and tolerance
    if(lprint>0) then
@@ -215,16 +212,16 @@
 !   end do
    
    if(qm2ds%mdflag.lt.0.and.qm2ds%Nb.gt.100) then
-      open (10,file='modes.b',form='unformatted')
-      open (12,file='ee.b')
+      open (qm2ds%modes_unit,file=trim(qm2ds%modes_b),form='unformatted')
+      open (qm2ds%ee_unit,file=trim(qm2ds%ee_b))
 
       do j=1,j0
-         write (10) (qm2ds%v0(i,j),i=1,qm2ds%Nrpa)
-         write (12,*)  qm2ds%e0(j)
+         write (qm2ds%modes_unit) (qm2ds%v0(i,j),i=1,qm2ds%Nrpa)
+         write (qm2ds%ee_unit,*)  qm2ds%e0(j)
       end do
 
-      close(10)
-      close(12)
+      close(qm2ds%modes_unit)
+      close(qm2ds%ee_unit)
    end if
 
    goto 10
@@ -283,20 +280,20 @@
 !	  enddo
 
       if (qm2ds%mdflag.lt.0) then
-         open (10,file='modes.b',form='unformatted')
-         open (12,file='ee.b')
+         open (qm2ds%modes_unit,file=trim(qm2ds%modes_b),form='unformatted')
+         open (qm2ds%ee_unit,file=trim(qm2ds%ee_b))
 !        open (11,file='modes.in',access='append')
 !        write(11,210)
 !        write(11,210) '$MODES'
 !
          do j=1,qm2ds%Mx
-            write (10) (qm2ds%v0(i,qm2ds%kx(j)),i=1,qm2ds%Nrpa)
-            write (12,*)  qm2ds%e0(j)
+            write (qm2ds%modes_unit) (qm2ds%v0(i,qm2ds%kx(j)),i=1,qm2ds%Nrpa)
+            write (qm2ds%ee_unit,*)  qm2ds%e0(j)
 !	         write(11,200) j,e0(j),1
          end do
  
-         close(10)
-         close(12)
+         close(qm2ds%modes_unit)
+         close(qm2ds%ee_unit)
 !        write(11,210) '$ENDMODES'           
 !        close(11)
 !200     format(i7,g20.12,i4)
@@ -306,10 +303,10 @@
 
    if (qm2ds%mdflag.ge.0) then ! MD point only!!!!
 !     store excited state vectors in AO representation in v2
-!     istore=min(Mx,Mx_ss)
-      if (istore.le.qm2ds%Mx) istore=qm2ds%Mx
-      if (istore_M.le.qm2ds%Mx) istore_M=qm2ds%Mx
-      if (istore.le.istore_M) istore=istore_M
+!     qm2ds%istore=min(Mx,Mx_ss)
+      if (qm2ds%istore.le.qm2ds%Mx) qm2ds%istore=qm2ds%Mx
+      if (qm2ds%istore_M.le.qm2ds%Mx) qm2ds%istore_M=qm2ds%Mx
+      if (qm2ds%istore.le.qm2ds%istore_M) qm2ds%istore=qm2ds%istore_M
 
       do j=1,qm2ds%Mx
          call mo2site(qm2ds,qm2ds%v0(1,j),qm2ds%v2(1,j),qm2ds%rrwork)
@@ -317,7 +314,7 @@
 !	 if (Nb.gt.100) then
 ! --- write stored modes from the previous calculations in MD run
 !         open (10,file='modes-ao.b',form='unformatted')       
-!         do j=1,istore
+!         do j=1,qm2ds%istore
 !	    write (10) (v2(i,j),i=1,Nb*Nb) 
 !	   enddo
 !	   close(10)
@@ -365,6 +362,7 @@
 !       endif
    return     
    end
+
 !
 !********************************************************************
 !

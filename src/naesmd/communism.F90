@@ -6,7 +6,8 @@ module communism
     use qmmm_struct_module, only       : qmmm_struct_type
     use qmmm_module, only : qm2_structure, qm_ewald_structure, &
          qm2_rij_eqns_structure, qm_gb_structure, qmmm_mpi_structure, &
-         qmmm_opnq_structure, qmmm_scratch_structure, qmmm_div_structure 
+         qmmm_opnq_structure, qmmm_scratch_structure, qmmm_div_structure, &
+         qmmm_openmp_structure 
     use qmmm_vsolv_module , only : qmmm_vsolv_type
     use naesmd_module, only            : naesmd_structure, realp_t
     use md_module, only            : md_structure
@@ -19,14 +20,27 @@ module communism
     implicit none
           
     type:: simulation_t
+        integer                        :: Nsim
         _REAL_, dimension(:), pointer  :: coords
         integer                        :: Na, nbasis
         integer                        :: Ncharge
+        integer                        :: ibo
+        integer                        :: id
         integer                        :: excN ! number of excited states
+        integer                        :: dotrivial
+        integer                        :: cohertype
+        integer                        :: lprint
+        integer :: outfile_1,outfile_2,outfile_3,outfile_4
+        integer :: outfile_5,outfile_6,outfile_7,outfile_8
+        integer :: outfile_9,outfile_10,outfile_11,outfile_12
+        integer :: outfile_13,outfile_14,outfile_15,outfile_16
+        integer :: outfile_17,outfile_18,outfile_19,outfile_20
+        integer :: outfile_21,outfile_22,outfile_23,outfile_24
         _REAL_                         :: escf
         _REAL_, dimension(:), pointer  :: deriv_forces ! forces as they come out
         ! of deriv (eV/A)
         ! Various cumulative times (initial values=0.d0)
+        _REAL_:: constcoherE0,constcoherC
         _REAL_::time_sqm_took=0.d0
         _REAL_::time_davidson_took=0.d0
         _REAL_::time_deriv_took=0.d0 ! adiabatic derivatives (i.e., forces)
@@ -50,12 +64,14 @@ module communism
         type(qmmm_vsolv_type),pointer :: vsolv
         type(qmmm_scratch_structure),pointer:: scratch
         type(qm_ewald_structure),pointer :: ewald
+        type(qmmm_openmp_structure),pointer  :: qomp 
     end type simulation_t
           
 contains
           
-    subroutine init0_simulation(a)
+    subroutine init0_simulation(a,Nsim)
         type(simulation_t), pointer  :: a
+        integer :: Nsim
         a%Na       = 0
         a%Ncharge  = 0
         a%excN     = 0
@@ -76,7 +92,11 @@ contains
         a%div => null()   
         a%vsolv => null() 
         a%scratch => null()  
-        a%ewald => null() 
+        a%ewald => null()
+        a%Nsim = Nsim
+#ifdef OPENMP 
+        a%qomp => null()
+#endif  
         allocate(a%naesmd)
     end subroutine
 
@@ -84,7 +104,7 @@ contains
 		cosmo_c_struct, xlbomd_struct, qparams_struct, &
                 qnml_struct, rij_struct, gb_struct, qmpi_struct, &
                 opnq_struct, div_struct, vsolv_struct, scratch_struct, &
-                ewald_struct)
+                ewald_struct, qomp_struct)
         type(simulation_t), pointer  :: a
         type(qmmm_struct_type),target :: qmmm_struct
         type(qm2_davidson_structure_type),target :: qm2ds
@@ -104,6 +124,7 @@ contains
         type(qmmm_vsolv_type), target :: vsolv_struct
         type(qmmm_scratch_structure), target:: scratch_struct
         type(qm_ewald_structure), target :: ewald_struct 
+        type(qmmm_openmp_structure),optional,target :: qomp_struct
         a%qmmm     => qmmm_struct
         a%dav     => qm2ds
         a%qm2     => qm2_struct
@@ -122,6 +143,7 @@ contains
         a%vsolv => vsolv_struct  
         a%scratch => scratch_struct  
         a%ewald => ewald_struct
+        if(present(qomp_struct)) a%qomp => qomp_struct 
     end subroutine
           
     !
@@ -406,7 +428,39 @@ contains
         sim%qmmm%adj_mm_link_pair_crd_first_call = .true.
         ncharge=0;
         igb = 0
-   
+         
+        if(sim%Nsim.eq.1) then 
+             sim%dav%modes_b='modes.b'
+             sim%dav%modes_unit=10
+             sim%dav%ee_b='ee.b'
+             sim%dav%ee_unit=15
+             sim%dav%normalmodesao='normalmodes-ao.out'
+             sim%dav%normmodesao_unit=76
+             sim%dav%normalmodesmo='normalmodes-mo.out'
+             sim%dav%normmodesmo_unit=77
+             sim%dav%normalmodescf='normalmodes-cfit.out'
+             sim%dav%normmodescf_unit=78
+             sim%dav%muab_unit=13
+             sim%dav%muab_out='muab.out'
+             sim%dav%ceo_unit=14
+             sim%dav%ceo_out='ceo.out'
+        else 
+             write (sim%dav%modes_b, "(A16,I4.4,A2)") "modes_", sim%id , ".b"
+             sim%dav%modes_unit=10*10000+sim%id
+             write (sim%dav%ee_b, "(A3,I4.4,A2)") "ee_", sim%id , ".b"
+             sim%dav%ee_unit=15*10000+sim%id
+             write (sim%dav%normalmodesao, "(A15,I4.4,A4)") "normalmodes-ao_", sim%id , ".out"
+             sim%dav%normmodesao_unit=76*10000+sim%id
+             write (sim%dav%normalmodesao, "(A15,I4.4,A4)") "normalmodes-mo_", sim%id , ".out"
+             sim%dav%normmodesmo_unit=77*10000+sim%id
+             write (sim%dav%normalmodesao, "(A17,I4.4,A4)") "normalmodes-cfit_", sim%id , ".out"
+             sim%dav%normmodescf_unit=78*10000+sim%id
+             write (sim%dav%muab_out, "(A5,I4.4,A4)") "muab_", sim%id , ".out"
+             sim%dav%muab_unit=13*10000+sim%id
+             write (sim%dav%ceo_out, "(A4,I4.4,A4)") "ceo_", sim%id , ".out"
+             sim%dav%ceo_unit=14*10000+sim%id
+        endif
+ 
         call sqm_read_and_alloc(sim%qnml,sim%scratch,sim%div,sim%opnq,sim%vsolv,sim%xlbomd,sim%cosmo,&
             sim%qm2,sim%dav,sim%qmmm,fdes_in, fdes_out, &
             sim%Na,igb,atnam,sim%naesmd%atomtype,maxcyc, &

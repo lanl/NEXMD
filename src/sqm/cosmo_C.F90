@@ -12,6 +12,7 @@ module cosmo_C
 
   type cosmo_C_structure
 
+	  real(8),allocatable ::  coord(:,:)
 	  integer :: solvent_model, potential_type, EF
 	  logical :: iseps, noeps, useps, lpka
 	  logical::coserr=.false.

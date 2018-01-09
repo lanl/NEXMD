@@ -137,30 +137,27 @@ contains
         type(naesmd_structure), intent(inout) :: naesmd_struct 
 
         _REAL_ v1,v2,rsq
-        _REAL_ factor,store,normal
-        logical compute
-        save compute,store
-        data compute  / .true. /
+        _REAL_ factor,normal
         !
         !
         !     get a pair of random values from the distribution
         !
-        if (compute) then
+        if (naesmd_struct%compute) then
 10      continue
         v1 = 2.0d0 * rranf1(naesmd_struct%iseedmdqt) - 1.0d0
         v2 = 2.0d0 * rranf1(naesmd_struct%iseedmdqt) - 1.0d0
         rsq = v1**2 + v2**2
         if (rsq .ge. 1.0d0)  goto 10
         factor = sqrt(-2.0d0*log(rsq)/rsq)
-        store = v1 * factor
+        naesmd_struct%store = v1 * factor
         normal = v2 * factor
-        compute = .false.
+        naesmd_struct%compute = .false.
     !
     !     use the second random value computed at the last call
     !
     else
-        normal = store
-        compute = .true.
+        normal = naesmd_struct%store
+        naesmd_struct%compute = .true.
     end if
     return
 end function

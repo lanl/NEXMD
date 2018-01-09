@@ -36,11 +36,11 @@ OBJSQM = \
 	$(OBJDIR)/$(SQMDIR)/xlbomd_module.o \
 	$(OBJDIR)/$(SQMDIR)/elementOrbitalIndex.o \
 	$(OBJDIR)/$(SQMDIR)/parameterReader.o \
-	$(OBJDIR)/$(SQMDIR)/rotation.o \
 	$(OBJDIR)/$(SQMDIR)/qmmm_struct_module.o \
 	$(OBJDIR)/$(SQMDIR)/file_io_dat.o \
 	$(OBJDIR)/$(SQMDIR)/qmmm_vsolv_module.o \
 	$(OBJDIR)/$(SQMDIR)/qm2_params_module.o \
+	$(OBJDIR)/$(SQMDIR)/rotation.o \
 	$(OBJDIR)/$(SQMDIR)/qmmm_module.o \
 	$(OBJDIR)/$(SQMDIR)/qm_gb.o \
 	$(OBJDIR)/$(SQMDIR)/slater_overlap.o \
@@ -135,8 +135,8 @@ OBJSQM = \
 	$(OBJDIR)/$(SQMDIR)/printNM.o \
         $(OBJDIR)/$(SQMDIR)/polarizab0ab_new.o
 OBJNAESMD = \
-	$(OBJDIR)/$(NAESMDDIR)/apc.o \
         $(OBJDIR)/$(NAESMDDIR)/naesmd_module.o\
+	$(OBJDIR)/$(NAESMDDIR)/apc.o \
         $(OBJDIR)/$(NAESMDDIR)/md_module.o\
         $(OBJDIR)/$(NAESMDDIR)/naesmd_constants.o\
         $(OBJDIR)/$(NAESMDDIR)/fcn.o \
@@ -150,10 +150,10 @@ OBJNAESMD = \
 	$(OBJDIR)/$(NAESMDDIR)/nacT_analytic.o \
 	$(OBJDIR)/$(NAESMDDIR)/fewest-switches.o \
 	$(OBJDIR)/$(NAESMDDIR)/coherence.o \
+	$(OBJDIR)/$(NAESMDDIR)/cadiab.o \
 	$(OBJDIR)/$(NAESMDDIR)/quantum-prop-add.o \
 	$(OBJDIR)/$(NAESMDDIR)/writeoutput.o \
 	$(OBJDIR)/$(NAESMDDIR)/verlet.o \
-	$(OBJDIR)/$(NAESMDDIR)/cadiab.o \
         $(OBJDIR)/$(NAESMDDIR)/sqm_subs.o \
 	$(OBJDIR)/$(NAESMDDIR)/deriv.o \
 	$(OBJDIR)/$(NAESMDDIR)/buildM.o \

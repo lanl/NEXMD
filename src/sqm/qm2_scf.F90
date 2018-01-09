@@ -79,7 +79,7 @@ subroutine qm2_scf(qmmm_opnq, qm2_params, qmewald, qmmm_nml, qm_gb, qmmm_mpi, qm
     !Local
     _REAL_ eold !SCF energy on previous step
     _REAL_ energy_diff, density_diff !Difference in energy and density from previous step.a
-    _REAL_ small, smallsum, abstol !Precision limits of this machine.
+    _REAL_ small!, qm2_params%smallsum, qm2_params%abstol !Precision limits of this machine.
     _REAL_ smallest_energy_diff(2) !Smallest energy diff found so far (1) and density diff for this step(2)
     _REAL_ scf_energy !Computed in parts on different cpus and then all reduced. Only master returns
                       !this value in escf.
@@ -131,10 +131,6 @@ subroutine qm2_scf(qmmm_opnq, qm2_params, qmewald, qmmm_nml, qm_gb, qmmm_mpi, qm
 #endif
 
     integer lapack_info
-    integer,save::itrmax_local
-    !Saves
-    save smallsum
-    save abstol !Underflow limit for dspevr
 
     !Initialisation on first call
     if(qmmm_nml%density_predict.gt.0) then
@@ -142,26 +138,26 @@ subroutine qm2_scf(qmmm_opnq, qm2_params, qmewald, qmmm_nml, qm_gb, qmmm_mpi, qm
             ! for fixed number of iterations the very first call has to be regular one
             ! with high accuracy
             if(qmmm_nml%itrmax<0) then
-                itrmax_local=qmmm_nml%itrmax
+                qm2_params%itrmax_local=qmmm_nml%itrmax
                 qmmm_nml%itrmax=1000 ! default value
             end if
             !Find precision limits of this machine
-            call qm2_smallest_number(small,smallsum)
-            ! smallsum should be the smallest number for which 1.0D0 + smallsum /= 1.0D0
+            call qm2_smallest_number(small,qm2_params%smallsum)
+            ! qm2_params%smallsum should be the smallest number for which 1.0D0 + qm2_params%smallsum /= 1.0D0
             ! or 1.0D-17 - whichever is larger.
             ! We will increase it in order to allow for roundoff in our calculations.
-            ! we use max here to avoid problems which occur when smallsum is actually too small.
-            smallsum = max(10.0D0 * sqrt(smallsum),1.4000D-7)
-            !      smallsum = 10.0D0 * sqrt(smallsum)
-            abstol = 2.0d0 * dlamch('S') !tolerance for dspevr
+            ! we use max here to avoid problems which occur when qm2_params%smallsum is actually too small.
+            qm2_params%smallsum = max(10.0D0 * sqrt(qm2_params%smallsum),1.4000D-7)
+            !      qm2_params%smallsum = 10.0D0 * sqrt(qm2_params%smallsum)
+            qm2_params%abstol = 2.0d0 * dlamch('S') !tolerance for dspevr
             qmmm_struct%qm2_scf_first_call=.false.
         elseif((qmmm_nml%density_predict==2).and.(qmmm_struct%num_qmmm_calls.lt.(xlbomd_struct%K+2))) then
             !Do nothing until all Phi are full for XL-BOMD
             write(6,*) 'Filling Phi_',qmmm_struct%num_qmmm_calls+1,'with fully converged result'
         else
-            if(itrmax_local<0) then
+            if(qm2_params%itrmax_local<0) then
                 ! restoring fixed-number-of-iterations itrmax
-                qmmm_nml%itrmax=itrmax_local
+                qmmm_nml%itrmax=qm2_params%itrmax_local
             end if
         end if
     end if
@@ -181,7 +177,7 @@ subroutine qm2_scf(qmmm_opnq, qm2_params, qmewald, qmmm_nml, qm_gb, qmmm_mpi, qm
     ! DIIS IS TURNED OFF BY Dcosmo_c_struct%EFAULT
     ! ONLY TURN ON IF CONVERGENCE GOES NUTTY
     !    i = remaining_diis_tokens( qmmm_nml%ndiis_attempts )
-    i = remaining_diis_tokens( 0 )
+    i = remaining_diis_tokens(qmmm_nml, 0 )
     dont_turn_off_diis = .FALSE.
     diis_is_off = qmmm_nml%ndiis_attempts < 1 .OR. qmmm_nml%ndiis_matrices < 2
     errmat_is_on = qmmm_nml%errconv < 1.0D-02
@@ -194,7 +190,7 @@ subroutine qm2_scf(qmmm_opnq, qm2_params, qmewald, qmmm_nml, qm_gb, qmmm_mpi, qm
         write(6,'("QMMM: ")')
         write(6,'("QMMM: SCF Convergence Information")')
         if (qmmm_nml%allow_pseudo_diag) write(6,'("QMMM: (*) = Pseudo Diagonalisation")')
-        if ( remaining_diis_tokens() > 1 .AND. qmmm_nml%ndiis_matrices > 1 ) THEN
+        if ( remaining_diis_tokens(qmmm_nml) > 1 .AND. qmmm_nml%ndiis_matrices > 1 ) THEN
             write(6,'("QMMM: (D) = Used Fock extrapolation via DIIS")')
             write(6,'("QMMM: (M) = Used Fock extrapolation via 50/50 mixing")')
         END IF
@@ -213,14 +209,14 @@ subroutine qm2_scf(qmmm_opnq, qm2_params, qmewald, qmmm_nml, qm_gb, qmmm_mpi, qm
         CALL qm2_diag(qm2_params,qmmm_mpi,qmmm_scratch, qmmm_nml, &
             & qm2_struct,qm2_struct%matsize, fock_matrix, &
             & allow_pseudo_diag, density_diff, doing_pseudo_diag, &
-            & smallsum, abstol )
+            & qm2_params%smallsum, qm2_params%abstol )
     end if
 
 
     ! MAIN SCF LOOP
     do_scf: do scf_iteration=1,abs(qmmm_nml%itrmax)
         ! set the current scf iterator to the current value
-        i = scf_iterator_value( scf_iteration )
+        i = scf_iterator_value(qmmm_nml, scf_iteration )
 
         ! construct a trial density
         if ((.NOT. first_iteration) .or. fock_predict_active) then
@@ -325,7 +321,7 @@ subroutine qm2_scf(qmmm_opnq, qm2_params, qmewald, qmmm_nml, qm_gb, qmmm_mpi, qm
 
                 ! HMM. DIIS Isn't doing too well once we get close to convergence.
                 ! Turn it off in this case... let's just rely on the density matrix extrapolation
-                if ( abs(energy_diff) < qmmm_nml%scfconv .AND. .NOT. dont_turn_off_diis ) i = remaining_diis_tokens(0)
+                if ( abs(energy_diff) < qmmm_nml%scfconv .AND. .NOT. dont_turn_off_diis ) i = remaining_diis_tokens(qmmm_nml,0)
 
 
                 ! the SCF is going crazy.  Force diis on as a last resort
@@ -333,7 +329,7 @@ subroutine qm2_scf(qmmm_opnq, qm2_params, qmewald, qmmm_nml, qm_gb, qmmm_mpi, qm
                 ! qmmm_nml%ndiis_attempts is 0, so this requires a form
                 ! of human intervention
                 if ( scf_iteration == switch_on_diis ) then
-                    i = remaining_diis_tokens( qmmm_nml%ndiis_attempts )
+                    i = remaining_diis_tokens(qmmm_nml, qmmm_nml%ndiis_attempts )
                     dont_turn_off_diis = .TRUE.
               
                     ! Dont allow anymore pseudo diagaonlizations
@@ -349,7 +345,7 @@ subroutine qm2_scf(qmmm_opnq, qm2_params, qmewald, qmmm_nml, qm_gb, qmmm_mpi, qm
                 ! I guess we should turn diis ON for the user.
                 ! I mean, we're at iteration #800.  What else can we do?
                 if ( scf_iteration == switch_on_diis_last_resort ) then
-                    i = remaining_diis_tokens( 100 )
+                    i = remaining_diis_tokens(qmmm_nml, 100 )
                     dont_turn_off_diis = .TRUE.
               
                     ! Dont allow anymore pseudo diagaonlizations
@@ -434,7 +430,7 @@ subroutine qm2_scf(qmmm_opnq, qm2_params, qmewald, qmmm_nml, qm_gb, qmmm_mpi, qm
         CALL qm2_diag(qm2_params,qmmm_mpi,qmmm_scratch, qmmm_nml, &
             & qm2_struct,qm2_struct%matsize, fock_matrix, &
             & allow_pseudo_diag, density_diff, doing_pseudo_diag, &
-            & smallsum, abstol )
+            & qm2_params%smallsum, qm2_params%abstol )
      
      
         first_iteration = .false.
@@ -507,6 +503,7 @@ subroutine qm2_scf(qmmm_opnq, qm2_params, qmewald, qmmm_nml, qm_gb, qmmm_mpi, qm
 
     return
 end subroutine qm2_scf
+
 
 subroutine qm2_densit(qm2_params, eigen_vecs,norbs,ndubl, den_matrix,matsize)
     !***********************************************************************
@@ -2033,7 +2030,7 @@ SUBROUTINE qm2_densmat(qm2_params, qmmm_mpi,qmmm_nml,qm2_struct, scf_iteration,n
 
     !==============
     ! prevent cnvg
-    !     if ( scf_iterator_value() > 50 ) then
+    !     if ( scf_iterator_value(qmmm_nml) > 50 ) then
     !        call qm2_densit(qm2_struct%eigen_vectors,qm2_struct%norbs,qm2_struct%nclosed,den_matrix,qm2_struct%matsize)
     !     end if
     !===============
@@ -2220,13 +2217,13 @@ SUBROUTINE diis_extrap(qmmm_nml, qm2_struct, npf,pf,extrap_flag)
     ! diis decision
     ! should we attempt an extrapolation?
 
-    scf_iter  = scf_iterator_value()
+    scf_iter  = scf_iterator_value(qmmm_nml)
     diis_idx  = diis_iterator_value(qmmm_nml)
     max_diis  = qmmm_nml%ndiis_matrices
 
     HAVE_DIIS_DATA   = scf_iter > 1
     ERR_IS_SMALL     = current_scf_errval(qmmm_nml,qm2_struct) < 0.5d0
-    HAVE_DIIS_TOKENS = remaining_diis_tokens() > 0
+    HAVE_DIIS_TOKENS = remaining_diis_tokens(qmmm_nml) > 0
     EXTRAPOLATE      = HAVE_DIIS_DATA .AND. ERR_IS_SMALL .AND. HAVE_DIIS_TOKENS
     IF ( .NOT. EXTRAPOLATE ) THEN
         pf = qm2_struct%diis_fock( : , diis_idx )
@@ -2236,7 +2233,7 @@ SUBROUTINE diis_extrap(qmmm_nml, qm2_struct, npf,pf,extrap_flag)
     ! We will attempt an extrapolation
     ! decrement our tokens
 
-    i = remaining_diis_tokens( remaining_diis_tokens() - 1 )
+    i = remaining_diis_tokens(qmmm_nml, remaining_diis_tokens(qmmm_nml) - 1 )
 
 
     ! construct the diis matrix
