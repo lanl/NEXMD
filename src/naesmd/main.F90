@@ -63,8 +63,8 @@ program MD_Geometry
     type(simulation_t),target::sim_notp
     !The pointer to sim structure, more rapidly passed into subroutines
     type(simulation_t),pointer::sim
-    integer :: Nsim = 2
-    
+    integer :: Nsim = 1
+   
     sim=>sim_notp
     call init0_simulation(sim,Nsim)
     call setp_simulation(sim,qmmm_struct_notp,qm2ds_notp, &
