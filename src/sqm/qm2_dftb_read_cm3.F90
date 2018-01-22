@@ -2,15 +2,16 @@
 !  -*- mode: f90; coding: iso-8859-15; -*-
 #include "dprec.fh"
 
-subroutine read_cm3(natoms,ntype,izp,cm3_file)
+subroutine read_cm3(qmmm_nml, natoms,ntype,izp,cm3_file)
    !
    ! Subroutine to read the CM3 parameters from the file
    ! $AMBERHOME/dat/slko/CM3_PARAMETERS.DAT
    !
-   use qmmm_module, only: qmmm_nml, qmmm_struct
+   use qmmm_nml_module   , only : qmmm_nml_type
    use qm2_dftb_module, only: mol, cm3
 
 !! Passed in:
+   type(qmmm_nml_type), intent(inout) :: qmmm_nml
    integer, intent(in) :: natoms
    integer, intent(in) :: ntype
    integer, intent(in) :: izp(*)  ! (NNDIM)

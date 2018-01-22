@@ -5,7 +5,7 @@
 
 !Written by Ross Walker & Mike Crowley (TSRI, 2005)
 
-subroutine identify_link_atoms(nbona,ib,jb)
+subroutine identify_link_atoms(qmmm_nml,qmmm_struct, nbona,ib,jb)
 !Link atom methods in Amber:
 !
 ! 3) In this method the link atom sees the MM field. Here to avoid overcounting the 
@@ -36,12 +36,14 @@ subroutine identify_link_atoms(nbona,ib,jb)
 ! Since there are no resp charges available for link atoms qmgb=1 does not work with link atoms.
 ! if link atoms are detected below and qmgb=1 then the program will quit.
 
-  use qmmm_module, only : qmmm_nml, qmmm_struct
-  use qmmm_struct_module, only : new
+  use qmmm_struct_module, only : new, qmmm_struct_type
+  use qmmm_nml_module   , only : qmmm_nml_type
 
   implicit none
 
 !passed in
+  type(qmmm_nml_type), intent(inout) :: qmmm_nml
+  type(qmmm_struct_type), intent(inout) :: qmmm_struct
   integer, intent(in) :: nbona,ib(nbona),jb(nbona)
 !locals
   integer mm, i, j, kk, imm
@@ -149,7 +151,7 @@ end subroutine identify_link_atoms
 
 !------------------------------------------------------------------------
 
-subroutine position_link_atoms(unimaged_coords)
+subroutine position_link_atoms(qmmm_nml,qmmm_struct, unimaged_coords)
 !This routine positions link atoms a distance of lnk_dis along the bond
 !vector connecting the two atoms.
 
@@ -159,9 +161,12 @@ subroutine position_link_atoms(unimaged_coords)
 !coordinates. We will place the link atom coordinates at the end of this array.
 !Hence it must have been allocated as 3*nquant+nlink long.
 
-   use qmmm_module, only : qmmm_nml,qmmm_struct
+  use qmmm_nml_module   , only : qmmm_nml_type
+   use qmmm_struct_module, only : qmmm_struct_type
    implicit none
 !Passed in
+    type(qmmm_nml_type), intent(inout) :: qmmm_nml
+    type(qmmm_struct_type), intent(inout) :: qmmm_struct
    _REAL_, intent(in) :: unimaged_coords(3,*)
 
 !Local
@@ -277,15 +282,18 @@ end subroutine distribute_lnk_f
 
 !------------------------------------------------------------------------
 
-subroutine print_link_atom_info( qmcoords, atom_type )
+subroutine print_link_atom_info(qmmm_nml,qmmm_struct, qmcoords, atom_type )
 
 !Writes out link atom info to mdout file
 
-  use qmmm_module, only : qmmm_nml,qmmm_struct
+  use qmmm_nml_module   , only : qmmm_nml_type
+  use qmmm_struct_module, only : qmmm_struct_type
   use constants, only : INV_AMBER_ELECTROSTATIC
   implicit none
 
 !Passed in
+  type(qmmm_nml_type), intent(in) :: qmmm_nml
+  type(qmmm_struct_type), intent(in) :: qmmm_struct
   _REAL_ qmcoords(3,qmmm_struct%nquant_nlink)
   character(len=4), intent(in):: atom_type(*)
 
@@ -316,7 +324,7 @@ subroutine print_link_atom_info( qmcoords, atom_type )
 
 end subroutine print_link_atom_info
 
-subroutine adj_mm_link_pair_crd(unimaged_coords)
+subroutine adj_mm_link_pair_crd(qmmm_nml,qmmm_struct, unimaged_coords)
 
   !This routine will save the coordinates of mm link pair atoms from the main amber 
   !coordinate array (unimaged) and then replace the coordinates of these atoms with
@@ -326,10 +334,13 @@ subroutine adj_mm_link_pair_crd(unimaged_coords)
   !If lnk_dis < 0.0d0 then the link atom is placed on top of the MM link pair atom which effectively
   !means there is no change.
 
-  use qmmm_module, only : qmmm_struct, qmmm_nml
-  implicit none
+  use qmmm_nml_module   , only : qmmm_nml_type
+  use qmmm_struct_module, only : qmmm_struct_type
+ implicit none
 
 !passed in
+  type(qmmm_nml_type), intent(inout) :: qmmm_nml
+  type(qmmm_struct_type), intent(inout) :: qmmm_struct
   _REAL_, intent(inout) :: unimaged_coords(3,*) !natom long - amber's unimaged coordinate array (x)
 
 !Local
@@ -381,15 +392,18 @@ subroutine adj_mm_link_pair_crd(unimaged_coords)
 
 end subroutine adj_mm_link_pair_crd
 
-subroutine rst_mm_link_pair_crd(unimaged_coords)
+subroutine rst_mm_link_pair_crd(qmmm_nml,qmmm_struct, unimaged_coords)
 
   !This routine replaces the mm coordinates from the mm_link_pair_saved array back
   !into the main amber array.
 
-  use qmmm_module, only : qmmm_struct, qmmm_nml
+  use qmmm_nml_module   , only : qmmm_nml_type
+  use qmmm_struct_module, only : qmmm_struct_type
   implicit none
 
 !Passed in
+  type(qmmm_nml_type), intent(inout) :: qmmm_nml
+  type(qmmm_struct_type), intent(inout) :: qmmm_struct
   _REAL_, intent(out) :: unimaged_coords(3,*) !natom long - amber's unimaged coord array
 
 !Local

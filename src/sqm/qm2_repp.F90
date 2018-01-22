@@ -1,7 +1,7 @@
 ! <compile=optimized>
 #include "copyright.h"
 #include "dprec.fh"
-subroutine qm2_repp(IQM, JQM,R,RR2,RI, core, SQRTAEE)
+subroutine qm2_repp(qmmm_nml, qm2_params, qmmm_struct, IQM, JQM,R,RR2,RI, core, SQRTAEE)
 !***********************************************************************
 !  OPTIMISATION BY ROSS WALKER (TSRI,2005)
 !
@@ -18,12 +18,17 @@ subroutine qm2_repp(IQM, JQM,R,RR2,RI, core, SQRTAEE)
 !***********************************************************************
       use constants  , only : AU_TO_EV, HALF_AU_TO_EV, FOURTH_AU_TO_EV, EIGHTH_AU_TO_EV, SXNTH_AU_TO_EV &
                               , one, two, four, half, fourth
-      use qmmm_module, only : qm2_params, qmmm_nml, qmmm_struct
+      use qm2_params_module,  only : qm2_params_type
+      use qmmm_nml_module   , only : qmmm_nml_type
+      use qmmm_struct_module, only : qmmm_struct_type
 
 
       implicit none
 
 ! Passed in
+      type(qm2_params_type), intent(in) :: qm2_params
+      type(qmmm_nml_type), intent(in) :: qmmm_nml
+      type(qmmm_struct_type), intent(in) :: qmmm_struct
       integer, intent(in) :: iqm, jqm
       _REAL_, intent(in) :: R, RR2, sqrtaee
       _REAL_, intent(out) :: RI(22), core(10,2)

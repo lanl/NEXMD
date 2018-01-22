@@ -115,11 +115,13 @@ module QM2_parameters
                                  element_supported_opnq  ! OPNQ
 contains
 
-subroutine InitializeParameter(currentTheory)
+subroutine InitializeParameter(qm2_struct,currentTheory)
 
-  use ParameterReader, only: ParameterEntry, GetNumberParameterEntries, GetParameterEntry, ParameterFileExisting
+  use ParameterReader, only: ParameterEntry, GetNumberParameterEntries, GetParameterEntry
 #ifdef MPI
-  use qmmm_module, only : qmmm_mpi
+  use qmmm_module, only : qmmm_mpi,qm2_structure
+#else 
+  use qmmm_module, only : qm2_structure
 #endif /* MPI */
 
     implicit none
@@ -129,13 +131,14 @@ subroutine InitializeParameter(currentTheory)
     integer::ierr
 #endif /* MPI */
 
+  type (qm2_structure), intent(inout)::qm2_struct
   type (qmTheoryType), intent(in)::currentTheory
   type(ParameterEntry)::temp
   
 ! local variables
 
   integer :: atomic_number, n, i, j
-  logical :: userDefinedVariable
+  logical :: userDefinedVariable=.false.
   _REAL_ ::  tempIntegerInReal
   
   
@@ -8128,14 +8131,14 @@ end if
 !-----------------------------------------------
 
 
-    if(ParameterFileExisting) userDefinedVariable=.true.
+    if(qm2_struct%ParameterFileExisting) userDefinedVariable=.true.
 #ifdef MPI
        call mpi_bcast(userDefinedVariable,1,MPI_LOGICAL, 0, qmmm_mpi%commqmmm, ierr)
 #endif /* MPI */
 
     if (userDefinedVariable) then 
     
-        n=GetNumberParameterEntries()
+        n=GetNumberParameterEntries(qm2_struct%parameterEntries,qm2_struct%ParameterFileExisting)
 #ifdef MPI
             call mpi_bcast(n,1,MPI_INTEGER, 0, qmmm_mpi%commqmmm, ierr)
 #endif /* MPI */
@@ -8145,7 +8148,7 @@ end if
 
         if (currentTheory%MNDO) then
             do i=1, n
-                temp=GetParameterEntry(i)
+                temp=GetParameterEntry(qm2_struct%parameterEntries,qm2_struct%ParameterFileExisting,i)
 #ifdef MPI
                 call mpi_bcast(temp%name,8,MPI_CHARACTER, 0, qmmm_mpi%commqmmm, ierr)
                 call mpi_bcast(temp%value,1,AMBER_MPI_REAL, 0, qmmm_mpi%commqmmm, ierr)
@@ -8171,7 +8174,7 @@ end if
 
         if (currentTheory%PM3) then
             do i=1, n
-                temp=GetParameterEntry(i)
+                temp=GetParameterEntry(qm2_struct%parameterEntries,qm2_struct%ParameterFileExisting,i)
 #ifdef MPI
                 call mpi_bcast(temp%name,8,MPI_CHARACTER, 0, qmmm_mpi%commqmmm, ierr)
                 call mpi_bcast(temp%value,1,AMBER_MPI_REAL, 0, qmmm_mpi%commqmmm, ierr)
@@ -8212,7 +8215,7 @@ end if
 
         if (currentTheory%AM1) then 
             do i=1, n
-                temp=GetParameterEntry(i)
+                temp=GetParameterEntry(qm2_struct%parameterEntries,qm2_struct%ParameterFileExisting,i)
 #ifdef MPI
                 call mpi_bcast(temp%name,8,MPI_CHARACTER, 0, qmmm_mpi%commqmmm, ierr)
                 call mpi_bcast(temp%value,1,AMBER_MPI_REAL, 0, qmmm_mpi%commqmmm, ierr)
@@ -8251,7 +8254,7 @@ end if
                 
         if (currentTheory%MNDOD) then 
             do i=1, n
-                temp=GetParameterEntry(i)
+                temp=GetParameterEntry(qm2_struct%parameterEntries,qm2_struct%ParameterFileExisting,i)
 #ifdef MPI
                 call mpi_bcast(temp%name,8,MPI_CHARACTER, 0, qmmm_mpi%commqmmm, ierr)
                 call mpi_bcast(temp%value,1,AMBER_MPI_REAL, 0, qmmm_mpi%commqmmm, ierr)
@@ -8284,7 +8287,7 @@ end if
 
         if (currentTheory%AM1D) then 
             do i=1, n
-                temp=GetParameterEntry(i)
+                temp=GetParameterEntry(qm2_struct%parameterEntries,qm2_struct%ParameterFileExisting,i)
 #ifdef MPI
                 call mpi_bcast(temp%name,8,MPI_CHARACTER, 0, qmmm_mpi%commqmmm, ierr)
                 call mpi_bcast(temp%value,1,AMBER_MPI_REAL, 0, qmmm_mpi%commqmmm, ierr)
@@ -8333,7 +8336,7 @@ end if
 
         if (currentTheory%PM6) then
             do i=1, n
-                temp=GetParameterEntry(i)
+                temp=GetParameterEntry(qm2_struct%parameterEntries,qm2_struct%ParameterFileExisting,i)
 #ifdef MPI
                 call mpi_bcast(temp%name,8,MPI_CHARACTER, 0, qmmm_mpi%commqmmm, ierr)
                 call mpi_bcast(temp%value,1,AMBER_MPI_REAL, 0, qmmm_mpi%commqmmm, ierr)
@@ -8382,7 +8385,7 @@ end if
         
         ! OPNQ (QXD) correction for vdW.  The parameters are hamitonian-independent
         do i=1, n
-            temp=GetParameterEntry(i)
+            temp=GetParameterEntry(qm2_struct%parameterEntries,qm2_struct%ParameterFileExisting,i)
 #ifdef MPI
                 call mpi_bcast(temp%name,8,MPI_CHARACTER, 0, qmmm_mpi%commqmmm, ierr)
                 call mpi_bcast(temp%value,1,AMBER_MPI_REAL, 0, qmmm_mpi%commqmmm, ierr)

@@ -3,7 +3,9 @@
 #include "dprec.fh"
 #include "def_time.h"
 #include "assert.fh"
-subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm_calls)
+subroutine qm2_scf(qmmm_opnq, qm2_params, qmewald, qmmm_nml, qm_gb, qmmm_mpi, qmmm_scratch, &
+	xlbomd_struct,cosmo_c_struct,qm2_struct, qm2ds, qmmm_struct, &
+	fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm_calls)
     !---------------------------------------------------------------------
     ! This is the main SCF routine.
     ! Written by Ross Walker (TSRI, 2005)
@@ -29,17 +31,35 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
     !                           J. COMP. CHEM.,3, 227, (1982)
     !---------------------------------------------------------------------
 
-    use qmmm_module, only : qmmm_struct, qm2_struct, qm2_params, qmewald, qmmm_nml, &
-        qm_gb, qmmm_mpi, qmmm_scratch
+    use qmmm_module, only : qm2_structure,  qm_ewald_structure,  &
+        qm_gb_structure, qmmm_mpi_structure, qmmm_scratch_structure, qmmm_opnq_structure
     use constants, only : EV_TO_KCAL, zero, two
+    use qm2_params_module,  only : qm2_params_type
+    use qmmm_nml_module   , only : qmmm_nml_type
 
     use qm2_iterator_mod, only : scf_iterator_value     ! this is an integer function
     use qm2_iterator_mod, only : diis_iterator_value    ! this is an integer function
     use qm2_iterator_mod, only : remaining_diis_tokens  ! this is an integer function
 
     use qm2_davidson_module
-    use xlbomd_module, only : K
+    use xlbomd_module, only : xlbomd_structure !K
+    use qmmm_struct_module, only : qmmm_struct_type
+    use cosmo_C, only : cosmo_C_structure
+
     implicit none
+    type(qmmm_opnq_structure), intent(inout) :: qmmm_opnq 
+    type(qm_ewald_structure),intent(inout) :: qmewald
+    type(qm_gb_structure),intent(inout) :: qm_gb
+    type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
+    type(qmmm_scratch_structure),intent(inout) :: qmmm_scratch
+    type(qm2_params_type),intent(inout) :: qm2_params
+    type(qmmm_nml_type),intent(inout) :: qmmm_nml
+ 
+    type(cosmo_C_structure),intent(inout) :: cosmo_c_struct
+    type(xlbomd_structure),intent(inout) :: xlbomd_struct
+    type(qm2_structure),intent(inout) :: qm2_struct
+    type(qmmm_struct_type), intent(inout) :: qmmm_struct
+    type(qm2_davidson_structure_type), intent(inout) :: qm2ds
 
 
 #ifdef MPI
@@ -59,7 +79,7 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
     !Local
     _REAL_ eold !SCF energy on previous step
     _REAL_ energy_diff, density_diff !Difference in energy and density from previous step.a
-    _REAL_ small, smallsum, abstol !Precision limits of this machine.
+    _REAL_ small!, qm2_params%smallsum, qm2_params%abstol !Precision limits of this machine.
     _REAL_ smallest_energy_diff(2) !Smallest energy diff found so far (1) and density diff for this step(2)
     _REAL_ scf_energy !Computed in parts on different cpus and then all reduced. Only master returns
                       !this value in escf.
@@ -111,10 +131,6 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
 #endif
 
     integer lapack_info
-    integer,save::itrmax_local
-    !Saves
-    save smallsum
-    save abstol !Underflow limit for dspevr
 
     !Initialisation on first call
     if(qmmm_nml%density_predict.gt.0) then
@@ -122,26 +138,26 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
             ! for fixed number of iterations the very first call has to be regular one
             ! with high accuracy
             if(qmmm_nml%itrmax<0) then
-                itrmax_local=qmmm_nml%itrmax
+                qm2_params%itrmax_local=qmmm_nml%itrmax
                 qmmm_nml%itrmax=1000 ! default value
             end if
             !Find precision limits of this machine
-            call qm2_smallest_number(small,smallsum)
-            ! smallsum should be the smallest number for which 1.0D0 + smallsum /= 1.0D0
+            call qm2_smallest_number(small,qm2_params%smallsum)
+            ! qm2_params%smallsum should be the smallest number for which 1.0D0 + qm2_params%smallsum /= 1.0D0
             ! or 1.0D-17 - whichever is larger.
             ! We will increase it in order to allow for roundoff in our calculations.
-            ! we use max here to avoid problems which occur when smallsum is actually too small.
-            smallsum = max(10.0D0 * sqrt(smallsum),1.4000D-7)
-            !      smallsum = 10.0D0 * sqrt(smallsum)
-            abstol = 2.0d0 * dlamch('S') !tolerance for dspevr
+            ! we use max here to avoid problems which occur when qm2_params%smallsum is actually too small.
+            qm2_params%smallsum = max(10.0D0 * sqrt(qm2_params%smallsum),1.4000D-7)
+            !      qm2_params%smallsum = 10.0D0 * sqrt(qm2_params%smallsum)
+            qm2_params%abstol = 2.0d0 * dlamch('S') !tolerance for dspevr
             qmmm_struct%qm2_scf_first_call=.false.
-        elseif((qmmm_nml%density_predict==2).and.(qmmm_struct%num_qmmm_calls.lt.(K+2))) then
+        elseif((qmmm_nml%density_predict==2).and.(qmmm_struct%num_qmmm_calls.lt.(xlbomd_struct%K+2))) then
             !Do nothing until all Phi are full for XL-BOMD
             write(6,*) 'Filling Phi_',qmmm_struct%num_qmmm_calls+1,'with fully converged result'
         else
-            if(itrmax_local<0) then
+            if(qm2_params%itrmax_local<0) then
                 ! restoring fixed-number-of-iterations itrmax
-                qmmm_nml%itrmax=itrmax_local
+                qmmm_nml%itrmax=qm2_params%itrmax_local
             end if
         end if
     end if
@@ -158,10 +174,10 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
     smallest_energy_diff(2) = huge(smallest_energy_diff(2))
     sm_energy_diff_step_number = 0
 
-    ! DIIS IS TURNED OFF BY DEFAULT
+    ! DIIS IS TURNED OFF BY Dcosmo_c_struct%EFAULT
     ! ONLY TURN ON IF CONVERGENCE GOES NUTTY
     !    i = remaining_diis_tokens( qmmm_nml%ndiis_attempts )
-    i = remaining_diis_tokens( 0 )
+    i = remaining_diis_tokens(qmmm_nml, 0 )
     dont_turn_off_diis = .FALSE.
     diis_is_off = qmmm_nml%ndiis_attempts < 1 .OR. qmmm_nml%ndiis_matrices < 2
     errmat_is_on = qmmm_nml%errconv < 1.0D-02
@@ -174,7 +190,7 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
         write(6,'("QMMM: ")')
         write(6,'("QMMM: SCF Convergence Information")')
         if (qmmm_nml%allow_pseudo_diag) write(6,'("QMMM: (*) = Pseudo Diagonalisation")')
-        if ( remaining_diis_tokens() > 1 .AND. qmmm_nml%ndiis_matrices > 1 ) THEN
+        if ( remaining_diis_tokens(qmmm_nml) > 1 .AND. qmmm_nml%ndiis_matrices > 1 ) THEN
             write(6,'("QMMM: (D) = Used Fock extrapolation via DIIS")')
             write(6,'("QMMM: (M) = Used Fock extrapolation via 50/50 mixing")')
         END IF
@@ -190,20 +206,21 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
 
 
     if ( fock_predict_active ) then
-        CALL qm2_diag(qm2_struct%matsize, fock_matrix, &
+        CALL qm2_diag(qm2_params,qmmm_mpi,qmmm_scratch, qmmm_nml, &
+            & qm2_struct,qm2_struct%matsize, fock_matrix, &
             & allow_pseudo_diag, density_diff, doing_pseudo_diag, &
-            & smallsum, abstol )
+            & qm2_params%smallsum, qm2_params%abstol )
     end if
 
 
     ! MAIN SCF LOOP
     do_scf: do scf_iteration=1,abs(qmmm_nml%itrmax)
         ! set the current scf iterator to the current value
-        i = scf_iterator_value( scf_iteration )
+        i = scf_iterator_value(qmmm_nml, scf_iteration )
 
         ! construct a trial density
         if ((.NOT. first_iteration) .or. fock_predict_active) then
-            CALL qm2_densmat( scf_iteration, qm2_struct%matsize, den_matrix, density_diff)
+            CALL qm2_densmat(qm2_params, qmmm_mpi,qmmm_nml,qm2_struct, scf_iteration, qm2_struct%matsize, den_matrix, density_diff)
         end if ! if (.NOT. first_iteration)
 
          !Calculate the Mulliken charges for the current density matrix if we require
@@ -218,12 +235,15 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
             allocate(density_matrix_unpacked(qm2_struct%norbs,qm2_struct%norbs));
             call unpacking(qm2_struct%norbs,qm2_struct%den_matrix,density_matrix_unpacked,'s');
             do i=1,qmmm_struct%nquant_nlink
-                call qm2_calc_mulliken(i,scf_mchg(i),density_matrix_unpacked);
+                call qm2_calc_mulliken(qm2_params,qm2_struct,i,scf_mchg(i),density_matrix_unpacked);
             end do
             deallocate(density_matrix_unpacked);
         end if
 
-        CALL qm2_cpt_fock_and_energy(SIZE(fock_matrix), fock_matrix, hmatrix, den_matrix, &
+        CALL qm2_cpt_fock_and_energy(qmmm_mpi, qmmm_scratch, qm_gb, qmewald, &
+            & qm2_params, qmmm_nml, qmmm_opnq, &
+            & cosmo_c_struct,qm2_struct,qm2ds, qmmm_struct, &
+            & SIZE(fock_matrix), fock_matrix, hmatrix, den_matrix, &
             & SIZE(W), W, SIZE(scf_mchg), scf_mchg, density_diff )
         !q=0
         !do o=1,qm2_struct%norb
@@ -246,8 +266,8 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
                 end if
             end if
             if ( errmat_is_on ) then
-                CALL pack_diis(SIZE(fock_matrix),fock_matrix,den_matrix)
-                errval = current_scf_errval()
+                CALL pack_diis(qmmm_mpi,qmmm_nml,qm2_struct,SIZE(fock_matrix),fock_matrix,den_matrix)
+                errval = current_scf_errval(qmmm_nml,qm2_struct)
             end if
         end if
       
@@ -301,7 +321,7 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
 
                 ! HMM. DIIS Isn't doing too well once we get close to convergence.
                 ! Turn it off in this case... let's just rely on the density matrix extrapolation
-                if ( abs(energy_diff) < qmmm_nml%scfconv .AND. .NOT. dont_turn_off_diis ) i = remaining_diis_tokens(0)
+                if ( abs(energy_diff) < qmmm_nml%scfconv .AND. .NOT. dont_turn_off_diis ) i = remaining_diis_tokens(qmmm_nml,0)
 
 
                 ! the SCF is going crazy.  Force diis on as a last resort
@@ -309,7 +329,7 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
                 ! qmmm_nml%ndiis_attempts is 0, so this requires a form
                 ! of human intervention
                 if ( scf_iteration == switch_on_diis ) then
-                    i = remaining_diis_tokens( qmmm_nml%ndiis_attempts )
+                    i = remaining_diis_tokens(qmmm_nml, qmmm_nml%ndiis_attempts )
                     dont_turn_off_diis = .TRUE.
               
                     ! Dont allow anymore pseudo diagaonlizations
@@ -325,7 +345,7 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
                 ! I guess we should turn diis ON for the user.
                 ! I mean, we're at iteration #800.  What else can we do?
                 if ( scf_iteration == switch_on_diis_last_resort ) then
-                    i = remaining_diis_tokens( 100 )
+                    i = remaining_diis_tokens(qmmm_nml, 100 )
                     dont_turn_off_diis = .TRUE.
               
                     ! Dont allow anymore pseudo diagaonlizations
@@ -404,12 +424,13 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
                 write(6,'("QMMM: DIIS extrapolation is performed")')
             end if
 
-            CALL diis_extrap( qm2_struct%matsize, fock_matrix , fock_extrap_flag )
+            CALL diis_extrap(qmmm_nml, qm2_struct, qm2_struct%matsize, fock_matrix , fock_extrap_flag )
         end if
      
-        CALL qm2_diag(qm2_struct%matsize, fock_matrix, &
+        CALL qm2_diag(qm2_params,qmmm_mpi,qmmm_scratch, qmmm_nml, &
+            & qm2_struct,qm2_struct%matsize, fock_matrix, &
             & allow_pseudo_diag, density_diff, doing_pseudo_diag, &
-            & smallsum, abstol )
+            & qm2_params%smallsum, qm2_params%abstol )
      
      
         first_iteration = .false.
@@ -478,12 +499,13 @@ subroutine qm2_scf(fock_matrix, hmatrix, W, escf, den_matrix, scf_mchg, num_qmmm
     ! If we are trying to do Fock matrix prediction based on an extrapolation of previous steps then
     ! we need to store the final fock matrix.
 
-    if (qmmm_nml%fock_predict == 1) call qm2_fock_store(qm2_struct%matsize, fock_matrix, hmatrix)
+    if (qmmm_nml%fock_predict == 1) call qm2_fock_store(qm2_struct,qm2_struct%matsize, fock_matrix, hmatrix)
 
     return
 end subroutine qm2_scf
 
-subroutine qm2_densit( eigen_vecs,norbs,ndubl, den_matrix,matsize)
+
+subroutine qm2_densit(qm2_params, eigen_vecs,norbs,ndubl, den_matrix,matsize)
     !***********************************************************************
     !
     !   Computes the density matrix from the eigen vector matrix and the
@@ -504,10 +526,11 @@ subroutine qm2_densit( eigen_vecs,norbs,ndubl, den_matrix,matsize)
     !***********************************************************************
     !
 
-    use qmmm_module, only : qm2_params
+  use qm2_params_module,  only : qm2_params_type
     implicit none
 
     ! Passed in
+    type(qm2_params_type),intent(inout) :: qm2_params
     integer, intent(in) :: norbs, ndubl, matsize
     !      integer, intent(inout) :: nsingl
     _REAL_, intent(in) :: eigen_vecs(norbs,norbs)
@@ -529,7 +552,7 @@ subroutine qm2_densit( eigen_vecs,norbs,ndubl, den_matrix,matsize)
 
 #ifdef OPENMP_DEN
     !$OMP PARALLEL &
-    !$OMP DEFAULT(PRIVATE) &
+    !$OMP Dcosmo_c_struct%EFAULT(PRIVATE) &
     !$OMP SHARED(den_matrix,matsize,unoc_start,norbs,qm2_params,eigen_vecs)
     ! den_matrix can be shared since no two threads will do the same value of L.
     !$OMP DO SCHEDULE(static)
@@ -584,7 +607,7 @@ end subroutine qm2_densit
 
 !-----------------------------------------------------------------------
 
-subroutine qm2_cnvg(den_matrix, old_den_matrix, old2_density,norbs, scf_iteration, density_diff)
+subroutine qm2_cnvg(qm2_params,den_matrix, old_den_matrix, old2_density,norbs, scf_iteration, density_diff)
     !***********************************************************************
     !
     !  CNVG IS A TWO-POINT INTERPOLATION ROUTINE FOR SPEEDING CONVERGENCE
@@ -595,10 +618,11 @@ subroutine qm2_cnvg(den_matrix, old_den_matrix, old2_density,norbs, scf_iteratio
     !           density_diff     = LARGEST DIFFERENCE BETWEEN OLD AND NEW DENSITY
     !                    MATRIX DIAGONAL ELEMENTS
     !***********************************************************************
-    use qmmm_module, only : qm2_params
+  use qm2_params_module,  only : qm2_params_type
     implicit none
 
     !Passed in
+    type(qm2_params_type),intent(inout) :: qm2_params
     integer, intent(in) :: norbs, scf_iteration
     _REAL_, intent(inout) :: old2_density(norbs), old_den_matrix(*), den_matrix(*)
     _REAL_, intent(out) :: density_diff
@@ -624,7 +648,7 @@ subroutine qm2_cnvg(den_matrix, old_den_matrix, old2_density,norbs, scf_iteratio
 
 #ifdef OPENMP_CNVG
     !$OMP PARALLEL &
-    !$OMP DEFAULT(PRIVATE) &
+    !$OMP Dcosmo_c_struct%EFAULT(PRIVATE) &
     !$OMP SHARED(norbs, qm2_params, scf_iteration, den_matrix, old_den_matrix, old2_density, current_den_sum, density_diff, FACA, FACB, FAC, DAMP, SUM2, SUM0, SUM3)
 #endif
     if (MOD(scf_iteration-1,3) /= 0) then
@@ -762,7 +786,7 @@ subroutine qm2_cnvg(den_matrix, old_den_matrix, old2_density,norbs, scf_iteratio
 
 end subroutine qm2_cnvg
 
-subroutine qm2_cnvg_simple(den_matrix,old_den_matrix,old2_density,norbs, &
+subroutine qm2_cnvg_simple(qm2_params,den_matrix,old_den_matrix,old2_density,norbs, &
     scf_iteration, density_diff)
     !
     !***********************************************************************
@@ -774,10 +798,11 @@ subroutine qm2_cnvg_simple(den_matrix,old_den_matrix,old2_density,norbs, &
     !           density_diff     = LARGEST DIFFERENCE BETWEEN OLD AND NEW DENSITY
     !                    MATRIX DIAGONAL ELEMENTS
     !***********************************************************************
-    use qmmm_module, only : qm2_params
+  use qm2_params_module,  only : qm2_params_type
     implicit none
 
     !Passed in
+    type(qm2_params_type),intent(inout) :: qm2_params
     integer, intent(in) :: norbs, scf_iteration
     _REAL_, intent(inout) :: old2_density(norbs), old_den_matrix(*), den_matrix(*)
     _REAL_, intent(out) :: density_diff
@@ -820,13 +845,14 @@ end subroutine qm2_cnvg_simple
 
 !---------------------------------------------------------------------------
 
-subroutine qm2_mat_diag(a,n,m,v,e,w1,w2,w3,w4,w5)
+subroutine qm2_mat_diag(qm2_params,a,n,m,v,e,w1,w2,w3,w4,w5)
 
-    use qmmm_module, only : qm2_params
+    use qm2_params_module,  only : qm2_params_type
     use constants, only : zero, one, half
     implicit none
 
     !Passed in
+    type(qm2_params_type),intent(inout) :: qm2_params
     integer, intent(in) :: m,n
     _REAL_, intent(inout) :: a(*) !Note original matrix will be corrupted by this routine.
     _REAL_, intent(out) ::  e(n), v(n,m)
@@ -1133,7 +1159,7 @@ end subroutine qm2_mat_diag
 
 !---------------------------------------------------------------------------
 
-subroutine qm2_pseudo_diag(matrix,vectors,noccupied,eigen,norbs,smallsum, &
+subroutine qm2_pseudo_diag(qmmm_mpi, qm2_struct,matrix,vectors,noccupied,eigen,norbs,smallsum, &
     matrix_workspace, scratch_matrix, vectmp1, vectmp2, vectmp3, vecjs)
 
     !------------------------------------------------
@@ -1173,13 +1199,15 @@ subroutine qm2_pseudo_diag(matrix,vectors,noccupied,eigen,norbs,smallsum, &
     !           form of a packed lower half triangle.
     !
 #ifdef OPENMP
-  use qmmm_module, only : qm2_struct, qmmm_mpi, qmmm_omp
+  use qmmm_module, only : qm2_structure, qmmm_mpi_structrue, qmmm_omp
 #else
-    use qmmm_module, only : qm2_struct, qmmm_mpi
+    use qmmm_module, only : qm2_structure, qmmm_mpi_structure
 #endif
     implicit none
 
     ! Passed in
+    type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
+    type(qm2_structure),intent(inout) :: qm2_struct
     _REAL_, intent(in) :: matrix(qm2_struct%matsize)
     integer, intent(in) :: noccupied, norbs
     _REAL_, intent(inout) :: vectors(norbs,norbs)
@@ -1207,7 +1235,7 @@ subroutine qm2_pseudo_diag(matrix,vectors,noccupied,eigen,norbs,smallsum, &
     lumo=noccupied+1
 #ifdef OPENMP
     !$OMP PARALLEL &
-    !$OMP DEFAULT(PRIVATE) &
+    !$OMP Dcosmo_c_struct%EFAULT(PRIVATE) &
     !$OMP SHARED(lumo, norbs, noccupied, matrix, vectors, scratch_matrix, matrix_workspace, veccount, eigeni, eigen, c,d, smallsum, vectmp1,vectmp2,vectmp3,vecjs)
     !workspace can be shared for OMP since no two threads should do the same value of i.
     !$OMP DO SCHEDULE(guided)
@@ -1378,7 +1406,7 @@ function qm2_HELECT(nminus,den_matrix,hmatrix,F)
     qm2_helect=qm2_helect+ED
 end function qm2_helect
 
-subroutine qm2_full_diagonalize(diag_routine,matrix,matrix_dimension,eigen_vectors,abstol)
+subroutine qm2_full_diagonalize(qm2_params,qmmm_scratch,qm2_struct,diag_routine,matrix,matrix_dimension,eigen_vectors,abstol)
     !******************************
     !This routine is a central driver routine for doing the diagonalization,
     !essentially it can be called with the matrix to be diagonalized and the
@@ -1388,14 +1416,18 @@ subroutine qm2_full_diagonalize(diag_routine,matrix,matrix_dimension,eigen_vecto
     !******************************
 
 #ifdef OPENMP
-  use qmmm_module, only : qmmm_scratch, qm2_struct, qmmm_omp
+  use qmmm_module, only : qmmm_scratch_structure, qm2_structure, qmmm_omp
 #else
-    use qmmm_module, only : qmmm_scratch, qm2_struct
+    use qmmm_module, only : qmmm_scratch_structure, qm2_structure
 #endif
+    use qm2_params_module,  only : qm2_params_type
 
     implicit none
 
     !Passed in
+    type(qm2_params_type), intent(inout) :: qm2_params 
+    type(qmmm_scratch_structure),intent(inout) :: qmmm_scratch
+    type(qm2_structure),intent(inout) :: qm2_struct
     integer, intent(inout) :: diag_routine !Controls the diagonalization method to be used.
                                         !1=built in diagonalizer
                                         !2=dspev
@@ -1427,7 +1459,7 @@ subroutine qm2_full_diagonalize(diag_routine,matrix,matrix_dimension,eigen_vecto
         ! to find the crossover point.
 
         !Dimension 1 of mat_diag_workspace contains the eignvalues
-        call qm2_mat_diag(matrix,matrix_dimension,matrix_dimension,eigen_vectors, &
+        call qm2_mat_diag(qm2_params,matrix,matrix_dimension,matrix_dimension,eigen_vectors, &
             qmmm_scratch%mat_diag_workspace(1:qm2_struct%norbs,1), &
             qmmm_scratch%mat_diag_workspace(1:qm2_struct%norbs,2), &
             qmmm_scratch%mat_diag_workspace(1:qm2_struct%norbs,3), &
@@ -1544,7 +1576,7 @@ subroutine qm2_full_diagonalize(diag_routine,matrix,matrix_dimension,eigen_vecto
         REQUIRE(ierr==0)
         allocate (qmmm_scratch%mat_diag_workspace(qm2_struct%norbs,6),stat=ierr)
         REQUIRE(ierr==0)
-        call qm2_mat_diag(matrix,matrix_dimension,matrix_dimension,eigen_vectors, &
+        call qm2_mat_diag(qm2_params,matrix,matrix_dimension,matrix_dimension,eigen_vectors, &
             qmmm_scratch%mat_diag_workspace(1:qm2_struct%norbs,1), &
             qmmm_scratch%mat_diag_workspace(1:qm2_struct%norbs,2), &
             qmmm_scratch%mat_diag_workspace(1:qm2_struct%norbs,3), &
@@ -1610,17 +1642,21 @@ end subroutine qm2_pack_matrix
 
 
 
-SUBROUTINE qm2_diag( n, fock_matrix,    &
+SUBROUTINE qm2_diag(qm2_params,qmmm_mpi,qmmm_scratch, qmmm_nml,  qm2_struct, n, fock_matrix,    &
     & allow_pseudo_diag, density_diff, doing_pseudo_diag, & ! control
     & smallsum, abstol                 ) ! machine precision limits
 
-    USE qmmm_module, ONLY : qmmm_mpi
-    USE qmmm_module, ONLY : qmmm_scratch
-    USE qmmm_module, ONLY : qmmm_nml
-    USE qmmm_module, ONLY : qm2_struct
-
+    USE qmmm_module, ONLY : qmmm_mpi_structure
+    USE qmmm_module, ONLY : qmmm_scratch_structure  
+    use qmmm_nml_module   , only : qmmm_nml_type
+    USE qmmm_module, ONLY : qm2_structure
+    use qm2_params_module,  only : qm2_params_type
     IMPLICIT NONE
-
+    type(qm2_params_type), intent(inout) :: qm2_params
+    type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
+    type(qmmm_scratch_structure),intent(inout) :: qmmm_scratch
+    type(qmmm_nml_type),intent(inout) :: qmmm_nml
+    type(qm2_structure),intent(inout) :: qm2_struct
     INTEGER,INTENT(IN)   :: n
     integer :: o,p,q
     _REAL_,INTENT(INOUT) :: fock_matrix(n)
@@ -1659,7 +1695,7 @@ SUBROUTINE qm2_diag( n, fock_matrix,    &
 #endif
         call timer_start(TIME_QMMMENERGYSCFPSEUDO)
         !OPENMP PARALLEL
-        call qm2_pseudo_diag(fock_matrix,qm2_struct%eigen_vectors,qm2_struct%nopenclosed, &
+        call qm2_pseudo_diag(qmmm_mpi,qm2_struct,fock_matrix,qm2_struct%eigen_vectors,qm2_struct%nopenclosed, &
             qmmm_scratch%mat_diag_workspace(1:qm2_struct%norbs,1),qm2_struct%norbs,smallsum, &
             qmmm_scratch%pdiag_scr_norbs_norbs,qmmm_scratch%pdiag_scr_noccupied_norbs, &
             qmmm_scratch%pdiag_vectmp1,qmmm_scratch%pdiag_vectmp2,qmmm_scratch%pdiag_vectmp3, &
@@ -1675,7 +1711,7 @@ SUBROUTINE qm2_diag( n, fock_matrix,    &
 #endif
         !Do a full diagonalisation
         call timer_start(TIME_QMMMENERGYSCFDIAG)
-        call qm2_full_diagonalize(qmmm_nml%diag_routine,fock_matrix, &
+        call qm2_full_diagonalize(qm2_params,qmmm_scratch,qm2_struct, qmmm_nml%diag_routine,fock_matrix, &
             qm2_struct%norbs,qm2_struct%eigen_vectors,abstol)
 
         
@@ -1703,27 +1739,38 @@ END SUBROUTINE qm2_diag
 !********************************************************************
 !
 
-SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
+SUBROUTINE qm2_cpt_fock_and_energy(qmmm_mpi, qmmm_scratch, qm_gb, qmewald, qm2_params, qmmm_nml, qmmm_opnq, &
+    & cosmo_c_struct,qm2_struct,qm2ds, qmmm_struct, nfock, fock_matrix, hmatrix, den_matrix, &
     & nW, W, nchg, scf_mchg, density_diff)
 
-    USE qmmm_module, ONLY : qmmm_nml
-    USE qmmm_module, ONLY : qmmm_mpi
-    USE qmmm_module, ONLY : qmmm_scratch
-    USE qmmm_module, ONLY : qmmm_struct
-    USE qmmm_module, ONLY : qm2_struct
-    USE qmmm_module, ONLY : qm2_params
-    USE qmmm_module, ONLY : qm_gb
-    USE qmmm_module, ONLY : qmewald
-    USE qmmm_module, ONLY : qmmm_opnq
+    USE qmmm_module, ONLY : qmmm_mpi_structure  
+    USE qmmm_module, ONLY : qmmm_scratch_structure 
+    USE qmmm_module, ONLY : qm2_structure
+    USE qmmm_module, ONLY : qm_gb_structure  
+    USE qmmm_module, ONLY : qm_ewald_structure  
+    use qm2_params_module,  only : qm2_params_type
+    use qmmm_nml_module   , only : qmmm_nml_type
+    USE qmmm_module, ONLY : qmmm_opnq_structure
     USE constants, ONLY : zero
     ! module subroutines
     use qm2_fock_d, only : qm2_fock1_d, qm2_fock2_d
     use opnq, only : Opnq_fock
     use qm2_davidson_module
-    use cosmo_C , only : ceps, SOLVENT_MODEL, potential_type, onsagE, EF, rhotzpacked_k
+    use cosmo_C , only : cosmo_C_structure !cosmo_c_struct%ceps, cosmo_c_struct%SOLVENT_MODEL, cosmo_c_struct%potential_type, cosmo_c_struct%onsagE, cosmo_c_struct%EF, cosmo_c_struct%rhotzpacked_k
+    use qmmm_struct_module, only : qmmm_struct_type
 
     IMPLICIT NONE
-
+    type(qmmm_mpi_structure), intent(inout) :: qmmm_mpi
+    type(qmmm_scratch_structure), intent(inout) :: qmmm_scratch
+    type(qm_gb_structure), intent(inout) :: qm_gb
+    type(qm_ewald_structure), intent(inout) :: qmewald
+    type(qm2_params_type), intent(inout) :: qm2_params
+    type(qmmm_nml_type), intent(inout) :: qmmm_nml
+    type(qmmm_opnq_structure), intent(inout) :: qmmm_opnq
+    type(cosmo_C_structure),intent(inout) :: cosmo_c_struct
+    type(qm2_structure),intent(inout) :: qm2_struct
+    type(qm2_davidson_structure_type), intent(inout) :: qm2ds
+    type(qmmm_struct_type), intent(inout) :: qmmm_struct
     INTEGER,INTENT(IN) :: nfock
     _REAL_ ,INTENT(OUT) :: fock_matrix(nfock)
     _REAL_ ,INTENT(IN) :: hmatrix(nfock)
@@ -1760,48 +1807,51 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
     fock_matrix(1:qm2_struct%matsize)=hmatrix(1:qm2_struct%matsize) !hmatrix added here AND in HELECT energy calculation? JAB
 
     ! Add the two electron part of the FOCK matrix
-    call qm2_fock1_d(fock_matrix, den_matrix) !Once center two electron
-    call qm2_fock2_d(fock_matrix, den_matrix, W) !Two center two electron
+    call qm2_fock1_d(qmmm_mpi, qm2_params, qmmm_struct, fock_matrix, den_matrix) !Once center two electron
+    call qm2_fock2_d(qm2_params, qmmm_mpi, qm2_struct, qmmm_struct, fock_matrix, den_matrix, W) !Two center two electron
 
     ! Add Solvent Model or Electric Field
     ! SOLVENT MODEL BLOCK !!JAB
-    if ((solvent_model.gt.0).and.(solvent_model.ne.10)) then !IF USING SOLVENT MODEL
+    if ((cosmo_c_struct%solvent_model.gt.0).and.(cosmo_c_struct%solvent_model.ne.10)) then !IF USING SOLVENT MODEL
         allocate(temp_op(nfock))
-        if (((solvent_model.eq.4).or.(solvent_model.eq.5)).and.(.not.qmmm_struct%qm_mm_first_call)) then !Use the excited state density matrix
-            if (potential_type.eq.3) then !USE COSMO
-                call addfck(fock_matrix,den_matrix+rhotzpacked_k);
-                if(solvent_model.eq.5) then !Variational term
+        if (((cosmo_c_struct%solvent_model.eq.4).or.(cosmo_c_struct%solvent_model.eq.5)) &
+		&.and.(.not.qmmm_struct%qm_mm_first_call)) then !Use the excited state density matrix
+            if (cosmo_c_struct%potential_type.eq.3) then !USE COSMO
+                call addfck(qm2_params, qmmm_nml,cosmo_c_struct,  fock_matrix,den_matrix+cosmo_c_struct%rhotzpacked_k);
+                if(cosmo_c_struct%solvent_model.eq.5) then !Variational term
                     qm2ds%tz_scratch=0.d0; temp_op=0.d0; qm2ds%eta=0.d0
-                    call addfck(temp_op,den_matrix);
+                    call addfck(qm2_params, qmmm_nml,cosmo_c_struct, temp_op,den_matrix);
                     call unpacking(qm2ds%nb,temp_op,qm2ds%tz_scratch(1),'s')
-                    call calc_xicommutator(qm2ds%tz_scratch(1))
+                    call calc_xicommutator(cosmo_c_struct,qm2ds,qm2ds%tz_scratch(1))
                     call packing(qm2ds%nb,qm2ds%tz_scratch(1),qm2ds%eta,'s')
                     fock_matrix=fock_matrix+qm2ds%eta(1:nfock)
                     call packing(qm2ds%Nb,qm2ds%tz_scratch(1),qm2ds%eta,'u')
                     fock_matrix=fock_matrix+qm2ds%eta(1:nfock)
                 endif
-            else if (potential_type.eq.2) then !USE ONSAGER
+            else if (cosmo_c_struct%potential_type.eq.2) then !USE ONSAGER
                 qm2ds%tz_scratch=0.d0; temp_op=0.d0; qm2ds%eta=0.d0
-                call rcnfld_fock(fock_matrix,den_matrix+rhotzpacked_k,qm2_struct%norbs);
-                call rcnfld_fock(temp_op,den_matrix,qm2_struct%norbs);
+                call rcnfld_fock(qm2_params,qmmm_nml,cosmo_c_struct, qm2_struct,qmmm_struct, &
+			fock_matrix,den_matrix+cosmo_c_struct%rhotzpacked_k,qm2_struct%norbs);
+                call rcnfld_fock(qm2_params,qmmm_nml,cosmo_c_struct, qm2_struct,qmmm_struct,temp_op,den_matrix,qm2_struct%norbs);
                 call unpacking(qm2ds%nb,temp_op,qm2ds%tz_scratch(1),'s')
-                call calc_xicommutator(qm2ds%tz_scratch(1))
+                call calc_xicommutator(cosmo_c_struct,qm2ds,qm2ds%tz_scratch(1))
                 call packing(qm2ds%nb,qm2ds%tz_scratch(1),qm2ds%eta,'s')
                 fock_matrix=fock_matrix+qm2ds%eta(1:qm2ds%Nb*(qm2ds%Nb+1)/2)
             endif
         else !Use the ground state density matrix
-            if (potential_type.eq.3) then !USE COSMOO
-                call addfck(fock_matrix,den_matrix);
-            else if (potential_type.eq.2) then !USE ONSAGER
-                call rcnfld_fock(fock_matrix,den_matrix,qm2_struct%norbs);
+            if (cosmo_c_struct%potential_type.eq.3) then !USE COSMOO
+                call addfck(qm2_params, qmmm_nml,cosmo_c_struct, fock_matrix,den_matrix);
+            else if (cosmo_c_struct%potential_type.eq.2) then !USE ONSAGER
+                call rcnfld_fock(qm2_params,qmmm_nml,cosmo_c_struct, qm2_struct,qmmm_struct, &
+                                 fock_matrix,den_matrix,qm2_struct%norbs);
             endif
         endif
         deallocate(temp_op)
     endif
-    if (EF.eq.1) then !USE CONSTANT ELECTRIC FIELD
+    if (cosmo_c_struct%EF.eq.1) then !USE CONSTANT ELECTRIC FIELD
         allocate(temp_op(nfock))
         temp_op=0.d0
-        call efield_fock(temp_op,qm2_struct%norbs);
+        call efield_fock(qm2_params,qmmm_nml,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,temp_op,qm2_struct%norbs);
         fock_matrix=fock_matrix+2.d0*temp_op
         deallocate(temp_op)
     end if
@@ -1839,7 +1889,7 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
     ! calculating total electronic energy
     if (qmmm_opnq%useOPNQ) then
         write(6,*)'OPNQ Correction'
-        call Opnq_fock(fock_matrix, den_matrix)
+        call Opnq_fock(qmmm_opnq, qm2_params,qm2_struct,qmmm_struct, fock_matrix, den_matrix)
     end if
 
     call timer_stop(TIME_QMMMENERGYSCFFOCK)
@@ -1895,9 +1945,9 @@ SUBROUTINE qm2_cpt_fock_and_energy(nfock, fock_matrix, hmatrix, den_matrix, &
         !Step 1 - calculate the potential at QM atoms due to QM atoms with current Mulliken charges
         !Parallel
         qm_gb%gb_qmpot(1:qmmm_struct%nquant_nlink)=zero
-        call qmgb_calc_qm_pot(qm_gb%gb_qmpot,qm_gb%qmqm_onefij,scf_mchg)
+        call qmgb_calc_qm_pot(qm_gb, qmmm_mpi, qm_gb%gb_qmpot,qm_gb%qmqm_onefij,scf_mchg)
         !Step 2 - Add the mm potential and the qm potential to the fock matrix.
-        call qmgb_add_fock(qmmm_struct%nquant_nlink, fock_matrix, qm_gb%gb_mmpot, qm_gb%gb_qmpot)
+        call qmgb_add_fock(qm2_params, qmmm_struct%nquant_nlink, fock_matrix, qm_gb%gb_mmpot, qm_gb%gb_qmpot)
         call timer_stop(TIME_QMMMENERGYSCFFOCKGB)
     end if
     call timer_stop(TIME_QMMMENERGYSCFFOCK)
@@ -1930,17 +1980,21 @@ END SUBROUTINE qm2_cpt_fock_and_energy
 
 
 
-SUBROUTINE qm2_densmat(scf_iteration,n,den_matrix,density_diff)
+SUBROUTINE qm2_densmat(qm2_params, qmmm_mpi,qmmm_nml,qm2_struct, scf_iteration,n,den_matrix,density_diff)
 
-    USE qmmm_module, ONLY : qmmm_mpi,qm2_struct,qmmm_nml
+    USE qmmm_module, ONLY : qmmm_mpi_structure, qm2_structure
     USE qm2_iterator_mod, ONLY : scf_iterator_value
-
+    use qmmm_nml_module   , only : qmmm_nml_type
+    use qm2_params_module,  only : qm2_params_type
 #ifdef MPI
   USE constants, only : zero
 #endif
 
     IMPLICIT NONE
-
+    type(qmmm_mpi_structure), intent(inout) :: qmmm_mpi
+    type(qmmm_nml_type), intent(inout) :: qmmm_nml
+    type(qm2_params_type), intent(inout) :: qm2_params 
+    type(qm2_structure),intent(inout) :: qm2_struct
     INTEGER,INTENT(IN) :: scf_iteration
     INTEGER,INTENT(IN) :: n
     _REAL_,INTENT(OUT) :: den_matrix(n)
@@ -1960,23 +2014,23 @@ SUBROUTINE qm2_densmat(scf_iteration,n,den_matrix,density_diff)
 
     call timer_start(TIME_QMMMENERGYSCFDEN)
     !OPENMP PARALLEL
-    call qm2_densit(qm2_struct%eigen_vectors,qm2_struct%norbs,qm2_struct%nclosed,den_matrix,qm2_struct%matsize)
+    call qm2_densit(qm2_params, qm2_struct%eigen_vectors,qm2_struct%norbs,qm2_struct%nclosed,den_matrix,qm2_struct%matsize)
 
     !     density_diff = 0.d0
     !OPENMP PARALLEL
 
     !if(qmmm_nml%itrmax>0) then ! standard sqm mixing
-    call qm2_cnvg(den_matrix, qm2_struct%old_den_matrix, &
+    call qm2_cnvg(qm2_params,den_matrix, qm2_struct%old_den_matrix, &
         qm2_struct%old2_density,qm2_struct%norbs,scf_iteration,density_diff)
     !else
     !   print*,'Simple mixing'
-    !   call qm2_cnvg_simple(den_matrix, qm2_struct%old_den_matrix, &
+    !   call qm2_cnvg_simple(qm2_params,den_matrix, qm2_struct%old_den_matrix, &
     !      qm2_struct%old2_density,qm2_struct%norbs,scf_iteration,density_diff)
     !end if
 
     !==============
     ! prevent cnvg
-    !     if ( scf_iterator_value() > 50 ) then
+    !     if ( scf_iterator_value(qmmm_nml) > 50 ) then
     !        call qm2_densit(qm2_struct%eigen_vectors,qm2_struct%norbs,qm2_struct%nclosed,den_matrix,qm2_struct%matsize)
     !     end if
     !===============
@@ -1998,20 +2052,23 @@ END SUBROUTINE qm2_densmat
 
 
 
-SUBROUTINE pack_diis(npf,pf,pp)
+SUBROUTINE pack_diis(qmmm_mpi,qmmm_nml,qm2_struct,npf,pf,pp)
 
     ! assumes nddo
     ! s = unit
     ! x = unit
 
-    USE qmmm_module, ONLY : qm2_struct,qmmm_nml,qmmm_mpi
+    USE qmmm_module, ONLY : qm2_structure,qmmm_mpi_structure
+    use qmmm_nml_module   , only : qmmm_nml_type
 
     !  use qm2_iterator_mod, only : scf_iterator_value
     use qm2_iterator_mod, only : diis_iterator_value
     !  use qm2_iterator_mod, only : remaining_diis_tokens
 
     IMPLICIT NONE
-  
+    type(qmmm_mpi_structure), intent(inout) :: qmmm_mpi
+    type(qmmm_nml_type), intent(inout) :: qmmm_nml
+    type(qm2_structure),intent(inout) :: qm2_struct
     integer,intent(in) :: npf  ! number of packed fock elements
     _REAL_,intent(in) :: pf(npf) ! packed fock
     _REAL_,intent(in) :: pp(npf) ! packed density
@@ -2026,7 +2083,7 @@ SUBROUTINE pack_diis(npf,pf,pp)
     !  _REAL_ :: max_fp,max_pf,max_err
 
     nf    = qm2_struct%norbs
-    idiis = diis_iterator_value()
+    idiis = diis_iterator_value(qmmm_nml)
 
     if (qmmm_nml%verbosity > 4 .and. qmmm_mpi%commqmmm_master) then
         write(6,*) 'pack_diis is performed'
@@ -2085,15 +2142,18 @@ END SUBROUTINE pack_diis
 
 
 
-FUNCTION current_scf_errval() RESULT(err)
+FUNCTION current_scf_errval(qmmm_nml, qm2_struct) RESULT(err)
   
-    USE qmmm_module, ONLY : qm2_struct
+    USE qmmm_module, ONLY : qm2_structure
     USE constants, ONLY : AU_TO_EV
     !  use qm2_iterator_mod, only : scf_iterator_value
     use qm2_iterator_mod, only : diis_iterator_value
     !  use qm2_iterator_mod, only : remaining_diis_tokens
+    use qmmm_nml_module   , only : qmmm_nml_type
 
     IMPLICIT NONE
+    type(qmmm_nml_type), intent(inout) :: qmmm_nml 
+    type(qm2_structure),intent(inout) :: qm2_struct
 
     _REAL_ :: err
 
@@ -2101,7 +2161,7 @@ FUNCTION current_scf_errval() RESULT(err)
 
     !  integer :: diis_iterator_value
 
-    idiis = diis_iterator_value()
+    idiis = diis_iterator_value(qmmm_nml)
 
     err = 0.d0
     DO i=1,SIZE( qm2_struct%diis_errmat , 1 )
@@ -2118,10 +2178,10 @@ END FUNCTION current_scf_errval
 
 
 
-SUBROUTINE diis_extrap(npf,pf,extrap_flag)
+SUBROUTINE diis_extrap(qmmm_nml, qm2_struct, npf,pf,extrap_flag)
 
-    USE qmmm_module, ONLY : qm2_struct
-    USE qmmm_module, ONLY : qmmm_nml
+    USE qmmm_module, ONLY : qm2_structure
+    use qmmm_nml_module   , only : qmmm_nml_type
 
     use qm2_iterator_mod, only : scf_iterator_value
     use qm2_iterator_mod, only : diis_iterator_value
@@ -2129,7 +2189,8 @@ SUBROUTINE diis_extrap(npf,pf,extrap_flag)
     use qm2_iterator_mod, only : remaining_diis_tokens
 
     IMPLICIT NONE
-
+    type(qmmm_nml_type), intent(inout) :: qmmm_nml
+    type(qm2_structure),intent(inout) :: qm2_struct
     integer,intent(in) :: npf ! number of packed fock elements
     _REAL_,intent(out) :: pf(npf) ! packed fock matrix
     character(len=1),intent(out) :: extrap_flag
@@ -2156,13 +2217,13 @@ SUBROUTINE diis_extrap(npf,pf,extrap_flag)
     ! diis decision
     ! should we attempt an extrapolation?
 
-    scf_iter  = scf_iterator_value()
-    diis_idx  = diis_iterator_value()
+    scf_iter  = scf_iterator_value(qmmm_nml)
+    diis_idx  = diis_iterator_value(qmmm_nml)
     max_diis  = qmmm_nml%ndiis_matrices
 
     HAVE_DIIS_DATA   = scf_iter > 1
-    ERR_IS_SMALL     = current_scf_errval() < 0.5d0
-    HAVE_DIIS_TOKENS = remaining_diis_tokens() > 0
+    ERR_IS_SMALL     = current_scf_errval(qmmm_nml,qm2_struct) < 0.5d0
+    HAVE_DIIS_TOKENS = remaining_diis_tokens(qmmm_nml) > 0
     EXTRAPOLATE      = HAVE_DIIS_DATA .AND. ERR_IS_SMALL .AND. HAVE_DIIS_TOKENS
     IF ( .NOT. EXTRAPOLATE ) THEN
         pf = qm2_struct%diis_fock( : , diis_idx )
@@ -2172,7 +2233,7 @@ SUBROUTINE diis_extrap(npf,pf,extrap_flag)
     ! We will attempt an extrapolation
     ! decrement our tokens
 
-    i = remaining_diis_tokens( remaining_diis_tokens() - 1 )
+    i = remaining_diis_tokens(qmmm_nml, remaining_diis_tokens(qmmm_nml) - 1 )
 
 
     ! construct the diis matrix
@@ -2211,7 +2272,7 @@ SUBROUTINE diis_extrap(npf,pf,extrap_flag)
 
         !     WRITE(6,'(A,100G13.4)')"NOTE: DIIS extrapolation error:",W(2:)
 
-        i = diis_iterator_prev_value()
+        i = diis_iterator_prev_value(qmmm_nml)
         pf = 0.5d0 * ( qm2_struct%diis_fock(:,diis_idx) + qm2_struct%diis_fock(:,i) )
 
         extrap_flag = "M"

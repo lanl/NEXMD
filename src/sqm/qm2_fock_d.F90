@@ -14,15 +14,13 @@ module qm2_fock_d
 
     public qm2_fock1_d, qm2_fock2_d, W2Fock_atompair
    
-    private InitializeWPosition, w_position
+    private InitializeWPosition
 
-    integer, save, allocatable::w_position(:,:)
-    logical, save ::w_position_initialized=.false.
     
 contains 
 
   
-    subroutine qm2_fock2_d(F, PTOT, W)
+    subroutine qm2_fock2_d(qm2_params,qmmm_mpi,qm2_struct, qmmm_struct, F, PTOT, W)
         !***********************************************************************
         !
         ! FOCK2 FORMS THE TWO-ELECTRON TWO-CENTER REPULSION PART OF THE FOCK
@@ -34,9 +32,15 @@ contains
         !
         !  Why isn't this used for excited states? !JAB !FIXME
         !***********************************************************************
-        use qmmm_module, only : qmmm_struct, qm2_struct, qm2_params, qmmm_mpi
-        implicit none
+        use qm2_params_module,  only : qm2_params_type
+        use qmmm_module, only : qmmm_mpi_structure, qm2_structure
+        use qmmm_struct_module, only : qmmm_struct_type
+	implicit none
 
+         type(qmmm_struct_type), intent(inout) :: qmmm_struct
+         type(qmmm_mpi_structure), intent(inout) :: qmmm_mpi
+         type(qm2_params_type), intent(inout) :: qm2_params
+         type(qm2_structure), intent(inout) :: qm2_struct
         _REAL_, intent(inout) :: F(:)
         _REAL_, intent(in) :: ptot(:)
         _REAL_, intent(in) :: W(:)
@@ -44,11 +48,9 @@ contains
         !Local
 
         integer:: m,i,j, ij, ji, k, l, kl, lk, kk, ii, ia, ib, jk, kj, jj, ja, jb
-        integer:: starting, size
+        integer:: starting, size_ij
 
-        logical, save::initialized=.false.
-
-        if (.not.w_position_initialized) call InitializeWPosition
+        if (.not.qmmm_struct%w_position_initialized) call InitializeWPosition(qm2_params, qmmm_struct)
  
         do ii=1,qmmm_struct%nquant_nlink
             IA=qm2_params%orb_loc(1,ii)
@@ -74,11 +76,11 @@ contains
             
                     i=qm2_params%natomic_orbs(ii)
                     j=qm2_params%natomic_orbs(jj)
-                    starting=w_position(ii,jj)
-                    size=( i*(i+1)*j*(j+1) ) /4
-                    !write(*,*) "starting ", starting,size,i,j,k,l
-                    call W2Fock_atompair(W(starting:starting+size-1), F, ptot, &
-                        i, j, k, l)
+                    starting=qmmm_struct%w_position(ii,jj)
+                    size_ij=( i*(i+1)*j*(j+1) ) /4
+                    !write(*,*) "starting ", starting,size_ij,i,j,k,l
+                    call W2Fock_atompair(W(starting:starting+size_ij-1), F, ptot, &
+                        i, j, k, l, qmmm_struct%W2Fock_atompair_initialized,qmmm_struct%w_index)
                 end if
             end do
         end do
@@ -88,34 +90,38 @@ contains
 
 
 
-    subroutine qm2_fock1_d(F, PTOT)
+    subroutine qm2_fock1_d(qmmm_mpi, qm2_params , qmmm_struct, F, PTOT)
 
         use constants          , only : fourth
         use ElementOrbitalIndex, only : MaxValenceDimension, &
             Index1_2Electron, IntRep,  &
             IntRf1, IntRf2, IntIJ, IntKL
         use MNDOChargeSeparation, only: GetOneCenter2Electron
-        use qmmm_module         , only : qmmm_mpi, qmmm_struct, qm2_params
+  	use qm2_params_module,  only : qm2_params_type
+        use qmmm_module, only : qmmm_mpi_structure
+        use qmmm_struct_module, only : qmmm_struct_type
+
         implicit none
+
+        type(qmmm_struct_type), intent(inout) :: qmmm_struct
+         type(qmmm_mpi_structure), intent(inout) :: qmmm_mpi
+         type(qm2_params_type), intent(inout) :: qm2_params
 
         _REAL_, intent(inout) :: F(:)
         _REAL_, intent(in) :: PTOT(:)
  
         ! local
  
-        _REAL_, save::W(Index1_2Electron)=0.0D0
         _REAL_::F_local(MaxValenceDimension), P_local(MaxValenceDimension)
-        integer, save::qmType_saved=-1
-        logical, save::initialized=.false.
     
         integer::i,j,k,i1,i2,ij,kl,counter
         integer::qmType
   
   
-        if (.not.w_position_initialized) call InitializeWPosition
+        if (.not.qmmm_struct%w_position_initialized) call InitializeWPosition(qm2_params, qmmm_struct)
 
         ! first calculate the SP contributions
-        call qm2_fock1(F,PTOT)
+        call qm2_fock1(qmmm_mpi,qm2_params,qmmm_struct, F,PTOT)
     
         do i=1,qmmm_struct%nquant_nlink
             qmType=qmmm_struct%qm_atom_type(i)
@@ -124,16 +130,16 @@ contains
             if (k.ge.9) then !only do those atoms w/ d-orbitals
         
                 ! the integrals
-                if ((.not.initialized).or. (qmType.ne.qmType_saved)) then
+                if ((.not.qmmm_struct%qm2_fock1_d_initialized).or. (qmType.ne.qmmm_struct%qmType_saved)) then
                     do j=1,Index1_2Electron
                         i1 = IntRf1(j)
                         i2 = IntRf2(j)
-                        W(j) = GetOneCenter2Electron(qmType, IntRep(j))
-                        if(i1>0) W(j) = W(j)-fourth*GetOneCenter2Electron(qmType,i1)
-                        if(i2>0) W(j) = W(j)-fourth*GetOneCenter2Electron(qmType,i2)
+                        qmmm_struct%W(j) = GetOneCenter2Electron(qm2_params,qmType, IntRep(j))
+                        if(i1>0) qmmm_struct%W(j) = qmmm_struct%W(j)-fourth*GetOneCenter2Electron(qm2_params,qmType,i1)
+                        if(i2>0) qmmm_struct%W(j) = qmmm_struct%W(j)-fourth*GetOneCenter2Electron(qm2_params,qmType,i2)
                     end do
-                    qmType_saved=qmType
-                    initialized=.true.
+                    qmmm_struct%qmType_saved=qmType
+                    qmmm_struct%qm2_fock1_d_initialized=.true.
                 end if
             
                 ! Copy the density matrix to local
@@ -156,7 +162,7 @@ contains
                 do j=1,Index1_2Electron
                     ij=IntIJ(j)
                     kl=IntKL(j)
-                    F_local(ij)=F_local(ij)+P_local(kl)*W(j)
+                    F_local(ij)=F_local(ij)+P_local(kl)*qmmm_struct%W(j)
                 end do
             
                 ! the exchange contribution
@@ -181,7 +187,7 @@ contains
     end subroutine qm2_fock1_d
 
     subroutine W2Fock_atompair(W, F, D, norbs_a, norbs_b,  &
-        na_starting, nb_starting)
+        na_starting, nb_starting, initialized, w_index)
 
         use constants, only : half
 
@@ -193,17 +199,16 @@ contains
 
         _REAL_, intent(in)::W(*), D(*)
         _REAL_, intent(inout)::F(*)
+        logical, intent(inout)::initialized
 
+        integer, intent(inout):: w_index(:,:,:,:,:,:)
+        !the w_index needs "lots" of memory but significantly improves
+        !the size and readability of the code
+        
         !local
         integer, parameter::orbital_length(3)=(/ 1, 4, 9 /)
         integer, parameter::pair_length(3)=(/1, 10, 45 /)
         integer::starting(9)
-    
-        !the w_index needs "lots" of memory but significantly improves
-        !the size and readability of the code
-        !
-        integer, save::w_index(9,9,9,9,3,3)
-        logical, save::initialized=.false.
 
         integer::i,j,k,l,a1,a2,b1,b2, ii,jj
         integer::na, nb, nn, counter_F, counter_ij, counter_kl, location
@@ -382,31 +387,35 @@ contains
 
     end subroutine W2Fock_atompair
 
-    subroutine InitializeWPosition
+    subroutine InitializeWPosition(qm2_params,qmmm_struct)
 
-        use qmmm_module, only : qmmm_struct, qm2_params
+        use qmmm_struct_module, only : qmmm_struct_type
+        use qm2_params_module,  only : qm2_params_type
     
+        type(qmmm_struct_type), intent(inout) :: qmmm_struct
+        type(qm2_params_type), intent(inout) :: qm2_params
+
         integer::i,j,k,ii,jj,kk,n
     
-        if (w_position_initialized) return
+        if (qmmm_struct%w_position_initialized) return
     
         n=qmmm_struct%nquant_nlink
-        allocate(w_position(n,n))
+        allocate(qmmm_struct%w_position(n,n))
         
         kk=1
-        w_position=-1
+        qmmm_struct%w_position=-1
         do ii=1,n
             do jj=1, ii-1
                 i=qm2_params%natomic_orbs(ii)
                 j=qm2_params%natomic_orbs(jj)
                 
-                w_position(ii,jj)=kk
-                w_position(jj,ii)=kk
+                qmmm_struct%w_position(ii,jj)=kk
+                qmmm_struct%w_position(jj,ii)=kk
 
                 kk=kk+(i*(i+1)/2)*(j*(j+1)/2)
             end do
         end do
-        w_position_initialized=.true.
+        qmmm_struct%w_position_initialized=.true.
     
     end subroutine InitializeWPosition
 

@@ -6,18 +6,21 @@
 
 ! DFTB GB implementation by Gustavo Seabra (UFL) and Ross Walker (TSRI), 2005
 
-subroutine hamilshift(qm_coords,atomtype,uhubb,niter,gammamat,shift,scf_mchg)
+subroutine hamilshift(qm2_struct, qmmm_struct, qm_coords,atomtype,uhubb,niter,gammamat,shift,scf_mchg)
 
    !=======================================================
    ! get the hubbard contribution to the H matrix elements
    !=======================================================
 
-   use qmmm_module, only : qmmm_struct, qm2_struct
+   use qmmm_module, only :  qm2_structure
    use qm2_dftb_module, only : mol, mcharge
+   use qmmm_struct_module, only : qmmm_struct_type
 
    implicit none
 
    ! Passed in:
+   type(qm2_structure),intent(inout) :: qm2_struct
+   type(qmmm_struct_type), intent(inout) :: qmmm_struct
    _REAL_ , intent(in)  :: qm_coords(3,qmmm_struct%nquant_nlink)          ! atomic coordinates
    integer, intent(in)  :: atomtype(qmmm_struct%nquant_nlink)     ! 
    _REAL_ , intent(in)  :: uhubb(*)          ! list of hubbard parameters

@@ -19,11 +19,13 @@
 module qmmm_module
 
   use constants         , only : A2_TO_BOHRS2, one, zero
-  use qmmm_nml_module   , only : qmmm_nml_type
   use qmmm_struct_module, only : qmmm_struct_type
   use qmmm_vsolv_module , only : qmmm_vsolv_type
   use qm2_params_module,  only : qm2_params_type
-  
+  use qmmm_nml_module   , only : qmmm_nml_type
+  use ParameterReader, only : ParameterEntry  
+  use ElementOrbitalIndex, only : MaxValenceOrbitals, MaxValenceDimension
+
   implicit none
 
   private
@@ -32,20 +34,20 @@ module qmmm_module
   public :: ALPH_MM, AXIS_TOL, OVERLAP_CUTOFF, EXPONENTIAL_CUTOFF
 
   ! data types
-  public :: qmmm_mpi_structure
+  public :: qmmm_mpi_structure, qmmm_openmp_structure
   public :: qmmm_scratch_structure, qmmm_div_structure
   public :: qm2_structure, qm2_rij_eqns_structure
   public :: qm_ewald_structure, qm_gb_structure
   public :: qmmm_opnq_structure
-
+  public :: MM_opnq
   ! objects - these *should* not be public (meaning, globally accessible)
   ! do not use these in new subroutines but rather pass them to
   ! subroutines/functions via explicit interfaces
   ! these live here (in this module) only for historic reasons
-  public :: qmmm_nml, qmmm_struct, qmmm_mpi
-  public :: qmmm_scratch, qmmm_div, qmmm_vsolv, qmmm_opnq
-  public :: qm2_struct, qm2_rij_eqns, qm2_params
-  public :: qmewald, qm_gb
+  !public :: qmmm_nml, qmmm_mpi
+  !public :: qmmm_scratch, qmmm_div, qmmm_vsolv, qmmm_opnq
+  !public :: qm2_rij_eqns, qm2_params
+  !public :: qmewald, qm_gb
 
   ! functions and subroutines
   public :: validate_qm_atoms
@@ -179,7 +181,17 @@ module qmmm_module
 
      ! If set to true the mulliken charges will be calculated on each SCF iteration.
      logical calc_mchg_scf
+     type(ParameterEntry), allocatable, dimension(:) :: parameterEntries
+     logical :: ParameterFileExisting
 
+     !save from sqm_energy
+     _REAL_, allocatable, dimension(:,:) :: ev_old
+
+     !save from qm2_fock2
+     integer :: fock2_JINDEX(256)
+     !save from qm2_fock2_2atm
+     integer :: fock_2atm_JINDEX(MaxValenceDimension**2)
+ 
   end type qm2_structure  
   
   type  qm2_rij_eqns_structure !This structure is used to store RIJ info for each QM-QM pair and related equations
@@ -267,12 +279,10 @@ module qmmm_module
   
   end type qmmm_mpi_structure
   
-#ifdef OPENMP
   type qmmm_openmp_structure
     integer :: diag_threads  !number of threads to use for diagonalization routines.
     integer :: pdiag_threads !number of threads to use for openmp diagonalization routines.
   end type qmmm_openmp_structure
-#endif
 
   type qmmm_scratch_structure
   !Various scratch arrays used as part of QMMM - one should typically assume that upon leaving a routine
@@ -313,6 +323,11 @@ module qmmm_module
      integer :: ntotatm
      integer, dimension(:), pointer :: all_atom_numbers !atomic numbers of ALL atoms (MM and QM)
   end type qmmm_div_structure
+ 
+ !type originally defined in opnq module
+  type MM_opnq
+    _REAL_:: s, zeta, alpha, neff
+  end type MM_opnq
 
     type qmmm_opnq_structure
         ! only variables to be set up in qm_mm startup are stored here
@@ -329,6 +344,10 @@ module qmmm_module
         logical, dimension(:), pointer::supported
         integer, dimension(:), pointer::atomic_number ! atomic number for each atom
         _REAL_, dimension(:), pointer::LJ_r, LJ_epsilon  ! the MM 6-12 parameters for each type
+	!data from opnq module
+        type(MM_opnq), dimension(:), allocatable ::MM_opnq_list_saved   
+        logical ::opnq_initialized=.false.
+        integer, dimension(:), allocatable ::type_list_saved
     end type qmmm_opnq_structure
 
   ! --------------
@@ -337,27 +356,26 @@ module qmmm_module
   ! these should really not live here
   ! but need to be global for historic reasons - too much work to disentangle sander
   ! do *not* use these as globals in new subroutines!
-  type(qmmm_nml_type)   , save :: qmmm_nml
-  type(qmmm_struct_type), save,target :: qmmm_struct
-  type(qm2_structure)   , save,target :: qm2_struct
-  type(qm2_params_type)        :: qm2_params
-  type(qm2_rij_eqns_structure) :: qm2_rij_eqns
-  type(qm_ewald_structure)     :: qmewald
-  type(qm_gb_structure)        :: qm_gb
-  type(qmmm_mpi_structure)     :: qmmm_mpi
+  
+  !type(qmmm_nml_type)          :: qmmm_nml
+  !type(qm2_params_type)        :: qm2_params
+  !type(qm2_rij_eqns_structure) :: qm2_rij_eqns
+  !type(qm_ewald_structure)     :: qmewald
+  !type(qm_gb_structure)        :: qm_gb
+  !type(qmmm_mpi_structure)     :: qmmm_mpi
 #ifdef OPENMP
-  type(qmmm_openmp_structure)  :: qmmm_omp
+  !type(qmmm_openmp_structure)  :: qmmm_omp
 #endif
-  type(qmmm_scratch_structure) :: qmmm_scratch
-  type(qmmm_vsolv_type) , save :: qmmm_vsolv
-  type(qmmm_div_structure)     :: qmmm_div
-  type(qmmm_opnq_structure),save::qmmm_opnq
+  !type(qmmm_scratch_structure) :: qmmm_scratch
+  !type(qmmm_vsolv_type)        :: qmmm_vsolv
+  !type(qmmm_div_structure)     :: qmmm_div
+  !type(qmmm_opnq_structure)    :: qmmm_opnq
   
 contains
   
   
 #ifdef MPI
-  subroutine qmmm_mpi_setup( master, natom )
+  subroutine qmmm_mpi_setup(qm2_struct, qmmm_struct, master, natom )
 
     ! QMMM specific mpi setup and broadcasts
 
@@ -373,6 +391,8 @@ contains
      logical, intent(in) :: master
      integer, intent(in) :: natom
 
+     type(qmmm_struct_type), intent(inout) :: qmmm_struct
+     type(qm2_structure), intent(inout) :: qm2_struct
      integer :: mpi_division, i, istartend(2)
      integer :: loop_extent, loop_extent_begin, loop_extent_end
      integer :: j, jstart, jend
@@ -577,7 +597,7 @@ contains
   !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #endif
   
-  subroutine allocate_qmmm( qmmm_nml, qmmm_struct, natom )
+  subroutine allocate_qmmm(qmmm_scratch, qmmm_nml, qmmm_struct, natom )
 
      ! allocates space for qmmm variables and arrays that depend only on nquant or natom
 
@@ -585,7 +605,7 @@ contains
      use qmmm_struct_module, only : qmmm_struct_type, new
     
      implicit none
-
+     type(qmmm_scratch_structure),intent(inout) :: qmmm_scratch
      type(qmmm_nml_type)   , intent(inout) :: qmmm_nml
      type(qmmm_struct_type), intent(inout) :: qmmm_struct
      integer, intent(in) :: natom
@@ -614,7 +634,8 @@ contains
   end subroutine allocate_qmmm
   !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   
-  subroutine deallocate_qmmm(qmmm_nml, qmmm_struct, qmmm_vsolv, qm2_params)
+  subroutine deallocate_qmmm(qm2_rij_eqns,qmmm_mpi,qm_gb, qmmm_scratch,  &
+	qmewald, qm2_struct, qmmm_nml, qmmm_struct, qmmm_vsolv, qm2_params)
     
     use qmmm_nml_module   , only : qmmm_nml_type, delete
     use qmmm_struct_module, only : qmmm_struct_type, delete
@@ -622,7 +643,12 @@ contains
     use qm2_params_module , only : qm2_params_type, delete
 
     implicit none
-
+    type(qm2_rij_eqns_structure),intent(inout)  :: qm2_rij_eqns
+    type(qmmm_mpi_structure),intent(inout)      :: qmmm_mpi
+    type(qm_gb_structure), intent(inout)        :: qm_gb
+    type(qmmm_scratch_structure), intent(inout) :: qmmm_scratch
+    type(qm_ewald_structure), intent(inout)     :: qmewald
+    type(qm2_structure), intent(inout) :: qm2_struct
     type(qmmm_nml_type)   , intent(inout) :: qmmm_nml
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
     type(qmmm_vsolv_type) , intent(inout) :: qmmm_vsolv
@@ -818,10 +844,11 @@ contains
   
   !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   !+Sorts the array iqmatoms into numerical order
-  subroutine qmsort( iqmatoms)
+  subroutine qmsort(qmmm_struct, iqmatoms)
   
     implicit none
     integer, intent(inout) :: iqmatoms(*)
+    type(qmmm_struct_type), intent(in) :: qmmm_struct
   
     ! Local
     integer i,j,lcurrent

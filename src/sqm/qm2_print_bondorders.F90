@@ -5,14 +5,18 @@
 ! Calculates and prints the Bond Orders.
 ! Written by Johan Strumpfer (2010)
 
-subroutine qm2_print_bondorders()
+subroutine qm2_print_bondorders(qm2_params,qm2_struct,qmmm_struct)
 
   ! Requires a converged density matrix stored in qm2_struct%den_matrix
-  use qmmm_module, only : qm2_params, qm2_struct, qmmm_struct
+  use qmmm_module, only : qm2_structure
   use ElementOrbitalIndex, only : elementSymbol
-      
+  use qmmm_struct_module, only : qmmm_struct_type
+  use qm2_params_module,  only : qm2_params_type
+ 
   implicit none
-
+  type(qm2_params_type),intent(inout) :: qm2_params
+  type(qm2_structure),intent(inout) :: qm2_struct
+  type(qmmm_struct_type), intent(inout) :: qmmm_struct
   integer :: loop_count, orb_beg_i, orb_end_i, tri_i
   integer :: orb_beg_j, orb_end_j, tri_j, tri
   integer :: i,j,k, tri_k1, tri_k2, iqm, jqm

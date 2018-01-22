@@ -1,80 +1,106 @@
 &qmmm
-   !***** Ground state and output parameters
-   qm_theory='AM1', !Integral type [AM1]
-   scfconv=1.0d-8, !Ground state scf convergence criteria [1.0d-8]
-   verbosity=5, ![0]
-   printcharges=0, ! Mulliken charges for ground state [0]
-   printdipole=2, ! (0) None, (1) Transition, Relaxed, and Unrelaxed [0]
-   printbondorders=0, ! (0) No, (1) Yes [0]
-   density_predict=0, !(0) None, (1) Reversible MD, (2) XL-BOMD [0]
-   itrmax=300, ! Maximum number of scf iterations for ground state, negative to ignore convergence [300]
+   !***** Geometry Optimization
+   maxcyc=500, ! Number of cycles for geometry optimization [0]
+   ntpr=1, ! Print results every ntpr cycles [1]
+   grms_tol=0.01, ! Tolerance in eV/A (derivatives) [1.0d-2]
 
-   !***** Excited state parameters
-   exst_method=2, ! CIS (1) or RPA (2), [1]
-   dav_guess=1, ! restart Davidson from previous (1) or from scratch (0) or XL-BOXMD (2)
-   ftol=0.d0, !   Min tolerance (|emin-eold|) [0.d0]
-   ftol0=1.d-7, !  Acceptance tol.(|emin-eold|) [1.d-4]
-   ftol1=1.d-8, ! Accept.tol.for residual norm [1.d-5]
-   dav_maxcyc=200, !Max cycles for davidson diagonalization, negative for fixed number, [100]
-   calcxdens=.false.,
+   !***** Ground-State and Output Parameters
+   qm_theory='AM1', ! Integral type, check Amber's SQM for more options [AM1]
+   scfconv=1.0d-8, ! Ground-state SCF convergence criteria, eV [1.0d-6]
+   verbosity=5, ! QM/MM output verbosity (0-minimum, 5-maximum)
+   printcharges=0, ! Print (1) or do not print (0) Mulliken charges of QM atoms [0]
+   ! [1 for dynamics and optimization, 5 for others]
+   printdipole=2, ! (0) Unrelaxed transitions, (1) Unrelaxed transitions plus 
+   ! total molecular, or (2) Unrelaxed/relaxed transitions plus 
+   ! total molecular [1 for dynamics, 2 for optimization and single-point]
+   printbondorders=0, ! (0) No or (1) Yes [0]
+   ! *** UNDER DEVELOPMENT, DO NOT USE ***
+   density_predict=0, ! (0) None, (1) Reversible MD, 
+   ! or (2) XL-BOMD [0] *** ALL ARE UNDER DEVELOPMENT, DO NOT USE ***
+   itrmax=300, ! Max SCF iterations for ground state 
+   ! (negative to ignore convergence) [300]
 
-   !***** Geometry optimization
-   maxcyc=100, !Number of cycles for geometry optimization [0]
-   ntpr=1, !Print results every ntpr cycles [1]
-   grms_tol=0.01, !Tolerance in eV/A (derivatives) [0.01]
+   !***** Excited-State Parameters
+   exst_method=2, ! CIS (1) or RPA (2) [1]
+   dav_guess=1, ! Restart Davidson from (0) Scratch, (1) Previous, 
+   ! or (2) XL-BOMD [1] *** (2) IS UNDER DEVELOPMENT, DO NOT USE ***
+   ftol0=1.0d-7, ! Acceptance tolerance (|emin-eold|) [1.0d-5]
+   ftol1=1.0d-8, ! Acceptance tolerance for residual norm [1.0d-5] 
+   ! *** UNDER DEVELOPMENT, DO NOT USE ***
+   dav_maxcyc=200, ! Max cycles for Davidson diagonalization 
+   ! (negative to ignore convergence) [100]
+   calcxdens=.false., ! Print (.true.) or do not print (.false.) 
+   ! excited-to-excited transition dipole moments [.false.]
 
-   !***** Solvent models
-   solvent_model=0, ! (0) None, (1) LR, (2) Nonequilibrium SS, (3) Same as last with Xi, (4) Equilibrium SS, (5) Same as last with Xi [0]
-   potential_type=3, ! (2) Onsager (3) COSMO, (4) Testing (0) Normal Correlation
-   ceps=10, !Dielectric constant [10]
-   linmixparam=1
-   cosmo_scf_ftol=1.0d-5, !State specific scf tolerance [1.d-5]
-   EF=0, !(1) Electric field in ground and excited state, (2) Electric field in excited state only [0]
-   Ex=0, !Electric Field Vector X [0]
-   Ez=0, !Electric Field Vector Z [0] 
-   Ey=0.01, !Electric Field Vector Y [0]
-   onsager_radius=2, ! Onsager radius [2]
+   !***** Solvent Models and External Electric Fields
+   solvent_model=0, ! (0) None, (1) Linear response, (2) Vertical excitation, 
+   ! or (3) State-specific  [0]
+   potential_type=1, ! (1) COSMO or (2) Onsager [1]
+   onsager_radius=2, ! Onsager radius, A (system dependent) [2]
+   ceps=10, ! Dielectric constant, unitless [10]
+   linmixparam=1, ! Linear mixing parameter for vertical excitation
+   ! or state-specific SCF calculation [1]
+   cosmo_scf_ftol=1.0d-5, ! Vertical excitation or state-specific
+   ! SCF tolerance, eV [1.0d-5]
+   doZ=.false., ! Use relaxed (.true.) or unrelaxed (.false) density for 
+   ! vertical excitation or state-specific COSMO or Onsager [.false.]
+   index_of_refraction=100, ! Dielectric constant for linear response 
+   ! solvent in excited-state, unitless [100] *** UNDER DEVELOPMENT, DO NOT USE ***
+   EF=0, ! (0) None or (1) Electric field in ground- and excited-state [0]
+   Ex=0, ! Electric field vector X, eV/A [0]
+   Ey=0, ! Electric field vector Y, eV/A [0]
+   Ez=0.01, ! Electric field vector Z, eV/A [0] 
 &endqmmm
 
 &moldyn
-   !***** General parameters
-   natoms=15,
-   rnd_seed=1, ! seed for the random number generator
-   bo_dynamics_flag=0, ! 0-non-BO, 1-BO [1]
-   exc_state_init=3, ! initial excited state (0 - ground state) [0]
-   n_exc_states_propagate=3, ! number of excited states [0]
+   !***** General Parameters
+   natoms=15, ! Number of atoms 
+   ! (must be equal to number of atoms in system)
+   rnd_seed=1, ! Seed for the random number generator
+   bo_dynamics_flag=0, ! (0) Non-BO or (1) BO [1]
+   exc_state_init=3, ! Initial excited state (0 - ground state) [0]
+   n_exc_states_propagate=3, ! Number of excited states [0]
 
-   !***** Dynamics parameters
-   time_init=0.d0, ! initial time, fs [0.0]
-   time_step=0.1, !time step, fs [0.1]
-   n_class_steps=0, !number of classical steps [1]
-   n_quant_steps=0, ! number of quantum steps for each classical step [4]
-   moldyn_deriv_flag=1, ! 0-none, 1-analyt, 2-numeric [1]
-   num_deriv_step=1.d-5, ! displacement for numerical derivatives, A [1.d-3]
-   rk_tolerance=1.d-7, ! tolerance for the Runge-Kutta propagator [1.d-7]
+   !***** Dynamics Parameters
+   time_init=0.0, ! Initial time, fs [0.0]
+   time_step=0.1, ! Time step, fs [0.1]
+   n_class_steps=0, ! Number of classical steps [1]
+   n_quant_steps=0, ! Number of quantum steps for each classical step [4]
+   moldyn_deriv_flag=1, ! (0) None, (1) Analytical, or (2) Numerical [1]
+   num_deriv_step=1.0d-5, ! Displacement for numerical derivatives, A [1.0d-3]
+   rk_tolerance=1.0d-7, ! Tolerance for the Runge-Kutta propagator [1.0d-7]
 
-   !***** Non-adiabatic parameters
-   quant_coeffs_reinit=0, ! reinit (1) or not (0) quantum coeffs after a hop [0]
-   quant_step_reduction_factor=1d0, ! quantum step reduction factor [0.1]
-   decoher_type=0, ! type of decoherence: Persico/Granucci (0), Truhlar(1) [0]
-   decoher_e0=0.d0, ! decoherence parameter E0 [0.1]
-   decoher_c=0.d0, ! decoherence parameter C [0.1]
-   dotrivial=0, !do trivial unavoided crossing routine (1) or not (0)
+   !***** Non-Adiabatic Parameters
+   decoher_type=0, ! Type of decoherence: Reinitialize (0) Never, 
+   ! (1) At successful hops, (2) At successful plus frustrated hops... 
+   ! (3) Persico/Granucci, or (4) Truhlar [2]
+   ! *** (3) AND (4) ARE UNDER DEVELOPMENT, DO NOT USE ***
+   decoher_e0=0.0, ! Decoherence parameter E0, Hartrees [0.1]
+   ! (only for decoher_type = 3 or 4) *** UNDER DEVELOPMENT, DO NOT USE ***
+   decoher_c=0.0, ! Decoherence parameter C, unitless [0.1]
+   ! (only for decoher_type = 3 or 4) *** UNDER DEVELOPMENT, DO NOT USE ***
+   dotrivial=0, ! Do unavoided (trivial) crossing routine (1) or not (0) [1]
+   quant_step_reduction_factor=1d0, ! Quantum step reduction factor [2.5d-2]
 
-   !***** Thermostat parameters
-   therm_type=1, ! Thermostat type (0-no thermostat,1-Langevin,2-Berendsen) [0] 
-   therm_temperature=300.d0, ! Thermostate temperature, K [300.0]
-   therm_friction=2.d0, ! thermostate friction coefficient, 1/ps [2.0]
-   berendsen_relax_const=0.4d0, ! bath relaxation constant, only for Berendsen [0.4]
-   heating=0, ! heating (1) or equilibrated(0) [0]
-   heating_steps_per_degree=100, ! number of steps per degree during heating [100]
+   !***** Thermostat Parameters
+   therm_type=1, ! Thermostat type: (0) Newtonian, (1) Langevin, 
+   ! or (2) Berendsen [1] *** (2) IS UNDER DEVELOPMENT, DO NOT USE ***
+   therm_temperature=300, ! Thermostat temperature, K [300]
+   therm_friction=20, ! Thermostat friction coefficient, 1/ps [20]
+   berendsen_relax_const=0.4, ! Bath relaxation constant for Berendsen 
+   ! thermostat, ps [0.4] *** UNDER DEVELOPMENT, DO NOT USE ***
+   heating=0, ! Equilibrated (0) or heating (1) [0]
+   ! *** UNDER DEVELOPMENT, DO NOT USE ***
+   heating_steps_per_degree=100, ! Number of steps per degree
+   ! during heating [100] *** UNDER DEVELOPMENT, DO NOT USE ***
 
-   !***** Output & Log parameters
-   verbosity=3, ! output verbosity (0-minimal, 3-highest) [2]
-   out_count_init=0, ! the initial count for output files [0]
-   out_data_steps=1, ! number of steps to write data [1]
-   out_coords_steps=1, ! number of steps to write the restart file [10]
-   out_data_cube=0, ! write(1) or not(0) view files to generate cubes [0]
+   !***** Output & Log Parameters
+   verbosity=3, ! NEXMD output verbosity (0-minimum, 3-maximum)
+   ! [2 for dynamics, 3 for optimization and single-point]
+   out_data_steps=1, ! Number of steps to write data [1]
+   out_coords_steps=1, ! Number of steps to write the restart file [10]
+   out_data_cube=0, ! Write (1) or do not write (0) view files to generate cubes [0]
+   out_count_init=0, ! Initial count for view files [0]
 &endmoldyn
 
 &coord

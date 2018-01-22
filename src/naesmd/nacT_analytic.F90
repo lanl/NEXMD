@@ -6,7 +6,6 @@ module nacT_analytic_module
    use naesmd_constants
    use langevin_temperature
    use communism
-   use naesmd_space_module
    use dcart_xpm_module
    implicit none
 
@@ -94,18 +93,21 @@ module nacT_analytic_module
 !
    subroutine new_xstep_dtnact(sim,xxx,yyy,zzz,xs)
    use naesmd_module
-   use md_module
    implicit none
 
    type(simulation_t),pointer::sim
    type(xstep_t),pointer::xs
    _REAL_,target,intent(in)::xxx(sim%Na),yyy(sim%Na),zzz(sim%Na)
    integer k,j
-   type(realp_t),pointer::vv(:),aa(:)
-   type(realp_t)::r(3)
+   type(realp_t) :: vv(3), aa(3)
+   type(realp_t) :: r(3)
 
-   vv=>sim%naesmd%v%vold
-   aa=>sim%naesmd%a%vold
+   vv(1)%p=>sim%naesmd%vxold
+   vv(2)%p=>sim%naesmd%vyold
+   vv(3)%p=>sim%naesmd%vzold
+   aa(1)%p=>sim%naesmd%axold
+   aa(2)%p=>sim%naesmd%ayold
+   aa(3)%p=>sim%naesmd%azold
    r(1)%p=>xxx
    r(2)%p=>yyy
    r(3)%p=>zzz
@@ -114,25 +116,25 @@ module nacT_analytic_module
    !allocate(xs%Rm(3,sim%Na))
    !allocate(xs%R(3,sim%Na))
 
-   do j=1,natom
-      if(ensemble.eq.'energy'.or.ensemble.eq.'temper') then
+   do j=1,sim%naesmd%natom
+      if(sim%naesmd%ensemble.eq.'energy'.or.sim%naesmd%ensemble.eq.'temper') then
          do k=1,3
-            xs%Rp(k,j)=r(k)%p(j)+vv(k)%p(j)*dtnact &
-               +aa(k)%p(j)*0.5d0*dtnact*dtnact
+            xs%Rp(k,j)=r(k)%p(j)+vv(k)%p(j)*sim%naesmd%dtnact &
+               +aa(k)%p(j)*0.5d0*sim%naesmd%dtnact*sim%naesmd%dtnact
 
-            xs%Rm(k,j)=r(k)%p(j)-vv(k)%p(j)*dtnact &
-               -aa(k)%p(j)*0.5d0*dtnact*dtnact
+            xs%Rm(k,j)=r(k)%p(j)-vv(k)%p(j)*sim%naesmd%dtnact &
+               -aa(k)%p(j)*0.5d0*sim%naesmd%dtnact*sim%naesmd%dtnact
          end do
 
-      else if(ensemble.eq.'langev') then
+      else if(sim%naesmd%ensemble.eq.'langev') then
          do k=1,3
-            xs%Rp(k,j)=r(k)%p(j)+vv(k)%p(j)*vfric(j)/dtmdqt*dtnact  &
-               +aa(k)%p(j)*afric(j)/(dtmdqt*dtmdqt)*dtnact*dtnact     &
-               +prand(k,j)/dtmdqt*dtnact
+            xs%Rp(k,j)=r(k)%p(j)+vv(k)%p(j)*sim%naesmd%vfric(j)/sim%naesmd%dtmdqt*sim%naesmd%dtnact  &
+               +aa(k)%p(j)*sim%naesmd%afric(j)/(sim%naesmd%dtmdqt*sim%naesmd%dtmdqt)*sim%naesmd%dtnact*sim%naesmd%dtnact     &
+               +sim%naesmd%prand(k,j)/sim%naesmd%dtmdqt*sim%naesmd%dtnact
 
-            xs%Rm(k,j)=r(k)%p(j)-vv(k)%p(j)*vfric(j)/dtmdqt*dtnact  &
-               -aa(k)%p(j)*afric(j)/(dtmdqt*dtmdqt)*dtnact*dtnact     &
-               -prand(k,j)/dtmdqt*dtnact
+            xs%Rm(k,j)=r(k)%p(j)-vv(k)%p(j)*sim%naesmd%vfric(j)/sim%naesmd%dtmdqt*sim%naesmd%dtnact  &
+               -aa(k)%p(j)*sim%naesmd%afric(j)/(sim%naesmd%dtmdqt*sim%naesmd%dtmdqt)*sim%naesmd%dtnact*sim%naesmd%dtnact     &
+               -sim%naesmd%prand(k,j)/sim%naesmd%dtmdqt*sim%naesmd%dtnact
          end do
       end if
    end do
@@ -153,6 +155,7 @@ module nacT_analytic_module
 !********************************************************************
 !
    subroutine new_xstep_dtnact_r3(sim, r, xs)
+   use naesmd_module, only : realp_t
    implicit none
 
    type(xstep_t),pointer::xs
@@ -174,10 +177,9 @@ module nacT_analytic_module
 !
    function nacT_direct_ihc(sim,ihop,icheck,xstep)
 
-   use qmmm_module,only:qmmm_struct,qm2_struct
    use qm2_davidson_module
    use naesmd_constants, only : kcalev
-
+  
    implicit none
 
    _REAL_ nacT_direct_ihc ! function result
@@ -196,58 +198,58 @@ module nacT_analytic_module
    parameter(fbar=0.05d0)  ! maximum dE in numerical derivative, eV.
    integer Na
         
-   Na=qmmm_struct%nquant_nlink ! number of atoms
-   N3=3*qmmm_struct%nquant_nlink ! number of degrees of freedom
+   Na=sim%qmmm%nquant_nlink ! number of atoms
+   N3=3*sim%qmmm%nquant_nlink ! number of degrees of freedom
 
    one=1
    ff0=0.0
    ff1=1.0
    ff11=-1.0
         
-   Na=qmmm_struct%nquant_nlink
-   Np=qm2ds%Np
-   Nh=qm2ds%Nh
-   Nb=qm2ds%Nb
-   M4_M=qm2ds%Np*qm2ds%Nh
+   Na=sim%qmmm%nquant_nlink
+   Np=sim%dav%Np
+   Nh=sim%dav%Nh
+   Nb=sim%dav%Nb
+   M4_M=sim%dav%Np*sim%dav%Nh
    M2_M=M4_M*2
-   Mx=qm2ds%Mx 
+   Mx=sim%dav%Mx 
    Mx_M=Mx
 
    ! Note, Davidson must be run prior to this for these assignments
-   if(qmmm_struct%qm_mm_first_call) then
+   if(sim%qmmm%qm_mm_first_call) then
       write(6,*)  'sqm_energy() must be run once before executing this procedure!'
 
-      if(qm2ds%Mx==0) write(6,*)  'excN must be > 0 to run this procedure!'
+      if(sim%dav%Mx==0) write(6,*)  'excN must be > 0 to run this procedure!'
       call mexit(6,1)
    end if
 
-   call getmodef(M2_M,Mx_M,Np,Nh,ihop,qm2ds%cmdqt,qm2ds%nacr_scratch)
-   call getmodef(M2_M,Mx_M,Np,Nh,icheck,qm2ds%cmdqt,qm2ds%eta_scratch)
+   call getmodef(M2_M,Mx_M,Np,Nh,ihop,sim%dav%cmdqt,sim%dav%nacr_scratch)
+   call getmodef(M2_M,Mx_M,Np,Nh,icheck,sim%dav%cmdqt,sim%dav%eta_scratch)
         
-   call dgemm('N','T',Nb,Nb,Nb,ff1,qm2ds%nacr_scratch,Nb, &
-      qm2ds%eta_scratch,Nb,ff0,qm2ds%eta,Nb)
-   call dgemm('T','N',Nb,Nb,Nb,ff1,qm2ds%eta_scratch,Nb, &
-      qm2ds%nacr_scratch,Nb,ff1,qm2ds%eta,Nb)
-   call Iminus2rho(Nb,Np,qm2ds%eta,qm2ds%xi)
-   call mo2sitef (Nb,qm2ds%vhf,qm2ds%xi,qm2ds%eta,qm2ds%xi_scratch)
+   call dgemm('N','T',Nb,Nb,Nb,ff1,sim%dav%nacr_scratch,Nb, &
+      sim%dav%eta_scratch,Nb,ff0,sim%dav%eta,Nb)
+   call dgemm('T','N',Nb,Nb,Nb,ff1,sim%dav%eta_scratch,Nb, &
+      sim%dav%nacr_scratch,Nb,ff1,sim%dav%eta,Nb)
+   call Iminus2rho(Nb,Np,sim%dav%eta,sim%dav%xi)
+   call mo2sitef (Nb,sim%dav%vhf,sim%dav%xi,sim%dav%eta,sim%dav%xi_scratch)
         
-   ! Above eta contains transition density martix between state 
+   ! Above eta contains transition density martix between sim%naesmd%state 
    ! ihop and icheck in AO
 
    ! Above xi and xi_scratch_2 contain transition density martices 
    ! for states ihop and icheck in AO
 
    ! Term Tr(F^x rho_ij) (only symmetric part contributes)
-   call packing(Nb,qm2ds%eta,qm2ds%nacr_scratch,'s')
+   call packing(Nb,sim%dav%eta,sim%dav%nacr_scratch,'s')
 
 
-   nacT_direct_ihc=dcart1_xpm(qm2ds%nacr_scratch,xstep%Rp,xstep%Rm) 
+   nacT_direct_ihc=dcart1_xpm(sim%qnml, sim%qparams, sim%qmpi, sim%qm2, sim%dav, sim%qmmm, sim%dav%nacr_scratch,xstep%Rp,xstep%Rm) 
 
 
    nacT_direct_ihc=nacT_direct_ihc*kcalev &
-      /(qm2ds%e0(qm2ds%kx(icheck))-qm2ds%e0(qm2ds%kx(ihop))) &
+      /(sim%dav%e0(sim%dav%kx(icheck))-sim%dav%e0(sim%dav%kx(ihop))) &
       / sim%naesmd%dtnact/2.d0 
-   ! factor of 2. is because dt = 2.0 * dtnact
+   ! factor of 2. is because dt = 2.0 * sim%naesmd%dtnact
 
 
 
@@ -265,7 +267,6 @@ module nacT_analytic_module
    use dcart_xpm_module
    use constants          , only : EV_TO_KCAL
    use ElementOrbitalIndex, only: MaxValenceOrbitals
-   use qmmm_module        , only : qmmm_nml,qmmm_struct, qm2_struct, qm2_params, qmmm_mpi
    use qm2_pm6_hof_module
    use dh_correction_module, only : dh_correction_grad
    use qm2_davidson_module ! CML 7/13/12
@@ -293,49 +294,49 @@ module nacT_analytic_module
    !BTN Start here
    
 #ifdef MPI
-   do ii = qmmm_mpi%nquant_nlink_istart, qmmm_mpi%nquant_nlink_iend
-      jstart =  qmmm_mpi%nquant_nlink_jrange(1,ii)
-      jend = qmmm_mpi%nquant_nlink_jrange(2,ii)
+   do ii = sim%qmpi%nquant_nlink_istart, sim%qmpi%nquant_nlink_iend
+      jstart =  sim%qmpi%nquant_nlink_jrange(1,ii)
+      jend = sim%qmpi%nquant_nlink_jrange(2,ii)
 #else
-   do II=2,qmmm_struct%nquant_nlink
+   do II=2,sim%qmmm%nquant_nlink
        jstart = 1
        jend = ii-1
 #endif
        !Loop over all pairs of quantum atoms
-       iif=qm2_params%orb_loc(1,II)
-       iil=qm2_params%orb_loc(2,II)
-       qmitype = qmmm_struct%qm_atom_type(ii)
-       natqmi=qmmm_struct%iqm_atomic_numbers(II)
+       iif=sim%qparams%orb_loc(1,II)
+       iil=sim%qparams%orb_loc(2,II)
+       qmitype = sim%qmmm%qm_atom_type(ii)
+       natqmi=sim%qmmm%iqm_atomic_numbers(II)
        do JJ=jstart,jend !jj=1,ii-1
            !  FORM DIATOMIC MATRICES
-           jjf=qm2_params%orb_loc(1,JJ)
-           jjl=qm2_params%orb_loc(2,JJ)
+           jjf=sim%qparams%orb_loc(1,JJ)
+           jjl=sim%qparams%orb_loc(2,JJ)
            !   GET FIRST ATOM
-           qmjtype = qmmm_struct%qm_atom_type(jj)
-           natqmj=qmmm_struct%iqm_atomic_numbers(JJ)
+           qmjtype = sim%qmmm%qm_atom_type(jj)
+           natqmj=sim%qmmm%iqm_atomic_numbers(JJ)
            IJ=0
            do I=jjf,jjl
-               K=qm2_params%pascal_tri1(i)+jjf-1
+               K=sim%qparams%pascal_tri1(i)+jjf-1
                do J=jjf,I
                    IJ=IJ+1
                    K=K+1
-                   psum(IJ)=qm2_struct%den_matrix(K)               
+                   psum(IJ)=sim%qm2%den_matrix(K)               
                end do
            end do
            ! GET SECOND ATOM FIRST ATOM INTERSECTION
            do I=iif,iil
-               L=qm2_params%pascal_tri1(i)
+               L=sim%qparams%pascal_tri1(i)
                K=L+jjf-1
                do J=jjf,jjl
                    IJ=IJ+1
                    K=K+1
-                   psum(IJ)=qm2_struct%den_matrix(K)
+                   psum(IJ)=sim%qm2%den_matrix(K)
                end do
                K=L+iif-1
                do L=iif,I
                    K=K+1
                    IJ=IJ+1
-                   psum(IJ)=qm2_struct%den_matrix(K)
+                   psum(IJ)=sim%qm2%den_matrix(K)
                end do
            end do
            
@@ -346,21 +347,23 @@ module nacT_analytic_module
            
            xyz_qmi(:)=xs%rm(:,ii)
            xyz_qmj(:)=xs%rm(:,jj)
-           call qm2_dhc1(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+           call qm2_dhc1(sim%rij,sim%qparams, sim%qnml, sim%qm2, sim%qmmm, psum,ii,jj, &
+              qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
               jjl,Fm)
                     
            xyz_qmi(:)=xs%rp(:,ii)
            xyz_qmj(:)=xs%rp(:,jj)
-           call qm2_dhc1(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
-              jjl,qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:))
+           call qm2_dhc1(sim%rij,sim%qparams, sim%qnml, sim%qm2, sim%qmmm, psum,ii,jj,&
+              qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+              jjl,sim%qm2%fock_matrix_dp(sim%qparams%pascal_tri1(ii-1)+jj,:))
               
-           qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:)= &
-              qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:)-Fm(:)
+           sim%qm2%fock_matrix_dp(sim%qparams%pascal_tri1(ii-1)+jj,:)= &
+              sim%qm2%fock_matrix_dp(sim%qparams%pascal_tri1(ii-1)+jj,:)-Fm(:)
            
        end do
    end do
    
-   !qm2_struct%fock_matrix_dp=qm2_struct%fock_matrix_dp-qm2_struct%fock_matrix_dm
+   !sim%qm2%fock_matrix_dp=sim%qm2%fock_matrix_dp-sim%qm2%fock_matrix_dm
    
    !BTN End here
 
@@ -378,6 +381,7 @@ module nacT_analytic_module
    
    return
    end subroutine nacT_direct
+
 
   ! Kind of a useless wrapper for nact_direct isn't it?
    subroutine nacT_analytic(sim,nact,xstep)

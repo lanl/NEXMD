@@ -5,13 +5,18 @@
 !Subroutines for the printing of charges on QM atoms.
 !Author Ross Walker (SDSC, 2009)
 
-subroutine qm2_print_charges(nstate,nstep,dftb_chg,nquant_nlink,scf_mchg,iqm_atomic_numbers)
+subroutine qm2_print_charges(qmmm_nml,qmmm_mpi, qmmm_struct, nstate,nstep,dftb_chg,nquant_nlink,scf_mchg,iqm_atomic_numbers)
 
   use ElementOrbitalIndex, only : elementSymbol
-
+  use qmmm_struct_module, only : qmmm_struct_type
+  use qmmm_module, only : qmmm_mpi_structure
+  use qmmm_nml_module   , only : qmmm_nml_type
   implicit none
 
 !Passed in
+  type(qmmm_nml_type),intent(inout) :: qmmm_nml
+  type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
+  type(qmmm_struct_type), intent(inout) :: qmmm_struct
   integer, intent(in) :: nstep, nstate, dftb_chg, nquant_nlink
   integer, intent(in) :: iqm_atomic_numbers(nquant_nlink)
   _REAL_, intent(in) :: scf_mchg(nquant_nlink)
@@ -31,7 +36,7 @@ subroutine qm2_print_charges(nstate,nstep,dftb_chg,nquant_nlink,scf_mchg,iqm_ato
 
   if (dftb_chg == 1) then
      write(6,'("QMMM:  Atom    Element       Mulliken Charge       CM3 Charge")')
-     call qm2_dftb_cm3(scf_mchg, scf_cm3)
+     call qm2_dftb_cm3(qmmm_nml, qmmm_mpi, qmmm_struct, scf_mchg, scf_cm3)
   else
      write(6,'("QMMM:  Atom    Element       Mulliken Charge")')
   end if

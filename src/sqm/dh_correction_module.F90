@@ -32,12 +32,16 @@ contains
 
 
   ! Calculate dispersion and hydrogen bond correction
-  subroutine dh_correction(natom, coord, atomic_numbers, qmtheory, &
+  subroutine dh_correction(qm2_params,qm2_struct, natom, coord, atomic_numbers, qmtheory, &
                            dCorrEner,hCorrEner)
 
+    use qm2_params_module,  only : qm2_params_type
     use qmmm_qmtheorymodule, only : qmTheoryType
+    use qmmm_module, only              : qm2_structure
     implicit none
 
+    type(qm2_params_type),intent(inout) :: qm2_params
+    type(qm2_structure),intent(inout) :: qm2_struct
     integer, intent(in) :: natom
     _REAL_, intent(in) :: coord(3,natom)
     integer, intent(in) :: atomic_numbers(natom)
@@ -59,7 +63,7 @@ contains
 
     ! Calculate bond order matrix
 
-    call calc_bo_matrix(natom,bo_matrix)
+    call calc_bo_matrix(qm2_params,qm2_struct,natom,bo_matrix)
 
     xyz(:,:)=coord(:,:)
 
@@ -92,12 +96,16 @@ contains
 
 ! Gradient of Dispersion and Hydrogen correction 
 
-  subroutine dh_correction_grad(natom, coord, atomic_numbers, qmtheory, dxyz)
+  subroutine dh_correction_grad(qm2_params, qm2_struct, natom, coord, atomic_numbers, qmtheory, dxyz)
 
+    use qm2_params_module,  only : qm2_params_type
     use qmmm_qmtheorymodule, only : qmTheoryType
+    use qmmm_module, only              : qm2_structure
 
     implicit none
 
+    type(qm2_params_type),intent(inout) :: qm2_params
+    type(qm2_structure),target :: qm2_struct
     integer, intent(in) :: natom
     _REAL_, intent(in) :: coord(3,natom)
     integer, intent(in) :: atomic_numbers(natom)
@@ -112,7 +120,7 @@ contains
        call flush(6)
     end if
 
-    call calc_bo_matrix(natom,bo_matrix)
+    call calc_bo_matrix(qm2_params,qm2_struct,natom,bo_matrix)
 
     if (qmtheory%DISPERSION .or. qmtheory%DISPERSION_HYDROGENPLUS) then
        call calc_d_grad(natom,coord,atomic_numbers,qmtheory,bo_matrix,dxyz)
@@ -873,13 +881,16 @@ contains
 
 ! Calculate bond order matrix
 ! Copied from "qm2_print_bondorders" subroutine
-  subroutine calc_bo_matrix(natom,bo_matrix)
+  subroutine calc_bo_matrix(qm2_params,qm2_struct,natom,bo_matrix)
 
   ! Requires a converged density matrix stored in qm2_struct%den_matrix
-  use qmmm_module, only : qm2_params, qm2_struct
+  use qm2_params_module,  only : qm2_params_type
+  use qmmm_module, only : qm2_structure
 
   implicit none
 
+  type(qm2_params_type),intent(inout) :: qm2_params
+  type(qm2_structure),target :: qm2_struct
   integer, intent(in) :: natom
   _REAL_, intent(out) :: bo_matrix(natom,natom)
 

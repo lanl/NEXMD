@@ -64,15 +64,17 @@ subroutine dispersion_energy(nquant_nlink,qm_coords)
    return
 end subroutine dispersion_energy
 
-subroutine dispersion_grad(nquant_nlink,gr)
+subroutine dispersion_grad(qmmm_struct,nquant_nlink,gr)
 
-   use qmmm_module, only : qmmm_struct
+
    use qm2_dftb_module, only: disper, dispertmp
    use constants, only: BOHRS_TO_A, AU_TO_EV
+   use qmmm_struct_module, only : qmmm_struct_type
 
    implicit none
 
 !! Passed in:
+   type(qmmm_struct_type), intent(in) :: qmmm_struct
    integer, intent(in ) :: nquant_nlink
    _REAL_ , intent(out) :: gr(3,*)
 
