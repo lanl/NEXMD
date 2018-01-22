@@ -118,9 +118,7 @@ subroutine nexmd_sim(sim)
         write (filename, "(a6,i4.4,a5)") "input_", sim%id, ".ceon"
         open (inputfdes,file=trim(filename),status='old')
     endif 
-    write(6,*)"init_sqm" 
     call init_sqm(sim,inputfdes,STDOUT) ! involves call to Davidson
-    write(6,*)"init_sqm_done" 
     close(inputfdes)
 
     sim%naesmd%nbasis=sim%dav%Nb  ! this is number of atomic orbitals

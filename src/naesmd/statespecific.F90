@@ -77,7 +77,7 @@ subroutine calc_gssolven(qm2_params,qmmm_nml,cosmo_c_struct,qm2_struct, qm2ds,qm
 
     energy=0.d0
     qm2ds%tz_scratch=0.d0
-    call addfck(qm2_params, qmmm_nml,cosmo_c_struct,qmmm_struct, qm2ds%tz_scratch(1),qm2_struct%den_matrix);
+    call addfck(qm2_params, qmmm_nml,cosmo_c_struct,qm2ds%tz_scratch(1),qm2_struct%den_matrix);
     call unpacking(qm2ds%Nb,qm2ds%tz_scratch(1),qm2ds%tz_scratch(qm2ds%Nb**2+1),'s')
     call unpacking(qm2ds%Nb,cosmo_c_struct%rhotzpacked_k,qm2ds%tz_scratch(1),'s')
 
