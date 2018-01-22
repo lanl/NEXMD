@@ -179,8 +179,10 @@ subroutine nexmd_sim(sim)
 	sim%rk_comm%thresholds(i)=1.0d0
 	sim%rk_comm%thresholds(i+sim%excN)=6.29d0
     enddo
-    call setup(sim%rk_comm,sim%naesmd%tfemto,sim%naesmd%yg,sim%rk_comm%tmax,sim%rk_comm%rk_tol,sim%rk_comm%thresholds, &
+    if(sim%naesmd%nstep.gt.0) then
+	    call setup(sim%rk_comm,sim%naesmd%tfemto,sim%naesmd%yg,sim%rk_comm%tmax,sim%rk_comm%rk_tol,sim%rk_comm%thresholds, &
 	'M','R')
+    endif
     do imdqt=1,sim%naesmd%nstep !Main loop
         !Classical propagation step - BOMD or NAESMD
         write(6,*)"Begin classical propagation step #",imdqt
