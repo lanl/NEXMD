@@ -702,23 +702,23 @@ CompVecs >> $SUMMARY
 
 echo "" >> $SUMMARY
 
-CURRSTR="QMMM: Occupied MO Energies (eV)"
-echo -n $CURRSTR >> $SUMMARY
-echo -n ": " >> $SUMMARY
-grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-CompVecs >> $SUMMARY
-
-echo "" >> $SUMMARY
-
-CURRSTR="QMMM: Virtual MO Energies (eV)"
-echo -n $CURRSTR >> $SUMMARY
-echo -n ": " >> $SUMMARY
-grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-CompVecs >> $SUMMARY
-
-echo "" >> $SUMMARY
+#CURRSTR="QMMM: Occupied MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
+#
+#CURRSTR="QMMM: Virtual MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
 
 CURRSTR="Forces on QM atoms ground state calculation"
 echo -n $CURRSTR >> $SUMMARY
@@ -803,23 +803,23 @@ CompVecs >> $SUMMARY
 
 echo "" >> $SUMMARY
 
-CURRSTR="QMMM: Occupied MO Energies (eV)"
-echo -n $CURRSTR >> $SUMMARY
-echo -n ": " >> $SUMMARY
-grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-CompVecs >> $SUMMARY
-
-echo "" >> $SUMMARY
-
-CURRSTR="QMMM: Virtual MO Energies (eV)"
-echo -n $CURRSTR >> $SUMMARY
-echo -n ": " >> $SUMMARY
-grep -A 2 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-grep -A 2 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-CompVecs >> $SUMMARY
-
-echo "" >> $SUMMARY
+#CURRSTR="QMMM: Occupied MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
+#
+#CURRSTR="QMMM: Virtual MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 2 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 2 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
 
 CURRSTR="Forces on QM atoms ground state calculation"
 echo -n $CURRSTR >> $SUMMARY
@@ -904,23 +904,23 @@ CompVecs >> $SUMMARY
 
 echo "" >> $SUMMARY
 
-CURRSTR="QMMM: Occupied MO Energies (eV)"
-echo -n $CURRSTR >> $SUMMARY
-echo -n ": " >> $SUMMARY
-grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-CompVecs >> $SUMMARY
-
-echo "" >> $SUMMARY
-
-CURRSTR="QMMM: Virtual MO Energies (eV)"
-echo -n $CURRSTR >> $SUMMARY
-echo -n ": " >> $SUMMARY
-grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-CompVecs >> $SUMMARY
-
-echo "" >> $SUMMARY
+#CURRSTR="QMMM: Occupied MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
+#
+#CURRSTR="QMMM: Virtual MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
 
 CURRSTR="Forces on QM atoms ground state calculation"
 echo -n $CURRSTR >> $SUMMARY
@@ -1035,23 +1035,23 @@ CompVecs >> $SUMMARY
 
 echo "" >> $SUMMARY
 
-CURRSTR="QMMM: Occupied MO Energies (eV)"
-echo -n $CURRSTR >> $SUMMARY
-echo -n ": " >> $SUMMARY
-grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-CompVecs >> $SUMMARY
-
-echo "" >> $SUMMARY
-
-CURRSTR="QMMM: Virtual MO Energies (eV)"
-echo -n $CURRSTR >> $SUMMARY
-echo -n ": " >> $SUMMARY
-grep -A 2 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-grep -A 2 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-CompVecs >> $SUMMARY
-
-echo "" >> $SUMMARY
+#CURRSTR="QMMM: Occupied MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
+#
+#CURRSTR="QMMM: Virtual MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 2 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 2 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
 
 CURRSTR="Forces on QM atoms ground state calculation"
 echo -n $CURRSTR >> $SUMMARY
@@ -1166,23 +1166,23 @@ CompVecs >> $SUMMARY
 
 echo "" >> $SUMMARY
 
-CURRSTR="QMMM: Occupied MO Energies (eV)"
-echo -n $CURRSTR >> $SUMMARY
-echo -n ": " >> $SUMMARY
-grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-CompVecs >> $SUMMARY
-
-echo "" >> $SUMMARY
-
-CURRSTR="QMMM: Virtual MO Energies (eV)"
-echo -n $CURRSTR >> $SUMMARY
-echo -n ": " >> $SUMMARY
-grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-CompVecs >> $SUMMARY
-
-echo "" >> $SUMMARY
+#CURRSTR="QMMM: Occupied MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
+#
+#CURRSTR="QMMM: Virtual MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
 
 CURRSTR="Forces on QM atoms ground state calculation"
 echo -n $CURRSTR >> $SUMMARY
@@ -1297,23 +1297,23 @@ CompVecs >> $SUMMARY
 
 echo "" >> $SUMMARY
 
-CURRSTR="QMMM: Occupied MO Energies (eV)"
-echo -n $CURRSTR >> $SUMMARY
-echo -n ": " >> $SUMMARY
-grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-CompVecs >> $SUMMARY
-
-echo "" >> $SUMMARY
-
-CURRSTR="QMMM: Virtual MO Energies (eV)"
-echo -n $CURRSTR >> $SUMMARY
-echo -n ": " >> $SUMMARY
-grep -A 2 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-grep -A 2 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-CompVecs >> $SUMMARY
-
-echo "" >> $SUMMARY
+#CURRSTR="QMMM: Occupied MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
+#
+#CURRSTR="QMMM: Virtual MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 2 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 2 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
 
 CURRSTR="Forces on QM atoms ground state calculation"
 echo -n $CURRSTR >> $SUMMARY
