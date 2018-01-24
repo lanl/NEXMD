@@ -185,100 +185,217 @@ subroutine qm2_calc_molecular_dipole_in_excited_state(qm2_params,qmmm_nml,qmmm_m
         write(6,"(25x,'dx',14x,'dy',14x,'dz',10x,'ftotal')")
         write(6,"(19x,4g15.7)") mu_gr(1),mu_gr(2),mu_gr(3),sqrt(mu_gr(1)**2 + mu_gr(2)**2 + mu_gr(3)**2)
 
-!excited states
-if (qm2ds%Mx>0) then
-	allocate(TZ(qm2ds%Nb,qm2ds%Nb));
-        allocate(T(qm2ds%Nb,qm2ds%Nb));
-        allocate(ESDM(qm2ds%Nb,qm2ds%Nb));
+!unrelaxed excited states
+if (qm2ds%Mx>0.and.qmmm_nml%printdipole>0) then
+  allocate(T(qm2ds%Nb,qm2ds%Nb));
+  do state=1,qm2ds%Mx
+    call calc_rhotz(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,state,qm2ds%rhoT,.false.);
+    call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoT,T,tmp)
+    !tr(Mu Rho) calculate dipole
+    do k=1,3  ! loop over x,y,z
+      call unpacking(qm2ds%Nb,dip(k,:),qm2ds%eta_scratch,'s')
+      mu_unrelaxed(k,state)=ddot(qm2ds%Nb**2,T,1,qm2ds%eta_scratch,1) 
+    enddo
 
-	do state=1,qm2ds%Mx
-	        call calc_rhotz(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,state,qm2ds%rhoTZ,.true.); 
-                call calc_rhotz(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,state,qm2ds%rhoT,.false.);
-		call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,TZ,qm2ds%tz_scratch)		
-                call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoT,T,tmp)
-
-		ESDM=GSDM+TZ !Construct excited state density matrix
-
-		!The mulliken charges are here but this is a bad place for them
-		if(qmmm_nml%printcharges) then		
-	        	do i=1,qmmm_struct%nquant_nlink
-				call qm2_calc_mulliken(qm2_params,qm2_struct,i,ex_mchg(i),ESDM)
-	        	end do
-			write (6,*)
-			write (6,'("QMMM: Mulliken Charges")')
-			call qm2_print_charges(qmmm_nml,qmmm_mpi, qmmm_struct, state,1,qmmm_nml%dftb_chg,qmmm_struct%nquant_nlink, &
-                                        ex_mchg,qmmm_struct%iqm_atomic_numbers)
-		end if
-
-                !tr(Mu Rho) calculate dipole
-		do k=1,3  ! loop over x,y,z
-	 	   	call unpacking(qm2ds%Nb,dip(k,:),qm2ds%eta_scratch,'s')
-		   	mu(k,state)=ddot(qm2ds%Nb**2,ESDM,1,qm2ds%eta_scratch,1)
-                   	mu(k,state)=mu(k,state)+nuc_dipole(k);
-                   	mu_unrelaxed(k,state)=ddot(qm2ds%Nb**2,T,1,qm2ds%eta_scratch,1) 
-                   	mu_relaxed(k,state)=ddot(qm2ds%Nb**2,TZ,1,qm2ds%eta_scratch,1)
-                enddo
-
-	end do
-
-	deallocate(T,TZ,ESDM,GSDM,dip,tmp);
-
-	if(qmmm_nml%printcharges) then
-		deallocate(ex_mchg);
-	end if
-
-	mu(1:3,:)=mu(1:3,:) * convert_to_debye;
-	if (qmmm_nml%printdipole > 0) then
-		write(6,*)
-        	write(6,*) 'Frequencies (eV) and Total Molecular Dipole Moments (Debye)'
-	        write(6,"(8x,'Omega',12x,'dx',14x,'dy',14x,'dz',10x,'ftotal')")
-		do i=1,qm2ds%Mx
-	          write(6,"(i4,5g15.7)") i,qm2ds%e0(i), &
-        	        mu(1,i), &
-                	mu(2,i), &
-	                mu(3,i), &
-			sqrt(mu(1,i)**2 + mu(2,i)**2 + mu(3,i)**2)
-	        end do
-		mu(1:3,:)=mu(1:3,:)/convert_debye_to_AU
-	        write(6,*)
-        	write(6,*) 'Frequencies (eV) and Total Molecular Dipole Moments (AU)'
-	        write(6,"(8x,'Omega',12x,'dx',14x,'dy',14x,'dz',10x,'ftotal')")
-        	do i=1,qm2ds%Mx
-	          write(6,"(i4,5g15.7)") i,qm2ds%e0(i), &
-        	        mu(1,i), &
-                	mu(2,i), &
-	                mu(3,i), &
-        	        sqrt(mu(1,i)**2 + mu(2,i)**2 + mu(3,i)**2)
-	        end do
-                
-                !PRINTING RELAXED AND UNRELAXED DIPOLES
-                if (qmmm_nml%printdipole > 1) then
-                mu_relaxed(1:3,:)=mu_relaxed(1:3,:) * convert_to_debye/convert_debye_to_AU;
-                mu_unrelaxed(1:3,:)=mu_unrelaxed(1:3,:) * convert_to_debye/convert_debye_to_AU;
-
-                write(6,*)
-                write(6,*) 'Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)'
-                write(6,"(8x,'Omega',12x,'dx',14x,'dy',14x,'dz',10x,'ftotal')")
-                do i=1,qm2ds%Mx
-                  write(6,"(i4,5g15.7)") i,qm2ds%e0(i), &
-                        mu_unrelaxed(1,i), &
-                        mu_unrelaxed(2,i), &
-                        mu_unrelaxed(3,i), &
-                        sqrt(mu_unrelaxed(1,i)**2 + mu_unrelaxed(2,i)**2 + mu_unrelaxed(3,i)**2)
-                 end do
-                write(6,*)
-                write(6,*) 'Frequencies (eV) Relaxed Difference Dipole Moments (AU)'
-                write(6,"(8x,'Omega',12x,'dx',14x,'dy',14x,'dz',10x,'ftotal')")
-                do i=1,qm2ds%Mx
-                  write(6,"(i4,5g15.7)") i,qm2ds%e0(i), &
-                        mu_relaxed(1,i), &
-                        mu_relaxed(2,i), &
-                        mu_relaxed(3,i), &
-                        sqrt(mu_relaxed(1,i)**2 + mu_relaxed(2,i)**2 + mu_relaxed(3,i)**2)
-                 end do
-                end if
-	end if
+  end do
+  !Above is the computation step. Below is the print step
+  deallocate(T);
+  mu_unrelaxed(1:3,:)=mu_unrelaxed(1:3,:) * convert_to_debye/convert_debye_to_AU;
+ 
+  write(6,*)
+  write(6,*) 'Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)'
+  write(6,"(8x,'Omega',12x,'dx',14x,'dy',14x,'dz',10x,'ftotal')")
+  do i=1,qm2ds%Mx
+    write(6,"(i4,5g15.7)") i,qm2ds%e0(i), &
+    mu_unrelaxed(1,i), &
+    mu_unrelaxed(2,i), &
+    mu_unrelaxed(3,i), &
+    sqrt(mu_unrelaxed(1,i)**2 + mu_unrelaxed(2,i)**2 + mu_unrelaxed(3,i)**2)
+  end do
+endif
+  
+if(qmmm_nml%printcharges) then		
+  do i=1,qmmm_struct%nquant_nlink
+    call qm2_calc_mulliken(qm2_params,qm2_struct,i,ex_mchg(i),GSDM)
+  end do
+  write (6,*)
+  write (6,'("QMMM: Mulliken Charges")')
+  call qm2_print_charges(qmmm_nml,qmmm_mpi, qmmm_struct, 0,1,qmmm_nml%dftb_chg,qmmm_struct%nquant_nlink, &
+    ex_mchg,qmmm_struct%iqm_atomic_numbers)
 end if
+
+!relaxed excited states
+if (qm2ds%Mx>0.and.qmmm_nml%printdipole>1) then
+  allocate(TZ(qm2ds%Nb,qm2ds%Nb));
+  allocate(ESDM(qm2ds%Nb,qm2ds%Nb));
+
+  do state=1,qm2ds%Mx
+    call calc_rhotz(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,state,qm2ds%rhoTZ,.true.); 
+    call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,TZ,qm2ds%tz_scratch)
+    ESDM=GSDM+TZ !Construct excited state density matrix		
+
+    !The mulliken charges are here but this is a bad place for them
+    if(qmmm_nml%printcharges) then		
+      do i=1,qmmm_struct%nquant_nlink
+        call qm2_calc_mulliken(qm2_params,qm2_struct,i,ex_mchg(i),ESDM)
+      end do
+      write (6,*)
+      write (6,'("QMMM: Mulliken Charges")')
+      call qm2_print_charges(qmmm_nml,qmmm_mpi, qmmm_struct, state,1,qmmm_nml%dftb_chg,qmmm_struct%nquant_nlink, &
+        ex_mchg,qmmm_struct%iqm_atomic_numbers)
+    end if
+
+    !tr(Mu Rho) calculate dipole
+    do k=1,3  ! loop over x,y,z
+      call unpacking(qm2ds%Nb,dip(k,:),qm2ds%eta_scratch,'s')
+      mu(k,state)=ddot(qm2ds%Nb**2,ESDM,1,qm2ds%eta_scratch,1)
+      mu(k,state)=mu(k,state)+nuc_dipole(k);
+      mu_relaxed(k,state)=ddot(qm2ds%Nb**2,TZ,1,qm2ds%eta_scratch,1)
+    enddo
+
+  end do
+  !Above is the computation step. Below is the print step
+  deallocate(TZ,ESDM);
+
+  if(qmmm_nml%printcharges) then
+    deallocate(ex_mchg);
+  end if
+
+  mu_relaxed(1:3,:)=mu_relaxed(1:3,:) * convert_to_debye/convert_debye_to_AU;
+
+  write(6,*)
+  write(6,*) 'Frequencies (eV) Relaxed Difference Dipole Moments (AU)'
+  write(6,"(8x,'Omega',12x,'dx',14x,'dy',14x,'dz',10x,'ftotal')")
+  do i=1,qm2ds%Mx
+    write(6,"(i4,5g15.7)") i,qm2ds%e0(i), &
+    mu_relaxed(1,i), &
+    mu_relaxed(2,i), &
+    mu_relaxed(3,i), &
+    sqrt(mu_relaxed(1,i)**2 + mu_relaxed(2,i)**2 + mu_relaxed(3,i)**2)
+  end do
+
+  !print relaxed total state dipoles
+  mu(1:3,:)=mu(1:3,:) * convert_to_debye;
+  write(6,*)
+  write(6,*) 'Frequencies (eV) and Total Molecular Dipole Moments (Debye)'
+  write(6,"(8x,'Omega',12x,'dx',14x,'dy',14x,'dz',10x,'ftotal')")
+  do i=1,qm2ds%Mx
+    write(6,"(i4,5g15.7)") i,qm2ds%e0(i), &
+      mu(1,i), &
+      mu(2,i), &
+      mu(3,i), &
+      sqrt(mu(1,i)**2 + mu(2,i)**2 + mu(3,i)**2)
+  end do
+  mu(1:3,:)=mu(1:3,:)/convert_debye_to_AU
+  write(6,*)
+  write(6,*) 'Frequencies (eV) and Total Molecular Dipole Moments (AU)'
+  write(6,"(8x,'Omega',12x,'dx',14x,'dy',14x,'dz',10x,'ftotal')")
+  do i=1,qm2ds%Mx
+    write(6,"(i4,5g15.7)") i,qm2ds%e0(i), &
+      mu(1,i), &
+      mu(2,i), &
+      mu(3,i), &
+      sqrt(mu(1,i)**2 + mu(2,i)**2 + mu(3,i)**2)
+  end do
+endif
+
+deallocate(GSDM,dip,tmp);
+
+
+!!excited states
+!if (qm2ds%Mx>0) then
+!  allocate(TZ(qm2ds%Nb,qm2ds%Nb));
+!  allocate(T(qm2ds%Nb,qm2ds%Nb));
+!  allocate(ESDM(qm2ds%Nb,qm2ds%Nb));
+!
+!  do state=1,qm2ds%Mx
+!    call calc_rhotz(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,state,qm2ds%rhoTZ,.true.); 
+!    call calc_rhotz(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,state,qm2ds%rhoT,.false.);
+!    call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,TZ,qm2ds%tz_scratch)		
+!    call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoT,T,tmp)
+!
+!    ESDM=GSDM+TZ !Construct excited state density matrix
+!
+!    !The mulliken charges are here but this is a bad place for them
+!    if(qmmm_nml%printcharges) then		
+!      do i=1,qmmm_struct%nquant_nlink
+!        call qm2_calc_mulliken(qm2_params,qm2_struct,i,ex_mchg(i),ESDM)
+!      end do
+!      write (6,*)
+!      write (6,'("QMMM: Mulliken Charges")')
+!      call qm2_print_charges(qmmm_nml,qmmm_mpi, qmmm_struct, state,1,qmmm_nml%dftb_chg,qmmm_struct%nquant_nlink, &
+!        ex_mchg,qmmm_struct%iqm_atomic_numbers)
+!    end if
+!
+!    !tr(Mu Rho) calculate dipole
+!    do k=1,3  ! loop over x,y,z
+!      call unpacking(qm2ds%Nb,dip(k,:),qm2ds%eta_scratch,'s')
+!      mu(k,state)=ddot(qm2ds%Nb**2,ESDM,1,qm2ds%eta_scratch,1)
+!      mu(k,state)=mu(k,state)+nuc_dipole(k);
+!      mu_unrelaxed(k,state)=ddot(qm2ds%Nb**2,T,1,qm2ds%eta_scratch,1) 
+!      mu_relaxed(k,state)=ddot(qm2ds%Nb**2,TZ,1,qm2ds%eta_scratch,1)
+!    enddo
+!
+!  end do
+!
+!  deallocate(T,TZ,ESDM,GSDM,dip,tmp);
+!
+!  if(qmmm_nml%printcharges) then
+!    deallocate(ex_mchg);
+!  end if
+!
+!  mu(1:3,:)=mu(1:3,:) * convert_to_debye;
+!  if (qmmm_nml%printdipole > 0) then
+!    write(6,*)
+!    write(6,*) 'Frequencies (eV) and Total Molecular Dipole Moments (Debye)'
+!    write(6,"(8x,'Omega',12x,'dx',14x,'dy',14x,'dz',10x,'ftotal')")
+!    do i=1,qm2ds%Mx
+!      write(6,"(i4,5g15.7)") i,qm2ds%e0(i), &
+!        mu(1,i), &
+!        mu(2,i), &
+!        mu(3,i), &
+!        sqrt(mu(1,i)**2 + mu(2,i)**2 + mu(3,i)**2)
+!    end do
+!    mu(1:3,:)=mu(1:3,:)/convert_debye_to_AU
+!    write(6,*)
+!    write(6,*) 'Frequencies (eV) and Total Molecular Dipole Moments (AU)'
+!    write(6,"(8x,'Omega',12x,'dx',14x,'dy',14x,'dz',10x,'ftotal')")
+!    do i=1,qm2ds%Mx
+!      write(6,"(i4,5g15.7)") i,qm2ds%e0(i), &
+!        mu(1,i), &
+!        mu(2,i), &
+!        mu(3,i), &
+!        sqrt(mu(1,i)**2 + mu(2,i)**2 + mu(3,i)**2)
+!    end do
+!                
+!    !PRINTING RELAXED AND UNRELAXED DIPOLES
+!    if (qmmm_nml%printdipole > 1) then
+!      mu_relaxed(1:3,:)=mu_relaxed(1:3,:) * convert_to_debye/convert_debye_to_AU;
+!      mu_unrelaxed(1:3,:)=mu_unrelaxed(1:3,:) * convert_to_debye/convert_debye_to_AU;
+!
+!      write(6,*)
+!      write(6,*) 'Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)'
+!      write(6,"(8x,'Omega',12x,'dx',14x,'dy',14x,'dz',10x,'ftotal')")
+!      do i=1,qm2ds%Mx
+!        write(6,"(i4,5g15.7)") i,qm2ds%e0(i), &
+!        mu_unrelaxed(1,i), &
+!        mu_unrelaxed(2,i), &
+!        mu_unrelaxed(3,i), &
+!        sqrt(mu_unrelaxed(1,i)**2 + mu_unrelaxed(2,i)**2 + mu_unrelaxed(3,i)**2)
+!      end do
+!      write(6,*)
+!      write(6,*) 'Frequencies (eV) Relaxed Difference Dipole Moments (AU)'
+!      write(6,"(8x,'Omega',12x,'dx',14x,'dy',14x,'dz',10x,'ftotal')")
+!      do i=1,qm2ds%Mx
+!        write(6,"(i4,5g15.7)") i,qm2ds%e0(i), &
+!        mu_relaxed(1,i), &
+!        mu_relaxed(2,i), &
+!        mu_relaxed(3,i), &
+!        sqrt(mu_relaxed(1,i)**2 + mu_relaxed(2,i)**2 + mu_relaxed(3,i)**2)
+!      end do
+!    end if
+!  end if
+!end if !This is the excited states endif. 
 end 
 
 !subroutine md_trans_dipole(mu, alpha)
