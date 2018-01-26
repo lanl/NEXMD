@@ -90,7 +90,7 @@ from getexcited_package.dihedral import dihedral
 from getexcited_package.bondlength import bondlength
 from getexcited_package.bla import bla
 from getexcited_package.timing import timing
-from getexcited_package.permdipole import permdipole
+from getexcited_package.dipole import dipole
 from getexcited_package.tdiagonal import tdiagonal
 from getexcited_package.header import header
 
@@ -128,12 +128,16 @@ if funq == 9:
     if advq == 4:
         angle(header)
 if funq == 10:
-    advq = input('\nSelect a task from the following list:\n\n[1] Collect excited-state permanent dipole moment\n\nEnter the number corresponding to the desired task: ')
-    if advq != 1:
-        print 'Answer must be 1.'
+    advq = input('\nSelect a task from the following list:\n\n[1] Collect ground-state dipole moment\n[2] Collect transition dipole moment\n[3] Collect excited-state dipole moment\n\nEnter the number corresponding to the desired task: ')
+    if advq not in [1,2,3]:
+        print 'Answer must be 1 through 3.'
         sys.exit()
     if advq == 1:
-        permdipole(pathtopack,header)
+        dipole(pathtopack,header,0)
+    if advq == 2:
+        dipole(pathtopack,header,1)
+    if advq == 3:
+        dipole(pathtopack,header,2)
 if funq == 11:
     advq = input('\nSelect a task from the following list:\n\n[1] Analyze induced charge from diagonal elements of the transition density matrix\n\nEnter the number corresponding to the desired task: ')
     if advq not in [1]:

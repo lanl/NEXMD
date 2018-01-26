@@ -98,7 +98,7 @@ def nexmd(header):
     except AttributeError:
         state_set = 1
     if state_set == 1 and coeff_set == 1 or state_set == 1 and coeff_set == 0:
-        print 'All trajectories will begin on state %d.' % (cstate)
+        print 'All trajectories will begin on state %d.' % (header.exc_state_init)
     if state_set == 0 and coeff_set == 1:
         print 'There is an inconsistency in header.\nInput exc_state_init is not set, while coefficients are set.'
         sys.exit()
@@ -461,8 +461,8 @@ def nexmd(header):
 
     ## Prepare NEXMD input files with a single excited state ##
     if state_set == 1 and coeff_set == 1 or state_set == 1 and coeff_set == 0:
-        qpop = np.zeros(cstate)
-        qpop[cstate - 1] = 1.0
+        qpop = np.zeros(header.exc_state_init)
+        qpop[header.exc_state_init - 1] = 1.0
         traj = 0
         index = 0
         for NEXMD in np.arange(1,np.ceil(np.float(ntraj)/split)+1):
