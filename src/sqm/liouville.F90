@@ -19,9 +19,10 @@
 !
 !--------------------------------------------------------------------
 !
-   subroutine site2mo(zz,xi,v1)
+   subroutine site2mo(qm2ds,zz,xi,v1)
    use qm2_davidson_module
    implicit none
+   type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    _REAL_ f0,f1
    parameter (f0 = 0.0)
    parameter (f1 = 1.0)
@@ -37,9 +38,10 @@
    return
    end subroutine
 !
-   subroutine mo2site (v1,xi,zz)
+   subroutine mo2site (qm2ds,v1,xi,zz)
    use qm2_davidson_module
    implicit none
+   type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    _REAL_ f0,f1
    parameter (f0 = 0.0)
    parameter (f1 = 1.0)
@@ -102,9 +104,18 @@
 !
 !********************************************************************
 !
-   subroutine Vxi(xi,eta)
+   subroutine Vxi(qm2_params,qmmm_mpi,qm2_struct,qm2ds,qmmm_struct,xi,eta)
    use qm2_davidson_module
+   use qmmm_struct_module, only : qmmm_struct_type
+   use qmmm_module,only:qm2_structure, qmmm_mpi_structure
+   use qm2_params_module,  only : qm2_params_type
+
    implicit none
+   type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
+   type(qm2_params_type),intent(inout) :: qm2_params
+   type(qm2_structure),intent(inout) :: qm2_struct
+   type(qmmm_struct_type), intent(inout) :: qmmm_struct
+   type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    _REAL_ xi(qm2ds%Nb,qm2ds%Nb),eta(qm2ds%Nb,qm2ds%Nb)
    _REAL_ coef
    integer i,j,l
@@ -120,7 +131,7 @@
     end do
    end do
 
-   call Vxi_pack(qm2ds%xis,qm2ds%etas)
+   call Vxi_pack(qm2_params,qmmm_mpi,qm2_struct,qm2ds,qmmm_struct,qm2ds%xis,qm2ds%etas)
     l=0
     do i=1,qm2ds%Nb
       do j=1,i-1
@@ -141,7 +152,7 @@
     end do
    end do
 
-   call Vxi_packA(qm2ds%xis,qm2ds%etas)
+   call Vxi_packA(qm2_params,qmmm_mpi,qm2_struct,qm2ds,qmmm_struct,qm2ds%xis,qm2ds%etas)
    l=0
    do i=1,qm2ds%Nb
       do j = 1,i-1
@@ -166,7 +177,7 @@
    end do
 
 !  multiply:
-   call Vxi_pack(qm2ds%xis,qm2ds%etas)
+   call Vxi_pack(qm2_params,qmmm_mpi,qm2_struct,qm2ds,qmmm_struct,qm2ds%xis,qm2ds%etas)
 !  unpack:
    l = 0
    do i = 1,qm2ds%Nb
@@ -182,31 +193,33 @@
 !
 !********************************************************************
 !
-   subroutine Vxi_pack(xi,eta)
-   use qmmm_module,only: qm2_params
+   subroutine Vxi_pack(qm2_params,qmmm_mpi,qm2_struct,qm2ds,qmmm_struct,xi,eta)
+   use qmmm_module,only: qm2_structure, qmmm_mpi_structure
    use qm2_davidson_module
+   use qmmm_struct_module, only : qmmm_struct_type
+   use qm2_params_module,  only : qm2_params_type
 
    implicit none
+   type(qm2_params_type),intent(inout) :: qm2_params
+   type(qm2_structure),intent(inout) :: qm2_struct
+   type(qmmm_struct_type), intent(inout) :: qmmm_struct
+   type(qm2_davidson_structure_type), intent(inout) :: qm2ds
+   type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
    _REAL_ xi(qm2ds%Lt),eta(qm2ds%Lt)
-   character keywr*6
-   common /keywr/ keywr
-   logical first
-      data first /.true./
-      save first
 
 ! --- if this is the first time in this routine, load coulomb matrix
-      if (first) then
-   if (index(keywr,'INDO').NE.0.AND.index(keywr,'MINDO').EQ.0) then
-     write(6,*)  keywr,' hamiltonian requested'
-     write(6,*)  'Use *Z program for ', keywr
+      if (qm2_params%vxi_first) then
+   if (index(qm2_params%keywr,'INDO').NE.0.AND.index(qm2_params%keywr,'MINDO').EQ.0) then
+     write(6,*) qm2_params%keywr,' hamiltonian requested'
+     write(6,*)  'Use *Z program for ', qm2_params%keywr
      stop
    endif 
-         first=.false.
+         qm2_params%vxi_first=.false.
       endif
       eta(:)=0.0
-      call qm2_fock2(eta,xi,qm2ds%W,qm2_params%orb_loc)
+      call qm2_fock2(qmmm_mpi,qm2_params,qm2_struct, qmmm_struct,eta,xi,qm2ds%W,qm2_params%orb_loc)
    if (qm2ds%iderivfl.eq.0) then ! We are not in analytic derivatives     
-      call qm2_fock1(eta,xi) 
+      call qm2_fock1(qmmm_mpi,qm2_params,qmmm_struct, eta,xi) 
       endif
       eta(:)=eta(:)*2.0 !Why *2.0? Is it for the commutator in L(xi)?
    return
@@ -216,30 +229,33 @@
 !
 !********************************************************************
 !
-   subroutine Vxi_packA (xi,eta)
-   use qmmm_module,only: qm2_params
+   subroutine Vxi_packA(qm2_params,qmmm_mpi,qm2_struct,qm2ds,qmmm_struct,xi,eta)
+   use qmmm_module,only: qm2_structure, qmmm_mpi_structure
    use qm2_davidson_module
+   use qmmm_struct_module, only : qmmm_struct_type
+   use qm2_params_module,  only : qm2_params_type
+
    implicit none
+   type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
+   type(qm2_params_type),intent(inout) :: qm2_params
+   type(qm2_structure),intent(inout) :: qm2_struct
+   type(qm2_davidson_structure_type), intent(inout) :: qm2ds
+   type(qmmm_struct_type), intent(inout) :: qmmm_struct
    _REAL_ xi(qm2ds%Lt),eta(qm2ds%Lt)
-   character keywr*6
-   common /keywr/ keywr
-   logical first
-      data first /.true./
-      save first
 
 ! --- if this is the first time in this routine, load coulomb matrix
-      if (first) then
-   if (index(keywr,'INDO').NE.0.AND.index(keywr,'MINDO').EQ.0) then
-     write(6,*)  keywr,' hamiltonian requested'
-     write(6,*)  'Use *Z program for ', keywr
+      if (qm2_params%vxia_first) then
+   if (index(qm2_params%keywr,'INDO').NE.0.AND.index(qm2_params%keywr,'MINDO').EQ.0) then
+     write(6,*)  qm2_params%keywr,' hamiltonian requested'
+     write(6,*)  'Use *Z program for ', qm2_params%keywr
      stop
    endif 
-         first=.false.
+         qm2_params%vxia_first=.false.
       endif
       eta(:)=0.0
-      call qm2_fock2(eta,xi,qm2ds%W,qm2_params%orb_loc)
+      call qm2_fock2(qmmm_mpi,qm2_params,qm2_struct,qmmm_struct, eta,xi,qm2ds%W,qm2_params%orb_loc)
    if (qm2ds%iderivfl.eq.0) then ! We are not in analytic derivatives
-      call qm2_fock1_skew(eta,xi)
+      call qm2_fock1_skew(qm2_params,qmmm_mpi,qmmm_struct, eta,xi)
       endif
       eta(:)=eta(:)*2.0
    return

@@ -6,7 +6,7 @@
 !
 ! (Taisung Lee, 2011)  
 
-      SUBROUTINE qm2_repp_d(qmtypei,qmtypej,R,RI,CORE,W,LIMIJ,LImkl,MODESP) 
+      SUBROUTINE qm2_repp_d(qm2_params, qmmm_struct, qmtypei,qmtypej,R,RI,CORE,W,LIMIJ,LImkl,MODESP) 
 !     *                                                                 
 !     TWO-CENTER TWO-ELECTRON REPULSION INTEGRALS AND                   
 !     TWO-CENTER ONE-ELECTRON ATTRACTIONS IN LOCAL COORDINATES.         
@@ -69,10 +69,14 @@
 !     AND WHOSE ABSOLUTE VALUE IS NOT EQUAL TO 1.         
 !     *                                                                 
       use constants  , only : zero, fourth, half, one, two, sqrt2, AU_TO_EV
-      use qmmm_module, only : qm2_params, qmmm_struct
+      use qm2_params_module,  only : qm2_params_type
       use QM2_parameters
-      
+      use qmmm_struct_module, only : qmmm_struct_type
+ 
       implicit none
+      type(qmmm_struct_type), intent(in) :: qmmm_struct
+      type(qm2_params_type), intent(in) :: qm2_params
+
   
       integer, intent(in)::qmtypei, qmtypej, LIMIJ,LImkl,MODESP
       _REAL_, intent(in)::R      

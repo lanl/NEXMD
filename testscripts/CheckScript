@@ -9,19 +9,19 @@ THRESH=".00001"
 echo "This is a summary of values obtained from the master version and current version" > $SUMMARY
 
 if [ "$#" -eq 0 ]; then
-  NAESMDEXE=sqmceonaesmd.exe
-  echo "Using `which sqmceonaesmd.exe`"
-  echo "Using `which sqmceonaesmd.exe`" >> $SUMMARY
+  NAESMDEXE=nexmd.exe
+  echo "Using `which ${NAESMDEXE}`"
+  echo "Using `which ${NAESMDEXE}`" >> $SUMMARY
 elif [ "$#" -eq 1 ]; then
   if [ $1 == "clean" ]; then
     #clean script
     rm -r runtests
-	rm REFvec
-	rm RUNvec
-	rm REFvecPY
-	rm RUNvecPY
-	echo "Clean Files" 
-	exit 0
+	  rm REFvec
+	  rm RUNvec
+	  rm REFvecPY
+	  rm RUNvecPY
+	  echo "Clean Files" 
+	  exit 0
   fi
   NAESMDEXE=$1
   echo "Using $NAESMDEXE"
@@ -668,791 +668,731 @@ grep -A 4 "$CURRSTR" ${RUN}/output | tail -n 3 | cut -c18-66 > RUNvec
 grep -A 4 "$CURRSTR" ${REF}/output | tail -n 3 | cut -c18-66 > REFvec
 Comp
 
-## echo "" >> $SUMMARY
-## echo "-----------------------------------------------------------------------" >> $SUMMARY
-## CURR="geomopt/test1/benzene"
-## echo "Check calculation $CURR" >> $SUMMARY
-## echo "" >> $SUMMARY
-## 
-## REF=$CWD/../tests/$CURR
-## RUN=$CWD/runtests/$CURR
-## mkdir -p $RUN
-## cd $RUN
-## cp ${REF}/input.ceon ${RUN} 
-## ${NAESMDEXE} > output
-## cd $CWD
-## tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
-## tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
-## 
-## CURRSTR="Final Structure"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 12 "$CURRSTR" ${REF}/output.tac | tail -n 12 > REFvec
-## grep -A 12 "$CURRSTR" ${RUN}/output.tac | tail -n 12 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="QMMM:             Total energy ="
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep "$CURRSTR" ${REF}/output.tac | cut -c33-52 > REFvec
-## grep "$CURRSTR" ${RUN}/output.tac | cut -c33-52 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="QMMM: Occupied MO Energies (eV)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-## grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="QMMM: Virtual MO Energies (eV)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-## grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Forces on QM atoms ground state calculation"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n " RMSD: " >> $SUMMARY
-## if [ $PYFLG -eq 1 ] ; then
-##   grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   ./rms.py RUNvec REFvec >> $SUMMARY
-## else
-##   grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   CompVecs >> $SUMMARY
-## fi
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Forces on QM atoms excited state calculation"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n " RMSD: " >> $SUMMARY
-## if [ $PYFLG -eq 1 ] ; then
-##   grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   ./rms.py RUNvec REFvec >> $SUMMARY
-## else
-##   grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   CompVecs >> $SUMMARY
-## fi
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Excited State Forces on QM atoms from SCF calculation"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n " RMSD: " >> $SUMMARY
-## if [ $PYFLG -eq 1 ] ; then
-##   grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   ./rms.py RUNvec REFvec >> $SUMMARY
-## else
-##   grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   CompVecs >> $SUMMARY
-## fi
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (Debye)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (AU)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) Relaxed Difference Dipole Moments (AU)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## echo "-----------------------------------------------------------------------" >> $SUMMARY
-## CURR="geomopt/test1/nitromethane"
-## echo "Check calculation $CURR" >> $SUMMARY
-## echo "" >> $SUMMARY
-## 
-## REF=$CWD/../tests/$CURR
-## RUN=$CWD/runtests/$CURR
-## mkdir -p $RUN
-## cd $RUN
-## cp ${REF}/input.ceon ${RUN} 
-## ${NAESMDEXE} > output
-## cd $CWD
-## tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
-## tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
-## 
-## CURRSTR="Final Structure"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 7 "$CURRSTR" ${REF}/output.tac | tail -n 7 > REFvec
-## grep -A 7 "$CURRSTR" ${RUN}/output.tac | tail -n 7 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="QMMM:             Total energy ="
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep "$CURRSTR" ${REF}/output.tac | cut -c33-52 > REFvec
-## grep "$CURRSTR" ${RUN}/output.tac | cut -c33-52 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="QMMM: Occupied MO Energies (eV)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-## grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="QMMM: Virtual MO Energies (eV)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 2 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-## grep -A 2 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Forces on QM atoms ground state calculation"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n " RMSD: " >> $SUMMARY
-## if [ $PYFLG -eq 1 ] ; then
-##   grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   ./rms.py RUNvec REFvec >> $SUMMARY
-## else
-##   grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   CompVecs >> $SUMMARY
-## fi
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Forces on QM atoms excited state calculation"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n " RMSD: " >> $SUMMARY
-## if [ $PYFLG -eq 1 ] ; then
-##   grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   ./rms.py RUNvec REFvec >> $SUMMARY
-## else
-##   grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   CompVecs >> $SUMMARY
-## fi
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Excited State Forces on QM atoms from SCF calculation"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n " RMSD: " >> $SUMMARY
-## if [ $PYFLG -eq 1 ] ; then
-##   grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   ./rms.py RUNvec REFvec >> $SUMMARY
-## else
-##   grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   CompVecs >> $SUMMARY
-## fi
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (Debye)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (AU)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) Relaxed Difference Dipole Moments (AU)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## echo "-----------------------------------------------------------------------" >> $SUMMARY
-## CURR="geomopt/test2/benzene"
-## echo "Check calculation $CURR" >> $SUMMARY
-## echo "" >> $SUMMARY
-## 
-## REF=$CWD/../tests/$CURR
-## RUN=$CWD/runtests/$CURR
-## mkdir -p $RUN
-## cd $RUN
-## cp ${REF}/input.ceon ${RUN} 
-## ${NAESMDEXE} > output
-## cd $CWD
-## tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
-## tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
-## 
-## CURRSTR="Final Structure"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 12 "$CURRSTR" ${REF}/output.tac | tail -n 12 > REFvec
-## grep -A 12 "$CURRSTR" ${RUN}/output.tac | tail -n 12 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="QMMM:             Total energy ="
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep "$CURRSTR" ${REF}/output.tac | cut -c33-52 > REFvec
-## grep "$CURRSTR" ${RUN}/output.tac | cut -c33-52 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="QMMM: Occupied MO Energies (eV)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-## grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="QMMM: Virtual MO Energies (eV)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-## grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Forces on QM atoms ground state calculation"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n " RMSD: " >> $SUMMARY
-## if [ $PYFLG -eq 1 ] ; then
-##   grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   ./rms.py RUNvec REFvec >> $SUMMARY
-## else
-##   grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   CompVecs >> $SUMMARY
-## fi
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Forces on QM atoms excited state calculation"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n " RMSD: " >> $SUMMARY
-## if [ $PYFLG -eq 1 ] ; then
-##   grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   ./rms.py RUNvec REFvec >> $SUMMARY
-## else
-##   grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   CompVecs >> $SUMMARY
-## fi
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Excited State Forces on QM atoms from SCF calculation"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n " RMSD: " >> $SUMMARY
-## if [ $PYFLG -eq 1 ] ; then
-##   grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   ./rms.py RUNvec REFvec >> $SUMMARY
-## else
-##   grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   CompVecs >> $SUMMARY
-## fi
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (Debye)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (AU)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) Relaxed Difference Dipole Moments (AU)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## echo "-----------------------------------------------------------------------" >> $SUMMARY
-## CURR="geomopt/test2/nitromethane"
-## echo "Check calculation $CURR" >> $SUMMARY
-## echo "" >> $SUMMARY
-## 
-## REF=$CWD/../tests/$CURR
-## RUN=$CWD/runtests/$CURR
-## mkdir -p $RUN
-## cd $RUN
-## cp ${REF}/input.ceon ${RUN} 
-## ${NAESMDEXE} > output
-## cd $CWD
-## tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
-## tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
-## 
-## CURRSTR="Final Structure"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 7 "$CURRSTR" ${REF}/output.tac | tail -n 7 > REFvec
-## grep -A 7 "$CURRSTR" ${RUN}/output.tac | tail -n 7 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="QMMM:             Total energy ="
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep "$CURRSTR" ${REF}/output.tac | cut -c33-52 > REFvec
-## grep "$CURRSTR" ${RUN}/output.tac | cut -c33-52 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="QMMM: Occupied MO Energies (eV)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-## grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="QMMM: Virtual MO Energies (eV)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 2 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-## grep -A 2 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Forces on QM atoms ground state calculation"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n " RMSD: " >> $SUMMARY
-## if [ $PYFLG -eq 1 ] ; then
-##   grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   ./rms.py RUNvec REFvec >> $SUMMARY
-## else
-##   grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   CompVecs >> $SUMMARY
-## fi
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Forces on QM atoms excited state calculation"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n " RMSD: " >> $SUMMARY
-## if [ $PYFLG -eq 1 ] ; then
-##   grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   ./rms.py RUNvec REFvec >> $SUMMARY
-## else
-##   grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   CompVecs >> $SUMMARY
-## fi
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Excited State Forces on QM atoms from SCF calculation"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n " RMSD: " >> $SUMMARY
-## if [ $PYFLG -eq 1 ] ; then
-##   grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   ./rms.py RUNvec REFvec >> $SUMMARY
-## else
-##   grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   CompVecs >> $SUMMARY
-## fi
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (Debye)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (AU)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) Relaxed Difference Dipole Moments (AU)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## echo "-----------------------------------------------------------------------" >> $SUMMARY
-## CURR="geomopt/test3/benzene"
-## echo "Check calculation $CURR" >> $SUMMARY
-## echo "" >> $SUMMARY
-## 
-## REF=$CWD/../tests/$CURR
-## RUN=$CWD/runtests/$CURR
-## mkdir -p $RUN
-## cd $RUN
-## cp ${REF}/input.ceon ${RUN} 
-## ${NAESMDEXE} > output
-## cd $CWD
-## tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
-## tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
-## 
-## CURRSTR="Final Structure"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 12 "$CURRSTR" ${REF}/output.tac | tail -n 12 > REFvec
-## grep -A 12 "$CURRSTR" ${RUN}/output.tac | tail -n 12 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="QMMM:             Total energy ="
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep "$CURRSTR" ${REF}/output.tac | cut -c33-52 > REFvec
-## grep "$CURRSTR" ${RUN}/output.tac | cut -c33-52 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="QMMM: Occupied MO Energies (eV)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-## grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="QMMM: Virtual MO Energies (eV)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-## grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Forces on QM atoms ground state calculation"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n " RMSD: " >> $SUMMARY
-## if [ $PYFLG -eq 1 ] ; then
-##   grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   ./rms.py RUNvec REFvec >> $SUMMARY
-## else
-##   grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   CompVecs >> $SUMMARY
-## fi
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Forces on QM atoms excited state calculation"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n " RMSD: " >> $SUMMARY
-## if [ $PYFLG -eq 1 ] ; then
-##   grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   ./rms.py RUNvec REFvec >> $SUMMARY
-## else
-##   grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   CompVecs >> $SUMMARY
-## fi
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Excited State Forces on QM atoms from SCF calculation"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n " RMSD: " >> $SUMMARY
-## if [ $PYFLG -eq 1 ] ; then
-##   grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   ./rms.py RUNvec REFvec >> $SUMMARY
-## else
-##   grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   CompVecs >> $SUMMARY
-## fi
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (Debye)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (AU)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) Relaxed Difference Dipole Moments (AU)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## echo "-----------------------------------------------------------------------" >> $SUMMARY
-## CURR="geomopt/test3/nitromethane"
-## echo "Check calculation $CURR" >> $SUMMARY
-## echo "" >> $SUMMARY
-## 
-## REF=$CWD/../tests/$CURR
-## RUN=$CWD/runtests/$CURR
-## mkdir -p $RUN
-## cd $RUN
-## cp ${REF}/input.ceon ${RUN} 
-## ${NAESMDEXE} > output
-## cd $CWD
-## tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
-## tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
-## 
-## CURRSTR="Final Structure"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 7 "$CURRSTR" ${REF}/output.tac | tail -n 7 > REFvec
-## grep -A 7 "$CURRSTR" ${RUN}/output.tac | tail -n 7 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="QMMM:             Total energy ="
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep "$CURRSTR" ${REF}/output.tac | cut -c33-52 > REFvec
-## grep "$CURRSTR" ${RUN}/output.tac | cut -c33-52 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="QMMM: Occupied MO Energies (eV)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-## grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="QMMM: Virtual MO Energies (eV)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 2 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
-## grep -A 2 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Forces on QM atoms ground state calculation"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n " RMSD: " >> $SUMMARY
-## if [ $PYFLG -eq 1 ] ; then
-##   grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   ./rms.py RUNvec REFvec >> $SUMMARY
-## else
-##   grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   CompVecs >> $SUMMARY
-## fi
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Forces on QM atoms excited state calculation"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n " RMSD: " >> $SUMMARY
-## if [ $PYFLG -eq 1 ] ; then
-##   grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   ./rms.py RUNvec REFvec >> $SUMMARY
-## else
-##   grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   CompVecs >> $SUMMARY
-## fi
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Excited State Forces on QM atoms from SCF calculation"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n " RMSD: " >> $SUMMARY
-## if [ $PYFLG -eq 1 ] ; then
-##   grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   ./rms.py RUNvec REFvec >> $SUMMARY
-## else
-##   grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
-##   grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
-##   CompVecs >> $SUMMARY
-## fi
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (Debye)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (AU)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
-## 
-## echo "" >> $SUMMARY
-## 
-## CURRSTR="Frequencies (eV) Relaxed Difference Dipole Moments (AU)"
-## echo -n $CURRSTR >> $SUMMARY
-## echo -n ": " >> $SUMMARY
-## grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
-## grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
-## CompVecs >> $SUMMARY
+echo "" >> $SUMMARY
+echo "-----------------------------------------------------------------------" >> $SUMMARY
+CURR="geomopt/test1/benzene"
+echo "Check calculation $CURR" >> $SUMMARY
+echo "" >> $SUMMARY
+
+REF=$CWD/../tests/$CURR
+RUN=$CWD/runtests/$CURR
+mkdir -p $RUN
+cd $RUN
+cp ${REF}/input.ceon ${RUN} 
+${NAESMDEXE} > output
+cd $CWD
+tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
+tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
+
+CURRSTR="Final Structure"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 12 "$CURRSTR" ${REF}/output.tac | tail -n 12 > REFvec
+grep -A 12 "$CURRSTR" ${RUN}/output.tac | tail -n 12 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="QMMM:             Total energy ="
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep "$CURRSTR" ${REF}/output.tac | cut -c33-52 > REFvec
+grep "$CURRSTR" ${RUN}/output.tac | cut -c33-52 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+#CURRSTR="QMMM: Occupied MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
+#
+#CURRSTR="QMMM: Virtual MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
+
+CURRSTR="Forces on QM atoms ground state calculation"
+echo -n $CURRSTR >> $SUMMARY
+echo -n " RMSD: " >> $SUMMARY
+if [ $PYFLG -eq 1 ] ; then
+  grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  ./rms.py RUNvec REFvec >> $SUMMARY
+else
+  grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  CompVecs >> $SUMMARY
+fi
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (Debye)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (AU)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) Relaxed Difference Dipole Moments (AU)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+echo "-----------------------------------------------------------------------" >> $SUMMARY
+CURR="geomopt/test1/nitromethane"
+echo "Check calculation $CURR" >> $SUMMARY
+echo "" >> $SUMMARY
+
+REF=$CWD/../tests/$CURR
+RUN=$CWD/runtests/$CURR
+mkdir -p $RUN
+cd $RUN
+cp ${REF}/input.ceon ${RUN} 
+${NAESMDEXE} > output
+cd $CWD
+tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
+tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
+
+CURRSTR="Final Structure"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 7 "$CURRSTR" ${REF}/output.tac | tail -n 7 > REFvec
+grep -A 7 "$CURRSTR" ${RUN}/output.tac | tail -n 7 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="QMMM:             Total energy ="
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep "$CURRSTR" ${REF}/output.tac | cut -c33-52 > REFvec
+grep "$CURRSTR" ${RUN}/output.tac | cut -c33-52 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+#CURRSTR="QMMM: Occupied MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
+#
+#CURRSTR="QMMM: Virtual MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 2 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 2 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
+
+CURRSTR="Forces on QM atoms ground state calculation"
+echo -n $CURRSTR >> $SUMMARY
+echo -n " RMSD: " >> $SUMMARY
+if [ $PYFLG -eq 1 ] ; then
+  grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  ./rms.py RUNvec REFvec >> $SUMMARY
+else
+  grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  CompVecs >> $SUMMARY
+fi
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (Debye)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (AU)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) Relaxed Difference Dipole Moments (AU)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+echo "-----------------------------------------------------------------------" >> $SUMMARY
+CURR="geomopt/test2/benzene"
+echo "Check calculation $CURR" >> $SUMMARY
+echo "" >> $SUMMARY
+
+REF=$CWD/../tests/$CURR
+RUN=$CWD/runtests/$CURR
+mkdir -p $RUN
+cd $RUN
+cp ${REF}/input.ceon ${RUN} 
+${NAESMDEXE} > output
+cd $CWD
+tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
+tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
+
+CURRSTR="Final Structure"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 12 "$CURRSTR" ${REF}/output.tac | tail -n 12 > REFvec
+grep -A 12 "$CURRSTR" ${RUN}/output.tac | tail -n 12 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="QMMM:             Total energy ="
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep "$CURRSTR" ${REF}/output.tac | cut -c33-52 > REFvec
+grep "$CURRSTR" ${RUN}/output.tac | cut -c33-52 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+#CURRSTR="QMMM: Occupied MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
+#
+#CURRSTR="QMMM: Virtual MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
+
+CURRSTR="Forces on QM atoms ground state calculation"
+echo -n $CURRSTR >> $SUMMARY
+echo -n " RMSD: " >> $SUMMARY
+if [ $PYFLG -eq 1 ] ; then
+  grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  ./rms.py RUNvec REFvec >> $SUMMARY
+else
+  grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  CompVecs >> $SUMMARY
+fi
+
+echo "" >> $SUMMARY
+
+CURRSTR="Forces on QM atoms excited state calculation"
+echo -n $CURRSTR >> $SUMMARY
+echo -n " RMSD: " >> $SUMMARY
+if [ $PYFLG -eq 1 ] ; then
+  grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  ./rms.py RUNvec REFvec >> $SUMMARY
+else
+  grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  CompVecs >> $SUMMARY
+fi
+
+echo "" >> $SUMMARY
+
+CURRSTR="Excited State Forces on QM atoms from SCF calculation"
+echo -n $CURRSTR >> $SUMMARY
+echo -n " RMSD: " >> $SUMMARY
+if [ $PYFLG -eq 1 ] ; then
+  grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  ./rms.py RUNvec REFvec >> $SUMMARY
+else
+  grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  CompVecs >> $SUMMARY
+fi
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (Debye)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (AU)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) Relaxed Difference Dipole Moments (AU)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+echo "-----------------------------------------------------------------------" >> $SUMMARY
+CURR="geomopt/test2/nitromethane"
+echo "Check calculation $CURR" >> $SUMMARY
+echo "" >> $SUMMARY
+
+REF=$CWD/../tests/$CURR
+RUN=$CWD/runtests/$CURR
+mkdir -p $RUN
+cd $RUN
+cp ${REF}/input.ceon ${RUN} 
+${NAESMDEXE} > output
+cd $CWD
+tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
+tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
+
+CURRSTR="Final Structure"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 7 "$CURRSTR" ${REF}/output.tac | tail -n 7 > REFvec
+grep -A 7 "$CURRSTR" ${RUN}/output.tac | tail -n 7 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="QMMM:             Total energy ="
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep "$CURRSTR" ${REF}/output.tac | cut -c33-52 > REFvec
+grep "$CURRSTR" ${RUN}/output.tac | cut -c33-52 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+#CURRSTR="QMMM: Occupied MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
+#
+#CURRSTR="QMMM: Virtual MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 2 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 2 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
+
+CURRSTR="Forces on QM atoms ground state calculation"
+echo -n $CURRSTR >> $SUMMARY
+echo -n " RMSD: " >> $SUMMARY
+if [ $PYFLG -eq 1 ] ; then
+  grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  ./rms.py RUNvec REFvec >> $SUMMARY
+else
+  grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  CompVecs >> $SUMMARY
+fi
+
+echo "" >> $SUMMARY
+
+CURRSTR="Forces on QM atoms excited state calculation"
+echo -n $CURRSTR >> $SUMMARY
+echo -n " RMSD: " >> $SUMMARY
+if [ $PYFLG -eq 1 ] ; then
+  grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  ./rms.py RUNvec REFvec >> $SUMMARY
+else
+  grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  CompVecs >> $SUMMARY
+fi
+
+echo "" >> $SUMMARY
+
+CURRSTR="Excited State Forces on QM atoms from SCF calculation"
+echo -n $CURRSTR >> $SUMMARY
+echo -n " RMSD: " >> $SUMMARY
+if [ $PYFLG -eq 1 ] ; then
+  grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  ./rms.py RUNvec REFvec >> $SUMMARY
+else
+  grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  CompVecs >> $SUMMARY
+fi
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (Debye)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (AU)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) Relaxed Difference Dipole Moments (AU)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+echo "-----------------------------------------------------------------------" >> $SUMMARY
+CURR="geomopt/test3/benzene"
+echo "Check calculation $CURR" >> $SUMMARY
+echo "" >> $SUMMARY
+
+REF=$CWD/../tests/$CURR
+RUN=$CWD/runtests/$CURR
+mkdir -p $RUN
+cd $RUN
+cp ${REF}/input.ceon ${RUN} 
+${NAESMDEXE} > output
+cd $CWD
+tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
+tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
+
+CURRSTR="Final Structure"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 12 "$CURRSTR" ${REF}/output.tac | tail -n 12 > REFvec
+grep -A 12 "$CURRSTR" ${RUN}/output.tac | tail -n 12 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="QMMM:             Total energy ="
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep "$CURRSTR" ${REF}/output.tac | cut -c33-52 > REFvec
+grep "$CURRSTR" ${RUN}/output.tac | cut -c33-52 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+#CURRSTR="QMMM: Occupied MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
+#
+#CURRSTR="QMMM: Virtual MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
+
+CURRSTR="Forces on QM atoms ground state calculation"
+echo -n $CURRSTR >> $SUMMARY
+echo -n " RMSD: " >> $SUMMARY
+if [ $PYFLG -eq 1 ] ; then
+  grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  ./rms.py RUNvec REFvec >> $SUMMARY
+else
+  grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  CompVecs >> $SUMMARY
+fi
+
+echo "" >> $SUMMARY
+
+CURRSTR="Forces on QM atoms excited state calculation"
+echo -n $CURRSTR >> $SUMMARY
+echo -n " RMSD: " >> $SUMMARY
+if [ $PYFLG -eq 1 ] ; then
+  grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  ./rms.py RUNvec REFvec >> $SUMMARY
+else
+  grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  CompVecs >> $SUMMARY
+fi
+
+echo "" >> $SUMMARY
+
+CURRSTR="Excited State Forces on QM atoms from SCF calculation"
+echo -n $CURRSTR >> $SUMMARY
+echo -n " RMSD: " >> $SUMMARY
+if [ $PYFLG -eq 1 ] ; then
+  grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  ./rms.py RUNvec REFvec >> $SUMMARY
+else
+  grep -A 13 "$CURRSTR" $RUN/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 13 "$CURRSTR" $REF/output | tail -n 12 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  CompVecs >> $SUMMARY
+fi
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (Debye)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (AU)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) Relaxed Difference Dipole Moments (AU)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+echo "-----------------------------------------------------------------------" >> $SUMMARY
+CURR="geomopt/test3/nitromethane"
+echo "Check calculation $CURR" >> $SUMMARY
+echo "" >> $SUMMARY
+
+REF=$CWD/../tests/$CURR
+RUN=$CWD/runtests/$CURR
+mkdir -p $RUN
+cd $RUN
+cp ${REF}/input.ceon ${RUN} 
+${NAESMDEXE} > output
+cd $CWD
+tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
+tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
+
+CURRSTR="Final Structure"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 7 "$CURRSTR" ${REF}/output.tac | tail -n 7 > REFvec
+grep -A 7 "$CURRSTR" ${RUN}/output.tac | tail -n 7 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="QMMM:             Total energy ="
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep "$CURRSTR" ${REF}/output.tac | cut -c33-52 > REFvec
+grep "$CURRSTR" ${RUN}/output.tac | cut -c33-52 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+#CURRSTR="QMMM: Occupied MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 3 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 3 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
+#
+#CURRSTR="QMMM: Virtual MO Energies (eV)"
+#echo -n $CURRSTR >> $SUMMARY
+#echo -n ": " >> $SUMMARY
+#grep -A 2 "$CURRSTR" ${REF}/output | sed "/$CURRSTR/d" > REFvec
+#grep -A 2 "$CURRSTR" ${RUN}/output | sed "/$CURRSTR/d" > RUNvec
+#CompVecs >> $SUMMARY
+#
+#echo "" >> $SUMMARY
+
+CURRSTR="Forces on QM atoms ground state calculation"
+echo -n $CURRSTR >> $SUMMARY
+echo -n " RMSD: " >> $SUMMARY
+if [ $PYFLG -eq 1 ] ; then
+  grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  ./rms.py RUNvec REFvec >> $SUMMARY
+else
+  grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  CompVecs >> $SUMMARY
+fi
+
+echo "" >> $SUMMARY
+
+CURRSTR="Forces on QM atoms excited state calculation"
+echo -n $CURRSTR >> $SUMMARY
+echo -n " RMSD: " >> $SUMMARY
+if [ $PYFLG -eq 1 ] ; then
+  grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  ./rms.py RUNvec REFvec >> $SUMMARY
+else
+  grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  CompVecs >> $SUMMARY
+fi
+
+echo "" >> $SUMMARY
+
+CURRSTR="Excited State Forces on QM atoms from SCF calculation"
+echo -n $CURRSTR >> $SUMMARY
+echo -n " RMSD: " >> $SUMMARY
+if [ $PYFLG -eq 1 ] ; then
+  grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | tr '\n' ' ' | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  ./rms.py RUNvec REFvec >> $SUMMARY
+else
+  grep -A 8 "$CURRSTR" $RUN/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > RUNvec
+  grep -A 8 "$CURRSTR" $REF/output | tail -n 7 | cut -c18- | sed -e 's/ *$//' | sed -e 's/  */ /g' | sed -e 's/^ //' > REFvec
+  CompVecs >> $SUMMARY
+fi
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (Debye)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) and Total Molecular Dipole Moments (AU)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
+
+echo "" >> $SUMMARY
+
+CURRSTR="Frequencies (eV) Relaxed Difference Dipole Moments (AU)"
+echo -n $CURRSTR >> $SUMMARY
+echo -n ": " >> $SUMMARY
+grep -A 4 "$CURRSTR" ${REF}/output.tac | tail -n 3 > REFvec
+grep -A 4 "$CURRSTR" ${RUN}/output.tac | tail -n 3 > RUNvec
+CompVecs >> $SUMMARY
 
 echo "" >> $SUMMARY
 echo "-----------------------------------------------------------------------" >> $SUMMARY
@@ -1470,21 +1410,21 @@ cd $CWD
 tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
 tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
 
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Coordinates for step $i:" >> $SUMMARY
-grep -A 12 '$COORD' ${REF}/coordinates${i}.dat | tail -n 12 > REFvec
-grep -A 12 '$COORD' ${RUN}/coordinates${i}.dat | tail -n 12 > RUNvec
+echo -n "Coordinates for time ${i}:" >> $SUMMARY
+grep -A 12 "time =       ${i}" ${REF}/coords.xyz | tail -n 12 | cut -c5- > REFvec
+grep -A 12 "time =       ${i}" ${RUN}/coords.xyz | tail -n 12 | cut -c5- > RUNvec
 Comp
 done
 
 echo "" >> $SUMMARY
 
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Velocities for step $i:" >> $SUMMARY
-grep -A 12 '$VELOC' ${REF}/coordinates${i}.dat | tail -n 12 > REFvec
-grep -A 12 '$VELOC' ${RUN}/coordinates${i}.dat | tail -n 12 > RUNvec
+echo -n "Velocities for time $i:" >> $SUMMARY
+grep -A 13 "time =       ${i}" ${REF}/velocity.out | tail -n 12 > REFvec
+grep -A 13 "time =       ${i}" ${RUN}/velocity.out | tail -n 12 > RUNvec
 Comp
 done
 
@@ -1582,21 +1522,21 @@ cd $CWD
 tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
 tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
 
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Coordinates for step $i:" >> $SUMMARY
-grep -A 7 '$COORD' ${REF}/coordinates${i}.dat | tail -n 7 > REFvec
-grep -A 7 '$COORD' ${RUN}/coordinates${i}.dat | tail -n 7 > RUNvec
+echo -n "Coordinates for time ${i}:" >> $SUMMARY
+grep -A 7 "time =       ${i}" ${REF}/coords.xyz | tail -n 7 | cut -c5- > REFvec
+grep -A 7 "time =       ${i}" ${RUN}/coords.xyz | tail -n 7 | cut -c5- > RUNvec
 Comp
 done
 
 echo "" >> $SUMMARY
 
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Velocities for step $i:" >> $SUMMARY
-grep -A 7 '$VELOC' ${REF}/coordinates${i}.dat | tail -n 7 > REFvec
-grep -A 7 '$VELOC' ${RUN}/coordinates${i}.dat | tail -n 7 > RUNvec
+echo -n "Velocities for time $i:" >> $SUMMARY
+grep -A 8 "time =       ${i}" ${REF}/velocity.out | tail -n 7 > REFvec
+grep -A 8 "time =       ${i}" ${RUN}/velocity.out | tail -n 7 > RUNvec
 Comp
 done
 
@@ -1694,21 +1634,21 @@ cd $CWD
 tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
 tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
 
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Coordinates for step $i:" >> $SUMMARY
-grep -A 12 '$COORD' ${REF}/coordinates${i}.dat | tail -n 12 > REFvec
-grep -A 12 '$COORD' ${RUN}/coordinates${i}.dat | tail -n 12 > RUNvec
+echo -n "Coordinates for time ${i}:" >> $SUMMARY
+grep -A 12 "time =       ${i}" ${REF}/coords.xyz | tail -n 12 | cut -c5- > REFvec
+grep -A 12 "time =       ${i}" ${RUN}/coords.xyz | tail -n 12 | cut -c5- > RUNvec
 Comp
 done
 
 echo "" >> $SUMMARY
 
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Velocities for step $i:" >> $SUMMARY
-grep -A 12 '$VELOC' ${REF}/coordinates${i}.dat | tail -n 12 > REFvec
-grep -A 12 '$VELOC' ${RUN}/coordinates${i}.dat | tail -n 12 > RUNvec
+echo -n "Velocities for time $i:" >> $SUMMARY
+grep -A 13 "time =       ${i}" ${REF}/velocity.out | tail -n 12 > REFvec
+grep -A 13 "time =       ${i}" ${RUN}/velocity.out | tail -n 12 > RUNvec
 Comp
 done
 
@@ -1806,22 +1746,21 @@ cd $CWD
 tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
 tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
 
-
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Coordinates for step $i:" >> $SUMMARY
-grep -A 7 '$COORD' ${REF}/coordinates${i}.dat | tail -n 7 > REFvec
-grep -A 7 '$COORD' ${RUN}/coordinates${i}.dat | tail -n 7 > RUNvec
+echo -n "Coordinates for time ${i}:" >> $SUMMARY
+grep -A 7 "time =       ${i}" ${REF}/coords.xyz | tail -n 7 | cut -c5- > REFvec
+grep -A 7 "time =       ${i}" ${RUN}/coords.xyz | tail -n 7 | cut -c5- > RUNvec
 Comp
 done
 
 echo "" >> $SUMMARY
 
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Velocities for step $i:" >> $SUMMARY
-grep -A 7 '$VELOC' ${REF}/coordinates${i}.dat | tail -n 7 > REFvec
-grep -A 7 '$VELOC' ${RUN}/coordinates${i}.dat | tail -n 7 > RUNvec
+echo -n "Velocities for time $i:" >> $SUMMARY
+grep -A 8 "time =       ${i}" ${REF}/velocity.out | tail -n 7 > REFvec
+grep -A 8 "time =       ${i}" ${RUN}/velocity.out | tail -n 7 > RUNvec
 Comp
 done
 
@@ -1919,22 +1858,21 @@ cd $CWD
 tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
 tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
 
-
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Coordinates for step $i:" >> $SUMMARY
-grep -A 12 '$COORD' ${REF}/coordinates${i}.dat | tail -n 12 > REFvec
-grep -A 12 '$COORD' ${RUN}/coordinates${i}.dat | tail -n 12 > RUNvec
+echo -n "Coordinates for time ${i}:" >> $SUMMARY
+grep -A 12 "time =       ${i}" ${REF}/coords.xyz | tail -n 2 | cut -c5- > REFvec
+grep -A 12 "time =       ${i}" ${RUN}/coords.xyz | tail -n 2 | cut -c5- > RUNvec
 Comp
 done
 
 echo "" >> $SUMMARY
 
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Velocities for step $i:" >> $SUMMARY
-grep -A 12 '$VELOC' ${REF}/coordinates${i}.dat | tail -n 12 > REFvec
-grep -A 12 '$VELOC' ${RUN}/coordinates${i}.dat | tail -n 12 > RUNvec
+echo -n "Velocities for time $i:" >> $SUMMARY
+grep -A 13 "time =       ${i}" ${REF}/velocity.out | tail -n 12 > REFvec
+grep -A 13 "time =       ${i}" ${RUN}/velocity.out | tail -n 12 > RUNvec
 Comp
 done
 
@@ -2032,22 +1970,21 @@ cd $CWD
 tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
 tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
 
-
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Coordinates for step $i:" >> $SUMMARY
-grep -A 7 '$COORD' ${REF}/coordinates${i}.dat | tail -n 7 > REFvec
-grep -A 7 '$COORD' ${RUN}/coordinates${i}.dat | tail -n 7 > RUNvec
+echo -n "Coordinates for time ${i}:" >> $SUMMARY
+grep -A 7 "time =       ${i}" ${REF}/coords.xyz | tail -n 7 | cut -c5- > REFvec
+grep -A 7 "time =       ${i}" ${RUN}/coords.xyz | tail -n 7 | cut -c5- > RUNvec
 Comp
 done
 
 echo "" >> $SUMMARY
 
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Velocities for step $i:" >> $SUMMARY
-grep -A 7 '$VELOC' ${REF}/coordinates${i}.dat | tail -n 7 > REFvec
-grep -A 7 '$VELOC' ${RUN}/coordinates${i}.dat | tail -n 7 > RUNvec
+echo -n "Velocities for time $i:" >> $SUMMARY
+grep -A 8 "time =       ${i}" ${REF}/velocity.out | tail -n 7 > REFvec
+grep -A 8 "time =       ${i}" ${RUN}/velocity.out | tail -n 7 > RUNvec
 Comp
 done
 
@@ -2145,22 +2082,21 @@ cd $CWD
 tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
 tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
 
-
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Coordinates for step $i:" >> $SUMMARY
-grep -A 12 '$COORD' ${REF}/coordinates${i}.dat | tail -n 12 > REFvec
-grep -A 12 '$COORD' ${RUN}/coordinates${i}.dat | tail -n 12 > RUNvec
+echo -n "Coordinates for time ${i}:" >> $SUMMARY
+grep -A 12 "time =       ${i}" ${REF}/coords.xyz | tail -n 12 | cut -c5- > REFvec
+grep -A 12 "time =       ${i}" ${RUN}/coords.xyz | tail -n 12 | cut -c5- > RUNvec
 Comp
 done
 
 echo "" >> $SUMMARY
 
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Velocities for step $i:" >> $SUMMARY
-grep -A 12 '$VELOC' ${REF}/coordinates${i}.dat | tail -n 12 > REFvec
-grep -A 12 '$VELOC' ${RUN}/coordinates${i}.dat | tail -n 12 > RUNvec
+echo -n "Velocities for time $i:" >> $SUMMARY
+grep -A 13 "time =       ${i}" ${REF}/velocity.out | tail -n 12 > REFvec
+grep -A 13 "time =       ${i}" ${RUN}/velocity.out | tail -n 12 > RUNvec
 Comp
 done
 
@@ -2258,22 +2194,21 @@ cd $CWD
 tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
 tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
 
-
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Coordinates for step $i:" >> $SUMMARY
-grep -A 7 '$COORD' ${REF}/coordinates${i}.dat | tail -n 7 > REFvec
-grep -A 7 '$COORD' ${RUN}/coordinates${i}.dat | tail -n 7 > RUNvec
+echo -n "Coordinates for time ${i}:" >> $SUMMARY
+grep -A 7 "time =       ${i}" ${REF}/coords.xyz | tail -n 7 | cut -c5- > REFvec
+grep -A 7 "time =       ${i}" ${RUN}/coords.xyz | tail -n 7 | cut -c5- > RUNvec
 Comp
 done
 
 echo "" >> $SUMMARY
 
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Velocities for step $i:" >> $SUMMARY
-grep -A 7 '$VELOC' ${REF}/coordinates${i}.dat | tail -n 7 > REFvec
-grep -A 7 '$VELOC' ${RUN}/coordinates${i}.dat | tail -n 7 > RUNvec
+echo -n "Velocities for time $i:" >> $SUMMARY
+grep -A 8 "time =       ${i}" ${REF}/velocity.out | tail -n 7 > REFvec
+grep -A 8 "time =       ${i}" ${RUN}/velocity.out | tail -n 7 > RUNvec
 Comp
 done
 
@@ -2371,22 +2306,21 @@ cd $CWD
 tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
 tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
 
-
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Coordinates for step $i:" >> $SUMMARY
-grep -A 12 '$COORD' ${REF}/coordinates${i}.dat | tail -n 12 > REFvec
-grep -A 12 '$COORD' ${RUN}/coordinates${i}.dat | tail -n 12 > RUNvec
+echo -n "Coordinates for time ${i}:" >> $SUMMARY
+grep -A 12 "time =       ${i}" ${REF}/coords.xyz | tail -n 12 | cut -c5- > REFvec
+grep -A 12 "time =       ${i}" ${RUN}/coords.xyz | tail -n 12 | cut -c5- > RUNvec
 Comp
 done
 
 echo "" >> $SUMMARY
 
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Velocities for step $i:" >> $SUMMARY
-grep -A 12 '$VELOC' ${REF}/coordinates${i}.dat | tail -n 12 > REFvec
-grep -A 12 '$VELOC' ${RUN}/coordinates${i}.dat | tail -n 12 > RUNvec
+echo -n "Velocities for time $i:" >> $SUMMARY
+grep -A 13 "time =       ${i}" ${REF}/velocity.out | tail -n 12 > REFvec
+grep -A 13 "time =       ${i}" ${RUN}/velocity.out | tail -n 12 > RUNvec
 Comp
 done
 
@@ -2484,22 +2418,21 @@ cd $CWD
 tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
 tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
 
-
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Coordinates for step $i:" >> $SUMMARY
-grep -A 7 '$COORD' ${REF}/coordinates${i}.dat | tail -n 7 > REFvec
-grep -A 7 '$COORD' ${RUN}/coordinates${i}.dat | tail -n 7 > RUNvec
+echo -n "Coordinates for time ${i}:" >> $SUMMARY
+grep -A 7 "time =       ${i}" ${REF}/coords.xyz | tail -n 7 | cut -c5- > REFvec
+grep -A 7 "time =       ${i}" ${RUN}/coords.xyz | tail -n 7 | cut -c5- > RUNvec
 Comp
 done
 
 echo "" >> $SUMMARY
 
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Velocities for step $i:" >> $SUMMARY
-grep -A 7 '$VELOC' ${REF}/coordinates${i}.dat | tail -n 7 > REFvec
-grep -A 7 '$VELOC' ${RUN}/coordinates${i}.dat | tail -n 7 > RUNvec
+echo -n "Velocities for time $i:" >> $SUMMARY
+grep -A 8 "time =       ${i}" ${REF}/velocity.out | tail -n 7 > REFvec
+grep -A 8 "time =       ${i}" ${RUN}/velocity.out | tail -n 7 > RUNvec
 Comp
 done
 
@@ -2597,22 +2530,21 @@ cd $CWD
 tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
 tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
 
-
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Coordinates for step $i:" >> $SUMMARY
-grep -A 12 '$COORD' ${REF}/coordinates${i}.dat | tail -n 12 > REFvec
-grep -A 12 '$COORD' ${RUN}/coordinates${i}.dat | tail -n 12 > RUNvec
+echo -n "Coordinates for time ${i}:" >> $SUMMARY
+grep -A 12 "time =       ${i}" ${REF}/coords.xyz | tail -n 12 | cut -c5- > REFvec
+grep -A 12 "time =       ${i}" ${RUN}/coords.xyz | tail -n 12 | cut -c5- > RUNvec
 Comp
 done
 
 echo "" >> $SUMMARY
 
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Velocities for step $i:" >> $SUMMARY
-grep -A 12 '$VELOC' ${REF}/coordinates${i}.dat | tail -n 12 > REFvec
-grep -A 12 '$VELOC' ${RUN}/coordinates${i}.dat | tail -n 12 > RUNvec
+echo -n "Velocities for time $i:" >> $SUMMARY
+grep -A 13 "time =       ${i}" ${REF}/velocity.out | tail -n 12 > REFvec
+grep -A 13 "time =       ${i}" ${RUN}/velocity.out | tail -n 12 > RUNvec
 Comp
 done
 
@@ -2710,22 +2642,21 @@ cd $CWD
 tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
 tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
 
-
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Coordinates for step $i:" >> $SUMMARY
-grep -A 7 '$COORD' ${REF}/coordinates${i}.dat | tail -n 7 > REFvec
-grep -A 7 '$COORD' ${RUN}/coordinates${i}.dat | tail -n 7 > RUNvec
+echo -n "Coordinates for time ${i}:" >> $SUMMARY
+grep -A 7 "time =       ${i}" ${REF}/coords.xyz | tail -n 7 | cut -c5- > REFvec
+grep -A 7 "time =       ${i}" ${RUN}/coords.xyz | tail -n 7 | cut -c5- > RUNvec
 Comp
 done
 
 echo "" >> $SUMMARY
 
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Velocities for step $i:" >> $SUMMARY
-grep -A 7 '$VELOC' ${REF}/coordinates${i}.dat | tail -n 7 > REFvec
-grep -A 7 '$VELOC' ${RUN}/coordinates${i}.dat | tail -n 7 > RUNvec
+echo -n "Velocities for time $i:" >> $SUMMARY
+grep -A 8 "time =       ${i}" ${REF}/velocity.out | tail -n 7 > REFvec
+grep -A 8 "time =       ${i}" ${RUN}/velocity.out | tail -n 7 > RUNvec
 Comp
 done
 
@@ -2823,22 +2754,21 @@ cd $CWD
 tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
 tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
 
-
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Coordinates for step $i:" >> $SUMMARY
-grep -A 12 '$COORD' ${REF}/coordinates${i}.dat | tail -n 12 > REFvec
-grep -A 12 '$COORD' ${RUN}/coordinates${i}.dat | tail -n 12 > RUNvec
+echo -n "Coordinates for time ${i}:" >> $SUMMARY
+grep -A 12 "time =       ${i}" ${REF}/coords.xyz | tail -n 12 | cut -c5- > REFvec
+grep -A 12 "time =       ${i}" ${RUN}/coords.xyz | tail -n 12 | cut -c5- > RUNvec
 Comp
 done
 
 echo "" >> $SUMMARY
 
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Velocities for step $i:" >> $SUMMARY
-grep -A 12 '$VELOC' ${REF}/coordinates${i}.dat | tail -n 12 > REFvec
-grep -A 12 '$VELOC' ${RUN}/coordinates${i}.dat | tail -n 12 > RUNvec
+echo -n "Velocities for time $i:" >> $SUMMARY
+grep -A 13 "time =       ${i}" ${REF}/velocity.out | tail -n 12 > REFvec
+grep -A 13 "time =       ${i}" ${RUN}/velocity.out | tail -n 12 > RUNvec
 Comp
 done
 
@@ -2936,22 +2866,21 @@ cd $CWD
 tac $REF/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $REF/output.tac
 tac $RUN/output | sed '/^QMMM: SCF Convergence Information/q' | tac > $RUN/output.tac
 
-
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Coordinates for step $i:" >> $SUMMARY
-grep -A 7 '$COORD' ${REF}/coordinates${i}.dat | tail -n 7 > REFvec
-grep -A 7 '$COORD' ${RUN}/coordinates${i}.dat | tail -n 7 > RUNvec
+echo -n "Coordinates for time ${i}:" >> $SUMMARY
+grep -A 7 "time =       ${i}" ${REF}/coords.xyz | tail -n 7 | cut -c5- > REFvec
+grep -A 7 "time =       ${i}" ${RUN}/coords.xyz | tail -n 7 | cut -c5- > RUNvec
 Comp
 done
 
 echo "" >> $SUMMARY
 
-for i in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010
+for i in 0.1000 0.2000 0.3000 0.4000 0.5000 0.6000 0.7000 0.8000 0.9000 1.0000
 do
-echo -n "Velocities for step $i:" >> $SUMMARY
-grep -A 7 '$VELOC' ${REF}/coordinates${i}.dat | tail -n 7 > REFvec
-grep -A 7 '$VELOC' ${RUN}/coordinates${i}.dat | tail -n 7 > RUNvec
+echo -n "Velocities for time $i:" >> $SUMMARY
+grep -A 8 "time =       ${i}" ${REF}/velocity.out | tail -n 7 > REFvec
+grep -A 8 "time =       ${i}" ${RUN}/velocity.out | tail -n 7 > RUNvec
 Comp
 done
 

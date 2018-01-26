@@ -36,11 +36,11 @@ OBJSQM = \
 	$(OBJDIR)/$(SQMDIR)/xlbomd_module.o \
 	$(OBJDIR)/$(SQMDIR)/elementOrbitalIndex.o \
 	$(OBJDIR)/$(SQMDIR)/parameterReader.o \
-	$(OBJDIR)/$(SQMDIR)/rotation.o \
 	$(OBJDIR)/$(SQMDIR)/qmmm_struct_module.o \
 	$(OBJDIR)/$(SQMDIR)/file_io_dat.o \
 	$(OBJDIR)/$(SQMDIR)/qmmm_vsolv_module.o \
 	$(OBJDIR)/$(SQMDIR)/qm2_params_module.o \
+	$(OBJDIR)/$(SQMDIR)/rotation.o \
 	$(OBJDIR)/$(SQMDIR)/qmmm_module.o \
 	$(OBJDIR)/$(SQMDIR)/qm_gb.o \
 	$(OBJDIR)/$(SQMDIR)/slater_overlap.o \
@@ -135,15 +135,14 @@ OBJSQM = \
 	$(OBJDIR)/$(SQMDIR)/printNM.o \
         $(OBJDIR)/$(SQMDIR)/polarizab0ab_new.o
 OBJNAESMD = \
-	$(OBJDIR)/$(NAESMDDIR)/apc.o \
-        $(OBJDIR)/$(NAESMDDIR)/naesmd_constants.o\
         $(OBJDIR)/$(NAESMDDIR)/naesmd_module.o\
+	$(OBJDIR)/$(NAESMDDIR)/apc.o \
         $(OBJDIR)/$(NAESMDDIR)/md_module.o\
-        $(OBJDIR)/$(NAESMDDIR)/naesmd_space_module.o \
-        $(OBJDIR)/$(NAESMDDIR)/communism.o \
-        $(OBJDIR)/$(NAESMDDIR)/additional-subroutines.o \
+        $(OBJDIR)/$(NAESMDDIR)/naesmd_constants.o\
         $(OBJDIR)/$(NAESMDDIR)/fcn.o \
         $(OBJDIR)/$(NAESMDDIR)/quantum-prop.o \
+        $(OBJDIR)/$(NAESMDDIR)/communism.o \
+        $(OBJDIR)/$(NAESMDDIR)/additional-subroutines.o \
 	$(OBJDIR)/$(NAESMDDIR)/random.o \
 	$(OBJDIR)/$(NAESMDDIR)/langevin-temperature.o \
         $(OBJDIR)/$(NAESMDDIR)/statespecific.o \
@@ -151,16 +150,16 @@ OBJNAESMD = \
 	$(OBJDIR)/$(NAESMDDIR)/nacT_analytic.o \
 	$(OBJDIR)/$(NAESMDDIR)/fewest-switches.o \
 	$(OBJDIR)/$(NAESMDDIR)/coherence.o \
+	$(OBJDIR)/$(NAESMDDIR)/cadiab.o \
 	$(OBJDIR)/$(NAESMDDIR)/quantum-prop-add.o \
 	$(OBJDIR)/$(NAESMDDIR)/writeoutput.o \
 	$(OBJDIR)/$(NAESMDDIR)/verlet.o \
-	$(OBJDIR)/$(NAESMDDIR)/cadiab.o \
-	$(OBJDIR)/$(NAESMDDIR)/main.o \
         $(OBJDIR)/$(NAESMDDIR)/sqm_subs.o \
 	$(OBJDIR)/$(NAESMDDIR)/deriv.o \
 	$(OBJDIR)/$(NAESMDDIR)/buildM.o \
 	$(OBJDIR)/$(NAESMDDIR)/liouv_new.o \
-        $(OBJDIR)/$(NAESMDDIR)/rescaleveloc.o
+        $(OBJDIR)/$(NAESMDDIR)/rescaleveloc.o\
+	$(OBJDIR)/$(NAESMDDIR)/main.o 
 
 OBJSANDER = \
 	$(OBJDIR)/$(SANDERDIR)/amoeba_mdin.o \
@@ -367,7 +366,7 @@ pgi_GOTO:   nexmd.exe
 
 gnu:  FC = gfortran
 gnu:  CC = gcc
-gnu:  FFLAG = -O3 -mcmodel=medium
+gnu:  FFLAG =  -O3 -mcmodel=medium
 gnu:  LDFLAGS = $(FFLAG)
 gnu:  nexmd.exe
 
@@ -380,7 +379,7 @@ gnu_mkl: nexmd.exe
 
 gnu_debug:  FC = gfortran
 gnu_debug:  CC = gcc
-gnu_debug:  FFLAG = -g -mcmodel=medium
+gnu_debug:  FFLAG = -g 
 gnu_debug:  LDFLAGS = $(FFLAG)
 gnu_debug:  nexmd.exe
 

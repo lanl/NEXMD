@@ -1,7 +1,7 @@
 ! <compile=optimized>
 #include "copyright.h"
 #include "dprec.fh"
-subroutine qm2_h1elec_d(R2,XI,XJ, n_atomic_orbi,n_atomic_orbj,indexi, indexj, qmitype,qmjtype,  &
+subroutine qm2_h1elec_d(qm2_params,qm2_struct,R2,XI,XJ, n_atomic_orbi,n_atomic_orbj,indexi, indexj, qmitype,qmjtype,  &
                         totalNumberOrbitals, H)
 
 !***********************************************************************
@@ -25,12 +25,15 @@ subroutine qm2_h1elec_d(R2,XI,XJ, n_atomic_orbi,n_atomic_orbj,indexi, indexj, qm
       use Rotation           , only : GetRotationMatrix, Rotate1Elec
       use ElementOrbitalIndex, only: MaxValenceOrbitals,MaxGaussianExpansion, MaxValenceDimension
       use SlaterOverlap      , only :GetSlaterOverlap
-      use qmmm_module        , only : qm2_params, qm2_struct, EXPONENTIAL_CUTOFF
+      use qmmm_module        , only : qm2_structure, EXPONENTIAL_CUTOFF
       use utilitiesmodule, only : print
+      use qm2_params_module,  only : qm2_params_type
 
       implicit none
 
 !Passed In
+      type(qm2_params_type),intent(inout) :: qm2_params
+      type(qm2_structure),intent(inout) :: qm2_struct
       _REAL_, intent(in) :: R2,XI(3),XJ(3) 
       integer, intent(in) :: n_atomic_orbi, n_atomic_orbj
       integer, intent(in) :: indexi, indexj, qmitype,qmjtype
@@ -48,6 +51,9 @@ subroutine qm2_h1elec_d(R2,XI,XJ, n_atomic_orbi,n_atomic_orbj,indexi, indexj, qm
 
       _REAL_ ::rab
       _REAL_ ::zeta_si, zeta_sj, zeta_pi, zeta_pj, zeta_di, zeta_dj
+      _REAL_ :: local_A(15), local_B(15)
+      _REAL_ :: zeta_a_old=-1.0D99, zeta_b_old=-1.0D99, rab_old=-1.0D99
+      integer:: ntotal=-1
       integer:: i,j,k,l, ii,jj
       integer:: ng, ni, nj, ndi, ndj
 
@@ -85,52 +91,66 @@ subroutine qm2_h1elec_d(R2,XI,XJ, n_atomic_orbi,n_atomic_orbj,indexi, indexj, qm
         isJSPDAtom=(n_atomic_orbj==9)         
 
 !C     Z(1)   = S(I)       / S(J)
-        z(1)=GetSlaterOverlap(ni, 0, nj, 0, 0, zeta_si, zeta_sj,rab)*half*betasas
+        z(1)=GetSlaterOverlap(ni, 0, nj, 0, 0, zeta_si,zeta_a_old, zeta_sj,zeta_b_old, &
+		rab, rab_old, ntotal, local_A, local_B)*half*betasas
        if (.not.isJSAtom) then 
 !C     Z(2)   = S(I)       / P-SIGMA(J)
-        z(2)=GetSlaterOverlap(ni, 0, nj, 1, 0, zeta_si, zeta_pj,rab)*half*betasap   
+        z(2)=GetSlaterOverlap(ni, 0, nj, 1, 0, zeta_si,zeta_a_old, zeta_pj,zeta_b_old, &
+		rab, rab_old, ntotal, local_A, local_B)*half*betasap   
        end if
        if (.not.isISAtom) then 
 !C     Z(3)   = P-SIGMA(I) / S(J)
-        z(3)=GetSlaterOverlap(ni, 1, nj, 0, 0, zeta_pi, zeta_sj,rab)*half*betapas
+        z(3)=GetSlaterOverlap(ni, 1, nj, 0, 0, zeta_pi,zeta_a_old, zeta_sj,zeta_b_old, &
+		rab, rab_old, ntotal, local_A, local_B)*half*betapas
        endif
        if (.not.isJSAtom .and. .not.isISAtom) then 
 !C     Z(4)   = P-SIGMA(I) / P-SIGMA(J)
-        z(4)=GetSlaterOverlap(ni, 1, nj, 1, 0, zeta_pi, zeta_pj,rab)*half*betapap
+        z(4)=GetSlaterOverlap(ni, 1, nj, 1, 0, zeta_pi,zeta_a_old, zeta_pj,zeta_b_old, &
+		rab, rab_old, ntotal, local_A, local_B)*half*betapap
 !C     Z(5)   = P-PI(I)    / P-PI(J)
-        z(5)=GetSlaterOverlap(ni, 1, nj, 1, 1, zeta_pi, zeta_pj,rab)*half*betapap
+        z(5)=GetSlaterOverlap(ni, 1, nj, 1, 1, zeta_pi,zeta_a_old, zeta_pj,zeta_b_old, &
+		rab, rab_old, ntotal, local_A, local_B)*half*betapap
        endif
        if (isJSPDAtom) then 
 !C     Z(7)   = D-SIGMA(J) / S(I)
-        z(7)=GetSlaterOverlap(ni, 0, ndj, 2, 0, zeta_si, zeta_dj,rab)*half*betasad
+        z(7)=GetSlaterOverlap(ni, 0, ndj, 2, 0, zeta_si,zeta_a_old, zeta_dj,zeta_b_old, &
+		rab, rab_old, ntotal, local_A, local_B)*half*betasad
        endif
        if (isISPDAtom) then        
 !C     Z(6)   = S(J)       / D-SIGMA(I)
-        z(6)=GetSlaterOverlap(ndi, 2, nj, 0, 0, zeta_di, zeta_sj,rab)*half*betadas
+        z(6)=GetSlaterOverlap(ndi, 2, nj, 0, 0, zeta_di,zeta_a_old, zeta_sj,zeta_b_old, &
+		rab, rab_old, ntotal, local_A, local_B)*half*betadas
        end if
        if (.not.isISAtom .and. isJSPDAtom) then 
 !C     Z(9)   = D-SIGMA(J) / P-SIGMA(I)
-        z(9)=GetSlaterOverlap(ni, 1, ndj, 2, 0, zeta_pi, zeta_dj,rab)*half*betapad      
+        z(9)=GetSlaterOverlap(ni, 1, ndj, 2, 0, zeta_pi,zeta_a_old, zeta_dj,zeta_b_old, &
+		rab, rab_old, ntotal, local_A, local_B)*half*betapad      
 !C     Z(11)  = D-PI(J)    / P-PI(I)
-        z(11)=GetSlaterOverlap(ni, 1, ndj, 2, 1, zeta_pi, zeta_dj,rab)*half*betapad*3.0d0
+        z(11)=GetSlaterOverlap(ni, 1, ndj, 2, 1, zeta_pi,zeta_a_old, zeta_dj,zeta_b_old, &
+		rab, rab_old, ntotal, local_A, local_B)*half*betapad*3.0d0
        end if
        if (isISPDAtom .and. .not.isJSAtom) then        
 !C     Z(8)   = P-SIGMA(J) / D-SIGMA(I)
-        z(8)=GetSlaterOverlap(ndi, 2, nj, 1, 0, zeta_di, zeta_pj,rab)*half*betadap
+        z(8)=GetSlaterOverlap(ndi, 2, nj, 1, 0, zeta_di,zeta_a_old, zeta_pj,zeta_b_old, &
+		rab, rab_old, ntotal, local_A, local_B)*half*betadap
 !C     Z(10)  = P-PI(J)    / D-PI(I)
-        z(10)=GetSlaterOverlap(ndi, 2, nj, 1, 1, zeta_di, zeta_pj,rab)*half*betadap*3.0d0
+        z(10)=GetSlaterOverlap(ndi, 2, nj, 1, 1, zeta_di,zeta_a_old, zeta_pj,zeta_b_old, &
+		rab, rab_old, ntotal, local_A, local_B)*half*betadap*3.0d0
        end if
        if (isISPDAtom .and. isJSPDAtom) then           
 !C     Z(12)  = D-SIGMA(J) / D-SIGMA(I)
-        z(12)=GetSlaterOverlap(ndi, 2, ndj, 2, 0, zeta_di, zeta_dj,rab)*half*betadad
+        z(12)=GetSlaterOverlap(ndi, 2, ndj, 2, 0, zeta_di,zeta_a_old, zeta_dj,zeta_b_old, &
+		rab, rab_old, ntotal, local_A, local_B)*half*betadad
 !C     Z(13)  = D-PI(J)    / D-PI(I)
-        z(13)=GetSlaterOverlap(ndi, 2, ndj, 2, 1, zeta_di, zeta_dj,rab)*half*betadad*9.0d0
+        z(13)=GetSlaterOverlap(ndi, 2, ndj, 2, 1, zeta_di,zeta_a_old, zeta_dj,zeta_b_old, &
+		rab, rab_old, ntotal, local_A, local_B)*half*betadad*9.0d0
 !C     Z(14)  = D-DELTA(J) / D-DELTA(I)
-        z(14)=GetSlaterOverlap(ndi, 2, ndj, 2, 2, zeta_di, zeta_dj,rab)*half*betadad
+        z(14)=GetSlaterOverlap(ndi, 2, ndj, 2, 2, zeta_di,zeta_a_old, zeta_dj,zeta_b_old, &
+		rab, rab_old, ntotal, local_A, local_B)*half*betadad
        end if
      
       xij=xj-xi
-      call GetRotationMatrix(xij, matrix, .true.)   
+      call GetRotationMatrix(qm2_params,xij, matrix, .true.)   
       call Rotate1Elec(indexi,indexj,n_atomic_orbi,n_atomic_orbj,Z,matrix, &
                totalNumberOrbitals, H, totalNumberOrbitals*(totalNumberOrbitals+1)/2)     
  

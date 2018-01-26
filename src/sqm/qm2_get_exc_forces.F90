@@ -7,7 +7,7 @@
 ! CML this subroutine, as well as DCART1() and DCART2(), since they are based
 ! CML on the same subroutine. 7/13/12
 
-subroutine qm2_get_exc_forces(dxyzqm, xyz_in) ! CML add coordinates passed in 7/13/12
+subroutine qm2_get_exc_forces(qm2_params,qmmm_nml, qm2_rij_eqns, qmmm_mpi,qm2_struct,qmmm_struct,dxyzqm, xyz_in) ! CML add coordinates passed in 7/13/12
 !Current code maintained by: Ross Walker (TSRI 2004)
 
 !This routine calculates the derivatives of the energy for QM-QM
@@ -18,9 +18,12 @@ subroutine qm2_get_exc_forces(dxyzqm, xyz_in) ! CML add coordinates passed in 7/
 
       use constants          , only : EV_TO_KCAL
       use ElementOrbitalIndex, only: MaxValenceOrbitals
-      use qmmm_module        , only : qmmm_nml,qmmm_struct, qm2_struct, qm2_params, qmmm_mpi
+      use qmmm_module        , only : qm2_structure, qmmm_mpi_structure, qm2_rij_eqns_structure
       use qm2_pm6_hof_module
       use dh_correction_module, only : dh_correction_grad
+      use qmmm_struct_module, only : qmmm_struct_type
+      use qm2_params_module,  only : qm2_params_type
+      use qmmm_nml_module   , only : qmmm_nml_type
 
  
        implicit none     
@@ -28,6 +31,12 @@ subroutine qm2_get_exc_forces(dxyzqm, xyz_in) ! CML add coordinates passed in 7/
       _REAL_, parameter :: delAdj =1.0D-8, twoOnedelAdj= 0.5D0/delAdj    
 
 !Passed in
+   type(qm2_rij_eqns_structure),intent(inout) :: qm2_rij_eqns
+   type(qm2_params_type),intent(inout) :: qm2_params
+   type(qmmm_nml_type),intent(inout) :: qmmm_nml
+   type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
+      type(qm2_structure),intent(inout) :: qm2_struct
+      type(qmmm_struct_type), intent(inout) :: qmmm_struct
       _REAL_, intent(out) :: dxyzqm(3,qmmm_struct%nquant_nlink)                                  
       _REAL_, intent(inout) :: xyz_in(3,qmmm_struct%nquant_nlink)	! CML Just in case we don't update coords in qmmm_struct 7/13/12
 
@@ -121,10 +130,12 @@ subroutine qm2_get_exc_forces(dxyzqm, xyz_in) ! CML add coordinates passed in 7/
             end do
             do K=1,3
               xyz_qmi(K)=xyz_qmi(K)+halfChange
-              call qm2_exc_dhc(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+              call qm2_exc_dhc(qm2_params, qmmm_nml, qm2_rij_eqns, qm2_struct, qmmm_struct, &
+                       psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
                        jjl,AA)
               xyz_qmi(K)=xyz_qmi(K)-change
-              call qm2_exc_dhc(psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
+              call qm2_exc_dhc(qm2_params, qmmm_nml, qm2_rij_eqns, qm2_struct, qmmm_struct, &
+                       psum,ii,jj,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi,natqmj,iif,iil,jjf, &
                        jjl,EE)
               xyz_qmi(K)=xyz_qmi(K)+halfChange
                    
@@ -145,10 +156,10 @@ subroutine qm2_get_exc_forces(dxyzqm, xyz_in) ! CML add coordinates passed in 7/
       ! this is not parallelized - do only on the master
       if (qmmm_nml%qmtheory%PM6) then
          natom = qmmm_struct%nquant_nlink
-         call hofCorrectionGradient(natom, dxyzqm)
+         call hofCorrectionGradient(qmmm_struct, natom, dxyzqm)
       end if
       if (qmmm_nml%qmtheory%DISPERSION .or. qmmm_nml%qmtheory%DISPERSION_HYDROGENPLUS) then
-         call dh_correction_grad(qmmm_struct%nquant_nlink,xyz_in, &
+         call dh_correction_grad(qm2_params,qm2_struct, qmmm_struct%nquant_nlink,xyz_in, &
                                  qmmm_struct%iqm_atomic_numbers,qmmm_nml%qmtheory,dxyzqm)
       endif
    end if
@@ -189,7 +200,8 @@ subroutine qm2_get_exc_forces(dxyzqm, xyz_in) ! CML add coordinates passed in 7/
 
 end subroutine qm2_get_exc_forces
 
-subroutine qm2_exc_dhc(P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, &
+subroutine qm2_exc_dhc(qm2_params, qmmm_nml, qm2_rij_eqns, qm2_struct, qmmm_struct, &
+                   P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, &
                    natqmj, iif, iil, jjf, jjl, DENER)
 !***********************************************************************
 !
@@ -201,13 +213,21 @@ subroutine qm2_exc_dhc(P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, &
 
       use constants          , only: ONE, A_TO_BOHRS, A2_TO_BOHRS2, EV_TO_KCAL
       use ElementOrbitalIndex, only: MaxValenceOrbitals,MaxValenceDimension 
-      use qmmm_module        , only: qm2_params, OVERLAP_CUTOFF, qmmm_nml, qm2_struct
+      use qmmm_module        , only: OVERLAP_CUTOFF, qm2_structure, qm2_rij_eqns_structure
       use Rotation           , only: GetRotationMatrix, Rotate2Center2Electron, RotateCore   
       use qm2_fock_d         , only: W2Fock_atompair
+      use qmmm_struct_module, only : qmmm_struct_type
+      use qm2_params_module,  only : qm2_params_type
+      use qmmm_nml_module   , only : qmmm_nml_type
  
       implicit none
 
 !Passed in
+      type(qm2_rij_eqns_structure),intent(inout) :: qm2_rij_eqns
+      type(qm2_params_type),intent(inout) :: qm2_params
+      type(qmmm_nml_type),intent(inout) :: qmmm_nml
+      type(qm2_structure),intent(inout) :: qm2_struct
+      type(qmmm_struct_type), intent(inout) :: qmmm_struct
       _REAL_ P(*)
       _REAL_, intent(in)  :: xyz_qmi(3),xyz_qmj(3)
       integer, intent(in) :: iqm, jqm, natqmi, natqmj, qmitype, qmjtype
@@ -269,7 +289,7 @@ subroutine qm2_exc_dhc(P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, &
       
         if ((n_atomic_orbi.lt.9) .and. (n_atomic_orbj.lt.9)) then  ! SP case
             SHMAT=0.0d0
-             call qm2_h1elec(r2InAu,xyz_qmi(1),                                  &
+             call qm2_h1elec(qm2_params,r2InAu,xyz_qmi(1),                                  &
                    xyz_qmj(1),n_atomic_orbi, n_atomic_orbj, SHMAT,           &
                    qmitype,qmjtype)
             
@@ -288,7 +308,7 @@ subroutine qm2_exc_dhc(P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, &
             
         else  ! for atoms with d orbitals
         
-            call qm2_h1elec_d(r2InAu,xyz_qmi(1:3), xyz_qmj(1:3),  &
+            call qm2_h1elec_d(qm2_params,qm2_struct,r2InAu,xyz_qmi(1:3), xyz_qmj(1:3),  &
                         n_atomic_orbi,n_atomic_orbj,                &
                         firstIndexAO_i, firstIndexAO_j, qmitype, qmjtype,  &
                         n_atomic_orbi+n_atomic_orbj, H)                
@@ -298,8 +318,9 @@ subroutine qm2_exc_dhc(P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, &
 
       KR=1
       hasDOrbital=((n_atomic_orbi.ge.9) .or. (n_atomic_orbj.ge.9))
-      call GetRotationMatrix(xyz_qmj-xyz_qmi, rotationMatrix, hasDOrbital)        
-      call qm2_rotate_qmqm(-1,iqm,jqm,natqmi,natqmj,xyz_qmi,xyz_qmj,            &
+      call GetRotationMatrix(qm2_params,xyz_qmj-xyz_qmi, rotationMatrix, hasDOrbital)        
+      call qm2_rotate_qmqm(qmmm_nml, qm2_params, qm2_rij_eqns,qm2_struct, qmmm_struct,&
+                  -1,iqm,jqm,natqmi,natqmj,xyz_qmi,xyz_qmj,            &
                   W(KR),KR, RI, core)
 
       if (hasDOrbital) then   ! spd case
@@ -311,7 +332,7 @@ subroutine qm2_exc_dhc(P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, &
         WW=0.0D0
 
         ! calculate the 2-center integrals and core-core interaction integrals
-        call qm2_repp_d(qmitype,qmjtype,rijInAu,RI,CORE,WW,i_dimension,j_dimension,1)
+        call qm2_repp_d(qm2_params,qmmm_struct, qmitype,qmjtype,rijInAu,RI,CORE,WW,i_dimension,j_dimension,1)
  
         ! put 2-center 2-electron integrals to the linearized matrix W
 
@@ -337,16 +358,16 @@ subroutine qm2_exc_dhc(P,iqm, jqm,qmitype,qmjtype,xyz_qmi,xyz_qmj,natqmi, &
     n_atomic_orbi,n_atomic_orbj,  &
     ii,jj,core,rotationMatrix,H)
    
-   call qm2_core_core_repulsion(iqm, jqm, rij, oneOverRij, RI, enuclr)         
+   call qm2_core_core_repulsion(qmmm_nml, qm2_params,qmmm_struct, iqm, jqm, rij, oneOverRij, RI, enuclr)         
         
     ! put what we have now to the Fock matrix
     F(1:linear)=H(1:linear)
        
     ! 2-center 2-electron contribution to the Fock matrix      
     call W2Fock_atompair(W, F, P, n_atomic_orbj, n_atomic_orbi,  &
-      firstIndexAO_j, firstIndexAO_i)
+      firstIndexAO_j, firstIndexAO_i,qmmm_struct%W2Fock_atompair_initialized, qmmm_struct%w_index)
     call W2Fock_atompair(W, F, P, n_atomic_orbi, n_atomic_orbj,  &
-      firstIndexAO_i, firstIndexAO_j)   
+      firstIndexAO_i, firstIndexAO_j,qmmm_struct%W2Fock_atompair_initialized, qmmm_struct%w_index)   
 
     EE=qm2_HELECT(n_atomic_orbi+n_atomic_orbj-1,P,H,F,vasya)   
     DENER=EE+ENUCLR

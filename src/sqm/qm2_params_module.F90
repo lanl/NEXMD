@@ -192,6 +192,28 @@ module qm2_params_module
      logical, dimension(:), pointer :: qxd_supported
      _REAL_, dimension(:), pointer :: qxd_s, qxd_z0, qxd_zq, qxd_d0, qxd_dq, qxd_q0, qxd_qq, qxd_neff
 
+     !save datas from MNDOCharegSeparation Module subroutines    
+     integer :: DDP_qmtype_saved=-1
+     _REAL_  :: DD_saved(6), PO_saved(9)
+     logical :: DDP_initialized=.false. 
+   
+     _REAL_  :: REPD(52)=0.0D0
+     logical :: OC2E_initialized=.false.
+     integer :: OC2E_qmType_saved=-1
+
+     !save from qm2_scf
+     _REAL_  :: smallsum, abstol !Underflow limit for dspevr 
+     integer :: itrmax_local
+
+     !save from rotation module
+    _REAL_   :: matrix_saved(15,45)
+    _REAL_  :: xij_saved(3)=(/ 1.0D9, 1.0D9, 1.0D9 /) 
+    
+     !save from Vxi_pack
+     logical :: vxi_first=.true.
+     logical :: vxia_first=.true.
+     character :: keywr*6    
+ 
   end type qm2_params_type
 
   interface new

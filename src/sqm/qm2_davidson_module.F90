@@ -17,10 +17,24 @@
 !
 !  Global variables/arrays/user-defined types and structures
 !
-!--------------------------------------------------------------------
 !
    type qm2_davidson_structure_type
 
+
+      character*1000 :: muab_out
+      character*1000 :: ceo_out
+      character*1000 :: normalmodesao
+      character*1000 :: normalmodesmo
+      character*1000 :: normalmodescf
+      character*1000 :: modes_b 
+      character*1000 :: ee_b 
+      integer        :: ceo_unit
+      integer        :: muab_unit
+      integer        :: modes_unit
+      integer        :: ee_unit
+      integer        :: normmodesao_unit
+      integer        :: normmodesmo_unit
+      integer        :: normmodescf_unit
       logical :: calcxdens ! flag for calculating cross densities !JAKB
 
       logical :: has_been_run = .FALSE. ! Has the Davidson calculation been run at least once?
@@ -125,18 +139,22 @@
       ! Excited state gradient information
       _REAL_, allocatable :: dxyz(:) 
 
+      logical :: initialized = .false. ! initially zero, i.e. not initialized
+
       ! COSMO parameters do not really belong here
       ! but it is easy to have them here for time being
       !_REAL_::ceps ! COSMO dielectric permittivity
 
+      !save data from subroutine davidson
+      integer ::istore=0 ! zero initially
+      integer ::istore_M=0
+   
    end type qm2_davidson_structure_type
 
 
    public :: allocate_davidson, deallocate_davidson
    
-   type(qm2_davidson_structure_type),target,save :: qm2ds
 
-   logical, private :: initialized = 0 ! initially zero, i.e. not initialized
    contains
 !
 !********************************************************************
@@ -145,19 +163,25 @@
 !
 !********************************************************************
 !
-   subroutine allocate_davidson()
-   use qmmm_module,only:qm2_struct,qmmm_struct,qmmm_scratch,qmmm_nml
+   subroutine allocate_davidson(qmmm_scratch,qmmm_nml,qm2_struct, qm2ds, qmmm_struct)
+   use qmmm_nml_module   , only : qmmm_nml_type
+   use qmmm_module,only: qmmm_scratch_structure, qm2_structure
+   use qmmm_struct_module, only : qmmm_struct_type
 
    implicit none
-
+   type(qmmm_scratch_structure),intent(inout) :: qmmm_scratch
+   type(qmmm_nml_type),intent(inout) :: qmmm_nml
+   type(qm2_structure),intent(inout) :: qm2_struct
+   type(qm2_davidson_structure_type), intent(inout) :: qm2ds
+   type(qmmm_struct_type), intent(in) :: qmmm_struct
    integer i,j,ierr
 
    REQUIRE(qm2ds%Mx .GT. 0)
 
-   if (initialized) return 
+   if (qm2ds%initialized) return 
 
 
-   initialized = .TRUE. ! allocated
+   qm2ds%initialized = .TRUE. ! allocated
 
 !-----------INITIALIZE "CONSTANTS"--------------
    ! Nb - the basis size, i.e., total number of atomic orbitals
@@ -313,15 +337,14 @@
 !
 !********************************************************************
 !
-   subroutine deallocate_davidson()
-
-	use qmmm_module, only: qmmm_struct
+   subroutine deallocate_davidson(qm2ds)
 
 	integer :: ierr
+   type(qm2_davidson_structure_type), intent(inout) :: qm2ds
 
    print*,'davidson deallocation'
 
-   if(.NOT. initialized) then
+   if(.NOT. qm2ds%initialized) then
       write(6,*) ' Davidson was never initialized. Exiting deallocation procedure'
       return
    end if

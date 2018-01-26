@@ -12,7 +12,6 @@
 
 module opnq
 
-  use qmmm_module, only: qmmm_opnq
   use EVDWMOD
   
   implicit none  
@@ -21,24 +20,13 @@ module opnq
   public:: Opnq_fock, Opnq_fock_atom_pair, Opnq_LJ_atom_pair
   
   private:: LJ2OPNQ, Initialize 
-  private:: initialized, MM_opnq, MM_opnq_list_saved, type_list_saved, &
-            MaxAtomicNumber_MM_opnq
+  private:: MaxAtomicNumber_MM_opnq
   
   integer, parameter::MaxAtomicNumber_MM_opnq=20 
 
-! Data declaration
-  logical, save::initialized=.false.
-  
-  type MM_opnq
-    _REAL_:: s, zeta, alpha, neff
-  end type MM_opnq
-  type(MM_opnq), dimension(:), allocatable, save::MM_opnq_list_saved   
-
-  integer, dimension(:), allocatable, save::type_list_saved
-   
   contains
   
-subroutine Opnq_fock(fock, density)
+subroutine Opnq_fock(qmmm_opnq, qm2_params, qm2_struct,qmmm_struct, fock, density)
 !***********************************************************************        
 !                                                                               
 !  This subroutine calculates the OPNQ contributions to the Fock matrix
@@ -48,8 +36,14 @@ subroutine Opnq_fock(fock, density)
 !***********************************************************************  
     use constants, only:  A_TO_BOHRS, zero     
     use ElementOrbitalIndex, only:MaxValenceOrbitals 
-    use qmmm_module, only : qmmm_struct, qm2_struct, qm2_params, qmmm_opnq
+    use qmmm_module, only :  qm2_structure, qmmm_opnq_structure
+    use qm2_params_module,  only : qm2_params_type
+    use qmmm_struct_module, only : qmmm_struct_type
     implicit none
+    type(qmmm_opnq_structure),intent(inout) :: qmmm_opnq
+    type(qm2_params_type),intent(inout) :: qm2_params
+    type(qm2_structure),intent(inout) :: qm2_struct
+    type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
     _REAL_, intent(inout) :: fock(:)
     _REAL_, intent(in) :: density(:)
@@ -61,25 +55,25 @@ subroutine Opnq_fock(fock, density)
     _REAL_,dimension(MaxValenceOrbitals)::fock_atom_diag, density_atom_diag 
 
 !  Check if initilization is necessary
-    if (initialized) then
-       if (.not.allocated(type_list_saved)) then
-          initialized=.false.
+    if (qmmm_opnq%opnq_initialized) then
+       if (.not.allocated(qmmm_opnq%type_list_saved)) then
+          qmmm_opnq%opnq_initialized=.false.
        else 
-        if (size(type_list_saved) /= size(qmmm_opnq%MM_atomType)) then
-           initialized=.false.
+        if (size(qmmm_opnq%type_list_saved) /= size(qmmm_opnq%MM_atomType)) then
+           qmmm_opnq%opnq_initialized=.false.
         else 
-           do i=1, size(type_list_saved)
-              if (type_list_saved(i) /= qmmm_opnq%MM_atomType(i) ) then
-                 initialized=.false.
+           do i=1, size(qmmm_opnq%type_list_saved)
+              if (qmmm_opnq%type_list_saved(i) /= qmmm_opnq%MM_atomType(i) ) then
+                 qmmm_opnq%opnq_initialized=.false.
                  exit
-              end if ! (type_list_saved /= qmmm_opnq%MM_atomType(i) 
-           end do ! i=1, size(type_list_saved)
-        end if  ! (size(type_list_saved) /= size(qmmm_opnq%MM_atomType) 
-       end if  !   (.not.allocated(type_list_saved))
-    end if !  (initialized)   
+              end if ! (qmmm_opnq%type_list_saved /= qmmm_opnq%MM_atomType(i) 
+           end do ! i=1, size(qmmm_opnq%type_list_saved)
+        end if  ! (size(qmmm_opnq%type_list_saved) /= size(qmmm_opnq%MM_atomType) 
+       end if  !   (.not.allocated(qmmm_opnq%type_list_saved))
+    end if !  (qmmm_opnq%opnq_initialized)   
               
 
-    if (.not. initialized) call Initialize
+    if (.not. qmmm_opnq%opnq_initialized) call Initialize(qmmm_opnq)
 
 
     eOPNQ=zero
@@ -95,8 +89,8 @@ subroutine Opnq_fock(fock, density)
        end do ! i
        
        do jmm=1,qmmm_struct%qm_mm_pairs
-           call Opnq_fock_atom_pair(iqm, jmm, eOPNQ_pair, fock_opnq_pair)
-           call Opnq_LJ_atom_pair(iqm, jmm, LJ_pair) 
+           call Opnq_fock_atom_pair(qmmm_opnq, qm2_params, qm2_struct, qmmm_struct, iqm, jmm, eOPNQ_pair, fock_opnq_pair)
+           call Opnq_LJ_atom_pair(qmmm_opnq, qm2_params, qm2_struct, qmmm_struct, iqm, jmm, LJ_pair) 
            eOPNQ=eOPNQ+eOPNQ_pair
            fock_opnq=fock_opnq+fock_opnq_pair
            LJ=LJ+LJ_pair
@@ -116,7 +110,7 @@ subroutine Opnq_fock(fock, density)
 
 end subroutine Opnq_fock
 
-subroutine Opnq_fock_atom_pair(iqm, jmm, eOPNQ_pair, fock_opnq_pair, dx, dy, dz )
+subroutine Opnq_fock_atom_pair(qmmm_opnq, qm2_params, qm2_struct,qmmm_struct, iqm, jmm, eOPNQ_pair, fock_opnq_pair, dx, dy, dz )
 !***********************************************************************        
 !                                                                               
 !  This subroutine calculates the OPNQ contributions to the Fock matrix
@@ -127,11 +121,17 @@ subroutine Opnq_fock_atom_pair(iqm, jmm, eOPNQ_pair, fock_opnq_pair, dx, dy, dz 
 !                                         
 !*********************************************************************** 
     use constants, only:  A_TO_BOHRS, AU_TO_EV, zero     
-    use qmmm_module, only : qmmm_struct, qm2_struct, qm2_params, qmmm_opnq
+    use qmmm_module, only : qm2_structure, qmmm_opnq_structure, MM_opnq
+    use qm2_params_module,  only : qm2_params_type
     use QM2_parameters, only : core_chg
     use opnq_switching, only : switchoff
     
+    use qmmm_struct_module, only : qmmm_struct_type
     implicit none
+    type(qmmm_opnq_structure),intent(inout) :: qmmm_opnq
+    type(qm2_params_type),intent(inout) :: qm2_params
+    type(qm2_structure),intent(inout) :: qm2_struct
+    type(qmmm_struct_type), intent(inout) :: qmmm_struct
 
     integer, intent(in)::iqm, jmm
     _REAL_, intent(out) :: fock_opnq_pair, eOPNQ_pair
@@ -153,12 +153,12 @@ subroutine Opnq_fock_atom_pair(iqm, jmm, eOPNQ_pair, fock_opnq_pair, dx, dy, dz 
     if (qm2_params%qxd_supported(qmtype)) then 
     
         ! calculate the effective charge for the qmatom 
-        call qm2_calc_mulliken(iqm,qm_charge)
+        call qm2_calc_mulliken(qm2_params,qm2_struct,iqm,qm_charge)
         
         jmm_index=qmmm_struct%qm_mm_pair_list(jmm)
         mmtype=qmmm_opnq%MM_atomType(jmm_index)
         if (qmmm_opnq%supported(mmtype)) then
-            myOpnq=MM_opnq_list_saved(mmtype)
+            myOpnq=qmmm_opnq%MM_opnq_list_saved(mmtype)
             atomic_number=qmmm_opnq%atomic_number(mmtype)
             core_charge=core_chg(atomic_number)*1.d0
 
@@ -214,7 +214,7 @@ subroutine Opnq_fock_atom_pair(iqm, jmm, eOPNQ_pair, fock_opnq_pair, dx, dy, dz 
    
 end subroutine Opnq_fock_atom_pair
   
-subroutine Opnq_LJ_atom_pair(iqm, jmm, LJ_pair, dx, dy, dz)
+subroutine Opnq_LJ_atom_pair(qmmm_opnq, qm2_params,qm2_struct, qmmm_struct, iqm, jmm, LJ_pair, dx, dy, dz)
 !***********************************************************************        
 !                                                                               
 !  This subroutine calculates the classic LJ interactions on a single 
@@ -225,10 +225,16 @@ subroutine Opnq_LJ_atom_pair(iqm, jmm, LJ_pair, dx, dy, dz)
 !                                         
 !*********************************************************************** 
     use constants, only:  KCAL_TO_EV, zero     
-    use qmmm_module, only : qmmm_struct, qm2_struct, qm2_params, qmmm_opnq
+    use qmmm_module, only : qm2_structure, qmmm_opnq_structure
     use opnq_switching, only : switchoff
+    use qm2_params_module,  only : qm2_params_type
     
+    use qmmm_struct_module, only : qmmm_struct_type
     implicit none
+    type(qmmm_opnq_structure),intent(inout) :: qmmm_opnq
+    type(qm2_params_type),intent(inout) :: qm2_params
+    type(qm2_structure),intent(inout) :: qm2_struct
+    type(qmmm_struct_type), intent(in) :: qmmm_struct
 
     integer, intent(in)::iqm, jmm
     _REAL_, intent(out) :: LJ_pair
@@ -291,6 +297,7 @@ end subroutine Opnq_LJ_atom_pair
 subroutine LJ2OPNQ(atomic_number, sigma, epsilon, MM_entry)
     
     use constants, only: AU_TO_KCAL, A_TO_BOHRS
+    use qmmm_module, only: MM_opnq
     implicit none
        
     integer, intent(in)::atomic_number
@@ -334,23 +341,23 @@ subroutine LJ2OPNQ(atomic_number, sigma, epsilon, MM_entry)
    
 end subroutine LJ2OPNQ
 
-subroutine Initialize()
+subroutine Initialize(qmmm_opnq)
 
-  use qmmm_module, only: qmmm_opnq
+  use qmmm_module, only: qmmm_opnq_structure, MM_opnq
   implicit none
-  
+  type(qmmm_opnq_structure), intent(inout) :: qmmm_opnq 
   integer::i, natom, ntype
   type(MM_opnq)::temp
   
   natom=size(qmmm_opnq%MM_atomType)
   ntype=size(qmmm_opnq%LJ_r)
   
-  if (allocated(type_list_saved)) deallocate(type_list_saved)
-  allocate(type_list_saved(natom) )  
-  type_list_saved=qmmm_opnq%MM_atomType
+  if (allocated(qmmm_opnq%type_list_saved)) deallocate(qmmm_opnq%type_list_saved)
+  allocate(qmmm_opnq%type_list_saved(natom) )  
+  qmmm_opnq%type_list_saved=qmmm_opnq%MM_atomType
   
-  if (allocated(MM_opnq_list_saved)) deallocate(MM_opnq_list_saved)
-  allocate(MM_opnq_list_saved(ntype) )
+  if (allocated(qmmm_opnq%MM_opnq_list_saved)) deallocate(qmmm_opnq%MM_opnq_list_saved)
+  allocate(qmmm_opnq%MM_opnq_list_saved(ntype) )
   
   do i=1, ntype
     temp%S=0.d0
@@ -362,10 +369,10 @@ subroutine Initialize()
         call LJ2OPNQ(qmmm_opnq%atomic_number(i),  &
              qmmm_opnq%LJ_r(i), qmmm_opnq%LJ_epsilon(i), temp) 
     end if
-    MM_opnq_list_saved(i)=temp    
+    qmmm_opnq%MM_opnq_list_saved(i)=temp    
   end do ! i=1, ntype
  
-  initialized=.true.
+  qmmm_opnq%opnq_initialized=.true.
   
   return
  

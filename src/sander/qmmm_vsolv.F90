@@ -694,7 +694,7 @@ subroutine qmmm_vsolv_update(nstep, natom, nres, natom_res, charge, unimaged_coo
   ! Don't need to restore the MMLink pair atoms since only the solvent is going to 
   ! change here and these can't involve link atoms when running with nearest qm solvent.
   ! in parallel all threads call this for now.
-  call qmmm_restore_mm_charges(qmmm_struct%nquant,qmmm_struct%qm_resp_charges,charge, &
+  call qmmm_restore_mm_charges(qmmm_nml,qmmm_struct%nquant,qmmm_struct%qm_resp_charges,charge, &
                                qmmm_struct%scaled_mm_charges, qmmm_struct%iqmatoms, &
                                qmmm_nml%chg_lambda,qmmm_struct%nlink, &
                                qmmm_struct%link_pairs, &
@@ -720,7 +720,7 @@ subroutine qmmm_vsolv_update(nstep, natom, nres, natom_res, charge, unimaged_coo
   ! We don't need to save the charges since they won't have changed since the
   ! very first time we did it.
   ! in parallel all threads call this for now.
-  call qm_zero_charges(charge,qmmm_struct%scaled_mm_charges,.false.)
+  call qm_zero_charges(qmmm_nml,qmmm_struct, charge,qmmm_struct%scaled_mm_charges,.false.)
 
   ! Finally we must reinitialize the bonds, angles and dihedrals list
   ! for the new qm atoms.

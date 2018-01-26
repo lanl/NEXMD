@@ -9,9 +9,11 @@
    scfconv=1.0d-8, ! Ground-state SCF convergence criteria, eV [1.0d-6]
    verbosity=1, ! QM/MM output verbosity (0-minimum, 5-maximum)
    ! [1 for dynamics and optimization, 5 for others]
-   printdipole=2, ! (0) Unrelaxed transitions, (1) Unrelaxed transitions plus 
-   ! total molecular, or (2) Unrelaxed/relaxed transitions plus 
-   ! total molecular [1 for dynamics, 2 for optimization and single-point]
+   printdipole=2, ! (0) No dipole data, (1) Unrelaxed transitions plus 
+   ! ground state total molecular, or (2) Unrelaxed/relaxed transitions plus 
+   ! total molecular WARNING: option 2 is expensive [1 for dynamics, 2 for optimization and single-point]
+   printcharges=0, ! Print (1) or do not print (0) Mulliken charges of QM atoms [0]
+   ! charges for excited states will be printed if printdipole=2
    printbondorders=0, ! (0) No or (1) Yes [0]
    ! *** UNDER DEVELOPMENT, DO NOT USE ***
    density_predict=0, ! (0) None, (1) Reversible MD, 
@@ -28,7 +30,6 @@
    ! *** UNDER DEVELOPMENT, DO NOT USE ***
    dav_maxcyc=200, ! Max cycles for Davidson diagonalization 
    ! (negative to ignore convergence) [100]
-   printcharges=0, ! Print (1) or do not print (0) Mulliken charges of QM atoms [0]
    calcxdens=.false., ! Print (.true.) or do not print (.false.) 
    ! excited-to-excited transition dipole moments [.false.]
 

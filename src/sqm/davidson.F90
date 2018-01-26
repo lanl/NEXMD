@@ -12,11 +12,22 @@
 !
 !********************************************************************
 !   
-   subroutine davidson()
-   use qmmm_module,only:qm2_struct, qmmm_struct !cml-test
+   subroutine davidson(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds, qmmm_struct)
+   use qmmm_module,only:qm2_structure, qmmm_mpi_structure !cml-test
    use qm2_davidson_module
+   use qmmm_struct_module, only : qmmm_struct_type
+   use cosmo_C, only : cosmo_C_structure
+   use qm2_params_module,  only : qm2_params_type
+   use qmmm_nml_module   , only : qmmm_nml_type
 
    implicit none
+   type(qmmm_nml_type),intent(inout) :: qmmm_nml
+   type(qm2_params_type),intent(inout) :: qm2_params
+   type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi 
+   type(cosmo_C_structure), intent (inout) :: cosmo_c_struct
+   type(qm2_structure),intent(inout) :: qm2_struct
+   type(qmmm_struct_type), intent(inout) :: qmmm_struct
+   type(qm2_davidson_structure_type), intent(inout) :: qm2ds
 
    _REAL_ random,rranset,rranf
    _REAL_ ferr1,ferr2,fn
@@ -25,9 +36,6 @@
    integer i,j,lprint
    integer iseed,ip,ih,j0,Mx0,imin,one,iloops
    integer kflag,nd,nd1,nd1_old,j1
-
-   integer,save::istore=0 ! zero initially
-   integer,save::istore_M=0
 
    integer Lt,Mb
 !
@@ -47,7 +55,7 @@
    iloops=0
 
    if(qm2ds%dav_guess==0) then
-      istore=0 ! overwriting istore to not use guess
+      qm2ds%istore=0 ! overwriting qm2ds%istore to not use guess
    end if
 
 ! Split Mx into batches of j1 size
@@ -73,16 +81,16 @@
       end if
 
 !     Read irflag-1 states 
-      open (10,file='modes.b',form='unformatted',status='old')
-      open (12,file='ee.b',status='old')
+      open (qm2ds%modes_unit,file=trim(qm2ds%modes_b),form='unformatted',status='old')
+      open (qm2ds%ee_unit,file=trim(qm2ds%ee_b),status='old')
 
       do j=1,j0
-         read (10) (qm2ds%v0(i,j),i=1,qm2ds%Nrpa)
-         read (12,*) qm2ds%e0(j)
+         read (qm2ds%modes_unit) (qm2ds%v0(i,j),i=1,qm2ds%Nrpa)
+         read (qm2ds%ee_unit,*) qm2ds%e0(j)
       enddo
    
-      close(10)
-      close(12)
+      close(qm2ds%modes_unit)
+      close(qm2ds%ee_unit)
 
       if (j0.eq.qm2ds%Mx) goto 70
 
@@ -102,33 +110,33 @@
       write(6,*) 'nd=',nd 
       write(6,*) 'nd1=',nd1
       write(6,*) 'j1=',j1
-      write(6,*)'istore=',istore
-      write(6,*)'istore_M=',istore_M
+      write(6,*)'qm2ds%istore=',qm2ds%istore
+      write(6,*)'qm2ds%istore_M=',qm2ds%istore_M
    end if
 
 !	if (irflag.gt.1.and.Nb.gt.100.and.mdflag.gt.0) then
-!	   istore=min(Mx,Mx_ss)
+!	   qm2ds%istore=min(Mx,Mx_ss)
 ! --- read stored modes from the previous calculations in MD run
 !         open (10,file='modes-ao.b',form='unformatted',status='old')       
-!         do j=1,istore
+!         do j=1,qm2ds%istore
 !	    read (10) (v2(i,j),i=1,Nb*Nb) 
 !	   enddo
 !	   close(10)	  
 !	endif	 
 
-   if(istore.gt.0) then ! MD point only!!!!	 
+   if(qm2ds%istore.gt.0) then ! MD point only!!!!	 
 !     recover excited state vectors from AO representation in v2
 !     recovered state vectors are put to v0
-      do j=1,istore
-         call site2mo(qm2ds%rrwork,qm2ds%v2(1,j),qm2ds%v0(1,j))
+      do j=1,qm2ds%istore
+         call site2mo(qm2ds,qm2ds%rrwork,qm2ds%v2(1,j),qm2ds%v0(1,j))
       end do
    endif
 
 ! kav: the lines below are commented out since they are not present in original davidson
 ! 
 ! CML TEST 7/15/12
-   !if(qm2ds%mdflag /= 0) istore = qm2ds%Mx ! If first run, don't try and recover vectors. Do it on future calls.
-   !if (qm2ds%mdflag /= 0) istore = 0 ! If first run, don't try and recover vectors. Do it on future calls. ! KGB
+   !if(qm2ds%mdflag /= 0) qm2ds%istore = qm2ds%Mx ! If first run, don't try and recover vectors. Do it on future calls.
+   !if (qm2ds%mdflag /= 0) qm2ds%istore = 0 ! If first run, don't try and recover vectors. Do it on future calls. ! KGB
 !
 !--------------------------------------------------------------------
 !  Begin big loop
@@ -172,14 +180,15 @@
 
 ! try to find vector new vectors in the batch:
 !write(6,*) 'Entering davidson0'
-   call davidson0(qm2ds%Ncis,lprint,qm2ds%ftol0,qm2ds%ftol1,qm2ds%ferr, &
+   call davidson0(qm2_params,qmmm_nml,qmmm_mpi, cosmo_c_struct, qm2_struct,qm2ds,&
+      qmmm_struct,qm2ds%Ncis,lprint,qm2ds%ftol0,qm2ds%ftol1,qm2ds%ferr, &
       qm2ds%Np,qm2ds%Nh,j0,j1, &
       qm2ds%e0,qm2ds%v0,kflag,qm2ds%ix, &
       qm2ds%rrwork(1),qm2ds%rrwork(2*qm2ds%Ncis+1), &
       qm2ds%rrwork(4*qm2ds%Ncis+1), &
       nd,nd1,qm2ds%vexp1,qm2ds%vexp,qm2ds%ray,qm2ds%rayv,qm2ds%rayvL, &
       qm2ds%rayvR,qm2ds%raye,qm2ds%raye1, &
-      qm2ds%ray1,qm2ds%ray1a,qm2ds%ray2,qm2ds%idav,istore)
+      qm2ds%ray1,qm2ds%ray1a,qm2ds%ray2,qm2ds%idav,qm2ds%istore)
 
 ! Printing out found eigenvalues, error and tolerance
    if(lprint>0) then
@@ -203,16 +212,16 @@
 !   end do
    
    if(qm2ds%mdflag.lt.0.and.qm2ds%Nb.gt.100) then
-      open (10,file='modes.b',form='unformatted')
-      open (12,file='ee.b')
+      open (qm2ds%modes_unit,file=trim(qm2ds%modes_b),form='unformatted')
+      open (qm2ds%ee_unit,file=trim(qm2ds%ee_b))
 
       do j=1,j0
-         write (10) (qm2ds%v0(i,j),i=1,qm2ds%Nrpa)
-         write (12,*)  qm2ds%e0(j)
+         write (qm2ds%modes_unit) (qm2ds%v0(i,j),i=1,qm2ds%Nrpa)
+         write (qm2ds%ee_unit,*)  qm2ds%e0(j)
       end do
 
-      close(10)
-      close(12)
+      close(qm2ds%modes_unit)
+      close(qm2ds%ee_unit)
    end if
 
    goto 10
@@ -271,20 +280,20 @@
 !	  enddo
 
       if (qm2ds%mdflag.lt.0) then
-         open (10,file='modes.b',form='unformatted')
-         open (12,file='ee.b')
+         open (qm2ds%modes_unit,file=trim(qm2ds%modes_b),form='unformatted')
+         open (qm2ds%ee_unit,file=trim(qm2ds%ee_b))
 !        open (11,file='modes.in',access='append')
 !        write(11,210)
 !        write(11,210) '$MODES'
 !
          do j=1,qm2ds%Mx
-            write (10) (qm2ds%v0(i,qm2ds%kx(j)),i=1,qm2ds%Nrpa)
-            write (12,*)  qm2ds%e0(j)
+            write (qm2ds%modes_unit) (qm2ds%v0(i,qm2ds%kx(j)),i=1,qm2ds%Nrpa)
+            write (qm2ds%ee_unit,*)  qm2ds%e0(j)
 !	         write(11,200) j,e0(j),1
          end do
  
-         close(10)
-         close(12)
+         close(qm2ds%modes_unit)
+         close(qm2ds%ee_unit)
 !        write(11,210) '$ENDMODES'           
 !        close(11)
 !200     format(i7,g20.12,i4)
@@ -294,18 +303,18 @@
 
    if (qm2ds%mdflag.ge.0) then ! MD point only!!!!
 !     store excited state vectors in AO representation in v2
-!     istore=min(Mx,Mx_ss)
-      if (istore.le.qm2ds%Mx) istore=qm2ds%Mx
-      if (istore_M.le.qm2ds%Mx) istore_M=qm2ds%Mx
-      if (istore.le.istore_M) istore=istore_M
+!     qm2ds%istore=min(Mx,Mx_ss)
+      if (qm2ds%istore.le.qm2ds%Mx) qm2ds%istore=qm2ds%Mx
+      if (qm2ds%istore_M.le.qm2ds%Mx) qm2ds%istore_M=qm2ds%Mx
+      if (qm2ds%istore.le.qm2ds%istore_M) qm2ds%istore=qm2ds%istore_M
 
       do j=1,qm2ds%Mx
-         call mo2site(qm2ds%v0(1,j),qm2ds%v2(1,j),qm2ds%rrwork)
+         call mo2site(qm2ds,qm2ds%v0(1,j),qm2ds%v2(1,j),qm2ds%rrwork)
       end do
 !	 if (Nb.gt.100) then
 ! --- write stored modes from the previous calculations in MD run
 !         open (10,file='modes-ao.b',form='unformatted')       
-!         do j=1,istore
+!         do j=1,qm2ds%istore
 !	    write (10) (v2(i,j),i=1,Nb*Nb) 
 !	   enddo
 !	   close(10)
@@ -353,18 +362,31 @@
 !       endif
    return     
    end
+
 !
 !********************************************************************
 !
 !********************************************************************
 !
-   subroutine davidson0(M4,lprint,ftol0,ftol1,ferr, &
+   subroutine davidson0(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,M4,lprint,ftol0,ftol1,ferr, &
       Np,Nh,j0,j1,e0,v0,kflag,iee2,ee2,eta,xi, &
       nd,nd1,vexp1,vexp,ray,rayv,rayvL,rayvR,raye,raye1, &
       ray1,ray1a,ray2,idav,istore)
    use qm2_davidson_module   
-  use cosmo_C,only:solvent_model 
+   use cosmo_C,only:cosmo_C_structure
+   use qmmm_struct_module, only : qmmm_struct_type
+   use qmmm_module,only:qm2_structure, qmmm_mpi_structure
+   use qm2_params_module,  only : qm2_params_type
+    use qmmm_nml_module   , only : qmmm_nml_type
+
    implicit none
+     type(qmmm_nml_type),intent(inout) :: qmmm_nml
+     type(cosmo_C_structure), intent (inout) :: cosmo_c_struct
+     type(qmmm_struct_type), intent(inout) :: qmmm_struct
+     type(qm2_davidson_structure_type), intent(inout) :: qm2ds
+     type(qm2_structure),intent(inout) :: qm2_struct
+     type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
+     type(qm2_params_type),intent(inout) :: qm2_params
 
    !logical check_symmetry; !!JAB Testing
 
@@ -453,7 +475,7 @@
       end do
       !!NORMALIZE
       f2=ddot(M4,xi,one,xi,one) !xi.xi
-      f2=1/sqrt(abs(f2)) !normalization constant
+      f2=1.0D0/sqrt(abs(f2)) !normalization constant
 
       call dscal(M4,f2,xi,one) !normalize xi
      
@@ -464,7 +486,7 @@
       end do
 
       f2=ddot(M4,vexp(1,j),one,vexp1(1,j),one) !vexp.vexp1 but vexp=0 if started from 85??
-      f2=1/sqrt(abs(f2)) !normalization constant
+      f2=1.0D0/sqrt(abs(f2)) !normalization constant
       call dscal(M4,f2,vexp1(1,j),one) !normalize
 
       !!SAME AS ABOVE BUT WITH XI=X-Y
@@ -473,7 +495,7 @@
       end do
 
       f2=ddot(M4,xi,one,xi,one) !xi.xi
-      f2=1/sqrt(abs(f2)) 
+      f2=1.0D0/sqrt(abs(f2)) 
       call dscal(M4,f2,xi,one) !normalize xi
 
       do j=1,nd1   
@@ -482,7 +504,7 @@
       end do
 
       f2=ddot(M4,vexp(1,j),one,vexp1(1,j),one)
-      f2=1/sqrt(abs(f2))
+      f2=1.0D0/sqrt(abs(f2))
       call dscal(M4,f2,vexp1(1,j),one)
    end do
 
@@ -639,7 +661,8 @@
    do i=nd1_old+1,nd1
       call clearing (2*M4,eta)
       call dcopy(M4,vexp1(1,i),one,eta,one)
-      call Lxi_testing(eta,vexp(1,i),solvent_model)
+      call Lxi_testing(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct, &
+                       qm2ds,qmmm_struct,eta,vexp(1,i),cosmo_c_struct%solvent_model)
       !call Lxi(eta,vexp(1,i),solvent_model)	
        
 ! CIS - set Y=0
@@ -878,7 +901,8 @@
 
    do j=j0+1,j0+j1
       
-      call Lxi_testing(v0(1,j),eta,solvent_model) !L(xi) output in eta !!JAB
+      call Lxi_testing(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct, qm2_struct,qm2ds,qmmm_struct, &
+                       v0(1,j),eta,cosmo_c_struct%solvent_model) !L(xi) output in eta !!JAB
       !call Lxi(v0(1,j),eta,solvent_model)	
       !write(6,*)"loc(v0(1,j))=",j,loc(v0(1,j))	
       f1=ddot(M4,v0(1,j),one,eta(1),one) &

@@ -14,25 +14,26 @@ public Rotate2Center2Electron, Rotate1Elec, RotateCore
 
 
 
-private GenerateRotationMatrix, rotationMatrix, xij_saved, tolerance
+private GenerateRotationMatrix, rotationMatrix, tolerance
 
-    _REAL_, save::matrix_saved(15,45)
-    _REAL_, save::xij_saved(3)=(/ 1.0D9, 1.0D9, 1.0D9 /) 
     _REAL_, parameter::tolerance=1.0D-5
     logical, parameter::keepOld=.false.
     
 contains
 
-subroutine GetRotationMatrix(xij, rotationMatrix, hasDOrbital)
+subroutine GetRotationMatrix(qm2_params,xij, rotationMatrix, hasDOrbital)
+    use qm2_params_module,  only : qm2_params_type
 
+    Implicit None
+    type(qm2_params_type),intent(inout) :: qm2_params
     _REAL_, intent(in)::xij(3)
     _REAL_, intent(inout)::rotationMatrix(15,45)
     logical, intent(in)::hasDOrbital
         
-    if ((sum( (xij-xij_saved)**2) >= tolerance).or. .not. keepOld) then
-       call GenerateRotationMatrix(xij, rotationMatrix, hasDOrbital)
+    if ((sum( (xij-qm2_params%xij_saved)**2) >= tolerance).or. .not. keepOld) then
+       call GenerateRotationMatrix(qm2_params, xij, rotationMatrix, hasDOrbital)
     else 
-       rotationMatrix=matrix_saved 
+       rotationMatrix=qm2_params%matrix_saved 
     end if
 
     return
@@ -40,10 +41,12 @@ subroutine GetRotationMatrix(xij, rotationMatrix, hasDOrbital)
 end subroutine GetRotationMatrix
     
     
-subroutine GenerateRotationMatrix(xij, matrix, hasDOrbital)
+subroutine GenerateRotationMatrix(qm2_params,xij, matrix, hasDOrbital)
       
       use constants, only : zero, one, two, half, fourth, &
                             A_TO_BOHRS
+      use qm2_params_module,  only : qm2_params_type
+
       
 !     *                                                                 
 !     ROTATION MATRIX FOR A GIVEN ATOM PAIR I-J (I.GT.J).               
@@ -51,6 +54,7 @@ subroutine GenerateRotationMatrix(xij, matrix, hasDOrbital)
 !     matrix()      PRECOMBINED ELEMENTS OF THE ROTATION MATRIX (O).        
 !     *                                                                 
       implicit none
+      type(qm2_params_type),intent(inout) :: qm2_params
       _REAL_,intent(in)::xij(3)
       _REAL_,intent(inout)::matrix(15,45)
       logical, intent(in)::hasDOrbital
@@ -239,7 +243,7 @@ subroutine GenerateRotationMatrix(xij, matrix, hasDOrbital)
    
       end if ! hasDOribtal
    
-      if (keepOld) matrix_saved=matrix
+      if (keepOld) qm2_params%matrix_saved=matrix
       RETURN 
                 
 end subroutine GenerateRotationMatrix

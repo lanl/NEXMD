@@ -198,11 +198,11 @@ subroutine qm_mm(coords,natom,scaled_mm_charges,f,escf, &
    !to worry about periodic boundaries. Writes the link atoms
    !to the end of the qmmm_struct%qm_coords array.
    if ( qmmm_struct%nlink > 0 ) then
-     call position_link_atoms(coords)
+     call position_link_atoms(qmmm_nml,qmmm_struct, coords)
    end if
 
    if (qmmm_mpi%commqmmm_master .AND. (qmmm_nml%verbosity>1 .OR. qmmm_struct%qm_mm_first_call)) then
-      call print_link_atom_info( qmmm_struct%qm_coords,atom_type )
+      call print_link_atom_info(qmmm_nml,qmmm_struct, qmmm_struct%qm_coords,atom_type )
    end if
        
 !=============================================================================
@@ -215,7 +215,7 @@ subroutine qm_mm(coords,natom,scaled_mm_charges,f,escf, &
        ! ---------------------------------------
        ! Print the initial QM region coordinates
        ! ---------------------------------------
-       call qm_print_coords(nstep,.true.)
+       call qm_print_coords(qmmm_nml,nstep,.true.)
         write(6,'(/80("-")/"  3.1 QM CALCULATION INFO",/80("-"))')
      end if
 
@@ -228,7 +228,7 @@ subroutine qm_mm(coords,natom,scaled_mm_charges,f,escf, &
        qmmm_nml%verbosity > 0        .and. &
        .not. qmmm_struct%qm_mm_first_call) then
      if (mod(nstep,qmmm_vsolv%nearest_qm_solvent_fq)==0) then
-        call qm_print_coords(nstep,.false.)
+        call qm_print_coords(qmmm_nml,nstep,.false.)
      end if
    end if
 
@@ -250,13 +250,13 @@ subroutine qm_mm(coords,natom,scaled_mm_charges,f,escf, &
      !table which is fast.
      !Note this routine uses the unimaged coordinates from AMBER coords array so here the
      !MMlink atom must have had its coordinates replaced with the link atom.
-     if (qmmm_nml%ifqnt) call adj_mm_link_pair_crd(coords)
+     if (qmmm_nml%ifqnt) call adj_mm_link_pair_crd(qmmm_nml,qmmm_struct,coords)
 !Parallel
      call qm_ewald_calc_ktable(natom, qmmm_struct%nquant, qmmm_struct%nlink, coords, qmewald%dmkv)
                                  !Will fill the kvector tables with the exponential values
                                  !memory for ktable_x_cos... should already have been allocated.
 
-     if (qmmm_nml%ifqnt) call rst_mm_link_pair_crd(coords)
+     if (qmmm_nml%ifqnt) call rst_mm_link_pair_crd(qmmm_nml,qmmm_struct, coords)
 
      call timer_stop_start(TIME_QMMMEWALDKTABLE,TIME_QMMMSETUP)
 
@@ -833,7 +833,8 @@ subroutine get_qm2_forces(master, calc_mchg_scf, natom, &
      call timer_start(TIME_QMMMSETUP)
      ! Load semiempirical parameters
      ! Also does a lot of memory allocation and pre-calculates all the STO-6G orbital expansions.
-     call qm2_load_params_and_allocate()
+     call qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opnq, qmmm_scratch, &
+                                       xlbomd_struct,qm2_struct,qmmm_struct)
      call timer_stop(TIME_QMMMSETUP)
 
      if (master) then
@@ -841,7 +842,8 @@ subroutine get_qm2_forces(master, calc_mchg_scf, natom, &
        ! Print a summary about memory usage
        ! WARNING - FOR THE NUMBERS PRODUCED BY THE PRINT DYN MEM ROUTINE TO BE ACCURATE ALL
        ! MEMORY ALLOCATION MUST HAVE BEEN DONE BY THIS STAGE.
-        call qm_print_dyn_mem(natom,qmmm_struct%qm_mm_pairs)
+        call qm_print_dyn_mem(qm2_params,qmmm_nml,qmewald, qm_gb, qmmm_mpi, qmmm_scratch,qm2_rij_eqns, &
+			      qm2_struct,qmmm_struct, natom,qmmm_struct%qm_mm_pairs)
 
        ! Finally print the result header that was skipped in sander.
         write(6,'(/80("-")/"   4.  RESULTS",/80("-")/)')
@@ -853,13 +855,15 @@ subroutine get_qm2_forces(master, calc_mchg_scf, natom, &
    call timer_start(TIME_QMMMRIJEQNS)
    ! Parallel: Calculate RIJ and many related equations here.
    ! Necessary memory allocation is done inside the routine.
-   call qm2_calc_rij_and_eqns(qmmm_struct%qm_coords, qmmm_struct%nquant_nlink,qmmm_struct%qm_xcrd, &
+   call qm2_calc_rij_and_eqns(qm2_params,qmmm_nml,qmmm_mpi,qm2_rij_eqns, &
+        qmmm_struct, qmmm_struct%qm_coords, qmmm_struct%nquant_nlink,qmmm_struct%qm_xcrd, &
                               natom, qmmm_struct%qm_mm_pairs)
                                 !and store them in memory to save time later.
    call timer_stop_start(TIME_QMMMRIJEQNS,TIME_QMMMENERGY)
 
    ! Parallel: Calculate SCF Energy
-   call qm2_energy(escf, scf_mchg, natom, born_radii, one_born_radii, coords, scaled_mm_charges)
+   call qm2_energy(qm2_params,qmmm_nml,qmewald,qm2_rij_eqns, qm_gb, qmmm_mpi, qmmm_opnq, qmmm_scratch, &
+        xlbomd_struct,cosmo_c_struct,qm2_struct,qm2ds, qmmm_struct, escf, scf_mchg, natom, born_radii, one_born_radii, coords, scaled_mm_charges)
 
    call timer_stop(TIME_QMMMENERGY)
 
@@ -869,10 +873,10 @@ subroutine get_qm2_forces(master, calc_mchg_scf, natom, &
    qmmm_struct%dxyzqm=zero
    if (qmmm_nml%qmtheory%DFTB) then
       ! Partially Parallel
-      call qm2_dftb_get_qm_forces(qmmm_struct%dxyzqm)
+      call qm2_dftb_get_qm_forces(qmmm_nml,qmmm_mpi,qm2_sturct,qmmm_struct, qmmm_struct%dxyzqm)
    else
       ! Parallel
-      call qm2_get_qm_forces(qmmm_struct%dxyzqm)
+      call qm2_get_qm_forces(qmmm_mpi, qmmm_nml, qm2_params, qm2_struct,qmmm_struct, qmmm_struct%dxyzqm)
    end if
 
    call timer_stop(TIME_QMMMFQM)
@@ -883,7 +887,7 @@ subroutine get_qm2_forces(master, calc_mchg_scf, natom, &
       qmmm_struct%dxyzcl=zero
       if (qmmm_nml%qmtheory%DFTB) then
          ! Parallel
-         call qm2_dftb_get_qmmm_forces(qmmm_struct%dxyzcl,qmmm_struct%dxyzqm, qmmm_scratch%qm_real_scratch(1), &
+         call qm2_dftb_get_qmmm_forces(qmmm_mpi,qm2_struct,qmmm_struct, qmmm_struct%dxyzcl,qmmm_struct%dxyzqm, qmmm_scratch%qm_real_scratch(1), &
               qmmm_scratch%qm_real_scratch(natom+1), &
               qmmm_scratch%qm_real_scratch(2*natom+1), &
               qmmm_scratch%qm_real_scratch(3*natom+1))
@@ -892,10 +896,11 @@ subroutine get_qm2_forces(master, calc_mchg_scf, natom, &
          if (qmmm_nml%qmmm_switch) then
             !Calculate Mulliken charges that will be used in QM/MM switching function
             do i=1,qmmm_struct%nquant_nlink
-              call qm2_calc_mulliken(i,scf_mchg(i))
+              call qm2_calc_mulliken(qm2_params,qm2_struct,i,scf_mchg(i))
             end do
          end if
-         call qm2_get_qmmm_forces(qmmm_struct%dxyzqm,qmmm_struct%qm_xcrd,qmmm_struct%dxyzcl,scf_mchg)
+         call qm2_get_qmmm_forces(qm2_rij_eqns,qm2_params, qmmm_nml, qmmm_mpi, qmmm_opnq, qm2_struct,qmmm_struct, &
+		qmmm_struct%dxyzqm,qmmm_struct%qm_xcrd,qmmm_struct%dxyzcl,scf_mchg)
       end if
    end if
 
@@ -916,14 +921,14 @@ subroutine get_qm2_forces(master, calc_mchg_scf, natom, &
       else
          do i=1,qmmm_struct%nquant_nlink
             !Need to calculate Mulliken charges here.
-            call qm2_calc_mulliken(i,scf_mchg(i))
+            call qm2_calc_mulliken(qm2_params,qm2_struct,i,scf_mchg(i))
          end do
       end if
    end if
 
    ! Print some extra information if verbosity level is > 0
    if (master) then
-      call qm2_print_energy(qmmm_nml%verbosity, qmmm_nml%qmtheory, escf, qmmm_struct)
+      call qm2_print_energy(qmmm_scratch,cosmo_c_struct,qm2_struct, qmmm_nml%verbosity, qmmm_nml%qmtheory, escf, qmmm_struct)
       if (qmmm_nml%verbosity > 3) then
       
         if (qmmm_nml%qm_ewald>0) then 
