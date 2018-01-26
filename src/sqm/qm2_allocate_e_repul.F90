@@ -6,16 +6,23 @@
 !Allocates memory for 1-electron repulsion integrals
 !-----------------------------------------------------------------
 
-subroutine qm2_allocate_qmqm_e_repul(n2el)
+subroutine qm2_allocate_qmqm_e_repul(qmmm_nml, qmmm_mpi, qm2_struct, qmmm_struct, n2el)
 
 !This routine allocates space for the QM-QM 2 electron repulsion integrals and
 !optionally the one electron repulsion integrals. It should only be called once
 !per sander run on the first call to QM_MM.
 
-  use qmmm_module, only : qmmm_nml,qm2_struct, qmmm_struct, qmmm_mpi
+  use qmmm_module, only : qm2_structure, qmmm_mpi_structure
+  use qmmm_struct_module, only : qmmm_struct_type
+   use qmmm_nml_module   , only : qmmm_nml_type
+
   implicit none
 
 !Passed in
+   type(qmmm_nml_type),intent(inout) :: qmmm_nml
+   type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
+  type(qm2_structure),intent(inout) :: qm2_struct
+  type(qmmm_struct_type), intent(in) :: qmmm_struct
   integer, intent(in) :: n2el
 
 !Local

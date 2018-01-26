@@ -12,13 +12,17 @@
 !  Augmenting Fock matrix by terms coming from the COSMO
 !  cavity screening
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine addfck(f,p)
-   use cosmo_C,only:ediel,fepsi,nps,lm61,numat,mpack,a0,ev, &
-      amat,bmat,iatsp,nsetf,phinet,qscnet,qdenet,ipiden,gden,qscat,mmat,idenat
-   use qmmm_module,only:qm2_params,qmmm_struct,qmmm_nml
+subroutine addfck(qm2_params, qmmm_nml, cosmo_c_struct, f,p)
+    use cosmo_C, only : cosmo_C_structure, a0, ev
+    use qm2_params_module,  only : qm2_params_type
+    use qmmm_nml_module   , only : qmmm_nml_type
+   
    implicit none
-   _REAL_,dimension(mpack),intent(in)::p ! density matrix
-   _REAL_,dimension(mpack),intent(inout)::f ! Fock matrix
+    type(qm2_params_type),intent(inout) :: qm2_params
+    type(qmmm_nml_type),intent(inout) :: qmmm_nml
+   type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
+   _REAL_,dimension(cosmo_c_struct%mpack),intent(in)::p ! density matrix
+   _REAL_,dimension(cosmo_c_struct%mpack),intent(inout)::f ! Fock matrix
    _REAL_, dimension(:,:), allocatable :: A;
    integer, dimension(:), allocatable :: IPIV;
    integer i,iat,im,j,INFO
@@ -26,61 +30,61 @@ subroutine addfck(f,p)
 
    if (qmmm_nml%verbosity > 5)  print*,'cosmo_call addfck'
    fcon=a0*ev
-   do i=1,numat
-      qscat(i)=0.d0
+   do i=1,cosmo_c_struct%numat
+      cosmo_c_struct%qscat(i)=0.d0
    end do
    ! FIRST CALCULATE QDENEL FROM DENSITY MATRIX
-   do i=1,lm61
-      qdenet(i,2)=gden(i)*p(ipiden(i))
-      qdenet(i,3)=qdenet(i,2)+qdenet(i,1)
+   do i=1,cosmo_c_struct%lm61
+      cosmo_c_struct%qdenet(i,2)=cosmo_c_struct%gden(i)*p(cosmo_c_struct%ipiden(i))
+      cosmo_c_struct%qdenet(i,3)=cosmo_c_struct%qdenet(i,2)+cosmo_c_struct%qdenet(i,1)
     end do
    !  NOW CALCULATE PHIEL FROM BMAT*QDENEL
-   do i=1,nps ! running over SAS tiles
+   do i=1,cosmo_c_struct%nps ! running over SAS tiles
       phi=0.d0
-      do j=1,lm61
-         phi=phi+bmat(j,i)*qdenet(j,2)
+      do j=1,cosmo_c_struct%lm61
+         phi=phi+cosmo_c_struct%bmat(j,i)*cosmo_c_struct%qdenet(j,2)
       end do
-      phinet(i,2)=phi
-      phinet(i,3)=phinet(i,1)+phi
+      cosmo_c_struct%phinet(i,2)=phi
+      cosmo_c_struct%phinet(i,3)=cosmo_c_struct%phinet(i,1)+phi
     end do
 
    !  NOW CALCULATE QSCEL FROM A*QSCEL = -PHIEL
 if(1==1) then
-    call coscl2(amat,nsetf,qscnet(1,2),phinet(1,2),nps)
+    call coscl2(cosmo_c_struct%amat,cosmo_c_struct%nsetf,cosmo_c_struct%qscnet(1,2),cosmo_c_struct%phinet(1,2),cosmo_c_struct%nps)
 else
     !Alternative to cholesky factorization using matrix inversion
-    allocate(A(nps,nps),IPIV(nps));
-    do i=1,nps
+    allocate(A(cosmo_c_struct%nps,cosmo_c_struct%nps),IPIV(cosmo_c_struct%nps));
+    do i=1,cosmo_c_struct%nps
   do j=1,i
-     A(i,j)=amat((i-1)*i/2+j);
+     A(i,j)=cosmo_c_struct%amat((i-1)*i/2+j);
      A(j,i)=A(i,j);
   end do
-  qscnet(i,2)=phinet(i,2);
+  cosmo_c_struct%qscnet(i,2)=cosmo_c_struct%phinet(i,2);
     end do
     i=1;
-    CALL DGESV(nps,i,A,nps,IPIV,qscnet(1,2),nps,INFO);
+    CALL DGESV(cosmo_c_struct%nps,i,A,cosmo_c_struct%nps,IPIV,cosmo_c_struct%qscnet(1,2),cosmo_c_struct%nps,INFO);
     deallocate(A,IPIV)
 endif
-   ediel=0.d0
+   cosmo_c_struct%ediel=0.d0
    s1=0.d0
    s3=0.d0
-   do i=1,nps
-	iat=iatsp(i)
-	qscnet(i,2)=-fepsi*qscnet(i,2) ! scaling with COSMO factor
-	qsc3=qscnet(i,1)+qscnet(i,2) ! core + electrons
-	qscnet(i,3)=qsc3 ! SAS charge due to cores and electrons
-	ediel=ediel+qsc3*phinet(i,3) ! dielectric energy
-	s1=s1+qscnet(i,1) ! total SAS charge due to cores
+   do i=1,cosmo_c_struct%nps
+	iat=cosmo_c_struct%iatsp(i)
+	cosmo_c_struct%qscnet(i,2)=-cosmo_c_struct%fepsi*cosmo_c_struct%qscnet(i,2) ! scaling with COSMO factor
+	qsc3=cosmo_c_struct%qscnet(i,1)+cosmo_c_struct%qscnet(i,2) ! core + electrons
+	cosmo_c_struct%qscnet(i,3)=qsc3 ! SAS charge due to cores and electrons
+	cosmo_c_struct%ediel=cosmo_c_struct%ediel+qsc3*cosmo_c_struct%phinet(i,3) ! dielectric energy
+	s1=s1+cosmo_c_struct%qscnet(i,1) ! total SAS charge due to cores
 	s3=s3+qsc3 ! total SAS charge due to electrons
-	qscat(iat)=qscat(iat)+qsc3 ! total SAS charge per atom
+	cosmo_c_struct%qscat(iat)=cosmo_c_struct%qscat(iat)+qsc3 ! total SAS charge per atom
 	end do
-	ediel=ediel*fcon/2
+	cosmo_c_struct%ediel=cosmo_c_struct%ediel*fcon/2
 	! NOW ADD BMAT*QSCEL TO FOCK MATRIX
-	do i=1,lm61
-im=ipiden(i)
+	do i=1,cosmo_c_struct%lm61
+im=cosmo_c_struct%ipiden(i)
 	fim=0.d0
-	do j=1,nps
-fim=fim+bmat(i,j)*qscnet(j,2)
+	do j=1,cosmo_c_struct%nps
+fim=fim+cosmo_c_struct%bmat(i,j)*cosmo_c_struct%qscnet(j,2)
 	end do
 	f(im)=f(im)-fcon*fim !in eV
 	end do
@@ -133,27 +137,29 @@ x(k) = summe * a(k+id(k))
 	!  addhcr adds the dielectric corrections for the electron-core
 	!  interaction to the diagonal elements of H
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine addhcr(h)
-	!use molkst_C, only: lm61
+subroutine addhcr(cosmo_c_struct,h)
+    use cosmo_C, only : cosmo_C_structure, a0, ev
+	!use molkst_C, only: cosmo_c_struct%lm61
 	!use funcon_C, only: a0, ev
-	use cosmo_C, only : nps, bmat, qscnet, ipiden, &
-	lm61,a0,ev,mpack
+	!use cosmo_C, only : cosmo_c_struct%nps, cosmo_c_struct%bmat, cosmo_c_struct%qscnet, cosmo_c_struct%ipiden, &
+	!cosmo_c_struct%lm61,a0,ev,cosmo_c_struct%mpack
 	! use common_arrays_C, only : h ! one-electron part
 
 	implicit none
+	type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
 
-	real(8) h(mpack) ! single-electron matrix
+	real(8) h(cosmo_c_struct%mpack) ! single-electron matrix
 
 	integer i,im,j
 	real(8) fcon,him
 
 	fcon=a0*ev
 
-	do i = 1, lm61
-im = ipiden(i)
+	do i = 1, cosmo_c_struct%lm61
+im = cosmo_c_struct%ipiden(i)
 	him = 0.d0
-	do j = 1, nps
-him = him + bmat(i, j) * qscnet(j, 1) 
+	do j = 1, cosmo_c_struct%nps
+him = him + cosmo_c_struct%bmat(i, j) * cosmo_c_struct%qscnet(j, 1) 
 	end do
 	h(im) = h(im) - fcon * him 
 	end do
@@ -163,7 +169,7 @@ him = him + bmat(i, j) * qscnet(j, 1)
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	!COSMO NUCLEAR INTERACTION TERM AND GENERATION OF NUCLEAR CAVITY CHARGES
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine addnuc(enuclr)
+subroutine addnuc(qm2_params,qmmm_nml,cosmo_c_struct,enuclr)
 	!
 	!********************************************************************
 	!
@@ -175,27 +181,29 @@ subroutine addnuc(enuclr)
 	!  part of the Fock operator
 	!
 	!  How it works:
-	!  bmat (B matrix) was primarily designed for interaction of SAS tiles
+	!  cosmo_c_struct%bmat (B matrix) was primarily designed for interaction of SAS tiles
 	!  with one-center electronic densities. However, it can also be used
 	!  for ineraction of cores with SAS tiles, but to do that you have
 	!  to put atomic charges to ss densities to have monopole contribution
-	!  only. idenat indexes those ss places within the entire one-center
+	!  only. cosmo_c_struct%idenat indexes those ss places within the entire one-center
 	!  density array.
 	!
 	!********************************************************************
 	!
-	!use molkst_C, only: numat, lm61, enuclr
+	!use molkst_C, only: cosmo_c_struct%numat, cosmo_c_struct%lm61, enuclr
 	!use funcon_C, only: a0, ev
 	!use common_arrays_c, only : nat
-	use cosmo_C, only : nps, fepsi, &
-	amat, bmat, nsetf, phinet, qscnet, qdenet, idenat, &
-	numat,lm61,a0,ev
-
-	use qmmm_module,only:qm2_params,qmmm_struct,qmmm_nml
+        use cosmo_C, only : cosmo_C_structure, a0, ev
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
 
 	!use parameters_C, only: tore
 
 	implicit none
+        type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
+        type(qm2_params_type), intent(inout) :: qm2_params
+        type(qmmm_nml_type), intent(inout) :: qmmm_nml
+
 	real(8) enuclr
 	integer i,j,ips;
 	real(8) enclr, fcon, phi
@@ -208,51 +216,51 @@ subroutine addnuc(enuclr)
 	! FIRST CALCULATE QDENNUC
 	fcon=a0*ev
 
-	do i=1,lm61
-	qdenet(i,1)=0
+	do i=1,cosmo_c_struct%lm61
+	cosmo_c_struct%qdenet(i,1)=0
 	end do
 
-	do i=1,numat
-!qdenet(idenat(i), 1) = tore(nat(i))
-	qdenet(idenat(i),1)=qm2_params%core_chg(i) ! kav substitution
-	! qdenet(:,1) contains core charges only in places
+	do i=1,cosmo_c_struct%numat
+!cosmo_c_struct%qdenet(cosmo_c_struct%idenat(i), 1) = tore(nat(i))
+	cosmo_c_struct%qdenet(cosmo_c_struct%idenat(i),1)=qm2_params%core_chg(i) ! kav substitution
+	! cosmo_c_struct%qdenet(:,1) contains core charges only in places
 	! corresponding to monopole contributions to one-center densities,
 	! i.e., ss
 	end do
 
 	! NOW CALCULATE PHINUC AS BMAT*QDENUC
-	! phinet(:,1) contains the potential at position of SAS tiles
+	! cosmo_c_struct%phinet(:,1) contains the potential at position of SAS tiles
 	! generated by atomic cores treated as monopoles
-	do i=1,nps
+	do i=1,cosmo_c_struct%nps
 	phi=0.d0
-	do j=1,lm61
-phi=phi+bmat(j,i)*qdenet(j,1)
+	do j=1,cosmo_c_struct%lm61
+phi=phi+cosmo_c_struct%bmat(j,i)*cosmo_c_struct%qdenet(j,1)
 	end do
-	phinet(i,1)=phi
+	cosmo_c_struct%phinet(i,1)=phi
 	end do
 
 	! NOW CALCULATE QSCNUC FROM  AMAT*QSCNUC=PHINUC
 	if (1==1) then
-call coscl2(amat,nsetf,qscnet(1,1),phinet(1,1),nps)
+call coscl2(cosmo_c_struct%amat,cosmo_c_struct%nsetf,cosmo_c_struct%qscnet(1,1),cosmo_c_struct%phinet(1,1),cosmo_c_struct%nps)
 	else
-	allocate(A(nps,nps),IPIV(nps));
-	do i=1,nps
+	allocate(A(cosmo_c_struct%nps,cosmo_c_struct%nps),IPIV(cosmo_c_struct%nps));
+	do i=1,cosmo_c_struct%nps
 	do j=1,i
-	A(i,j)=amat((i-1)*i/2+j);
+	A(i,j)=cosmo_c_struct%amat((i-1)*i/2+j);
 	A(j,i)=A(i,j);
 	end do
-	qscnet(i,1)=phinet(i,1);
+	cosmo_c_struct%qscnet(i,1)=cosmo_c_struct%phinet(i,1);
 	end do
 	i=1;
-	CALL DGESV(nps,i,A,nps,IPIV,qscnet(1,1),nps,INFO);
+	CALL DGESV(cosmo_c_struct%nps,i,A,cosmo_c_struct%nps,IPIV,cosmo_c_struct%qscnet(1,1),cosmo_c_struct%nps,INFO);
 deallocate(A,IPIV)
 	endif
 
 	! SCALE QSCNUC AND CALCULATE INTERACTION ENERGY
 	enclr=0.d0
-	do i=1,nps
-	qscnet(i,1)=-fepsi*qscnet(i,1)
-enclr=enclr+qscnet(i,1)*phinet(i,1)
+	do i=1,cosmo_c_struct%nps
+	cosmo_c_struct%qscnet(i,1)=-cosmo_c_struct%fepsi*cosmo_c_struct%qscnet(i,1)
+enclr=enclr+cosmo_c_struct%qscnet(i,1)*cosmo_c_struct%phinet(i,1)
 	end do
 
 	enuclr=enuclr+fcon*enclr/2
@@ -263,23 +271,31 @@ enclr=enclr+qscnet(i,1)*phinet(i,1)
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	!COSMO GRADIENT TERM USING ONE SET OF CHARGES STORED IN MODULE
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine diegrd(dxyz)
+subroutine diegrd(qm2_params,qmmm_nml,cosmo_c_struct, qmmm_struct, dxyz)
 
-	use cosmo_C, only: nps, fepsi, nipc, &
-	cosurf, iatsp, isude, sude, qscnet, &
-	qdenet, qscat, arat,numat,ev, a0
+	!use cosmo_C, only: cosmo_c_struct%nps, cosmo_c_struct%fepsi, cosmo_c_struct%nipc, &
+	!cosmo_c_struct%cosurf, cosmo_c_struct%iatsp, cosmo_c_struct%isude, cosmo_c_struct%sude, cosmo_c_struct%qscnet, &
+	!cosmo_c_struct%qdenet, cosmo_c_struct%qscat, cosmo_c_struct%arat,cosmo_c_struct%numat,ev, a0
+        use cosmo_C, only : cosmo_C_structure, a0, ev
 	use constants, only: EV_TO_KCAL
 	!use parameters_C, only: dd, qq
 	!use common_arrays_c, only : coord, nfirst, nlast, nat
-	use qmmm_module,only:qm2_params,qmmm_struct,qmmm_nml
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
+        use qmmm_struct_module, only : qmmm_struct_type
 	implicit none
+ 
+        type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
+        type(qmmm_struct_type), intent(in) :: qmmm_struct
+        type(qmmm_nml_type), intent(in) :: qmmm_nml
+        type(qm2_params_type), intent(in) :: qm2_params
 
 	integer :: i, ia, iak, ial, ib, idel, iden, ix, j, k, l, nati, iii
 	double precision :: bsurf, ddi, deab, dist2, dx, fact, ff, ff0, &
 	& qqi2, qsk, rm2, rm4, xxx
 	double precision, dimension (3) :: xk, xl, xx
 	double precision, dimension (0:3, 10) :: db
-	double precision, dimension (3,numat), intent (inout) :: dxyz
+	double precision, dimension (3,cosmo_c_struct%numat), intent (inout) :: dxyz
 	intrinsic Min, Sqrt
 	if (qmmm_nml%verbosity > 5) print*,'cosmo_call diegrd'
 
@@ -292,22 +308,22 @@ subroutine diegrd(dxyz)
 	fact = -ev * a0 * EV_TO_KCAL
 
 	!Calculate q*del(A)*q
-	do k = 1, nps
-iak = iatsp(k)
+	do k = 1, cosmo_c_struct%nps
+iak = cosmo_c_struct%iatsp(k)
 	do ix = 1, 3
-xk(ix) = cosurf(ix, k)
+xk(ix) = cosmo_c_struct%cosurf(ix, k)
 	end do
-qsk = qscnet(k, 3)
+qsk = cosmo_c_struct%qscnet(k, 3)
 	do l = 1, k - 1
-ial = iatsp(l)
+ial = cosmo_c_struct%iatsp(l)
 	if (ial /= iak) then
 	dist2 = 0.d0
 	do ix = 1, 3
-xxx = cosurf(ix, l) - xk(ix)
+xxx = cosmo_c_struct%cosurf(ix, l) - xk(ix)
 	xl(ix) = xxx
 	dist2 = dist2 + xxx * xxx
 	end do
-	ff = qsk * qscnet(l, 3) * fact * dist2 ** (-1.5d0) / fepsi
+	ff = qsk * cosmo_c_struct%qscnet(l, 3) * fact * dist2 ** (-1.5d0) / cosmo_c_struct%fepsi
 	do ix = 1, 3
 	dxyz(ix, iak) = dxyz(ix, iak) - xl(ix) * ff
 	dxyz(ix, ial) = dxyz(ix, ial) + xl(ix) * ff
@@ -317,11 +333,11 @@ xxx = cosurf(ix, l) - xk(ix)
 	end do
 	!Surface Closure
 	!bsurf = 0.d0
-	!do i = 1, nipc
-	!  ia = isude(1, i)
-!  ib = isude(2, i)
-	!  deab = -0.25d0 * (qscat(ia)**2*sude(1, i)/arat(ia)+qscat(ib)**2*sude(2, &
-				! & i)/arat(ib)+bsurf*(sude(1, i)+sude(2, i)))
+	!do i = 1, cosmo_c_struct%nipc
+	!  ia = cosmo_c_struct%isude(1, i)
+!  ib = cosmo_c_struct%isude(2, i)
+	!  deab = -0.25d0 * (cosmo_c_struct%qscat(ia)**2*cosmo_c_struct%sude(1, i)/cosmo_c_struct%arat(ia)+cosmo_c_struct%qscat(ib)**2*cosmo_c_struct%sude(2, &
+				! & i)/cosmo_c_struct%arat(ib)+bsurf*(cosmo_c_struct%sude(1, i)+cosmo_c_struct%sude(2, i)))
 	!  xk(1) = qmmm_struct%qm_coords(1, ib) - qmmm_struct%qm_coords(1, ia)
 	!  xk(2) = qmmm_struct%qm_coords(2, ib) - qmmm_struct%qm_coords(2, ia)
 	!  xk(3) = qmmm_struct%qm_coords(3, ib) - qmmm_struct%qm_coords(3, ia)
@@ -333,14 +349,14 @@ xxx = cosurf(ix, l) - xk(ix)
 	!end do
 
 	!Calculate q*del(B)*Q
-	do k = 1, nps
-	iak = iatsp(k)                    !restore atom's number from cavity teseese.
+	do k = 1, cosmo_c_struct%nps
+	iak = cosmo_c_struct%iatsp(k)                    !restore atom's number from cavity teseese.
 	do ix = 1, 3
-xk(ix) = cosurf(ix, k)
+xk(ix) = cosmo_c_struct%cosurf(ix, k)
 	end do
-qsk = qscnet(k, 3)
+qsk = cosmo_c_struct%qscnet(k, 3)
 	iden = 0
-	do i = 1, numat
+	do i = 1, cosmo_c_struct%numat
 !idel = nlast(2,i)+1 - nfirst(1,i)
 	idel = qm2_params%orb_loc(2,i)+ 1 - qm2_params%orb_loc(1,i); !#orbs
 	if (i /= iak) then
@@ -381,10 +397,10 @@ db(3, 7) = db(1, 2)
 db(3, 9) = db(2, 6)
 	end if
 	do j = 1, min(10,(idel*(idel+1))/2)
-ff = -ff0 * qdenet(iden+j, 3)
+ff = -ff0 * cosmo_c_struct%qdenet(iden+j, 3)
 	if(j.eq.1 .and. idel.eq.9) then
 	do iii=5,9
-ff = ff-ff0 * qdenet(iden+(iii*(iii+1))/2, 3)
+ff = ff-ff0 * cosmo_c_struct%qdenet(iden+(iii*(iii+1))/2, 3)
 	end do
 	end if
 	do ix = 1, 3
@@ -402,32 +418,39 @@ ff = ff-ff0 * qdenet(iden+(iii*(iii+1))/2, 3)
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !COSMO GRADIENT TERM WITH TWO SETS OF CHARGES, i.e. tr(F(rho)(T+Z))
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine diegrd2(dxyz,density2,charges2,acharges2)
+subroutine diegrd2(qm2_params,qmmm_nml,cosmo_c_struct, qmmm_struct, dxyz,density2,charges2,acharges2)
 	!This subroutine calculated COSMO derivatives for terms with two different
 	!density matrices
-	!qdenet:one center charge from density matrix filled by addfock routine
-	!qscnet:cavity surface charges
+	!cosmo_c_struct%qdenet:one center charge from density matrix filled by addfock routine
+	!cosmo_c_struct%qscnet:cavity surface charges
 	!charges2:charges for second density matrix
 	!acharges2:same as above but coarsegrained to atoms
 
-	use cosmo_C, only: nps, fepsi, nipc, &
-	cosurf, iatsp, isude, sude, qscnet, &
-	qdenet, qscat, arat,numat,ev, a0, lm61
+        use cosmo_C, only : cosmo_C_structure, a0, ev
+	!use cosmo_C, only: cosmo_c_struct%nps, cosmo_c_struct%fepsi, cosmo_c_struct%nipc, &
+	!cosmo_c_struct%cosurf, cosmo_c_struct%iatsp, cosmo_c_struct%isude, cosmo_c_struct%sude, cosmo_c_struct%qscnet, &
+	!cosmo_c_struct%qdenet, cosmo_c_struct%qscat, cosmo_c_struct%arat,cosmo_c_struct%numat,ev, a0, cosmo_c_struct%lm61
 	use constants, only: EV_TO_KCAL
 	!use parameters_C, only: dd, qq
 	!use common_arrays_c, only : coord, nfirst, nlast, nat
-	use qmmm_module,only:qm2_params,qmmm_struct,qmmm_nml
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
+        use qmmm_struct_module, only : qmmm_struct_type
 	implicit none
+        type(qmmm_struct_type), intent(inout) :: qmmm_struct
+        type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
+        type(qmmm_nml_type), intent(inout) :: qmmm_nml
+        type(qm2_params_type), intent(inout) :: qm2_params
 
 	integer :: i, ia, iak, ial, ib, idel, iden, ix, j, k, l, nati, iii
 	double precision :: bsurf, ddi, deab, dist2, dx, dxt, fact, ff, fft, ff0, ff0t, &
 	& qqi2, qsk, rm2, rm4, xxx
 	double precision, dimension (3) :: xk, xl, xx
 	double precision, dimension (0:3, 10) :: db
-	double precision, dimension (3,numat), intent (inout) :: dxyz
-	double precision, dimension (nps) :: charges2
-	double precision, dimension (numat) :: acharges2
-	double precision, dimension (lm61) :: density2
+	double precision, dimension (3,cosmo_c_struct%numat), intent (inout) :: dxyz
+	double precision, dimension (cosmo_c_struct%nps) :: charges2
+	double precision, dimension (cosmo_c_struct%numat) :: acharges2
+	double precision, dimension (cosmo_c_struct%lm61) :: density2
 	intrinsic Min, Sqrt
 	if (qmmm_nml%verbosity > 5) print*,'cosmo_call diegrd2'
 
@@ -440,24 +463,24 @@ subroutine diegrd2(dxyz,density2,charges2,acharges2)
 	fact = -ev * a0 * EV_TO_KCAL
 
 	!Calculate q1*del(A)*q2=sum_n,m {q_n*q_m*del(A_n,m)} for n and m associated with different atoms
-	do k = 1, nps
-iak = iatsp(k)
+	do k = 1, cosmo_c_struct%nps
+iak = cosmo_c_struct%iatsp(k)
 	do ix = 1, 3
-xk(ix) = cosurf(ix, k)
+xk(ix) = cosmo_c_struct%cosurf(ix, k)
 	end do
-	do l = 1, nps
-ial = iatsp(l)
+	do l = 1, cosmo_c_struct%nps
+ial = cosmo_c_struct%iatsp(l)
 	if (ial /= iak) then
 	dist2 = 0.d0
 	do ix = 1, 3
-xxx = xk(ix) - cosurf(ix, l)
+xxx = xk(ix) - cosmo_c_struct%cosurf(ix, l)
 	xl(ix) = xxx
 	dist2 = dist2 + xxx * xxx
 	end do
-	!ff = qscnet(k,3) * (charges2(l)+qscnet(l,1)) * fact * dist2 ** (-1.5d0) / fepsi !Testing
-	!fft = (charges2(k)+qscnet(k,1)) * qscnet(l,3) * fact * dist2 ** (-1.5d0) / fepsi !Testing
-	ff = qscnet(k,3) * charges2(l) * fact * dist2 ** (-1.5d0) / fepsi
-	fft = charges2(k)  * qscnet(l,3) * fact * dist2 ** (-1.5d0) / fepsi
+	!ff = cosmo_c_struct%qscnet(k,3) * (charges2(l)+cosmo_c_struct%qscnet(l,1)) * fact * dist2 ** (-1.5d0) / cosmo_c_struct%fepsi !Testing
+	!fft = (charges2(k)+cosmo_c_struct%qscnet(k,1)) * cosmo_c_struct%qscnet(l,3) * fact * dist2 ** (-1.5d0) / cosmo_c_struct%fepsi !Testing
+	ff = cosmo_c_struct%qscnet(k,3) * charges2(l) * fact * dist2 ** (-1.5d0) / cosmo_c_struct%fepsi
+	fft = charges2(k)  * cosmo_c_struct%qscnet(l,3) * fact * dist2 ** (-1.5d0) / cosmo_c_struct%fepsi
 	!write(6,*)k,l,ial,iak,ff
 	do ix= 1,3
 dxyz(ix, iak) = dxyz(ix, iak) + xl(ix) * (ff+fft) 
@@ -466,17 +489,17 @@ dxyz(ix, iak) = dxyz(ix, iak) + xl(ix) * (ff+fft)
 	end do
 	end do
 	!write(6,*)dxyz
-	!write(6,*)'charges2:',sum(charges2+qscnet(:,1)-qscnet(:,3))
+	!write(6,*)'charges2:',sum(charges2+cosmo_c_struct%qscnet(:,1)-cosmo_c_struct%qscnet(:,3))
 
-	!Correction for cavity area?? qscat is charges associated with atoms. sude
-	!involves derivatives of cavity area wrt atomic positions
-	!modify for ES der through qscat?  !!JAB This contribution is very small
+	!Correction for cavity cosmo_c_struct%area?? cosmo_c_struct%qscat is charges associated with atoms. cosmo_c_struct%sude
+	!involves derivatives of cavity cosmo_c_struct%area wrt atomic positions
+	!modify for ES der through cosmo_c_struct%qscat?  !!JAB This contribution is very small
 	!bsurf = 0.d0
-	!do i = 1, nipc
-	!  ia = isude(1, i)
-!  ib = isude(2, i)
-	!  deab = -0.25d0 * ((acharges2(ia)*qscat(ia))*sude(1,i)/arat(ia)+(acharges2(ib)*qscat(ib))*sude(2, &
-				! & i)/arat(ib)+bsurf*(sude(1, i)+sude(2, i)))
+	!do i = 1, cosmo_c_struct%nipc
+	!  ia = cosmo_c_struct%isude(1, i)
+!  ib = cosmo_c_struct%isude(2, i)
+	!  deab = -0.25d0 * ((acharges2(ia)*cosmo_c_struct%qscat(ia))*cosmo_c_struct%sude(1,i)/cosmo_c_struct%arat(ia)+(acharges2(ib)*cosmo_c_struct%qscat(ib))*cosmo_c_struct%sude(2, &
+				! & i)/cosmo_c_struct%arat(ib)+bsurf*(cosmo_c_struct%sude(1, i)+cosmo_c_struct%sude(2, i)))
 	!  xk(1) = qmmm_struct%qm_coords(1, ib) - qmmm_struct%qm_coords(1, ia)
 	!  xk(2) = qmmm_struct%qm_coords(2, ib) - qmmm_struct%qm_coords(2, ia)
 	!  xk(3) = qmmm_struct%qm_coords(3, ib) - qmmm_struct%qm_coords(3, ia)
@@ -489,13 +512,13 @@ dxyz(ix, iak) = dxyz(ix, iak) + xl(ix) * (ff+fft)
 	!end do
 
 	!Calculate q1*del(B)*Q2+Q1*del(B)*q2
-	do k = 1, nps
-iak = iatsp(k)
+	do k = 1, cosmo_c_struct%nps
+iak = cosmo_c_struct%iatsp(k)
 	do ix = 1, 3
-xk(ix) = cosurf(ix, k)
+xk(ix) = cosmo_c_struct%cosurf(ix, k)
 	end do
 	iden = 0
-	do i = 1, numat
+	do i = 1, cosmo_c_struct%numat
 !idel = nlast(2,i)+1 - nfirst(1,i)
 	idel = qm2_params%orb_loc(2,i)+ 1 - qm2_params%orb_loc(1,i); !#orbs
 	if (i /= iak) then
@@ -503,15 +526,15 @@ xk(ix) = cosurf(ix, k)
 	nati=qmmm_struct%iqm_atomic_numbers(i);
 	dist2 = 0.d0
 	do ix = 1, 3
-xxx = cosurf(ix, k) - qmmm_struct%qm_coords(ix, i)
+xxx = cosmo_c_struct%cosurf(ix, k) - qmmm_struct%qm_coords(ix, i)
 	xx(ix) = xxx
 	dist2 = dist2 + xxx * xxx
 	end do
 	ddi = qm2_params%multip_2c_elec_params(1,i) * a0
 	qqi2 = (a0*qm2_params%multip_2c_elec_params(2,i)) ** 2
-ff0 = - qscnet(k, 3) * fact * dist2 ** (-1.5d0)
+ff0 = - cosmo_c_struct%qscnet(k, 3) * fact * dist2 ** (-1.5d0)
 	ff0t= - charges2(k) * fact * dist2 ** (-1.5d0) !JAB sec term
-	!ff0t= - (charges2(k)+qscnet(k,1)) * fact * dist2 ** (-1.5d0) !testing sec term
+	!ff0t= - (charges2(k)+cosmo_c_struct%qscnet(k,1)) * fact * dist2 ** (-1.5d0) !testing sec term
 	if (idel .gt. 1) then
 	rm2 = 1.d0 / dist2
 	rm4 = rm2 ** 2
@@ -539,13 +562,13 @@ db(3, 9) = db(2, 6)
 	end if
 do j = 1, min(10,(idel*(idel+1))/2)
 	ff = -ff0 * density2(iden+j) !fir term
-	!ff = - ff0 * (density2(iden+j) + qdenet(iden+j,1)) !testing
-	fft = - ff0t * qdenet(iden+j, 3) !sec term
+	!ff = - ff0 * (density2(iden+j) + cosmo_c_struct%qdenet(iden+j,1)) !testing
+	fft = - ff0t * cosmo_c_struct%qdenet(iden+j, 3) !sec term
 	!if(j.eq.1 .and. idel.eq.9) then !this if block is for d-orbitals
 	!  do iii=5,9
-	!    fft = fft-ff0t * qdenet(iden+(iii*(iii+1))/2, 3) !fir term
+	!    fft = fft-ff0t * cosmo_c_struct%qdenet(iden+(iii*(iii+1))/2, 3) !fir term
 	!    ff= ff-ff0 * density2(iden+(iii*(iii+1))/2) !sec term
-	!    !ff= ff-ff0 * (density2(iden+(iii*(iii+1))/2) + qdenet(iden+(iii*(iii+1))/2,1)) !testing
+	!    !ff= ff-ff0 * (density2(iden+(iii*(iii+1))/2) + cosmo_c_struct%qdenet(iden+(iii*(iii+1))/2,1)) !testing
 	!  end do
 	!end if
 	do ix = 1, 3
@@ -565,14 +588,21 @@ dx = (xx(ix)*db(0, j)-db(ix, j)) * (ff + fft)
 	!CALCULATE CAVITY CHARGES FOR FULL DENSITY MATRIX AND 
 	!STORE IN MODULE VARIABLES
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine cosmo_1(exc_p)
-	use cosmo_C,only:fepsi,nps,lm61,numat,mpack,a0,ev, &
-	amat,bmat,iatsp,nsetf,phinet,qscnet,qdenet,ipiden,gden,qscat,mmat,idenat
+subroutine cosmo_1(qm2_params,qmmm_nml,cosmo_c_struct, qm2_struct, exc_p)
+        use cosmo_C, only : cosmo_C_structure, a0,ev
+!	use cosmo_C,only:cosmo_c_struct%fepsi,cosmo_c_struct%nps,cosmo_c_struct%lm61,cosmo_c_struct%numat,cosmo_c_struct%mpack,a0,ev, &
+!	cosmo_c_struct%amat,cosmo_c_struct%bmat,cosmo_c_struct%iatsp,cosmo_c_struct%nsetf,cosmo_c_struct%phinet,cosmo_c_struct%qscnet,cosmo_c_struct%qdenet,cosmo_c_struct%ipiden,cosmo_c_struct%gden,cosmo_c_struct%qscat,cosmo_c_struct%mmat,cosmo_c_struct%idenat
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
 
-	use qmmm_module,only:qm2_params,qmmm_struct,qm2_struct,qmmm_nml
+	use qmmm_module,only:qm2_structure
 
 	implicit none
-	_REAL_,dimension(mpack)::p ! triaungular density matrix
+        type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
+        type(qm2_structure),intent(inout) :: qm2_struct
+        type(qmmm_nml_type),intent(inout) :: qmmm_nml
+        type(qm2_params_type),intent(inout) :: qm2_params
+	_REAL_,dimension(cosmo_c_struct%mpack)::p ! triaungular density matrix
 	_REAL_,dimension(qm2_struct%norbs,qm2_struct%norbs), intent(in) ::exc_p !
 	_REAL_, dimension(:,:), allocatable :: A;
 	integer, dimension(:), allocatable :: IPIV;
@@ -588,36 +618,36 @@ subroutine cosmo_1(exc_p)
 
 	fcon=a0*ev
 
-	!do i=1,numat
-	qscat(1:numat)=0.d0
+	!do i=1,cosmo_c_struct%numat
+	cosmo_c_struct%qscat(1:cosmo_c_struct%numat)=0.d0
 	!end do
 
 	! FIRST CALCULATE QDENEL FROM DENSITY MATRIX
-	! qdenet(:,1) contains core charges in monopole positions
-	do i=1,lm61
+	! cosmo_c_struct%qdenet(:,1) contains core charges in monopole positions
+	do i=1,cosmo_c_struct%lm61
 	! one-center electronic "charges"
-qdenet(i,2)=gden(i)*p(ipiden(i))
+cosmo_c_struct%qdenet(i,2)=cosmo_c_struct%gden(i)*p(cosmo_c_struct%ipiden(i))
 	! one-center "charges" - electronic and nuclear
-qdenet(i,3)=qdenet(i,2)+qdenet(i,1)
+cosmo_c_struct%qdenet(i,3)=cosmo_c_struct%qdenet(i,2)+cosmo_c_struct%qdenet(i,1)
 	end do
 
 	!  NOW CALCULATE PHIEL FROM BMAT*QDENEL
-	do i=1,nps ! running over SAS tiles
+	do i=1,cosmo_c_struct%nps ! running over SAS tiles
 	phi=0.d0
 
-	do j=1,lm61
-	phi=phi+bmat(j,i)*qdenet(j,2);
+	do j=1,cosmo_c_struct%lm61
+	phi=phi+cosmo_c_struct%bmat(j,i)*cosmo_c_struct%qdenet(j,2);
 	end do
-	phinet(i,2)=phi;    
-	phinet(i,3)=phinet(i,1)+phi
+	cosmo_c_struct%phinet(i,2)=phi;    
+	cosmo_c_struct%phinet(i,3)=cosmo_c_struct%phinet(i,1)+phi
 	end do
-call coscl2(amat,nsetf,qscnet(1,2),phinet(1,2),nps)
+call coscl2(cosmo_c_struct%amat,cosmo_c_struct%nsetf,cosmo_c_struct%qscnet(1,2),cosmo_c_struct%phinet(1,2),cosmo_c_struct%nps)
 
-	do i=1,nps
-iat=iatsp(i)
-	qscnet(i,2)=-fepsi*qscnet(i,2) ! scaling with COSMO factor
-	qscnet(i,3)=qscnet(i,1)+qscnet(i,2) ! core + electrons
-	qscat(iat)=qscat(iat)+qscnet(i,3) ! total charge associated with each atom
+	do i=1,cosmo_c_struct%nps
+iat=cosmo_c_struct%iatsp(i)
+	cosmo_c_struct%qscnet(i,2)=-cosmo_c_struct%fepsi*cosmo_c_struct%qscnet(i,2) ! scaling with COSMO factor
+	cosmo_c_struct%qscnet(i,3)=cosmo_c_struct%qscnet(i,1)+cosmo_c_struct%qscnet(i,2) ! core + electrons
+	cosmo_c_struct%qscat(iat)=cosmo_c_struct%qscat(iat)+cosmo_c_struct%qscnet(i,3) ! total charge associated with each atom
 	end do
 	return
 	end subroutine
@@ -626,13 +656,18 @@ iat=iatsp(i)
 	!CALCULATE CAVITY CHARGES FOR TRIANGULAR DENSITY MATRIX
 	!AND STORE IN MODULE VARIABLES
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine cosmo_1_tri(p)
-	use cosmo_C,only:fepsi,nps,lm61,numat,mpack,a0,ev, &
-	amat,bmat,iatsp,nsetf,phinet,qscnet,qdenet,ipiden,gden,qscat,mmat,idenat
-	use qmmm_module,only:qm2_params,qmmm_struct,qm2_struct,qmmm_nml
+subroutine cosmo_1_tri(qm2_params,qmmm_nml,cosmo_c_struct,p)
+        use cosmo_C, only : cosmo_C_structure, a0, ev
+!	use cosmo_C,only:cosmo_c_struct%fepsi,cosmo_c_struct%nps,cosmo_c_struct%lm61,cosmo_c_struct%numat,cosmo_c_struct%mpack,a0,ev, &
+!	cosmo_c_struct%amat,cosmo_c_struct%bmat,cosmo_c_struct%iatsp,cosmo_c_struct%nsetf,cosmo_c_struct%phinet,cosmo_c_struct%qscnet,cosmo_c_struct%qdenet,cosmo_c_struct%ipiden,cosmo_c_struct%gden,cosmo_c_struct%qscat,cosmo_c_struct%mmat,cosmo_c_struct%idenat
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
 
 	implicit none
-	_REAL_,dimension(mpack)::p ! triangular density matrix
+        type(qmmm_nml_type),intent(inout) :: qmmm_nml
+        type(qm2_params_type),intent(inout) :: qm2_params
+        type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
+	_REAL_,dimension(cosmo_c_struct%mpack)::p ! triangular density matrix
 	_REAL_, dimension(:,:), allocatable :: A
 	integer, dimension(:), allocatable :: IPIV
 	integer i,iat,im,j,INFO
@@ -643,63 +678,63 @@ subroutine cosmo_1_tri(p)
 
 	fcon=a0*ev
 
-	!do i=1,numat
-	qscat(1:numat)=0.d0
+	!do i=1,cosmo_c_struct%numat
+	cosmo_c_struct%qscat(1:cosmo_c_struct%numat)=0.d0
 	!end do
 
 	! FIRST CALCULATE QDENEL FROM DENSITY MATRIX
-	! qdenet(:,1) contains core charges in monopole positions
-	do i=1,lm61
+	! cosmo_c_struct%qdenet(:,1) contains core charges in monopole positions
+	do i=1,cosmo_c_struct%lm61
 	! one-center electronic "charges"
-qdenet(i,2)=gden(i)*p(ipiden(i))
+cosmo_c_struct%qdenet(i,2)=cosmo_c_struct%gden(i)*p(cosmo_c_struct%ipiden(i))
 	! one-center "charges" - electronic and nuclear
-qdenet(i,3)=qdenet(i,2)+qdenet(i,1)
+cosmo_c_struct%qdenet(i,3)=cosmo_c_struct%qdenet(i,2)+cosmo_c_struct%qdenet(i,1)
 	end do
 
 	!  NOW CALCULATE PHIEL FROM BMAT*QDENEL
-	do i=1,nps ! running over SAS tiles
+	do i=1,cosmo_c_struct%nps ! running over SAS tiles
 	phi=0.d0
 	! phi is the potential at SAS tile from
 	! one center electronic "charges"
-	do j=1,lm61
-	phi=phi+bmat(j,i)*qdenet(j,2);
+	do j=1,cosmo_c_struct%lm61
+	phi=phi+cosmo_c_struct%bmat(j,i)*cosmo_c_struct%qdenet(j,2);
 	end do
-	phinet(i,2)=phi;
+	cosmo_c_struct%phinet(i,2)=phi;
 	! write(*,*)"Phi_(",i,")=",phi
-	! phinet(:,1) contains potential at SAS tiles
+	! cosmo_c_struct%phinet(:,1) contains potential at SAS tiles
 	! from core charge monopoles
-	phinet(i,3)=phinet(i,1)+phi
+	cosmo_c_struct%phinet(i,3)=cosmo_c_struct%phinet(i,1)+phi
 	end do
 
 	!  NOW CALCULATE QSCEL FROM A*QSCEL = -PHIEL
-	! calculation of charges, qscnet(:,2), accumulated on metallic SAS
+	! calculation of charges, cosmo_c_struct%qscnet(:,2), accumulated on metallic SAS
 	! due to potential generated by single-center
 	! electronic densities
 
-call coscl2(amat,nsetf,qscnet(1,2),phinet(1,2),nps)
+call coscl2(cosmo_c_struct%amat,cosmo_c_struct%nsetf,cosmo_c_struct%qscnet(1,2),cosmo_c_struct%phinet(1,2),cosmo_c_struct%nps)
 
-	!    allocate(A(nps,nps),IPIV(nps));
-	!    do i=1,nps
+	!    allocate(A(cosmo_c_struct%nps,cosmo_c_struct%nps),IPIV(cosmo_c_struct%nps));
+	!    do i=1,cosmo_c_struct%nps
 	! do j=1,i
-	!           A(i,j)=amat((i-1)*i/2+j);
+	!           A(i,j)=cosmo_c_struct%amat((i-1)*i/2+j);
 	!           A(j,i)=A(i,j);
 	!        end do
-	! qscnet(i,2)=phinet(i,2);
+	! cosmo_c_struct%qscnet(i,2)=cosmo_c_struct%phinet(i,2);
 	!    end do
 
 	!   ! NOW ADD BMAT*QSCEL TO FOCK MATRIX
 	!    i=1;
-	!    CALL DGESV(nps,i,A,nps,IPIV,qscnet(1,2),nps,INFO);
+	!    CALL DGESV(cosmo_c_struct%nps,i,A,cosmo_c_struct%nps,IPIV,cosmo_c_struct%qscnet(1,2),cosmo_c_struct%nps,INFO);
 !    deallocate(A,IPIV)
 
 	s1=0.d0
 	s3=0.d0
 
-	do i=1,nps
-iat=iatsp(i)
-	qscnet(i,2)=-fepsi*qscnet(i,2) ! scaling with COSMO factor
-	qscnet(i,3)=qscnet(i,1)+qscnet(i,2) ! core + electrons
-	qscat(iat)=qscat(iat)+qscnet(i,3) ! ???
+	do i=1,cosmo_c_struct%nps
+iat=cosmo_c_struct%iatsp(i)
+	cosmo_c_struct%qscnet(i,2)=-cosmo_c_struct%fepsi*cosmo_c_struct%qscnet(i,2) ! scaling with COSMO factor
+	cosmo_c_struct%qscnet(i,3)=cosmo_c_struct%qscnet(i,1)+cosmo_c_struct%qscnet(i,2) ! core + electrons
+	cosmo_c_struct%qscat(iat)=cosmo_c_struct%qscat(iat)+cosmo_c_struct%qscnet(i,3) ! ???
 	end do
 	return
 	end subroutine
@@ -707,51 +742,56 @@ iat=iatsp(i)
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	!Calcualte charges without storing in module variable for calculating excited state !derivatives involving two density matrices
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine cosmo_1_tri_2(p,density2,charges2,acharges2)
-	use cosmo_C,only:fepsi,nps,lm61,mpack,a0,ev,nsetf, &
-	amat,bmat,qdenet,ipiden,gden,iatsp,numat,qscnet,qscat
+subroutine cosmo_1_tri_2(qm2_params,qmmm_nml,cosmo_c_struct, p,density2,charges2,acharges2)
+        use cosmo_C, only : cosmo_C_structure, a0, ev
+	!use cosmo_C,only:cosmo_c_struct%fepsi,cosmo_c_struct%nps,cosmo_c_struct%lm61,cosmo_c_struct%mpack,a0,ev,cosmo_c_struct%nsetf, &
+	!cosmo_c_struct%amat,cosmo_c_struct%bmat,cosmo_c_struct%qdenet,cosmo_c_struct%ipiden,cosmo_c_struct%gden,cosmo_c_struct%iatsp,cosmo_c_struct%numat,cosmo_c_struct%qscnet,cosmo_c_struct%qscat
 
-	use qmmm_module,only:qm2_params,qmmm_struct,qm2_struct,qmmm_nml
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
 
 	implicit none
-	_REAL_, intent(in)::p(mpack) ! triangular density matrix
+        type(qmmm_nml_type),intent(inout) :: qmmm_nml
+        type(qm2_params_type),intent(inout) :: qm2_params
+        type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
+	_REAL_, intent(in)::p(cosmo_c_struct%mpack) ! triangular density matrix
 	_REAL_, dimension(:,:), allocatable :: A;
-_REAL_, intent(out):: charges2(nps),acharges2(numat),density2(lm61)
+	_REAL_, intent(out):: charges2(cosmo_c_struct%nps),acharges2(cosmo_c_struct%numat),density2(cosmo_c_struct%lm61)
 	integer, dimension(:), allocatable :: IPIV;
 	integer i,iat,im,j,INFO
-	_REAL_ :: phi(nps), fcon
+	_REAL_ :: phi(cosmo_c_struct%nps), fcon
 	fcon=a0*ev
 	density2=0.d0; charges2=0.d0; acharges2=0.d0;
 
 	! FIRST CALCULATE QDENEL FROM DENSITY MATRIX
-	do i=1,lm61
+	do i=1,cosmo_c_struct%lm61
 	! one-center electronic "charges"
-density2(i)=gden(i)*p(ipiden(i))
+density2(i)=cosmo_c_struct%gden(i)*p(cosmo_c_struct%ipiden(i))
 	end do
 	!  NOW CALCULATE PHIEL FROM BMAT*QDENEL    
-	do i=1,nps ! running over SAS tiles
+	do i=1,cosmo_c_struct%nps ! running over SAS tiles
 	phi(i)=0.d0
-	do j=1,lm61
-phi(i)=phi(i)+bmat(j,i)*density2(j)
+	do j=1,cosmo_c_struct%lm61
+phi(i)=phi(i)+cosmo_c_struct%bmat(j,i)*density2(j)
 	end do
 	end do
-call coscl2(amat,nsetf,charges2,phi,nps)
+call coscl2(cosmo_c_struct%amat,cosmo_c_struct%nsetf,charges2,phi,cosmo_c_struct%nps)
 	!  NOW CALCULATE QSCEL FROM A*QSCEL = -PHIEL
-	!    allocate(A(nps,nps),IPIV(nps));
-	!    do i=1,nps
+	!    allocate(A(cosmo_c_struct%nps,cosmo_c_struct%nps),IPIV(cosmo_c_struct%nps));
+	!    do i=1,cosmo_c_struct%nps
 	! do j=1,i
-	!           A(i,j)=amat((i-1)*i/2+j);
+	!           A(i,j)=cosmo_c_struct%amat((i-1)*i/2+j);
 	!           A(j,i)=A(i,j);
 	!        end do
 	!    end do
 	!    i=1;
-	!    CALL DGESV(nps,i,A,nps,IPIV,charges2,nps,INFO);
+	!    CALL DGESV(cosmo_c_struct%nps,i,A,cosmo_c_struct%nps,IPIV,charges2,cosmo_c_struct%nps,INFO);
 !    deallocate(A,IPIV)
 
 	acharges2=0.d0
-	charges2=-fepsi*charges2 ! scaling with COSMO factor
-	do i=1,nps
-	iat=iatsp(i)
+	charges2=-cosmo_c_struct%fepsi*charges2 ! scaling with COSMO factor
+	do i=1,cosmo_c_struct%nps
+	iat=cosmo_c_struct%iatsp(i)
 acharges2(iat)=acharges2(iat)+charges2(i)
 	end do
 	return
@@ -812,28 +852,38 @@ a(k+indi) = summe * a(kk)
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	!  Initializaton of cosmo
 	!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-	subroutine cosini 
-	use cosmo_C, only: n0, ioldcv, fnsq, nps, rsolv, nspa, disex2, &
-	dirsm, dirvec, srad, ipiden, gden, idenat, qdenet, amat, &
-	cmat, lenabc, arat, sude, isude, bh,qden, nar_csm, nsetf, phinet, &
-	qscnet, bmat, nset, xsp, abcmat, iatsp, nn, qscat, cosurf, nppa, &
-	coserr, lm61, numat,mpack,fepsi,mmat,tri_2D,v_solvent_difdens,xi_k, &
-	ceps, v_solvent_xi, rhotzpacked_k
-	!    use cosmo_C
-
-	use qmmm_module,only:qm2_params,qmmm_struct,qm2_struct,qmmm_nml
+	subroutine cosini(qm2_params, qmmm_nml, cosmo_c_struct,qm2_struct, qmmm_struct)
+	!use cosmo_C, only: n0, ioldcv, fnsq, nps, rsolv, nspa, disex2, &
+	!dirsm, dirvec, srad, ipiden, gden, idenat, qdenet, amat, &
+	!cmat, lenabc, arat, sude, isude, bh,qden, nar_csm, nsetf, phinet, &
+	!qscnet, bmat, nset, xsp, abcmat, iatsp, nn, qscat, cosurf, nppa, &
+	!coserr, lm61, numat,mpack,fepsi,mmat,tri_2D,v_solvent_difdens,xi_k, &
+	!ceps, v_solvent_xi, rhotzpacked_k
+        use cosmo_C, only : cosmo_C_structure
+	use qmmm_module,only: qm2_structure
 	use qm2_davidson_module
+        use qmmm_struct_module, only : qmmm_struct_type
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
 
 	!use common_arrays_C, only : nat, nfirst, nlast
 	!    nat will be substituted with iqm_atomic_numbers
 !    nfirst and nlast will be substituted with orb_loc(1,:)
 	!    and orb_lor(2,:), respectively
 
-	!use molkst_C, only: numat, keywrd, moperr, lm61, mozyme
+	!use molkst_C, only: cosmo_c_struct%numat, keywrd, moperr, cosmo_c_struct%lm61, mozyme
 	!use chanel_C, only: iw
 	!use reada_I
 
 	implicit none
+          type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
+          type(qm2_structure),intent(inout) :: qm2_struct
+          type(qmmm_struct_type), intent(in) :: qmmm_struct
+          type(qmmm_nml_type),intent(inout) :: qmmm_nml
+          type(qm2_params_type),intent(inout) :: qm2_params
+	
+	!Cosmo_C Namelist input
+	integer, dimension (2) :: n0
 	integer :: i, i0, iat, idel, iden, incif, indise, inrsol, j, k, n1, &
 	n2, nfi, nfj
 
@@ -862,22 +912,22 @@ a(k+indi) = summe * a(kk)
 	if (qmmm_nml%verbosity > 5) print*,'cosmo_call cosini'
 
 	! dielectric scaling factor
-fepsi=(ceps-1.d0)/(ceps+0.5d0)
+cosmo_c_struct%fepsi=(cosmo_c_struct%ceps-1.d0)/(cosmo_c_struct%ceps+0.5d0)
 
-	numat=qmmm_struct%nquant ! number of atoms
-	mpack=qm2_struct%matsize
+	cosmo_c_struct%numat=qmmm_struct%nquant ! number of atoms
+	cosmo_c_struct%mpack=qm2_struct%matsize
 
 	iw=6 ! standard output
 
 	! kav addition
-	! Evaluation of lm61 - cumulative number of one-center densities
+	! Evaluation of cosmo_c_struct%lm61 - cumulative number of one-center densities
 	! only one for hydrogen (ss)
 ! 10 for an sp-atom (ss,sx,xx,sy,...)
 	n9=0
 	n4=0
 	n1=0
 
-	do i=1,numat
+	do i=1,cosmo_c_struct%numat
 	k=qm2_params%orb_loc(2,i)-qm2_params%orb_loc(1,i)+1
 
 	if(k==1) then
@@ -889,73 +939,79 @@ fepsi=(ceps-1.d0)/(ceps+0.5d0)
 	end if
 	end do
 
-	lm61=45*n9+10*n4+n1
+	cosmo_c_struct%lm61=45*n9+10*n4+n1
 
 	! kav addition
 	mozyme=.false. ! we are not doing linear scaling here
 
-    lenabc = max(100, nspa*numat) 
+    cosmo_c_struct%lenabc = max(100, cosmo_c_struct%nspa*cosmo_c_struct%numat) 
 
-    if (allocated(ipiden)) deallocate (ipiden)
-    if (allocated(idenat)) deallocate (idenat)
-    if (allocated(gden))   deallocate (gden)
-    if (allocated(qdenet)) deallocate (qdenet)
-    if (allocated(phinet)) deallocate (phinet)
-    if (allocated(qscnet)) deallocate (qscnet)
-    if (allocated(abcmat)) deallocate (abcmat)
-    if (allocated(bmat))   deallocate (bmat)
-    if (allocated(cmat))   deallocate (cmat)
-    if (allocated(qscat))  deallocate (qscat)
-    if (allocated(srad))   deallocate (srad)
-    if (allocated(iatsp))  deallocate (iatsp)
-    if (allocated(nar_csm))deallocate (nar_csm)
-    if (allocated(nn))     deallocate (nn)
-    if (allocated(cosurf)) deallocate (cosurf)
-    if (allocated(xsp))    deallocate (xsp)
-    if (allocated(nset))   deallocate (nset)
-    if (allocated(bh))     deallocate (bh)
-    if (allocated(qden))   deallocate (qden)
-    if (allocated(nar_csm))    deallocate (nar_csm)
-    if (allocated(nsetf))  deallocate (nsetf)
-    if (allocated(isude))  deallocate (isude)
-    if (allocated(sude))   deallocate (sude)
-    if (allocated(arat))   deallocate (arat)
-    if (allocated(amat))   deallocate (amat)
-    if (allocated(mmat))   deallocate (mmat)
-    if (allocated(tri_2D)) deallocate (tri_2D)
-    if (allocated(xi_k)) deallocate (xi_k)  
-    if (allocated(v_solvent_difdens)) &
-    deallocate (v_solvent_difdens)
-    if (allocated(rhotzpacked_k)) deallocate (rhotzpacked_k)
+    if (allocated(cosmo_c_struct%ipiden)) deallocate (cosmo_c_struct%ipiden)
+    if (allocated(cosmo_c_struct%idenat)) deallocate (cosmo_c_struct%idenat)
+    if (allocated(cosmo_c_struct%gden))   deallocate (cosmo_c_struct%gden)
+    if (allocated(cosmo_c_struct%qdenet)) deallocate (cosmo_c_struct%qdenet)
+    if (allocated(cosmo_c_struct%phinet)) deallocate (cosmo_c_struct%phinet)
+    if (allocated(cosmo_c_struct%qscnet)) deallocate (cosmo_c_struct%qscnet)
+    if (allocated(cosmo_c_struct%abcmat)) deallocate (cosmo_c_struct%abcmat)
+    if (allocated(cosmo_c_struct%bmat))   deallocate (cosmo_c_struct%bmat)
+    if (allocated(cosmo_c_struct%cmat))   deallocate (cosmo_c_struct%cmat)
+    if (allocated(cosmo_c_struct%qscat))  deallocate (cosmo_c_struct%qscat)
+    if (allocated(cosmo_c_struct%srad))   deallocate (cosmo_c_struct%srad)
+    if (allocated(cosmo_c_struct%iatsp))  deallocate (cosmo_c_struct%iatsp)
+    if (allocated(cosmo_c_struct%nar_csm))deallocate (cosmo_c_struct%nar_csm)
+    if (allocated(cosmo_c_struct%nn))     deallocate (cosmo_c_struct%nn)
+    if (allocated(cosmo_c_struct%cosurf)) deallocate (cosmo_c_struct%cosurf)
+    if (allocated(cosmo_c_struct%xsp))    deallocate (cosmo_c_struct%xsp)
+    if (allocated(cosmo_c_struct%nset))   deallocate (cosmo_c_struct%nset)
+    if (allocated(cosmo_c_struct%bh))     deallocate (cosmo_c_struct%bh)
+    if (allocated(cosmo_c_struct%qden))   deallocate (cosmo_c_struct%qden)
+    if (allocated(cosmo_c_struct%nar_csm))    deallocate (cosmo_c_struct%nar_csm)
+    if (allocated(cosmo_c_struct%nsetf))  deallocate (cosmo_c_struct%nsetf)
+    if (allocated(cosmo_c_struct%isude))  deallocate (cosmo_c_struct%isude)
+    if (allocated(cosmo_c_struct%sude))   deallocate (cosmo_c_struct%sude)
+    if (allocated(cosmo_c_struct%arat))   deallocate (cosmo_c_struct%arat)
+    if (allocated(cosmo_c_struct%amat))   deallocate (cosmo_c_struct%amat)
+    if (allocated(cosmo_c_struct%mmat))   deallocate (cosmo_c_struct%mmat)
+    if (allocated(cosmo_c_struct%tri_2D)) deallocate (cosmo_c_struct%tri_2D)
+    if (allocated(cosmo_c_struct%xi_k)) deallocate (cosmo_c_struct%xi_k)  
+    if (associated(cosmo_c_struct%v_solvent_difdens)) &
+    deallocate (cosmo_c_struct%v_solvent_difdens)
+    if (allocated(cosmo_c_struct%rhotzpacked_k)) deallocate (cosmo_c_struct%rhotzpacked_k)
     T2DS=qm2_struct%norbs*(qm2_struct%norbs-1)/2.0+qm2_struct%norbs;    
-    allocate(ipiden(lm61), idenat(numat), gden(lm61), & 
-          qdenet(lm61,3), phinet(lenabc + 1,3), qscnet(lenabc + 1, 3), &
-          qscat(numat),tri_2D(4,T2DS), &
-    	  xi_k(qm2_struct%norbs**2), &  
-          v_solvent_difdens(qm2_struct%norbs,qm2_struct%norbs),stat = i)
-    allocate(rhotzpacked_k(qm2_struct%norbs*(qm2_struct%norbs+1)/2))  
+    allocate(cosmo_c_struct%ipiden(cosmo_c_struct%lm61), cosmo_c_struct%idenat(cosmo_c_struct%numat), &
+          cosmo_c_struct%gden(cosmo_c_struct%lm61), & 
+          cosmo_c_struct%qdenet(cosmo_c_struct%lm61,3), cosmo_c_struct%phinet(cosmo_c_struct%lenabc + 1,3), &
+          cosmo_c_struct%qscnet(cosmo_c_struct%lenabc + 1, 3), &
+          cosmo_c_struct%qscat(cosmo_c_struct%numat),cosmo_c_struct%tri_2D(4,T2DS), &
+    	  cosmo_c_struct%xi_k(qm2_struct%norbs**2), &  
+          cosmo_c_struct%v_solvent_difdens(qm2_struct%norbs,qm2_struct%norbs),stat = i)
+    allocate(cosmo_c_struct%rhotzpacked_k(qm2_struct%norbs*(qm2_struct%norbs+1)/2))  
 
-   qscat = 0.d0
+   cosmo_c_struct%qscat = 0.d0
    if (i /= 0) then
       call memory_error("COSINI (0) in Cosmo")
       return
     end if
-    v_solvent_xi=>v_solvent_difdens;         
-    allocate(srad(numat), nn(3, numat), qden(lm61), &
-          iatsp(lenabc + 1), isude(2, 30*numat), nar_csm(lenabc + 1), &
-          arat(numat), sude(2,30*numat), nsetf(lenabc + 1),cosurf(4,lenabc),stat=i)
+    cosmo_c_struct%v_solvent_xi=>cosmo_c_struct%v_solvent_difdens;         
+    allocate(cosmo_c_struct%srad(cosmo_c_struct%numat), cosmo_c_struct%nn(3, cosmo_c_struct%numat), &
+          cosmo_c_struct%qden(cosmo_c_struct%lm61), &
+          cosmo_c_struct%iatsp(cosmo_c_struct%lenabc + 1), cosmo_c_struct%isude(2, 30*cosmo_c_struct%numat), &
+          cosmo_c_struct%nar_csm(cosmo_c_struct%lenabc + 1), &
+          cosmo_c_struct%arat(cosmo_c_struct%numat), cosmo_c_struct%sude(2,30*cosmo_c_struct%numat), &
+          cosmo_c_struct%nsetf(cosmo_c_struct%lenabc + 1),cosmo_c_struct%cosurf(4,cosmo_c_struct%lenabc),stat=i)
 
     if (i /= 0) then
       call memory_error("COSINI (1) in Cosmo")
       return
     end if 
     if (.not. mozyme) then
-      allocate(abcmat(lenabc),   &
-          xsp(3,lenabc), &
-          nset(nppa*numat), bh(lenabc),  &
-          bmat(lm61, lenabc), &
-          amat((lenabc*(lenabc + 1))/2), cmat((lm61*(lm61 + 1))/2), &
-    mmat(lm61,lm61), &
+      allocate(cosmo_c_struct%abcmat(cosmo_c_struct%lenabc),   &
+          cosmo_c_struct%xsp(3,cosmo_c_struct%lenabc), &
+          cosmo_c_struct%nset(cosmo_c_struct%nppa*cosmo_c_struct%numat), cosmo_c_struct%bh(cosmo_c_struct%lenabc),  &
+          cosmo_c_struct%bmat(cosmo_c_struct%lm61, cosmo_c_struct%lenabc), &
+          cosmo_c_struct%amat((cosmo_c_struct%lenabc*(cosmo_c_struct%lenabc + 1))/2), &
+          cosmo_c_struct%cmat((cosmo_c_struct%lm61*(cosmo_c_struct%lm61 + 1))/2), &
+          cosmo_c_struct%mmat(cosmo_c_struct%lm61,cosmo_c_struct%lm61), &
           stat = i)
       if (i /= 0) then
         call memory_error("COSINI (2) in Cosmo")
@@ -968,18 +1024,18 @@ fepsi=(ceps-1.d0)/(ceps+0.5d0)
    usevdw=rvdw
 
     !if (moperr) return
-    if(coserr) return ! kav substitution
+    if(cosmo_c_struct%coserr) return ! kav substitution
 
-    rsolv = 1.3d0 !Default VDW radius of atoms? JAB
+    cosmo_c_struct%rsolv = 1.3d0 !Default VDW radius of atoms? JAB
 
-    ioldcv = 0
+    cosmo_c_struct%ioldcv = 0
 
     !inrsol = Index (keywrd, " RSOLV=")
     !if (inrsol /= 0) then
-    !  rsolv = reada (keywrd, inrsol)
+    !  cosmo_c_struct%rsolv = reada (keywrd, inrsol)
     !end if
 
-    !if (rsolv < 0.5d0) then
+    !if (cosmo_c_struct%rsolv < 0.5d0) then
     !  write (iw,*) "RSOLV IS SET TO 0.5"
     !  return
     !end if
@@ -1000,12 +1056,12 @@ fepsi=(ceps-1.d0)/(ceps+0.5d0)
     !    write (iw,*) "     N**2 IS SMALLER THAN 1.d0, OK?"
     !  end if
     !end if
-    fnsq = (ri1-1.d0) / (ri1+.5d0)
-    nps = 0
+    cosmo_c_struct%fnsq = (ri1-1.d0) / (ri1+.5d0)
+    cosmo_c_struct%nps = 0
    ! NO KEYWORD DELSC ANYMORE. PEOPLE MAY USE EXPLICIT
    ! DEFINITION OF RADII TO CHANGE FROM DEFAULTS! RDS IS REPLACED BY
    ! RSOLV
-    rsolv = Max (rsolv, 0.5d0)
+    cosmo_c_struct%rsolv = Max (cosmo_c_struct%rsolv, 0.5d0)
     disex = 4.d0
 
     !indise = Index (keywrd, " DISEX=")
@@ -1014,14 +1070,14 @@ fepsi=(ceps-1.d0)/(ceps+0.5d0)
     !end if
    ! FILL THE COSMO-RADII (SRAD) AND INDEX-VECTORS IDENAT AND IPIDEN
    iden=0
-   do i=1,numat
+   do i=1,cosmo_c_struct%numat
 
       ! start index of orbital for i-atom
       ! in the full list of orbitals
       !nfi = nfirst(i)
       nfi=qm2_params%orb_loc(1,i) ! kav substitution
 
-      idenat(i)=iden+1
+      cosmo_c_struct%idenat(i)=iden+1
 
       ! number of orbitals of i-atom
       !idel = nlast(i) + 1 - nfi
@@ -1035,11 +1091,11 @@ fepsi=(ceps-1.d0)/(ceps+0.5d0)
             do k=1,j
                iden=iden+1
                i0=i0+1
-               ipiden(iden)=i0
-               gden(iden)=-2.0d0
+               cosmo_c_struct%ipiden(iden)=i0
+               cosmo_c_struct%gden(iden)=-2.0d0
             end do
 
-            gden(iden)=-1.0d0
+            cosmo_c_struct%gden(iden)=-1.0d0
          end do
       else
          do j=1,idel
@@ -1048,22 +1104,22 @@ fepsi=(ceps-1.d0)/(ceps+0.5d0)
 
             do k=1,j
                iden=iden+1
-               ipiden(iden)=i0+k
-               gden(iden)=-2.0d0
+               cosmo_c_struct%ipiden(iden)=i0+k
+               cosmo_c_struct%gden(iden)=-2.0d0
             end do
 
-            gden(iden) = -1.0d0
+            cosmo_c_struct%gden(iden) = -1.0d0
          end do
       end if
 
       ! in the loop above:
-      ! gden - charge multiplier for the single-center densities, i.e.,
+      ! cosmo_c_struct%gden - charge multiplier for the single-center densities, i.e.,
       !   -1 for diagonal ones, e.g., xx, yy, ss
       !   -2 for non-diagonal ones, e.g., xy since they should be account twice,
       !   because two of those, ie.., xy and yx, has to be present
       !   Mind: it could be different once we start dealing with excited states
       ! 
-      ! ipiden - indexes one-center densities within the overall triagonal 
+      ! cosmo_c_struct%ipiden - indexes one-center densities within the overall triagonal 
       !  density matrix
       !  Mind: again, the overall thing is assumed symmetric, but care must
       !  be taken when using something like this for excited state calculations
@@ -1072,62 +1128,71 @@ fepsi=(ceps-1.d0)/(ceps+0.5d0)
       !iat = nat(i)
       iat=qmmm_struct%iqm_atomic_numbers(i) ! kav substitution
 
-      srad(i) = usevdw(iat)
+      cosmo_c_struct%srad(i) = usevdw(iat)
    end do
 
    !
    !  NUMBER OF SECTIONS PER ATOM
    !
-    n0(1) = nspa
-    if (nspa /= 42) then
-      x = (nspa-2) / 10.d0 + 1d-8
+    cosmo_c_struct%n0(1) = cosmo_c_struct%nspa
+    if (cosmo_c_struct%nspa /= 42) then
+      x = (cosmo_c_struct%nspa-2) / 10.d0 + 1d-8
       n1 = 10 * Int (Sqrt(x)) ** 2 + 2
       n2 = 30 * Int (Sqrt(x/3)) ** 2 + 2
-      n0(1) = Max (n1, n2)
-      n0(1) = Max (12, n0(1))
-      if (nspa /= n0(1)) then
-        write (iw, "(A,I6)") "NSPA IS SET TO", n0 (1)
+      cosmo_c_struct%n0(1) = Max (n1, n2)
+      cosmo_c_struct%n0(1) = Max (12, cosmo_c_struct%n0(1))
+      if (cosmo_c_struct%nspa /= cosmo_c_struct%n0(1)) then
+        write (iw, "(A,I6)") "NSPA IS SET TO", cosmo_c_struct%n0 (1)
       end if
     end if
 
-    nspa = n0(1)
-    n1 = (n0(1)-2) / 10
+    cosmo_c_struct%nspa = cosmo_c_struct%n0(1)
+    n1 = (cosmo_c_struct%n0(1)-2) / 10
    !
    !   FOR HYDROGEN, USE ABOUT 1/3 THE NUMBER OF ATOMS.
    !
-    n0(2) = 10 * n1 / 3 + 2
+    cosmo_c_struct%n0(2) = 10 * n1 / 3 + 2
     if (Mod(n1, 3) /= 0) then
-      n0(2) = 10 * Int (Sqrt(n1/3.d0)) ** 2 + 2
+      cosmo_c_struct%n0(2) = 10 * Int (Sqrt(n1/3.d0)) ** 2 + 2
     end if
    !
    !   RESET N0(2) TO 12.  N0 = 42, 12
    !
-    n0(2) = Max (n0(2), 12)
-    if (n0(1)+n0(2) > 1082) then
+    cosmo_c_struct%n0(2) = Max (cosmo_c_struct%n0(2), 12)
+    if (cosmo_c_struct%n0(1)+cosmo_c_struct%n0(2) > 1082) then
       !call mopend ("CHOSE NSPA < 0.75*1082")
       write(iw,*) "CHOSE NSPA < 0.75*1082"
     end if
-    call dvfill (n0(1), dirsm)
-    call dvfill (n0(2), dirsm(1, n0(1)+1))
-    disex2 = 4 * (1.7d0*disex) ** 2 / nspa
-    call dvfill (1082, dirvec)
+    call dvfill (cosmo_c_struct%n0(1), cosmo_c_struct%dirsm)
+    call dvfill (cosmo_c_struct%n0(2), cosmo_c_struct%dirsm(1, cosmo_c_struct%n0(1)+1))
+    cosmo_c_struct%disex2 = 4 * (1.7d0*disex) ** 2 / cosmo_c_struct%nspa
+    call dvfill (1082, cosmo_c_struct%dirvec)
 
 end subroutine cosini
 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !Constructs or updates the solvent-acessible surface (SAS)
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine coscav
+subroutine coscav(qm2_params, qmmm_nml, cosmo_c_struct, qmmm_struct)
     !use molkst_C, only : numat
-    use qmmm_module,only:qm2_params,qmmm_struct,qmmm_nml
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
 
-    use cosmo_C, only: lenabc, nps, area, isude, sude, &
-       cosvol, rsolv, ioldcv, disex2, n0, dirvec, dirsm, srad, &
-       cosurf, amat, iatsp, nar_csm, nsetf, phinet, arat
+    use cosmo_C, only : cosmo_C_structure
+    !use cosmo_C, only: cosmo_c_struct%lenabc, cosmo_c_struct%nps, cosmo_c_struct%area, cosmo_c_struct%isude, cosmo_c_struct%sude, &
+    !   cosmo_c_struct%cosvol, cosmo_c_struct%rsolv, cosmo_c_struct%ioldcv, cosmo_c_struct%disex2, cosmo_c_struct%n0, cosmo_c_struct%dirvec, cosmo_c_struct%dirsm, cosmo_c_struct%srad, &
+    !   cosmo_c_struct%cosurf, cosmo_c_struct%amat, cosmo_c_struct%iatsp, cosmo_c_struct%nar_csm, cosmo_c_struct%nsetf, cosmo_c_struct%phinet, cosmo_c_struct%arat
+    use qmmm_struct_module, only : qmmm_struct_type
+  
     !use common_arrays_c, only : coord, nat
     !use funcon_C, only: pi
     !use chanel_C, only : iw
     implicit none
+    type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
+    type(qmmm_struct_type), intent(in) :: qmmm_struct
+    type(qmmm_nml_type),intent(inout) :: qmmm_nml
+    type(qm2_params_type),intent(inout) :: qm2_params
+
     integer :: i, i0, ik, ilipa, info, inset, ipm, ips, ix, j, jmax, jps, k, &
    & l, nara, narea, nfl1, nfl2, niter, nps0, maxrs
     double precision :: aa, d2, dist, dist1, dist2, dist3, fdiagr, r, ri, &
@@ -1146,50 +1211,49 @@ subroutine coscav
 
    real(8),parameter::pi=3.14159265358979323846d0
    integer numat
-   real(8),allocatable,save::coord(:,:)
    integer iw
 
 
    if (qmmm_nml%verbosity > 5) print*,'cosmo_call coscav'
    iw=6 ! standard output
 
-   if(.not.allocated(coord)) then
-      allocate(coord(3,qmmm_struct%nquant))
+   if(.not.allocated(cosmo_c_struct%coord)) then
+      allocate(cosmo_c_struct%coord(3,qmmm_struct%nquant))
    end if
-   coord(1:3,1:qmmm_struct%nquant)= &
+   cosmo_c_struct%coord(1:3,1:qmmm_struct%nquant)= &
       qmmm_struct%qm_coords(1:3,1:qmmm_struct%nquant)
     numat=qmmm_struct%nquant
 
     maxrs = 70 * numat
     allocate (rdat(numat), rsc(4,maxrs), tm(3,3,numat), nn(3,numat), &
-         & isort(maxrs), ipsrs(maxrs), nipsrs(lenabc), nset(1082*numat), &
+         & isort(maxrs), ipsrs(maxrs), nipsrs(cosmo_c_struct%lenabc), nset(1082*numat), &
          & nipa(numat), dirtm(3,1082), finel(4,300,2))
-    if (.not. allocated(srad)) allocate(srad(numat))
-    if (.not. allocated(nar_csm))  allocate(nar_csm(lenabc + 1))
+    if (.not. allocated(cosmo_c_struct%srad)) allocate(cosmo_c_struct%srad(numat))
+    if (.not. allocated(cosmo_c_struct%nar_csm))  allocate(cosmo_c_struct%nar_csm(cosmo_c_struct%lenabc + 1))
    ! MAKE COORDINATES A BIT ASYMMETRIC IN ORDER TO AVOID
    ! SYMMETRY PROBLEMS WITH CAVITY CONSTRUCTION
     do i = 1, numat
       do j = 1, 3
-        coord(j, i) = coord(j, i) + Cos (i*j*.1d0) * 3.0d-9
+        cosmo_c_struct%coord(j, i) = cosmo_c_struct%coord(j, i) + Cos (i*j*.1d0) * 3.0d-9
       end do
     end do
    !
     ilipa = 0
     do i = 1, numat
-      ri = srad(i)
-      r = ri + rsolv
-      rr = r + rsolv
+      ri = cosmo_c_struct%srad(i)
+      r = ri + cosmo_c_struct%rsolv
+      rr = r + cosmo_c_struct%rsolv
       ri2 = ri * ri
       do ix = 1, 3
-        xa(ix) = coord(ix, i)
+        xa(ix) = cosmo_c_struct%coord(ix, i)
       end do
       do j = 1, numat
         if (j /= i) then
           dist = 0.d0
           do ix = 1, 3
-            dist = dist + (xa(ix)-coord(ix, j)) ** 2
+            dist = dist + (xa(ix)-cosmo_c_struct%coord(ix, j)) ** 2
           end do
-          if (dist < (rr+srad(j))**2) then
+          if (dist < (rr+cosmo_c_struct%srad(j))**2) then
             ilipa = ilipa + 1
           end if
         end if
@@ -1199,33 +1263,33 @@ subroutine coscav
     fdiagr = 2.1d0 * Sqrt (pi)
     inset = 1
     ilipa = 0
-    nps = 0
-    area = 0.d0
-    cosvol = 0.d0
+    cosmo_c_struct%nps = 0
+    cosmo_c_struct%area = 0.d0
+    cosmo_c_struct%cosvol = 0.d0
 
    ! NOW A LARGE LOOP OVER ALL ATOMS STARTS, WHICH MAKES THE SEGMENTATION
    ! ON THE CONVEX (SPHERICAL) PART OF THE CORRESPONDING PART OF THE CAVITY
     do i = 1, numat
       nipa(i) = 0
-      ri = srad(i)
-      r = ri + rsolv
-      rr = r + rsolv
+      ri = cosmo_c_struct%srad(i)
+      r = ri + cosmo_c_struct%rsolv
+      rr = r + cosmo_c_struct%rsolv
       ri2 = ri * ri
       do ix = 1, 3
-        xa(ix) = coord(ix, i)
+        xa(ix) = cosmo_c_struct%coord(ix, i)
       end do
-      nps0 = nps + 1
+      nps0 = cosmo_c_struct%nps + 1
       do j = 1, numat
         if (j /= i) then
           dist = 0.d0
           do ix = 1, 3
-            dist = dist + (xa(ix)-coord(ix, j)) ** 2
+            dist = dist + (xa(ix)-cosmo_c_struct%coord(ix, j)) ** 2
           end do
-          if (dist < (rr+srad(j))**2) then
+          if (dist < (rr+cosmo_c_struct%srad(j))**2) then
             ilipa = ilipa + 1
             if (ilipa > maxrs) then
               write(iw,'(/10x,a)')"Solvent radius too large - reduce RSOLV"
-              write(iw,'(/10x,a,f6.2,a,/)')"(Current value of RSOLV:",rsolv,"Angstroms)"
+              write(iw,'(/10x,a,f6.2,a,/)')"(Current value of RSOLV:",cosmo_c_struct%rsolv,"Angstroms)"
               !call mopend ("Solvent radius too large - reduce RSOLV")
               write(iw,*) "Solvent radius too large - reduce RSOLV"
               return
@@ -1246,7 +1310,7 @@ subroutine coscav
         if (j /= i) then
           dist = 0.d0
           do ix = 1, 3
-            dist = dist + (xa(ix)-coord(ix, j)) ** 2
+            dist = dist + (xa(ix)-cosmo_c_struct%coord(ix, j)) ** 2
           end do
           if (dist+0.05d0 < dist3) then
             dist3 = dist
@@ -1276,12 +1340,12 @@ subroutine coscav
       else
         dist1 = 0.d0
         do ix = 1, 3
-          dist1 = dist1 + (xa(ix)-coord(ix, nn(1, i))) ** 2
+          dist1 = dist1 + (xa(ix)-cosmo_c_struct%coord(ix, nn(1, i))) ** 2
         end do
         dist = 1.d0 / Sqrt (dist1)
-        tm(1, 1, i) = (coord(1, nn(1, i))-xa(1)) * dist
-        tm(1, 2, i) = (coord(2, nn(1, i))-xa(2)) * dist
-        tm(1, 3, i) = (coord(3, nn(1, i))-xa(3)) * dist
+        tm(1, 1, i) = (cosmo_c_struct%coord(1, nn(1, i))-xa(1)) * dist
+        tm(1, 2, i) = (cosmo_c_struct%coord(2, nn(1, i))-xa(2)) * dist
+        tm(1, 3, i) = (cosmo_c_struct%coord(3, nn(1, i))-xa(3)) * dist
       end if
       do
         if (nn(2, i) == 0) then
@@ -1292,12 +1356,12 @@ subroutine coscav
         else
           dist2 = 0.d0
           do ix = 1, 3
-            dist2 = dist2 + (xa(ix)-coord(ix, nn(2, i))) ** 2
+            dist2 = dist2 + (xa(ix)-cosmo_c_struct%coord(ix, nn(2, i))) ** 2
           end do
           dist = 1.d0 / Sqrt (dist2)
-          xx(1) = (coord(1, nn(2, i))-xa(1)) * dist
-          xx(2) = (coord(2, nn(2, i))-xa(2)) * dist
-          xx(3) = (coord(3, nn(2, i))-xa(3)) * dist
+          xx(1) = (cosmo_c_struct%coord(1, nn(2, i))-xa(1)) * dist
+          xx(2) = (cosmo_c_struct%coord(2, nn(2, i))-xa(2)) * dist
+          xx(3) = (cosmo_c_struct%coord(3, nn(2, i))-xa(3)) * dist
           sp = xx(1) * tm(1, 1, i) + xx(2) * tm(1, 2, i) + xx(3) * tm(1, &
          & 3, i)
           if (sp*sp > 0.99d0) then
@@ -1318,9 +1382,9 @@ subroutine coscav
       tm(3, 3, i) = tm(1, 1, i) * tm(2, 2, i) - tm(2, 1, i) * tm(1, 2, i)
       ! TRANSFORM DIRVEC ACCORDING TO TM
       do j = 1, 1082
-        xx(1) = dirvec(1, j)
-        xx(2) = dirvec(2, j)
-        xx(3) = dirvec(3, j)
+        xx(1) = cosmo_c_struct%dirvec(1, j)
+        xx(2) = cosmo_c_struct%dirvec(2, j)
+        xx(3) = cosmo_c_struct%dirvec(3, j)
         do ix = 1, 3
           dirtm(ix, j) = xx(1) * tm(1, ix, i) + xx(2) * tm(2, ix, i) + xx &
          & (3) * tm(3, ix, i)
@@ -1338,15 +1402,15 @@ subroutine coscav
           k = lipa(ik)
           dist = 0.d0
           do ix = 1, 3
-            dist = dist + (xx(ix)-coord(ix, k)) ** 2
+            dist = dist + (xx(ix)-cosmo_c_struct%coord(ix, k)) ** 2
           end do
-          dist = Sqrt (dist) - rsolv - srad(k)
+          dist = Sqrt (dist) - cosmo_c_struct%rsolv - cosmo_c_struct%srad(k)
           if (dist < 0) cycle loop
         end do
         narea = narea + 1
-        cosvol = cosvol + ri2 * dirvec(4, j) * (dirtm(1, j)*xa(1)+dirtm(2, &
+        cosmo_c_struct%cosvol = cosmo_c_struct%cosvol + ri2 * cosmo_c_struct%dirvec(4, j) * (dirtm(1, j)*xa(1)+dirtm(2, &
        & j)*xa(2)+dirtm(3, j)*xa(3)+ri)
-        area = area + ri2 * dirvec(4, j)
+        cosmo_c_struct%area = cosmo_c_struct%area + ri2 * cosmo_c_struct%dirvec(4, j)
         din(j) = .true.
       end do loop
       if (narea /= 0) then
@@ -1360,21 +1424,21 @@ subroutine coscav
           i0 = 2
         end if
 
-        jmax = n0(i0)
-        i0 = (i0-1) * n0(1)
+        jmax = cosmo_c_struct%n0(i0)
+        i0 = (i0-1) * cosmo_c_struct%n0(1)
         do j = 1, jmax
-          nps = nps + 1
-          if (nps > lenabc) then
+          cosmo_c_struct%nps = cosmo_c_struct%nps + 1
+          if (cosmo_c_struct%nps > cosmo_c_struct%lenabc) then
             !call mopend ("NPS IS GREATER THAN LENABC-USE SMALLER NSPA")
             write(iw,*) "NPS IS GREATER THAN LENABC-USE SMALLER NSPA"
             go to 100
           else
-            iatsp(nps) = i
+            cosmo_c_struct%iatsp(cosmo_c_struct%nps) = i
             do ix = 1, 3
-              xx(ix) = dirsm(ix, i0+j)
+              xx(ix) = cosmo_c_struct%dirsm(ix, i0+j)
             end do
             do ix = 1, 3
-              cosurf(ix, nps) = xx(1) * tm(1, ix, i) + xx(2) * tm(2, ix, &
+              cosmo_c_struct%cosurf(ix, cosmo_c_struct%nps) = xx(1) * tm(1, ix, i) + xx(2) * tm(2, ix, &
              & i) + xx(3) * tm(3, ix, i)
             end do
           end if
@@ -1382,11 +1446,11 @@ subroutine coscav
         niter = 0
         do
           niter = niter + 1
-          do ips = nps0, nps
-            nar_csm(ips) = 0
-            phinet(ips, 1) = 0.d0
-            phinet(ips, 2) = 0.d0
-            phinet(ips, 3) = 0.d0
+          do ips = nps0, cosmo_c_struct%nps
+            cosmo_c_struct%nar_csm(ips) = 0
+            cosmo_c_struct%phinet(ips, 1) = 0.d0
+            cosmo_c_struct%phinet(ips, 2) = 0.d0
+            cosmo_c_struct%phinet(ips, 3) = 0.d0
           end do
           do j = 1, 1082
             if (din(j)) then
@@ -1394,8 +1458,8 @@ subroutine coscav
               x1 = dirtm(1, j)
               x2 = dirtm(2, j)
               x3 = dirtm(3, j)
-              do ips = nps0, nps
-                sp = x1 * cosurf(1, ips) + x2 * cosurf(2, ips) + x3 * cosurf &
+              do ips = nps0, cosmo_c_struct%nps
+                sp = x1 * cosmo_c_struct%cosurf(1, ips) + x2 * cosmo_c_struct%cosurf(2, ips) + x3 * cosmo_c_struct%cosurf &
                & (3, ips)
                 if (sp >= spm) then
                   spm = sp * (1.d0+1.d-14)
@@ -1403,9 +1467,9 @@ subroutine coscav
                 end if
               end do
               iseg(j) = ipm
-              nar_csm(ipm) = nar_csm(ipm) + 1
+              cosmo_c_struct%nar_csm(ipm) = cosmo_c_struct%nar_csm(ipm) + 1
               do ix = 1, 3
-                phinet(ipm, ix) = phinet(ipm, ix) + dirtm(ix, j) * dirvec &
+                cosmo_c_struct%phinet(ipm, ix) = cosmo_c_struct%phinet(ipm, ix) + dirtm(ix, j) * cosmo_c_struct%dirvec &
                & (4, j)
               end do
             end if
@@ -1413,51 +1477,51 @@ subroutine coscav
           ips = nps0 - 1
           loop1: do
             ips = ips + 1
-            do while (nar_csm(ips) ==  0)
+            do while (cosmo_c_struct%nar_csm(ips) ==  0)
               niter = 1
-              nps = nps - 1
-              if (ips > nps) exit loop1
-              do jps = ips, nps
-                nar_csm(jps) = nar_csm(jps+1)
-                phinet(jps, 1) = phinet(jps+1, 1)
-                if (Abs(phinet(1,1)) > 1.d-20) then
+              cosmo_c_struct%nps = cosmo_c_struct%nps - 1
+              if (ips > cosmo_c_struct%nps) exit loop1
+              do jps = ips, cosmo_c_struct%nps
+                cosmo_c_struct%nar_csm(jps) = cosmo_c_struct%nar_csm(jps+1)
+                cosmo_c_struct%phinet(jps, 1) = cosmo_c_struct%phinet(jps+1, 1)
+                if (Abs(cosmo_c_struct%phinet(1,1)) > 1.d-20) then
                   ips = ips
                end if
-                phinet(jps, 2) = phinet(jps+1, 2)
-                phinet(jps, 3) = phinet(jps+1, 3)
+                cosmo_c_struct%phinet(jps, 2) = cosmo_c_struct%phinet(jps+1, 2)
+                cosmo_c_struct%phinet(jps, 3) = cosmo_c_struct%phinet(jps+1, 3)
               end do
             end do
             dists = 0.d0
             do ix = 1, 3
-              dists = dists + phinet(ips, ix) ** 2
+              dists = dists + cosmo_c_struct%phinet(ips, ix) ** 2
             end do
             dists = Max (dists, 1.d-20)
             dist = 1.d0 / Sqrt (dists)
             do ix = 1, 3
-              cosurf(ix, ips) = phinet(ips, ix) * dist
+              cosmo_c_struct%cosurf(ix, ips) = cosmo_c_struct%phinet(ips, ix) * dist
             end do
-            if (ips >= nps) exit
+            if (ips >= cosmo_c_struct%nps) exit
           end do loop1
           if (niter >= 2) exit
         end do
          ! NOW ALL SEGMENTS ARE FINALLY DEFINED AND THE ASSOCIATED
          ! BASIC GRID POINTS ARE CLOSE-PACKED
-        do ips = nps0, nps
-          nsetf(ips) = inset
-          inset = inset + nar_csm(ips)
-          nar_csm(ips) = 0
-          cosurf(4, ips) = 0.d0
+        do ips = nps0, cosmo_c_struct%nps
+          cosmo_c_struct%nsetf(ips) = inset
+          inset = inset + cosmo_c_struct%nar_csm(ips)
+          cosmo_c_struct%nar_csm(ips) = 0
+          cosmo_c_struct%cosurf(4, ips) = 0.d0
           do ix = 1, 3
-            cosurf(ix, ips) = cosurf(ix, ips) * ri + xa(ix)
+            cosmo_c_struct%cosurf(ix, ips) = cosmo_c_struct%cosurf(ix, ips) * ri + xa(ix)
           end do
         end do
         do j = 1, 1082
           if (din(j)) then
             ipm = iseg(j)
-            nara = nar_csm(ipm)
-            nset(nsetf(ipm)+nara) = j
-            nar_csm(ipm) = nara + 1
-            cosurf(4, ipm) = cosurf(4, ipm) + dirvec(4, j) * ri2  !cosurf(4,ipm) surface area of tessera
+            nara = cosmo_c_struct%nar_csm(ipm)
+            nset(cosmo_c_struct%nsetf(ipm)+nara) = j
+            cosmo_c_struct%nar_csm(ipm) = nara + 1
+            cosmo_c_struct%cosurf(4, ipm) = cosmo_c_struct%cosurf(4, ipm) + cosmo_c_struct%dirvec(4, j) * ri2  !cosmo_c_struct%cosurf(4,ipm) surface cosmo_c_struct%area of tessera
           end if
         end do
       end if
@@ -1471,32 +1535,33 @@ subroutine coscav
     do i = 1, numat
       din(i) = .true.
     end do
-    do j = 1, nps
-      din(iatsp(j)) = .false.
+    do j = 1, cosmo_c_struct%nps
+      din(cosmo_c_struct%iatsp(j)) = .false.
     end do
    ! NOW THE SEGMENT FORMATION ON ALL ATOMS IS FINISHED
    ! NOW THE CLOSURE OF THE CONCAVE REGIONS OF THE SURFACE WILL BE DONE
-    if (ioldcv == 0) then
-      call surclo(coord, nipa, lipa, din, rsc, isort, ipsrs, &
+    if (cosmo_c_struct%ioldcv == 0) then
+      call surclo(qm2_params,qmmm_nml,cosmo_c_struct,qmmm_struct, cosmo_c_struct%coord, nipa, lipa, din, rsc, isort, ipsrs, &
          nipsrs,qmmm_struct%iqm_atomic_numbers, &
-         srad, cosurf, iatsp, nar_csm, nsetf, isude, sude, maxrs)
+         cosmo_c_struct%srad, cosmo_c_struct%cosurf, cosmo_c_struct%iatsp, cosmo_c_struct%nar_csm, &
+         cosmo_c_struct%nsetf, cosmo_c_struct%isude, cosmo_c_struct%sude, maxrs)
     end if
-    cosvol = cosvol / 3
+    cosmo_c_struct%cosvol = cosmo_c_struct%cosvol / 3
     do i = 1, numat
-      arat(i) = 0.d0
+      cosmo_c_struct%arat(i) = 0.d0
       rdat(i) = 0.d0
     end do
    ! FILLING AMAT
-    do ips = 1, nps
-      i = iatsp(ips)
-      ri = srad(i)
+    do ips = 1, cosmo_c_struct%nps
+      i = cosmo_c_struct%iatsp(ips)
+      ri = cosmo_c_struct%srad(i)
       do ix = 1, 3
-        xi(ix) = coord(ix, i)
-        xa(ix) = cosurf(ix, ips)
+        xi(ix) = cosmo_c_struct%coord(ix, i)
+        xa(ix) = cosmo_c_struct%cosurf(ix, ips)
       end do
-      arat(i) = arat(i) + cosurf(4, ips); !arat surface area all tessera which beongs to i-th atom
-      call mfinel (ips, 1, finel, nar_csm, nsetf, nset, rsc, nipsrs, dirvec, &
-     & tm(1, 1, i), xi, ri, nfl1, ioldcv, maxrs, lenabc, numat)
+      cosmo_c_struct%arat(i) = cosmo_c_struct%arat(i) + cosmo_c_struct%cosurf(4, ips); !cosmo_c_struct%arat surface cosmo_c_struct%area all tessera which beongs to i-th atom
+      call mfinel (ips, 1, finel, cosmo_c_struct%nar_csm, cosmo_c_struct%nsetf, nset, rsc, nipsrs, &
+       cosmo_c_struct%dirvec, tm(1, 1, i), xi, ri, nfl1, cosmo_c_struct%ioldcv, maxrs, cosmo_c_struct%lenabc, numat)
       aa = 0.d0
       do k = 1, nfl1
         aa = aa + fdiagr * Sqrt (finel(4, k, 1)**3)
@@ -1509,23 +1574,23 @@ subroutine coscav
          & 1))**2+ (x2-finel(2, l, 1))**2+ (x3-finel(3, l, 1))**2)
         end do
       end do
-      amat(((ips+1)*ips)/2) = aa / cosurf(4, ips) ** 2 !Diagonal Elements
+      cosmo_c_struct%amat(((ips+1)*ips)/2) = aa / cosmo_c_struct%cosurf(4, ips) ** 2 !Diagonal Elements
       rdat(i) = rdat(i) + aa
       do jps = 1, ips - 1
-        j = iatsp(jps)
+        j = cosmo_c_struct%iatsp(jps)
         d2 = 0.d0
         do ix = 1, 3
-          xj(ix) = coord(ix, j)
-          xb(ix) = cosurf(ix, jps)
+          xj(ix) = cosmo_c_struct%coord(ix, j)
+          xb(ix) = cosmo_c_struct%cosurf(ix, jps)
           d2 = d2 + (xb(ix)-xa(ix)) ** 2
         end do
-        if (d2 > disex2) then
+        if (d2 > cosmo_c_struct%disex2) then
           aa = 1.d0 / Sqrt (d2)
         else
-          j = iatsp(jps)
-          rj = srad(j)
-          call mfinel (jps, 2, finel, nar_csm, nsetf, nset, rsc, nipsrs, &
-         & dirvec, tm(1, 1, j), xj, rj, nfl2, ioldcv, maxrs, lenabc, numat)
+          j = cosmo_c_struct%iatsp(jps)
+          rj = cosmo_c_struct%srad(j)
+          call mfinel (jps, 2, finel, cosmo_c_struct%nar_csm, cosmo_c_struct%nsetf, nset, rsc, nipsrs, &
+         & cosmo_c_struct%dirvec, tm(1, 1, j), xj, rj, nfl2, cosmo_c_struct%ioldcv, maxrs, cosmo_c_struct%lenabc, numat)
           aa = 0.d0
           do k = 1, nfl1
             x1 = finel(1, k, 1)
@@ -1537,11 +1602,11 @@ subroutine coscav
              & 2))**2+ (x2-finel(2, l, 2))**2+ (x3-finel(3, l, 2))**2)
             end do
           end do
-          aa = aa / cosurf(4, ips) / cosurf(4, jps)
+          aa = aa / cosmo_c_struct%cosurf(4, ips) / cosmo_c_struct%cosurf(4, jps)
         end if
-        amat(((ips-1)*ips)/2+jps) = aa !Off-diagonal elements
+        cosmo_c_struct%amat(((ips-1)*ips)/2+jps) = aa !Off-diagonal elements
         if (i == j) then
-          rdat(i) = rdat(i) + 2 * aa * cosurf(4, ips) * cosurf(4, jps)
+          rdat(i) = rdat(i) + 2 * aa * cosmo_c_struct%cosurf(4, ips) * cosmo_c_struct%cosurf(4, jps)
    end if
       end do
     end do
@@ -1549,15 +1614,19 @@ subroutine coscav
    ! PERFORM CHOLESKY FACTORIZATION
    !
     if (1==1) then
-	call coscl1 (amat, nsetf, nps, info)
-        !write(6,*)amat;stop
+	call coscl1 (cosmo_c_struct%amat, cosmo_c_struct%nsetf, cosmo_c_struct%nps, info)
+        !write(6,*)cosmo_c_struct%amat;stop
     else
-	call DPPTRF( 'L', nps, amat, info ) !LAPACK Subroutine for this
-        !write(6,*)amat;stop
+	call DPPTRF( 'L', cosmo_c_struct%nps, cosmo_c_struct%amat, info ) !LAPACK Subroutine for this
+        !write(6,*)cosmo_c_struct%amat;stop
     endif
     deallocate(rdat,rsc,tm,nn,isort,ipsrs,nipsrs,nset,nipa,lipa,dirtm,finel)
     100 continue
 end subroutine coscav
+
+
+
+
 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !Supporting function for coscav()
@@ -1720,32 +1789,38 @@ end subroutine dvfill
 !
 !********************************************************************
 !
-subroutine surclo (coord, nipa, lipa, din, rsc, isort, ipsrs, nipsrs, nat, &
+subroutine surclo (qm2_params,qmmm_nml,cosmo_c_struct,qmmm_struct,coord, nipa, lipa, din, rsc, isort, ipsrs, nipsrs, nat, &
 & srad, cosurf, iatsp, nar_csm, nsetf, isude, sude, maxrs)
    ! CREATES SEGMENTS WHICH CLOSE THE CONCAVE REGIONS OF THE CAVITY
+    use cosmo_C, only : cosmo_C_structure
+    use qmmm_struct_module, only : qmmm_struct_type
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
+    !use cosmo_C, only: cosmo_c_struct%n0, cosmo_c_struct%lenabc, cosmo_c_struct%nipc, cosmo_c_struct%rsolv, cosmo_c_struct%area, &
+    !   & cosmo_c_struct%cosvol, cosmo_c_struct%nps, cosmo_c_struct%numat
 
-    use cosmo_C, only: n0, lenabc, nipc, rsolv, area, &
-       & cosvol, nps, numat
-
-   use qmmm_module,only:qm2_params,qmmm_struct,qmmm_nml
     
-   !use molkst_C, only: numat
+   !use molkst_C, only: cosmo_c_struct%numat
    !use funcon_C, only: pi, twopi
     
    implicit none
+        type(qmmm_nml_type),intent(inout) :: qmmm_nml
+        type(qm2_params_type),intent(inout) :: qm2_params
+   type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
+    type(qmmm_struct_type), intent(in) :: qmmm_struct
     integer numat_p;
     integer, intent (in) :: maxrs
     logical, dimension (10000), intent (in) :: din 
-    integer, dimension (lenabc+1), intent (inout) :: iatsp, nar_csm, nsetf
+    integer, dimension (cosmo_c_struct%lenabc+1), intent (inout) :: iatsp, nar_csm, nsetf
     integer, dimension (maxrs), intent (in) :: lipa
     integer, dimension (maxrs), intent (out) :: ipsrs, isort
-    integer, dimension (numat), intent (in) :: nat, nipa
-    integer, dimension (lenabc), intent (out) :: nipsrs
-    integer, dimension (2, 30*numat), intent (out) :: isude
-    double precision, dimension (numat), intent (in) :: srad
-    double precision, dimension (2, 30*numat), intent (out) :: sude
-    double precision, dimension (3, numat), intent (in) :: coord
-    double precision, dimension (4, lenabc+1), intent (inout) :: cosurf
+    integer, dimension (cosmo_c_struct%numat), intent (in) :: nat, nipa
+    integer, dimension (cosmo_c_struct%lenabc), intent (out) :: nipsrs
+    integer, dimension (2, 30*cosmo_c_struct%numat), intent (out) :: isude
+    double precision, dimension (cosmo_c_struct%numat), intent (in) :: srad
+    double precision, dimension (2, 30*cosmo_c_struct%numat), intent (out) :: sude
+    double precision, dimension (3, cosmo_c_struct%numat), intent (in) :: coord
+    double precision, dimension (4, cosmo_c_struct%lenabc+1), intent (inout) :: cosurf
     double precision, dimension (4, maxrs), intent (out) :: rsc
     integer :: i, i2, i3, ia, iat, iat0, ib, ic, ich, iib, iic, iii, &
          & ik, il, ilipa, ip1, ips, ips0, ips1, ipsmin, is, isum, &
@@ -1765,23 +1840,23 @@ subroutine surclo (coord, nipa, lipa, din, rsc, isort, ipsrs, nipsrs, nat, &
     double precision, dimension (50) :: tarset=0.d0
 
    integer::iw=6 ! standard output
-   !integer numat
+   !integer cosmo_c_struct%numat
    real(8),parameter::pi=3.14159265358979323846d0
    real(8) twopi
 
-   numat=qmmm_struct%nquant ! number of atoms
+   cosmo_c_struct%numat=qmmm_struct%nquant ! number of atoms
    twopi=2*pi
 
-    nipc = 0
+    cosmo_c_struct%nipc = 0
     nrs = 0
    ! GENERATION OF SEGMENTS ALONG THE INTERSECTION RINGS
     ilipa = 0
-    do i = 1, numat
+    do i = 1, cosmo_c_struct%numat
       nipsrs(i) = 0
     end do
-    do ia = 1, numat - 1
+    do ia = 1, cosmo_c_struct%numat - 1
       if ( .not. din(ia)) then
-        ra = srad(ia) + rsolv
+        ra = srad(ia) + cosmo_c_struct%rsolv
         do ix = 1, 3
           xta(ix, 1) = coord(ix, ia)
         end do
@@ -1789,7 +1864,7 @@ subroutine surclo (coord, nipa, lipa, din, rsc, isort, ipsrs, nipsrs, nat, &
           ib = lipa(iib)
           if (ib > ia) then
             if ( .not. din(ib)) then
-              rb = srad(ib) + rsolv
+              rb = srad(ib) + cosmo_c_struct%rsolv
               dab = 0.d0
               nsab = 0
               do ix = 1, 3
@@ -1798,14 +1873,14 @@ subroutine surclo (coord, nipa, lipa, din, rsc, isort, ipsrs, nipsrs, nat, &
                 dab = dab + xx(ix) ** 2
               end do
               dab = Sqrt (dab)
-              call ansude (ra-rsolv, rb-rsolv, dab, rsolv, aa, ab, aar, abr, &
+              call ansude (ra-cosmo_c_struct%rsolv, rb-cosmo_c_struct%rsolv, dab, cosmo_c_struct%rsolv, aa, ab, aar, abr, &
              & aad, abd, rinc)
               cosa = (ra**2+dab**2-rb**2) / (2*dab*ra)
               cosb = (rb**2+dab**2-ra**2) / (2*dab*rb)
               sina = Sqrt (1.d0-cosa**2)
               da = ra * cosa
               hh = ra * sina
-              ddd = rsolv * (cosa+cosb) / dab
+              ddd = cosmo_c_struct%rsolv * (cosa+cosb) / dab
               fz(1) = (1.d0-Cos (hh*pi/ra)) / 2
               fz(2) = (1.d0-Cos (hh*pi/rb)) / 2
               if (cosa*cosb < 0d0) then
@@ -1814,8 +1889,8 @@ subroutine surclo (coord, nipa, lipa, din, rsc, isort, ipsrs, nipsrs, nat, &
               if (cosa*cosb < 0d0) then
                 fz(2) = 1.d0
               end if
-              yx(1) = rsolv / ra
-              yx(2) = rsolv / rb
+              yx(1) = cosmo_c_struct%rsolv / ra
+              yx(2) = cosmo_c_struct%rsolv / rb
               do ix = 1, 3
                 xd(ix) = xta(ix, 1) + da * xx(ix) / dab
               end do
@@ -1836,7 +1911,7 @@ subroutine surclo (coord, nipa, lipa, din, rsc, isort, ipsrs, nipsrs, nat, &
               do iic = ilipa + 1, ilipa + nipa(ia)
                 ic = lipa(iic)
                 if (ic /= ib) then
-                  rc = srad(ic) + rsolv
+                  rc = srad(ic) + cosmo_c_struct%rsolv
                   dabc = 0.d0
                   sp = 0.d0
                   do ix = 1, 3
@@ -1880,7 +1955,7 @@ subroutine surclo (coord, nipa, lipa, din, rsc, isort, ipsrs, nipsrs, nat, &
                             dabck = dabck + (trp(ix)-coord(ix, k)) ** 2
                           end do
                           dabck = Sqrt (dabck)
-                          if (dabck < srad(k)+rsolv) cycle loop
+                          if (dabck < srad(k)+cosmo_c_struct%rsolv) cycle loop
                         end if
                       end do
                       ntrp = ntrp + 1
@@ -1909,11 +1984,11 @@ subroutine surclo (coord, nipa, lipa, din, rsc, isort, ipsrs, nipsrs, nat, &
                       dac = 0.d0
                       dbc = 0.d0
                       do ix = 1, 3
-                        ee(ix, 1) = trp(ix) + rsolv / srad(ia) &
+                        ee(ix, 1) = trp(ix) + cosmo_c_struct%rsolv / srad(ia) &
                              & * (xta(ix, 1)-trp(ix))
-                        ee(ix, 2) = trp(ix) + rsolv / srad(ib) &
+                        ee(ix, 2) = trp(ix) + cosmo_c_struct%rsolv / srad(ib) &
                              & * (xta(ix, 2)-trp(ix))
-                        ee(ix, 3) = trp(ix) + rsolv / srad(ic) &
+                        ee(ix, 3) = trp(ix) + cosmo_c_struct%rsolv / srad(ic) &
                              & * (xta(ix, 3)-trp(ix))
                         sp = sp + (ee(ix, 1)-ee(ix, 3)) * (ee(ix, 2)-ee(ix, 3))
                         dac = dac + (ee(ix, 1)-ee(ix, 3)) &
@@ -2049,7 +2124,7 @@ subroutine surclo (coord, nipa, lipa, din, rsc, isort, ipsrs, nipsrs, nat, &
                     if(ja.eq.1) rsc(4,nrs)=rsc(4,nrs)+tarset(k)*rinc
                     if(ja.eq.nsa) rsc(4,nrs)=rsc(4,nrs)+tarset(l)*rinc
 
-                    cosvol = cosvol + rsc (4, nrs) * spn2 * dist
+                    cosmo_c_struct%cosvol = cosmo_c_struct%cosvol + rsc (4, nrs) * spn2 * dist
                     do ik = ilipa + 1, ilipa + nipa(ia)
                       k = lipa(ik)
                       if (k .eq. ib) cycle
@@ -2059,19 +2134,19 @@ subroutine surclo (coord, nipa, lipa, din, rsc, isort, ipsrs, nipsrs, nat, &
                       end do
                       dabck = sqrt(dabck)
                     end do
-                    area = area + rsc (4, nrs)
+                    cosmo_c_struct%area = cosmo_c_struct%area + rsc (4, nrs)
                   end do
                 end do
               end do
               if (sumphi > 1.d-10) then
-                nipc = nipc + 1
-                isude(1, nipc) = ia
-                isude(2, nipc) = ib
+                cosmo_c_struct%nipc = cosmo_c_struct%nipc + 1
+                isude(1, cosmo_c_struct%nipc) = ia
+                isude(2, cosmo_c_struct%nipc) = ib
     
                 sumphi = sumphi / twopi
-    !write(6,*)"sumpi/sude=",nipc,ia,ib,sumphi,aad,abd, aad * sumphi  ,abd * sumphi
-                sude(1, nipc) = aad * sumphi
-                sude(2, nipc) = abd * sumphi
+    !write(6,*)"sumpi/sude=",cosmo_c_struct%nipc,ia,ib,sumphi,aad,abd, aad * sumphi  ,abd * sumphi
+                sude(1, cosmo_c_struct%nipc) = aad * sumphi
+                sude(2, cosmo_c_struct%nipc) = abd * sumphi
               end if
             end if
           end if
@@ -2085,7 +2160,7 @@ subroutine surclo (coord, nipa, lipa, din, rsc, isort, ipsrs, nipsrs, nat, &
     end if
    ! NOW SORT THE SEGMENTS WITH RESPECT TO ATOMS
     isum = 0
-    do iat = 1, numat
+    do iat = 1, cosmo_c_struct%numat
       isum2 = isum + nipsrs(iat)
       nipsrs(iat) = isum
       isum = isum2
@@ -2112,7 +2187,7 @@ subroutine surclo (coord, nipa, lipa, din, rsc, isort, ipsrs, nipsrs, nat, &
       end do
     end do
    ! NOW FIND FOR EACH RINGSEGMENT THE NEAREST SEGMENT OUT OF THE SAME ATOM
-    do i = 1, nps
+    do i = 1, cosmo_c_struct%nps
       nipsrs(i) = 0
     end do
     iat0 = 0
@@ -2121,15 +2196,15 @@ subroutine surclo (coord, nipa, lipa, din, rsc, isort, ipsrs, nipsrs, nat, &
       iat = ipsrs(i)
       if (iat > iat0) then
         iat0 = iat
-        d2max = 16 * srad(iat) ** 2 / n0(1)
+        d2max = 16 * srad(iat) ** 2 / cosmo_c_struct%n0(1)
         if (nat(iat) == 1) then
-          d2max = d2max * n0(1) / n0(2)
+          d2max = d2max * cosmo_c_struct%n0(1) / cosmo_c_struct%n0(2)
         end if
-        do ips = ips1 + 1, nps
+        do ips = ips1 + 1, cosmo_c_struct%nps
           if (iatsp(ips) == iat) exit
         end do
         ips0 = ips
-        do ips = ips0, nps - 1
+        do ips = ips0, cosmo_c_struct%nps - 1
           if (iatsp(ips+1) > iat) exit
         end do
         ips1 = ips
@@ -2148,7 +2223,7 @@ subroutine surclo (coord, nipa, lipa, din, rsc, isort, ipsrs, nipsrs, nat, &
       if (d2min > d2max) then
          ! IF NO CLOSE ENOUGH SEGMENT IS PRESENT ADD A NEW ONE
         ips1 = ips1 + 1
-        do ips = nps, ips1, -1
+        do ips = cosmo_c_struct%nps, ips1, -1
           ip1 = ips + 1
           do ix = 1, 4
             cosurf(ix, ip1) = cosurf(ix, ips)
@@ -2159,7 +2234,7 @@ subroutine surclo (coord, nipa, lipa, din, rsc, isort, ipsrs, nipsrs, nat, &
           nipsrs(ip1) = nipsrs(ips)
         end do
         ipsrs(i) = ips1
-        nps = nps + 1
+        cosmo_c_struct%nps = cosmo_c_struct%nps + 1
         do ix = 1, 4
           cosurf(ix, ips1) = rsc (ix, i)
         end do
@@ -2182,7 +2257,7 @@ subroutine surclo (coord, nipa, lipa, din, rsc, isort, ipsrs, nipsrs, nat, &
     end do
    ! NOW SORT THE RING-SEGMENTS WITH RESPECT TO PRIMARY SEGMENTS
     isum = 0
-    do ips = 1, nps
+    do ips = 1, cosmo_c_struct%nps
       isum2 = isum + nipsrs(ips)
       nipsrs(ips) = isum
       isum = isum2
@@ -2206,6 +2281,7 @@ subroutine surclo (coord, nipa, lipa, din, rsc, isort, ipsrs, nipsrs, nat, &
       end do
     end do
 end subroutine surclo
+
 !
 !********************************************************************
 !
@@ -2262,6 +2338,7 @@ subroutine mfinel (ips, k, finel, nar_csm, nsetf, nset, rsc, nipsrs, dirvec, tm,
       end do
     end do
 end subroutine mfinel
+
 !
 !********************************************************************
 !
@@ -2363,18 +2440,25 @@ end subroutine memory_error
 !
 !********************************************************************
 !
-subroutine mkbmat 
-    !use molkst_C, only: numat
-    use cosmo_C, only : nps, bmat, cosurf,a0,numat,lm61,idenat
+subroutine mkbmat(qm2_params,qmmm_nml,cosmo_c_struct, qmmm_struct) 
+    !use molkst_C, only: cosmo_c_struct%numat
+    !use cosmo_C, only : cosmo_c_struct%nps, cosmo_c_struct%bmat, cosmo_c_struct%cosurf,a0,cosmo_c_struct%numat,cosmo_c_struct%lm61,cosmo_c_struct%idenat
 
     !use parameters_C, only: dd, qq
-    use qmmm_module,only:qm2_params,qmmm_struct,qmmm_nml
-    !use funcon_C, only: a0
+    use cosmo_C, only : cosmo_C_structure, a0
+    use qmmm_struct_module, only : qmmm_struct_type
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
+   !use funcon_C, only: a0
 
     !use common_arrays_C, only : coord, nfirst, nlast, nat
 
     implicit none
-    integer :: i, ia, idel, iden, ips, ix, nati, iii
+        type(qmmm_nml_type),intent(inout) :: qmmm_nml
+        type(qm2_params_type),intent(inout) :: qm2_params
+   type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
+   type(qmmm_struct_type), intent(in) :: qmmm_struct
+   integer :: i, ia, idel, iden, ips, ix, nati, iii
    double precision :: ddi, dist, qqi2, rm1, rm3, rm5
    double precision, dimension (3) :: xa
    logical first;
@@ -2382,7 +2466,7 @@ subroutine mkbmat
    
    ! FILLING B-MATRIX
    iden = 0
-   do i = 1, numat ! loop over atoms
+   do i = 1, cosmo_c_struct%numat ! loop over atoms
       !ia = nfirst(i)
       ia =qm2_params%orb_loc(1,i) ! kav substitution
 
@@ -2398,17 +2482,17 @@ subroutine mkbmat
       !qqi2 = (a0*qq(nati)) ** 2
       qqi2=(qm2_params%multip_2c_elec_params(2,i)*a0)**2
 
-      do ips=1,nps !loop over SAS segments
+      do ips=1,cosmo_c_struct%nps !loop over SAS segments
          dist=0.d0
          do ix=1, 3
-            !xa(ix) = cosurf(ix, ips)-coord(ix,i)
-            xa(ix)=cosurf(ix,ips)-qmmm_struct%qm_coords(ix,i)
+            !xa(ix) = cosmo_c_struct%cosurf(ix, ips)-coord(ix,i)
+            xa(ix)=cosmo_c_struct%cosurf(ix,ips)-qmmm_struct%qm_coords(ix,i)
             dist=dist+xa(ix)**2
          end do
 
          ! Coulomb for point charge at atom center
          rm1=1.d0/sqrt(dist)
-         bmat(iden+1,ips)=rm1 ! ss contribution
+         cosmo_c_struct%bmat(iden+1,ips)=rm1 ! ss contribution
 
          ! adding dipoles for non-spherical orbitals
          if(idel>1) then 
@@ -2417,28 +2501,28 @@ subroutine mkbmat
             rm5=rm1**5
 
             ! "diagonal terms", i.e., xx,yy and zz
-            bmat(iden+3,ips)=rm1+3*xa(1)**2*qqi2*rm5-qqi2*rm3
-            bmat(iden+6,ips)=rm1+3*xa(2)**2*qqi2*rm5-qqi2*rm3
-            bmat(iden+10,ips)=rm1+3*xa(3)**2*qqi2*rm5-qqi2*rm3
+            cosmo_c_struct%bmat(iden+3,ips)=rm1+3*xa(1)**2*qqi2*rm5-qqi2*rm3
+            cosmo_c_struct%bmat(iden+6,ips)=rm1+3*xa(2)**2*qqi2*rm5-qqi2*rm3
+            cosmo_c_struct%bmat(iden+10,ips)=rm1+3*xa(3)**2*qqi2*rm5-qqi2*rm3
 
             ! sx,sy and sz terms
-            bmat(iden+2,ips)=xa(1)*ddi*rm3
-            bmat(iden+4,ips)=xa(2)*ddi*rm3
-            bmat(iden+7,ips)=xa(3)*ddi*rm3
+            cosmo_c_struct%bmat(iden+2,ips)=xa(1)*ddi*rm3
+            cosmo_c_struct%bmat(iden+4,ips)=xa(2)*ddi*rm3
+            cosmo_c_struct%bmat(iden+7,ips)=xa(3)*ddi*rm3
 
             ! xy,xz and yz terms
-            bmat(iden+5,ips)=3*xa(1)*xa(2)*qqi2*rm5
-            bmat(iden+8,ips)=3*xa(1)*xa(3)*qqi2*rm5
-            bmat(iden+9,ips)=3*xa(3)*xa(2)*qqi2*rm5
+            cosmo_c_struct%bmat(iden+5,ips)=3*xa(1)*xa(2)*qqi2*rm5
+            cosmo_c_struct%bmat(iden+8,ips)=3*xa(1)*xa(3)*qqi2*rm5
+            cosmo_c_struct%bmat(iden+9,ips)=3*xa(3)*xa(2)*qqi2*rm5
 
             ! c now the d-orbitals in spherical symmetry
             if(idel.gt.4) then
                do iii=iden+11,iden+44
-                  bmat(iii,ips)=0.d0
+                  cosmo_c_struct%bmat(iii,ips)=0.d0
                end do
 
                do iii=5,9
-                  bmat(iden+(iii*(iii+1))/2,ips)=rm1
+                  cosmo_c_struct%bmat(iden+(iii*(iii+1))/2,ips)=rm1
                end do
             end if
 ! c end d-orbitals
@@ -2464,63 +2548,81 @@ end subroutine mkbmat
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 !Subroutine for creating a test cavity consiting of single cavity charges for each atom
-subroutine coscav_test
-    use qmmm_module,only:qm2_params,qmmm_struct,qmmm_nml
+subroutine coscav_test(qm2_params,qmmm_nml,cosmo_c_struct,qmmm_struct)
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
 
-    use cosmo_C, only: lenabc, nps, nipc, area, isude, sude, &
-       cosvol, rsolv, ioldcv, disex2, n0, dirvec, dirsm, srad, &
-       cosurf, amat, iatsp, nar_csm, nsetf, phinet, arat
+    use cosmo_C, only : cosmo_C_structure
+    !use cosmo_C, only: cosmo_c_struct%lenabc, cosmo_c_struct%nps, cosmo_c_struct%nipc, cosmo_c_struct%area, cosmo_c_struct%isude, cosmo_c_struct%sude, &
+    !   cosmo_c_struct%cosvol, cosmo_c_struct%rsolv, cosmo_c_struct%ioldcv, cosmo_c_struct%disex2, cosmo_c_struct%n0, cosmo_c_struct%dirvec, cosmo_c_struct%dirsm, cosmo_c_struct%srad, &
+    !   cosmo_c_struct%cosurf, cosmo_c_struct%amat, cosmo_c_struct%iatsp, cosmo_c_struct%nar_csm, cosmo_c_struct%nsetf, cosmo_c_struct%phinet, cosmo_c_struct%arat
+    use qmmm_struct_module, only : qmmm_struct_type
     implicit none
+    type(qmmm_nml_type),intent(inout) :: qmmm_nml
+    type(qm2_params_type),intent(inout) :: qm2_params
+    type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
+    type(qmmm_struct_type), intent(in) :: qmmm_struct
+
     _REAL_, dimension (3) :: xa, xb, xi, xj
     integer :: i,j,n
     _REAL_ :: d2
 
    !n=qmmm_struct%nquant !one charge per atom
    n=1
-   nps=n
-   nipc=n
-   sude=0.d0; arat=1.d0
-   cosurf(1:3,1:n)=qmmm_struct%qm_coords(1:3,1:n) !coordinates
-   cosurf(3,1:n)=cosurf(3,1:n)+1.d0 !shift
-   cosurf(4,:)=1.d0 !area
+   cosmo_c_struct%nps=n
+   cosmo_c_struct%nipc=n
+   cosmo_c_struct%sude=0.d0; cosmo_c_struct%arat=1.d0
+   cosmo_c_struct%cosurf(1:3,1:n)=qmmm_struct%qm_coords(1:3,1:n) !coordinates
+   cosmo_c_struct%cosurf(3,1:n)=cosmo_c_struct%cosurf(3,1:n)+1.d0 !shift
+   cosmo_c_struct%cosurf(4,:)=1.d0 !cosmo_c_struct%area
 
  ! FILLING AMAT
    do i = 1, n !First atom
-        iatsp(i)=i
+        cosmo_c_struct%iatsp(i)=i
         xi = qmmm_struct%qm_coords(:, i)
-        xa = cosurf(1:3, i)
-        amat(((i+1)*i)/2) = 0.d0 !Diagonal Elements
+        xa = cosmo_c_struct%cosurf(1:3, i)
+        cosmo_c_struct%amat(((i+1)*i)/2) = 0.d0 !Diagonal Elements
         do j = 1, i - 1
           xj = qmmm_struct%qm_coords(:, j)
-          xb = cosurf(1:3, j)
+          xb = cosmo_c_struct%cosurf(1:3, j)
           d2=sum((xb-xa)**2)
-          amat(((i-1)*i)/2+j) = 1.d0 / Sqrt(d2)
+          cosmo_c_struct%amat(((i-1)*i)/2+j) = 1.d0 / Sqrt(d2)
         end do
     end do
 end subroutine coscav_test
 
-subroutine cosini_testing 
-    use cosmo_C, only: n0, ioldcv, fnsq, nps, rsolv, nspa, disex2, &
-    dirsm, dirvec, srad, ipiden, gden, idenat, qdenet, amat, &
-    cmat, lenabc, arat, sude, isude, bh,qden, nar_csm, nsetf, phinet, &
-    qscnet, bmat, nset, xsp, abcmat, iatsp, nn, qscat, cosurf, nppa, &
-    coserr, lm61, numat,mpack,fepsi,mmat,tri_2D,v_solvent_difdens,xi_k, &
-    ceps, v_solvent_xi
+subroutine cosini_testing(qm2_params,qmmm_nml,cosmo_c_struct,qm2_struct,qmmm_struct) 
+    use cosmo_C, only : cosmo_C_structure
+    !use cosmo_C, only: cosmo_c_struct%n0, cosmo_c_struct%ioldcv, cosmo_c_struct%fnsq, cosmo_c_struct%nps, cosmo_c_struct%rsolv, cosmo_c_struct%nspa, cosmo_c_struct%disex2, &
+    !cosmo_c_struct%dirsm, cosmo_c_struct%dirvec, cosmo_c_struct%srad, cosmo_c_struct%ipiden, cosmo_c_struct%gden, cosmo_c_struct%idenat, cosmo_c_struct%qdenet, cosmo_c_struct%amat, &
+    !cosmo_c_struct%cmat, cosmo_c_struct%lenabc, cosmo_c_struct%arat, cosmo_c_struct%sude, cosmo_c_struct%isude, cosmo_c_struct%bh,cosmo_c_struct%qden, cosmo_c_struct%nar_csm, cosmo_c_struct%nsetf, cosmo_c_struct%phinet, &
+    !cosmo_c_struct%qscnet, cosmo_c_struct%bmat, cosmo_c_struct%nset, cosmo_c_struct%xsp, cosmo_c_struct%abcmat, cosmo_c_struct%iatsp, cosmo_c_struct%nn, cosmo_c_struct%qscat, cosmo_c_struct%cosurf, cosmo_c_struct%nppa, &
+    !coserr, cosmo_c_struct%lm61, cosmo_c_struct%numat,cosmo_c_struct%mpack,cosmo_c_struct%fepsi,cosmo_c_struct%mmat,cosmo_c_struct%tri_2D,cosmo_c_struct%v_solvent_difdens,cosmo_c_struct%xi_k, &
+    !cosmo_c_struct%ceps, cosmo_c_struct%v_solvent_xi
 !    use cosmo_C
     
-    use qmmm_module,only:qm2_params,qmmm_struct,qm2_struct,qmmm_nml
+    use qmmm_module,only: qm2_structure
     use qm2_davidson_module
+    use qmmm_struct_module, only : qmmm_struct_type
+	use qm2_params_module,  only : qm2_params_type
+	use qmmm_nml_module   , only : qmmm_nml_type
 
     !use common_arrays_C, only : nat, nfirst, nlast
     !    nat will be substituted with iqm_atomic_numbers
     !    nfirst and nlast will be substituted with orb_loc(1,:)
     !    and orb_lor(2,:), respectively
     
-    !use molkst_C, only: numat, keywrd, moperr, lm61, mozyme
+    !use molkst_C, only: cosmo_c_struct%numat, keywrd, moperr, cosmo_c_struct%lm61, mozyme
     !use chanel_C, only: iw
     !use reada_I
 
     implicit none
+    type(cosmo_C_structure), intent(inout) :: cosmo_c_struct
+    type(qm2_structure),intent(inout) :: qm2_struct
+    type(qmmm_struct_type), intent(in) :: qmmm_struct
+    type(qmmm_nml_type),intent(inout) :: qmmm_nml
+    type(qm2_params_type),intent(inout) :: qm2_params
+
     integer :: i, i0, iat, idel, iden, incif, indise, inrsol, j, k, n1, &
       n2, nfi, nfj
 
@@ -2549,22 +2651,22 @@ subroutine cosini_testing
    if (qmmm_nml%verbosity > 5) print*,'cosmo_call cosini_testing'
 
    ! dielectric scaling factor
-   fepsi=(ceps-1.d0)/(ceps+0.5d0)
+   cosmo_c_struct%fepsi=(cosmo_c_struct%ceps-1.d0)/(cosmo_c_struct%ceps+0.5d0)
 
-   numat=qmmm_struct%nquant ! number of atoms
-   mpack=qm2_struct%matsize
+   cosmo_c_struct%numat=qmmm_struct%nquant ! number of atoms
+   cosmo_c_struct%mpack=qm2_struct%matsize
 
    iw=6 ! standard output
 
    ! kav addition
-   ! Evaluation of lm61 - cumulative number of one-center densities
+   ! Evaluation of cosmo_c_struct%lm61 - cumulative number of one-center densities
    ! only one for hydrogen (ss)
    ! 10 for an sp-atom (ss,sx,xx,sy,...)
    n9=0
    n4=0
    n1=0
 
-   do i=1,numat
+   do i=1,cosmo_c_struct%numat
       k=qm2_params%orb_loc(2,i)-qm2_params%orb_loc(1,i)+1
 
       if(k==1) then
@@ -2576,82 +2678,88 @@ subroutine cosini_testing
       end if
    end do
 
-   lm61=45*n9+10*n4+n1
+   cosmo_c_struct%lm61=45*n9+10*n4+n1
 
    ! kav addition
    mozyme=.false. ! we are not doing linear scaling here
 
-   ! in mopac nspa can be redifined from input
+   ! in mopac cosmo_c_struct%nspa can be redifined from input
    ! here we would just set it to default value of 42
    ! for simplicity, kav
-   !nspa=42
-    nspa=100
-   !nspa=200
-    !nspa=1 !testing JAB
+   !cosmo_c_struct%nspa=42
+    cosmo_c_struct%nspa=100
+   !cosmo_c_struct%nspa=200
+    !cosmo_c_struct%nspa=1 !testing JAB
 
-    !lenabc = max(100, nspa*numat) 
-    lenabc = nspa*numat
+    !cosmo_c_struct%lenabc = max(100, cosmo_c_struct%nspa*cosmo_c_struct%numat) 
+    cosmo_c_struct%lenabc = cosmo_c_struct%nspa*cosmo_c_struct%numat
 
-    if (allocated(ipiden)) deallocate (ipiden)
-    if (allocated(idenat)) deallocate (idenat)
-    if (allocated(gden))   deallocate (gden)
-    if (allocated(qdenet)) deallocate (qdenet)
-    if (allocated(phinet)) deallocate (phinet)
-    if (allocated(qscnet)) deallocate (qscnet)
-    if (allocated(abcmat)) deallocate (abcmat)
-    if (allocated(bmat))   deallocate (bmat)
-    if (allocated(cmat))   deallocate (cmat)
-    if (allocated(qscat))  deallocate (qscat)
-    if (allocated(srad))   deallocate (srad)
-    if (allocated(iatsp))  deallocate (iatsp)
-    if (allocated(nar_csm))deallocate (nar_csm)
-    if (allocated(nn))     deallocate (nn)
-    if (allocated(cosurf)) deallocate (cosurf)
-    if (allocated(xsp))    deallocate (xsp)
-    if (allocated(nset))   deallocate (nset)
-    if (allocated(bh))     deallocate (bh)
-    if (allocated(qden))   deallocate (qden)
-    if (allocated(nar_csm))    deallocate (nar_csm)
-    if (allocated(nsetf))  deallocate (nsetf)
-    if (allocated(isude))  deallocate (isude)
-    if (allocated(sude))   deallocate (sude)
-    if (allocated(arat))   deallocate (arat)
-    if (allocated(amat))   deallocate (amat)
-    if (allocated(mmat))   deallocate (mmat)
-    if (allocated(tri_2D)) deallocate (tri_2D)
-    if (allocated(xi_k)) deallocate (xi_k)  
-    if (allocated(v_solvent_difdens)) &
-    deallocate (v_solvent_difdens)
+    if (allocated(cosmo_c_struct%ipiden)) deallocate (cosmo_c_struct%ipiden)
+    if (allocated(cosmo_c_struct%idenat)) deallocate (cosmo_c_struct%idenat)
+    if (allocated(cosmo_c_struct%gden))   deallocate (cosmo_c_struct%gden)
+    if (allocated(cosmo_c_struct%qdenet)) deallocate (cosmo_c_struct%qdenet)
+    if (allocated(cosmo_c_struct%phinet)) deallocate (cosmo_c_struct%phinet)
+    if (allocated(cosmo_c_struct%qscnet)) deallocate (cosmo_c_struct%qscnet)
+    if (allocated(cosmo_c_struct%abcmat)) deallocate (cosmo_c_struct%abcmat)
+    if (allocated(cosmo_c_struct%bmat))   deallocate (cosmo_c_struct%bmat)
+    if (allocated(cosmo_c_struct%cmat))   deallocate (cosmo_c_struct%cmat)
+    if (allocated(cosmo_c_struct%qscat))  deallocate (cosmo_c_struct%qscat)
+    if (allocated(cosmo_c_struct%srad))   deallocate (cosmo_c_struct%srad)
+    if (allocated(cosmo_c_struct%iatsp))  deallocate (cosmo_c_struct%iatsp)
+    if (allocated(cosmo_c_struct%nar_csm))deallocate (cosmo_c_struct%nar_csm)
+    if (allocated(cosmo_c_struct%nn))     deallocate (cosmo_c_struct%nn)
+    if (allocated(cosmo_c_struct%cosurf)) deallocate (cosmo_c_struct%cosurf)
+    if (allocated(cosmo_c_struct%xsp))    deallocate (cosmo_c_struct%xsp)
+    if (allocated(cosmo_c_struct%nset))   deallocate (cosmo_c_struct%nset)
+    if (allocated(cosmo_c_struct%bh))     deallocate (cosmo_c_struct%bh)
+    if (allocated(cosmo_c_struct%qden))   deallocate (cosmo_c_struct%qden)
+    if (allocated(cosmo_c_struct%nar_csm))    deallocate (cosmo_c_struct%nar_csm)
+    if (allocated(cosmo_c_struct%nsetf))  deallocate (cosmo_c_struct%nsetf)
+    if (allocated(cosmo_c_struct%isude))  deallocate (cosmo_c_struct%isude)
+    if (allocated(cosmo_c_struct%sude))   deallocate (cosmo_c_struct%sude)
+    if (allocated(cosmo_c_struct%arat))   deallocate (cosmo_c_struct%arat)
+    if (allocated(cosmo_c_struct%amat))   deallocate (cosmo_c_struct%amat)
+    if (allocated(cosmo_c_struct%mmat))   deallocate (cosmo_c_struct%mmat)
+    if (allocated(cosmo_c_struct%tri_2D)) deallocate (cosmo_c_struct%tri_2D)
+    if (allocated(cosmo_c_struct%xi_k)) deallocate (cosmo_c_struct%xi_k)  
+    if (associated(cosmo_c_struct%v_solvent_difdens)) &
+    deallocate (cosmo_c_struct%v_solvent_difdens)
     T2DS=qm2_struct%norbs*(qm2_struct%norbs-1)/2.0+qm2_struct%norbs;    
-    allocate(ipiden(lm61), idenat(numat), gden(lm61), & 
-          qdenet(lm61,3), phinet(lenabc + 1,3), qscnet(lenabc + 1, 3), &
-          qscat(numat),tri_2D(4,T2DS), &
+    allocate(cosmo_c_struct%ipiden(cosmo_c_struct%lm61), cosmo_c_struct%idenat(cosmo_c_struct%numat), &
+          cosmo_c_struct%gden(cosmo_c_struct%lm61), & 
+          cosmo_c_struct%qdenet(cosmo_c_struct%lm61,3), cosmo_c_struct%phinet(cosmo_c_struct%lenabc + 1,3), &
+          cosmo_c_struct%qscnet(cosmo_c_struct%lenabc + 1, 3), &
+          cosmo_c_struct%qscat(cosmo_c_struct%numat),cosmo_c_struct%tri_2D(4,T2DS), &
 
 !FOR STATE SPECIFIC
-    xi_k(qm2_struct%norbs**2), &  
-    v_solvent_difdens(qm2_struct%norbs,qm2_struct%norbs),stat = i)  
-    v_solvent_xi => v_solvent_difdens
+    cosmo_c_struct%xi_k(qm2_struct%norbs**2), &  
+    cosmo_c_struct%v_solvent_difdens(qm2_struct%norbs,qm2_struct%norbs),stat = i)  
+    cosmo_c_struct%v_solvent_xi => cosmo_c_struct%v_solvent_difdens
 
-   qscat = 0.d0
+   cosmo_c_struct%qscat = 0.d0
    if (i /= 0) then
       call memory_error("COSINI (0) in Cosmo")
       return
     end if
-    allocate(srad(numat), nn(3, numat), qden(lm61), &
-          iatsp(lenabc + 1), isude(2, 30*numat), nar_csm(lenabc + 1), &
-          arat(numat), sude(2,30*numat), nsetf(lenabc + 1),cosurf(4,lenabc),stat=i)
+    allocate(cosmo_c_struct%srad(cosmo_c_struct%numat), cosmo_c_struct%nn(3, cosmo_c_struct%numat), &
+          cosmo_c_struct%qden(cosmo_c_struct%lm61), &
+          cosmo_c_struct%iatsp(cosmo_c_struct%lenabc + 1), cosmo_c_struct%isude(2, 30*cosmo_c_struct%numat), &
+          cosmo_c_struct%nar_csm(cosmo_c_struct%lenabc + 1), &
+          cosmo_c_struct%arat(cosmo_c_struct%numat), cosmo_c_struct%sude(2,30*cosmo_c_struct%numat), &
+          cosmo_c_struct%nsetf(cosmo_c_struct%lenabc + 1),cosmo_c_struct%cosurf(4,cosmo_c_struct%lenabc),stat=i)
 
     if (i /= 0) then
       call memory_error("COSINI (1) in Cosmo")
       return
     end if 
     if (.not. mozyme) then
-      allocate(abcmat(lenabc),   &
-          xsp(3,lenabc), &
-          nset(nppa*numat), bh(lenabc),  &
-          bmat(lm61, lenabc), &
-          amat((lenabc*(lenabc + 1))/2), cmat((lm61*(lm61 + 1))/2), &
-    mmat(lm61,lm61), &
+      allocate(cosmo_c_struct%abcmat(cosmo_c_struct%lenabc),   &
+          cosmo_c_struct%xsp(3,cosmo_c_struct%lenabc), &
+          cosmo_c_struct%nset(cosmo_c_struct%nppa*cosmo_c_struct%numat), cosmo_c_struct%bh(cosmo_c_struct%lenabc),  &
+          cosmo_c_struct%bmat(cosmo_c_struct%lm61, cosmo_c_struct%lenabc), &
+          cosmo_c_struct%amat((cosmo_c_struct%lenabc*(cosmo_c_struct%lenabc + 1))/2), &
+          cosmo_c_struct%cmat((cosmo_c_struct%lm61*(cosmo_c_struct%lm61 + 1))/2), &
+          cosmo_c_struct%mmat(cosmo_c_struct%lm61,cosmo_c_struct%lm61), &
           stat = i)
       if (i /= 0) then
         call memory_error("COSINI (2) in Cosmo")
@@ -2664,18 +2772,18 @@ subroutine cosini_testing
    usevdw=rvdw
 
     !if (moperr) return
-    if(coserr) return ! kav substitution
+    if(cosmo_c_struct%coserr) return ! kav substitution
 
-    rsolv = 1.3d0 !Default VDW radius of atoms? JAB
+    cosmo_c_struct%rsolv = 1.3d0 !Default VDW radius of atoms? JAB
 
-    ioldcv = 0
+    cosmo_c_struct%ioldcv = 0
 
     !inrsol = Index (keywrd, " RSOLV=")
     !if (inrsol /= 0) then
-    !  rsolv = reada (keywrd, inrsol)
+    !  cosmo_c_struct%rsolv = reada (keywrd, inrsol)
     !end if
 
-    !if (rsolv < 0.5d0) then
+    !if (cosmo_c_struct%rsolv < 0.5d0) then
     !  write (iw,*) "RSOLV IS SET TO 0.5"
     !  return
     !end if
@@ -2696,12 +2804,12 @@ subroutine cosini_testing
     !    write (iw,*) "     N**2 IS SMALLER THAN 1.d0, OK?"
     !  end if
     !end if
-    fnsq = (ri1-1.d0) / (ri1+.5d0)
-    nps = 0
+    cosmo_c_struct%fnsq = (ri1-1.d0) / (ri1+.5d0)
+    cosmo_c_struct%nps = 0
    ! NO KEYWORD DELSC ANYMORE. PEOPLE MAY USE EXPLICIT
    ! DEFINITION OF RADII TO CHANGE FROM DEFAULTS! RDS IS REPLACED BY
    ! RSOLV
-    rsolv = Max (rsolv, 0.5d0)
+    cosmo_c_struct%rsolv = Max (cosmo_c_struct%rsolv, 0.5d0)
     disex = 4.d0
 
     !indise = Index (keywrd, " DISEX=")
@@ -2710,14 +2818,14 @@ subroutine cosini_testing
     !end if
    ! FILL THE COSMO-RADII (SRAD) AND INDEX-VECTORS IDENAT AND IPIDEN
    iden=0
-   do i=1,numat
+   do i=1,cosmo_c_struct%numat
 
       ! start index of orbital for i-atom
       ! in the full list of orbitals
       !nfi = nfirst(i)
       nfi=qm2_params%orb_loc(1,i) ! kav substitution
 
-      idenat(i)=iden+1
+      cosmo_c_struct%idenat(i)=iden+1
 
       ! number of orbitals of i-atom
       !idel = nlast(i) + 1 - nfi
@@ -2729,21 +2837,21 @@ subroutine cosini_testing
 
         do k=1,j
            iden=iden+1
-           ipiden(iden)=i0+k
-           gden(iden)=-2.0d0
+           cosmo_c_struct%ipiden(iden)=i0+k
+           cosmo_c_struct%gden(iden)=-2.0d0
         end do
 
-            gden(iden) = -1.0d0
+            cosmo_c_struct%gden(iden) = -1.0d0
       end do
 
       ! in the loop above:
-      ! gden - charge multiplier for the single-center densities, i.e.,
+      ! cosmo_c_struct%gden - charge multiplier for the single-center densities, i.e.,
       !   -1 for diagonal ones, e.g., xx, yy, ss
       !   -2 for non-diagonal ones, e.g., xy since they should be account twice,
       !   because two of those, ie.., xy and yx, has to be present
       !   Mind: it could be different once we start dealing with excited states
       ! 
-      ! ipiden - indexes one-center densities within the overall triagonal 
+      ! cosmo_c_struct%ipiden - indexes one-center densities within the overall triagonal 
       !  density matrix
       !  Mind: again, the overall thing is assumed symmetric, but care must
       !  be taken when using something like this for excited state calculations
@@ -2752,17 +2860,17 @@ subroutine cosini_testing
       !iat = nat(i)
       iat=qmmm_struct%iqm_atomic_numbers(i) ! kav substitution
 
-      srad(i) = usevdw(iat)
+      cosmo_c_struct%srad(i) = usevdw(iat)
    end do
 
    !
    !  NUMBER OF SECTIONS PER ATOM
    !
-    n0(1) = nspa
-    n0(2) = nspa
-    !call dvfill (n0(1), dirsm)
-    !call dvfill (n0(2), dirsm(1, n0(1)+1))
-    disex2 = 4 * (1.7d0*disex) ** 2 / nspa
-    !call dvfill (1082, dirvec)
+    cosmo_c_struct%n0(1) = cosmo_c_struct%nspa
+    cosmo_c_struct%n0(2) = cosmo_c_struct%nspa
+    !call dvfill (cosmo_c_struct%n0(1), cosmo_c_struct%dirsm)
+    !call dvfill (cosmo_c_struct%n0(2), cosmo_c_struct%dirsm(1, cosmo_c_struct%n0(1)+1))
+    cosmo_c_struct%disex2 = 4 * (1.7d0*disex) ** 2 / cosmo_c_struct%nspa
+    !call dvfill (1082, cosmo_c_struct%dirvec)
 
 end subroutine cosini_testing

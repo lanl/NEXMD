@@ -5,7 +5,7 @@
 !This file contains several routines for printing information
 !about QMMM simulations.
 
-subroutine qm2_print_info
+subroutine qm2_print_info(qmmm_nml, qm2_struct, qmmm_struct)
 ! ----------------------------------------------------------------------
 ! PURPOSE: Print information on QM/MM calculation setup in sander / sqm
 !
@@ -16,17 +16,21 @@ subroutine qm2_print_info
 ! Date   : February 2010
 ! ----------------------------------------------------------------------
 
-  use qmmm_module, only : qmmm_nml, &
-                          qmmm_struct, &
-                          qm2_struct
+  use qmmm_module, only : qm2_structure
   use qmmm_qmtheorymodule, only : String
   use dh_correction_module, only : dh_correction_info
+  use qmmm_struct_module, only : qmmm_struct_type
+  use qmmm_nml_module   , only : qmmm_nml_type
+
   ! Include the file containing all of the parameter constants.
   ! (required for the paper reference indices)
   ! This module should be cleaned up at some point!
   use QM2_parameters
 
   implicit none
+  type(qmmm_nml_type),intent(inout) :: qmmm_nml
+  type(qm2_structure),intent(inout) :: qm2_struct  
+  type(qmmm_struct_type), intent(in) :: qmmm_struct
 
   integer :: i
   integer :: reference_index
@@ -149,7 +153,7 @@ subroutine qm2_print_info
 end subroutine qm2_print_info
 
 !------------------------------------------------------------------------------
-subroutine qm_print_coords(nstep,print_coor)
+subroutine qm_print_coords(qmmm_nml, qmmm_struct, nstep,print_coor)
 !This routine prints the qm region coordinates.
 !Including link atoms
 !
@@ -158,13 +162,17 @@ subroutine qm_print_coords(nstep,print_coor)
 !================================================
 
   use ElementOrbitalIndex, only : elementSymbol
-  use qmmm_module, only : qmmm_struct, qmmm_nml
   use file_io_dat, only : MAX_FN_LEN
+  use qmmm_struct_module, only : qmmm_struct_type
+  use qmmm_nml_module   , only : qmmm_nml_type
+
   implicit none
 
 !Passed in
+      type(qmmm_struct_type), intent(in) :: qmmm_struct
       integer, intent(in) :: nstep
       logical, intent(in) :: print_coor
+      type(qmmm_nml_type),intent(inout) :: qmmm_nml
 
 !Local
       integer i,j
@@ -194,10 +202,10 @@ subroutine qm_print_coords(nstep,print_coor)
            write(qmmm_pdb_filename,'(I8)') nstep
            qmmm_pdb_filename = 'qmmm_region.pdb.' // adjustl(qmmm_pdb_filename)
            write(6,'(a,a)') 'QMMM: Writing QM coordinates to PDB file: ',qmmm_pdb_filename
-           call qm_write_pdb(qmmm_pdb_filename)
+           call qm_write_pdb(qmmm_struct, qmmm_pdb_filename)
         else
           !We write a pdb of the coordinates
-          call qm_write_pdb('qmmm_region.pdb')
+          call qm_write_pdb(qmmm_struct, 'qmmm_region.pdb')
         end if
       end if
 
@@ -205,7 +213,7 @@ end subroutine qm_print_coords
 
 !------------------------------------------------------------------------------
 
-subroutine qm_write_pdb(filename)
+subroutine qm_write_pdb(qmmm_struct, filename)
 ! This routine will write a crude pdb of the coordinates representing
 ! the QM atoms and link atoms. This allows the user to visually check that
 ! the selected QM region is what they expected.
@@ -213,8 +221,11 @@ subroutine qm_write_pdb(filename)
 ! Written by Ross Walker (TSRI, 2005)
 
   use ElementOrbitalIndex, only : elementSymbol
-  use qmmm_module, only : qmmm_struct
+  use qmmm_struct_module, only : qmmm_struct_type
+
   implicit none
+ 
+  type(qmmm_struct_type), intent(in) :: qmmm_struct
 
   character (len=*) :: filename
   
@@ -237,16 +248,30 @@ end subroutine qm_write_pdb
 
 !------------------------------------------------------------------------------
 
-subroutine qm_print_dyn_mem(natom,npairs)
+subroutine qm_print_dyn_mem(qm2_params,qmmm_nml,qmewald, qm_gb, qmmm_mpi, qmmm_scratch, qm2_rij_eqns, &
+                            qm2_struct, qmmm_struct, natom,npairs)
 !This routine prints a summary of the dynamic
 !memory allocated for use in the QM calculation.
 !Written by Ross Walker, TSRI, 2004
 !Assumes _REAL_ is double precision = 8 bytes.
 !================================================
 
-  use qmmm_module, only : qmmm_nml,qmmm_struct, qm2_struct, qm2_params, qm2_rij_eqns, &
-                          qmewald, qm_gb, qmmm_mpi, qmmm_scratch
-  implicit none
+  use qmmm_module, only : qm2_structure, qm2_rij_eqns_structure, &
+                          qm_ewald_structure, qm_gb_structure, qmmm_mpi_structure, qmmm_scratch_structure
+  use qmmm_struct_module, only : qmmm_struct_type
+  use qmmm_nml_module   , only : qmmm_nml_type
+  use qm2_params_module,  only : qm2_params_type
+
+  implicit none 
+   type(qm2_rij_eqns_structure),intent(inout) :: qm2_rij_eqns
+   type(qmmm_struct_type), intent(inout) :: qmmm_struct
+   type(qm2_structure),intent(inout) :: qm2_struct
+   type(qm2_params_type),intent(inout) :: qm2_params
+   type(qmmm_nml_type),intent(inout) :: qmmm_nml
+   type(qm_gb_structure),intent(inout) :: qm_gb
+   type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
+   type(qmmm_scratch_structure),intent(inout) :: qmmm_scratch
+   type(qm_ewald_structure),intent(inout) :: qmewald
 
 #include "qm2_array_locations.h"
 

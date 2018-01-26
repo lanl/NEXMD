@@ -16,23 +16,21 @@ module ParameterReader
      _REAL_ :: value=0.0D0
   end type ParameterEntry
 
-  public ParameterEntry, ReadParameterFile, GetNumberParameterEntries, GetParameterEntry, ParameterFileExisting
+  public ParameterEntry, ReadParameterFile, GetNumberParameterEntries, GetParameterEntry
   
-  private parameterEntries
 
-  type(ParameterEntry), allocatable, dimension(:), save :: parameterEntries
 
-  logical, save :: ParameterFileExisting=.false.
     
 contains
   
-  subroutine ReadParameterFile(fileName)
+  subroutine ReadParameterFile(fileName, parameterEntries,ParameterFileExisting)
 
     use UtilitiesModule, only : Upcase
     use ElementOrbitalIndex, only : GetAtomicNumber
 
     implicit none
 
+    type(ParameterEntry), allocatable, dimension(:), intent(inout) :: parameterEntries
     character(len=*), intent(in) :: fileName
     
     integer,parameter :: readUnit=21
@@ -43,8 +41,9 @@ contains
     integer :: fsize                    ! to estimate file size
     ! integer*4 tempbuf(13), fstatus    ! this requires non-standard Fortran extensions
     
-    ParameterFileExisting=.false.
+    logical, intent(inout) :: ParameterFileExisting
     
+    ParameterFileExisting=.false.
     !open(unit=readUnit,file=fileName,readonly, iostat=ios) ! gFortran doesn't allow "readonly".
     open(unit=readUnit,file=fileName,iostat=ios)
 
@@ -94,10 +93,12 @@ contains
    
   end subroutine ReadParameterFile
 
-  function GetNumberParameterEntries() result (numberOfEntries)
+  function GetNumberParameterEntries(parameterEntries,ParameterFileExisting) result (numberOfEntries)
 
     implicit none
   
+    type(ParameterEntry), dimension(:),intent(in) :: parameterEntries
+    logical, intent(in) :: ParameterFileExisting
     integer :: numberOfEntries
     
     numberOfEntries=0
@@ -107,17 +108,19 @@ contains
   end function GetNumberParameterEntries
 
 
-  function GetParameterEntry(index)  result (entry)
+  function GetParameterEntry(parameterEntries,ParameterFileExisting, index)  result (entry)
     ! this function is to prevent user modifying 
     ! the stored parameterEntries--i.e., user
     ! can only get a copy of any entry
 
     implicit none
     
+    type(ParameterEntry), dimension(:) :: parameterEntries
+    logical, intent(in) :: ParameterFileExisting
     integer,intent(in) :: index
     type(ParameterEntry) :: entry
 
-    if (index<=GetNumberParameterEntries() .and. index>0) then
+    if (index<=GetNumberParameterEntries(parameterEntries,ParameterFileExisting) .and. index>0) then
        entry=parameterEntries(index)
     end if
     

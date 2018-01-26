@@ -2,14 +2,15 @@
 !  -*- mode: f90; coding: iso-8859-15; -*-
 
 #include "dprec.fh"
-subroutine dispersion_params(nn,izp)
+subroutine dispersion_params(qmmm_struct, nn,izp)
 
   use qm2_dftb_module, only: dispertmp, dispfile
-  use qmmm_module, only : qmmm_struct
+  use qmmm_struct_module, only : qmmm_struct_type
 
   implicit none
 
 !! Passed in:
+  type(qmmm_struct_type), intent(in) :: qmmm_struct
   integer, intent(in) :: nn
   integer, intent(in) :: izp(*) ! izp(NNDIM)
 ! Local

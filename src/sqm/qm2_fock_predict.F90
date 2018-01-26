@@ -1,18 +1,19 @@
 ! <compile=optimized>
 #include "copyright.h"
 #include "dprec.fh"
-subroutine qm2_fock_predict(num_qmmm_calls,hmatrix,matsize,fock_matrix, &
+subroutine qm2_fock_predict(qmmm_nml, num_qmmm_calls,hmatrix,matsize,fock_matrix, &
                             fock_mat_final1, fock_mat_final2, &
                             fock_mat_final3, fock_mat_final4)
 
 !Subroutine by Ross Walker and Gustavo Seabra - This routine
 !attempts to predict the Fock matrix based on Pulay et al CPL, 2004, 386, 272-278.
 
-   use qmmm_module, only : qmmm_nml
+  use qmmm_nml_module   , only : qmmm_nml_type
 
    implicit none
 
    !Passed in
+   type(qmmm_nml_type), intent(inout) :: qmmm_nml
    integer, intent(in) :: num_qmmm_calls
    integer, intent(in) :: matsize
    _REAL_, intent(in) :: hmatrix(matsize)
@@ -43,9 +44,9 @@ subroutine qm2_fock_predict(num_qmmm_calls,hmatrix,matsize,fock_matrix, &
 
 end subroutine qm2_fock_predict
 
-subroutine qm2_fock_store(matsize, fock_matrix, hmatrix)
+subroutine qm2_fock_store(qm2_struct,matsize, fock_matrix, hmatrix)
 
-   use qmmm_module, only : qm2_struct
+   use qmmm_module, only : qm2_structure
 
    implicit none
 
@@ -53,6 +54,7 @@ subroutine qm2_fock_store(matsize, fock_matrix, hmatrix)
    !storage array for it and moves the other stored arrays down the chain.
 
    !Passed in
+   type(qm2_structure),intent(inout) :: qm2_struct
    integer, intent(in) :: matsize
    _REAL_, intent(in) :: fock_matrix(matsize)
    _REAL_, intent(in) :: hmatrix(matsize)

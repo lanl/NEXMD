@@ -5,7 +5,7 @@
 
 module qm2_dftb_module
 
-use qmmm_module, only: qmmm_struct
+!use qmmm_module, only: qmmm_struct
 !! 
 !! (GMS) DFTB Module defines the arrays used in DFTB.
 !! ==================================================

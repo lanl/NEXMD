@@ -345,7 +345,7 @@ subroutine force(xx,ix,ih,ipairs,x,f,ener,vir, &
       !link atoms and not the mm link pair atoms. The initial radii used are those
       !of the mm link pair's atom type though.
       !The MMlink pair atoms must be the coordinates of the link atoms here.
-      if (qmmm_nml%ifqnt) call adj_mm_link_pair_crd(x)
+      if (qmmm_nml%ifqnt) call adj_mm_link_pair_crd(qmmm_nml,qmmm_struct,x)
 
       call egb_calc_radii(igb,natom,x,fs,reff, &
                      onereff,fsmax,rgbmax, rborn, offset, &
@@ -357,7 +357,7 @@ subroutine force(xx,ix,ih,ipairs,x,f,ener,vir, &
                      ,gb_rad_mpistart &
 #endif
                        )
-      if (qmmm_nml%ifqnt) call rst_mm_link_pair_crd(x)
+      if (qmmm_nml%ifqnt) call rst_mm_link_pair_crd(qmmm_nml,qmmm_struct, x)
 
       call timer_stop(TIME_GBRAD1)
       call timer_stop(TIME_EGB)

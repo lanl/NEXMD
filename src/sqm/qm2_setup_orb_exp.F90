@@ -5,12 +5,16 @@
 #include "copyright.h"
 #include "assert.fh"
 #include "dprec.fh"
-subroutine qm2_setup_orb_exp
+subroutine qm2_setup_orb_exp(qm2_params,qmmm_struct)
 
       use constants, only : A_TO_BOHRS, A2_TO_BOHRS2, A3_TO_BOHRS3
-      use qmmm_module, only : qm2_params, qmmm_struct
       use ElementOrbitalIndex, only: MaxAngularQuantumNumber, MaxGaussianExpansion
+      use qmmm_struct_module, only : qmmm_struct_type
+      use qm2_params_module,  only : qm2_params_type
+
       implicit none
+      type(qmmm_struct_type), intent(inout) :: qmmm_struct
+      type(qm2_params_type),intent(inout) :: qm2_params
 
 !Local
       _REAL_:: ALLC(MaxGaussianExpansion,MaxGaussianExpansion,MaxAngularQuantumNumber+1)
@@ -39,7 +43,7 @@ subroutine qm2_setup_orb_exp
       _REAL_:: atom_orb_zz_one_p_a_p, atom_orb_zz_one_p_a_d, atom_orb_zz_one_d_a_d     
       _REAL_:: atom_orb_sp_eqn, atom_orb_sd_eqn, atom_orb_pp_eqn, atom_orb_pd_eqn, atom_orb_dd_eqn    
 
-      _REAL_ temp_real
+      _REAL_ :: temp_real=0.0
 
 !This routine fills atom_orb_cc_s, atom_orb_cc_p, atom_orb_zz_s, atom_orb_zz_p
 !with the STO-6G orbital expansion data. It then de-allocates the no longer

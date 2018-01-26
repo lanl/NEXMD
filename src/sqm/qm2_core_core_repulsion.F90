@@ -1,6 +1,6 @@
 ! <compile=optimized>
 #include "dprec.fh"
-subroutine qm2_core_core_repulsion(iat, jat, rij, onerij, RI1, enuc)
+subroutine qm2_core_core_repulsion(qmmm_nml, qm2_params, qmmm_struct, iat, jat, rij, onerij, RI1, enuc)
 ! ----------------------------------------------------------------------
 ! PURPOSE: Calculate the core core repulsion energy between
 !          atoms iat, jat
@@ -32,13 +32,18 @@ subroutine qm2_core_core_repulsion(iat, jat, rij, onerij, RI1, enuc)
 ! Date  : February 2010
 ! ----------------------------------------------------------------------
 
-  use qmmm_module, only : qmmm_nml, &
-                          qmmm_struct, &
-                          qm2_params, &
-                          EXPONENTIAL_CUTOFF
+  use qm2_params_module,  only : qm2_params_type
+  use qmmm_nml_module   , only : qmmm_nml_type
+  use qmmm_module, only : EXPONENTIAL_CUTOFF
   use constants, only : zero, one, two, ten, ten_to_minus8, third, AU_TO_EV, BOHRS_TO_A
-  !DEBUG use qmmm_qmtheorymodule, only : String
+  use qmmm_struct_module, only : qmmm_struct_type
+
+!DEBUG use qmmm_qmtheorymodule, only : String
   implicit none
+  
+  type(qmmm_struct_type), intent(in) :: qmmm_struct
+  type(qmmm_nml_type), intent(in) :: qmmm_nml
+  type(qm2_params_type), intent(in) :: qm2_params
 
   integer, intent(in)  :: iat, jat
   _REAL_,  intent(in)  :: rij, onerij, RI1

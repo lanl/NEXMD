@@ -1,7 +1,7 @@
 ! <compile=optimized>
 #include "copyright.h"
 #include "dprec.fh"
-subroutine  qm2_hcore_qmmm(H,ENUCLR,qm_xcrd)
+subroutine  qm2_hcore_qmmm(qm2_params,qmmm_nml,qmmm_mpi, qm2_rij_eqns, qm2_struct, qmmm_struct, H,ENUCLR,qm_xcrd)
 
 ! This routine is repsonsible for calculating the QM-MM interactions between
 ! QM-MM pairs that are in the QMMM pair list. This routine calls qm2_rotate_qmmm.
@@ -17,11 +17,20 @@ subroutine  qm2_hcore_qmmm(H,ENUCLR,qm_xcrd)
 ! d-orbital extension,  (Taisung Lee, 2011)  
 
       use constants  , only : zero, one, A_TO_BOHRS, A2_TO_BOHRS2, BOHRS_TO_A, AU_TO_EV
-      use qmmm_module, only : qmmm_struct, qm2_struct, qm2_params, qmmm_nml, qmmm_mpi, alph_MM
+      use qmmm_module, only : qm2_structure, alph_MM, qmmm_mpi_structure, qm2_rij_eqns_structure
       use Rotation   , only : GetRotationMatrix, RotateCore
+      use qmmm_struct_module, only : qmmm_struct_type
+      use qm2_params_module,  only : qm2_params_type
+      use qmmm_nml_module   , only : qmmm_nml_type
 
       implicit none
-
+	   type(qm2_params_type),intent(inout) :: qm2_params
+	   type(qmmm_nml_type),intent(inout) :: qmmm_nml
+	   type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
+           type(qm2_rij_eqns_structure),intent(inout) :: qm2_rij_eqns
+ 
+      type(qmmm_struct_type), intent(inout) :: qmmm_struct
+      type(qm2_structure),intent(inout) :: qm2_struct
       _REAL_, intent(inout) :: H(qm2_struct%matsize)
       _REAL_, intent(out)   :: enuclr
       _REAL_, intent(in)    :: qm_xcrd(4,qmmm_struct%qm_mm_pairs) 
@@ -81,7 +90,8 @@ subroutine  qm2_hcore_qmmm(H,ENUCLR,qm_xcrd)
           !It is a light atom (Hydrogen) - same notes as below for SP-ATOM
           do j=1,qmmm_struct%qm_mm_pairs
             loop_count = loop_count+1
-            call qm2_rotate_qmmm_light(loop_count,i,j,qm_atom_coord,qm_xcrd(1,j),E1B_light,enucij)
+            call qm2_rotate_qmmm_light(qm2_params, qmmm_nml, qm2_rij_eqns, qm2_struct,qmmm_struct, &
+                                       loop_count,i,j,qm_atom_coord,qm_xcrd(1,j),E1B_light,enucij)
             ii = qm2_params%pascal_tri1(ia) + ia 
             H(ii) = H(ii) + E1B_light
             ENUCLR = ENUCLR + enucij
@@ -93,7 +103,8 @@ subroutine  qm2_hcore_qmmm(H,ENUCLR,qm_xcrd)
           do j=1,qmmm_struct%qm_mm_pairs
             loop_count = loop_count+1
 
-            call qm2_rotate_qmmm_heavy(loop_count,i,qm_atom_coord,qm_xcrd(1,j),E1B,enucij)
+            call qm2_rotate_qmmm_heavy(qm2_params,qmmm_nml, qm2_rij_eqns, qm2_struct,qmmm_struct, &
+                                       loop_count,i,qm_atom_coord,qm_xcrd(1,j),E1B,enucij)
 !          Add E1B to the corresponding diagonal elements of the one-electron
 !          matrix H.
             i2 = 0
@@ -126,8 +137,8 @@ subroutine  qm2_hcore_qmmm(H,ENUCLR,qm_xcrd)
                 oneOverRij=one/rij
                 r2InAu=r2*A2_TO_BOHRS2
 
-                call GetRotationMatrix(qm_xcrd(1:3,j)-qm_atom_coord(1:3), rotationMatrix, spd_atom)   
-                call qm2_repp_d(qmmm_struct%qm_atom_type(i),0,rijInAu,RI,CORE,W,45,1,0) 
+                call GetRotationMatrix(qm2_params,qm_xcrd(1:3,j)-qm_atom_coord(1:3), rotationMatrix, spd_atom)   
+                call qm2_repp_d(qm2_params,qmmm_struct, qmmm_struct%qm_atom_type(i),0,rijInAu,RI,CORE,W,45,1,0) 
                 core(1,2)=0.d0
                 core=core*qm_xcrd(4,j)
                 
@@ -166,7 +177,8 @@ subroutine  qm2_hcore_qmmm(H,ENUCLR,qm_xcrd)
 
 end subroutine qm2_hcore_qmmm
 
-SUBROUTINE qm2_rotate_qmmm_light(loop_count,IQM,jpair,xyz_qm,xyz_mm,E1B,ENUC)
+SUBROUTINE qm2_rotate_qmmm_light(qm2_params, qmmm_nml, qm2_rij_eqns, qm2_struct,qmmm_struct, &
+                                 loop_count,IQM,jpair,xyz_qm,xyz_mm,E1B,ENUC)
 
 !For light atoms
 !-----------------------------------
@@ -174,11 +186,21 @@ SUBROUTINE qm2_rotate_qmmm_light(loop_count,IQM,jpair,xyz_qm,xyz_mm,E1B,ENUC)
 !-----------------------------------
 !See heavy routine below for notes.
 
-      use qmmm_module, only : qmmm_nml, qm2_struct, qmmm_struct, qm2_params, qm2_rij_eqns,alph_mm, &
+      use qmmm_module, only : qm2_structure, qm2_rij_eqns_structure,alph_mm, &
                               EXPONENTIAL_CUTOFF
       use constants  , only : A2_TO_BOHRS2, AU_TO_EV, BOHRS_TO_A, one, zero
+      use qmmm_struct_module, only : qmmm_struct_type
+      use qm2_params_module,  only : qm2_params_type
+      use qmmm_nml_module   , only : qmmm_nml_type
+
       implicit none
 ! Passed in
+      type(qmmm_struct_type), intent(inout) :: qmmm_struct
+      type(qm2_structure),intent(inout) :: qm2_struct
+   type(qm2_params_type),intent(inout) :: qm2_params
+   type(qmmm_nml_type),intent(inout) :: qmmm_nml
+   type(qm2_rij_eqns_structure),intent(inout) :: qm2_rij_eqns
+
       integer, intent(in) :: loop_count, iqm, jpair
       _REAL_, intent(in) :: xyz_qm(3), xyz_mm(4)
       _REAL_, intent(out) :: e1b, enuc
@@ -302,7 +324,7 @@ SUBROUTINE qm2_rotate_qmmm_light(loop_count,IQM,jpair,xyz_qm,xyz_mm,E1B,ENUC)
 
 end subroutine qm2_rotate_qmmm_light
 
-SUBROUTINE qm2_rotate_qmmm_heavy(loop_count,IQM,xyz_qm,xyz_mm,E1B,ENUC)
+SUBROUTINE qm2_rotate_qmmm_heavy(qm2_params,qmmm_nml, qm2_rij_eqns, qm2_struct, qmmm_struct, loop_count,IQM,xyz_qm,xyz_mm,E1B,ENUC)
 
 !For SP-ATOMs
 !-----------------------------------
@@ -327,13 +349,21 @@ SUBROUTINE qm2_rotate_qmmm_heavy(loop_count,IQM,xyz_qm,xyz_mm,E1B,ENUC)
 !       ENUC - QM-MM core core interaction in KCal/mol.
 !-----------------------------------
 
-      use qmmm_module, only : qmmm_nml, qmmm_struct, qm2_struct, qm2_params, qm2_rij_eqns, &
+      use qmmm_module, only : qm2_structure, qm2_rij_eqns_structure, &
                               alph_mm, AXIS_TOL, EXPONENTIAL_CUTOFF
       use constants  , only : A_TO_BOHRS, A2_TO_BOHRS2, AU_TO_EV, HALF_AU_TO_EV, FOURTH_AU_TO_EV, &
                               BOHRS_TO_A, one, zero
-                            
+      use qmmm_struct_module, only : qmmm_struct_type
+   use qm2_params_module,  only : qm2_params_type
+   use qmmm_nml_module   , only : qmmm_nml_type
+                           
       implicit none
 ! Passed in
+   type(qm2_params_type),intent(inout) :: qm2_params
+   type(qmmm_nml_type),intent(inout) :: qmmm_nml
+   type(qm2_rij_eqns_structure),intent(inout) :: qm2_rij_eqns
+      type(qm2_structure),intent(inout) :: qm2_struct
+      type(qmmm_struct_type), intent(inout) :: qmmm_struct
       integer, intent(in) :: loop_count, iqm
       _REAL_, intent(in) :: xyz_qm(3), xyz_mm(4)
       _REAL_, intent(out) :: e1b(10), enuc
@@ -530,18 +560,21 @@ SUBROUTINE qm2_rotate_qmmm_heavy(loop_count,IQM,xyz_qm,xyz_mm,E1B,ENUC)
 end subroutine qm2_rotate_qmmm_heavy
 
 
-subroutine qm2_hcore_add_switched(H, switched_mmpot)
+subroutine qm2_hcore_add_switched(qm2_params,qmmm_mpi, H, switched_mmpot)
 
 !--------------------------------------------------------------------
 ! This routine adds the switched_mmpot to the diagonal elements 
 ! of the H matrix.
 !--------------------------------------------------------------------
 
-   use qmmm_module, only : qmmm_struct, qm2_params, qmmm_mpi
+   use qmmm_module, only : qmmm_mpi_structure
+   use qm2_params_module,  only : qm2_params_type
 
    implicit none
 
    ! Passed in
+   type(qm2_params_type),intent(inout) :: qm2_params
+   type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
    _REAL_, intent(inout) :: H(*)
    _REAL_, intent(in) :: switched_mmpot(*)
 

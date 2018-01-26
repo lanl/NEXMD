@@ -11,9 +11,10 @@
 !
 !--------------------------------------------------------------------
 
-   subroutine printNM_AO(filenumber)
+   subroutine printNM_AO(qm2ds,filenumber)
    use qm2_davidson_module
    implicit none
+   type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    integer i,j,k,filenumber,n
    n=qm2ds%Nb
    write(filenumber,*)'Atomic orbital basis'
@@ -27,9 +28,10 @@
    flush(filenumber)
    end
 
-   subroutine printNM_MO(filenumber)
+   subroutine printNM_MO(qm2ds,filenumber)
    use qm2_davidson_module
    implicit none
+   type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    integer i,n,m,filenumber
    !real temp1(qm2ds%Nh)
    !character(len=20) FMT
@@ -69,11 +71,17 @@
 !----------------------------------------------------------------------
 
 
-subroutine printCfitNM(filenumber)
+subroutine printCfitNM(qm2_params,qm2ds,qmmm_struct,filenumber)
  use qmmm_module
 ! use constants
  use qm2_davidson_module
+ use qmmm_struct_module, only : qmmm_struct_type
+   use qm2_params_module,  only : qm2_params_type
+
       implicit none
+      type(qm2_params_type),intent(inout) :: qm2_params
+      type(qm2_davidson_structure_type), intent(inout) :: qm2ds
+      type(qmmm_struct_type), intent(in) :: qmmm_struct
       real :: dipd(3),dipod(3,2),coords(3),coords0(3),charge,D1,D2,tcharge,trace,&
        BohrtoA
       integer :: filenumber,orb_beg,orb_end,norb1,norb2,nquant,i,nmode,norbs_atom
@@ -96,7 +104,7 @@ BohrtoA=0.529177249! A/Bohr
  !loop over the number of normal modes to represent as charges
    do nmode=1,qm2ds%Mx
    
-   call mo2site(qm2ds%v0(:,nmode), qm2ds%xi_scratch, qm2ds%eta_scratch)
+   call mo2site(qm2ds,qm2ds%v0(:,nmode), qm2ds%xi_scratch, qm2ds%eta_scratch)
 
    write(filenumber,*) 'Mode',qm2ds%Mx!!Test
    tcharge=0.0
@@ -242,10 +250,12 @@ end subroutine
 !
 !--------------------------------------------------------------------
 
-   subroutine printNM_binary(fn1,fn2,fn3)
+   subroutine printNM_binary(qm2_struct,qm2ds,fn1,fn2,fn3)
    use qm2_davidson_module
    use qmmm_module
    implicit none
+   type(qm2_structure),intent(inout) :: qm2_struct
+   type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    integer i,j,fn1,fn2,fn3
    !character(len=20) FMT
    open (fn1,file='modes.b',form='unformatted')
