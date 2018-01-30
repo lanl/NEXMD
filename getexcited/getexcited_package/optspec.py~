@@ -1,0 +1,100 @@
+#/usr/bin/python
+
+'''
+ ___________________________________________________________________
+|                                                                   |
+| This function generates an optical spectrum from single-point     |
+| calculations.                                                     |
+|                                                                   |
+| One of two files will be generated in the current working 
+| directory if an optical spectrum is requested, 'ceo.out' or 
+| 'ceo.err'.  In 'ceo.out', the spectrum is given a Gaussian 
+| lineshape with width defined by the user (e.g. 0.15 eV). The 
+| outputted spectrum is a sum of all spectra determined from 
+| initial geometries, divided the number of geometries.  The 
+| 'collectceo.sh' script is called to grep excitation energies and 
+| oscillator strengths from single-point calculations. The path to 
+| this script must be given in 'PATHTOCEO' shown below.  In 'ceo.out', first column is energy |
+| in eV and second column is relative absorbance in arbitrary       |
+| units.  In 'ceo.err', first column is 'NAMD#' folder and second   |
+| column is directory of single-point calculations that did not     |
+| complete. The 'ceo.out' file cannot be generated unless all       |
+| single-point calculations are complete.                           |
+|___________________________________________________________________|
+
+'''
+
+import numpy as np
+import os
+import sys
+import subprocess
+import shlex
+import glob
+
+PATHTOCEO = '/lustre/scratch1/turquoise/sifain/bin/getexcited_package'
+CWD = os.getcwd()
+
+def OPTSPEC(PATHTOCEO):
+
+    print 'Generating optical spectrum.'
+
+## DIRECTORY NAMES ##
+    SPDIR = raw_input('Single-point calculations directory: ')
+    if not os.path.exists(SPDIR):
+        print 'Path %s does not exist.' % (SPDIR)
+        sys.exit()
+    
+## CHECK EXCITATION ENERGIES ##
+    print 'Collecting energies and oscillator strengths.  Please wait.'
+    if not os.path.exists('%s/header' % (SPDIR)):
+        print 'Path %s/header does not exist.' % (SPDIR)
+        sys.exit()
+    HEADER = open('%s/header'% (SPDIR),'r')
+    for LINE in HEADER:
+        if 'n_exc_states_propagate' in LINE:
+            NSTATES = np.int(LINE.split()[0][len('n_exc_states_propagate='):-1])
+            break
+    NAMDS = glob.glob('%s/NAMD*/' % (SPDIR))
+    NAMDS.sort()
+    ERROR = open('%s/ceo.err' % (CWD),'w')
+    CEOFLAG = 0
+    for NAMD in NAMDS:
+        if not os.path.exists('%s/%s/dirlist1' % (CWD,NAMD)):
+            print 'Path %s/%s/dirlist1 does not exist.' % (CWD,NAMD)
+            sys.exit()
+        DIRLIST1 = np.int_(np.genfromtxt('%s/%s/dirlist1' % (CWD,NAMD)))
+        if not os.path.exists('%s/collectceo.sh' % (PATHTOCEO)):
+            print 'The script, collectceo.sh, must be in the getexcited_package.'
+            sys.exit()
+        for DIR in DIRLIST1:
+            os.chdir('%s/%s/%04d' % (CWD,NAMD,DIR))
+            if not os.path.exists('%s/%s/%04d/md.out' % (CWD,NAMD,DIR)):
+                print >> ERROR, '%s' % (NAMD), '%04d' % (DIR), 'does not exist'
+                CEOFLAG = 1
+            else:
+                subprocess.call(shlex.split('sh %s/collectceo.sh %d' % (PATHTOCEO,NSTATES+1)))
+                with open('%s/%s/%04d/ceo.out' % (CWD,NAMD,DIR)) as DATA:
+                    if len(DATA.readlines()) != NSTATES:
+                        print >> ERROR, '%s' (NAMD), '%04d' % (DIR), 'not complete'
+                        CEOFLAG = 1
+    if CEOFLAG == 1:
+        print 'One or more single-point calculations did not finish, check ceo.err.'
+        sys.exit()
+    else:
+        os.remove('%s/ceo.err' % (CWD))
+
+## GENERATE OPTICAL SPECTRUM ##
+    SPECSD = input('Spectral broadening (i.e. Gaussian standard deviation) in eV [e.g. 0.15]: ')
+    XPOINTS = np.linspace(0.0,10.0,num=100000)
+    YPOINTS = XPOINTS*0.0
+    TRAJ = 0
+    for NAMD in NAMDS:
+        DIRLIST1 = np.int_(np.genfromtxt('%s/%s/dirlist1' % (CWD,NAMD)))
+        for DIR in DIRLIST1:
+            DATA = np.genfromtxt('%s/%s/%04d/ceo.out' % (CWD,NAMD,DIR))
+            for ENERGY, OSCSTREN in DATA:
+                YPOINTS = YPOINTS + OSCSTREN*np.exp(-(ENERGY-XPOINTS)**(2.0)/(2.0*SPECSD**(2.0)))/np.sqrt(2.0*np.pi*SPECSD**(2.0))
+            print '%s' % (NAMD), '%04d' % (DIR)
+            TRAJ += 1
+    np.savetxt('%s/ceo.out' % (CWD),np.transpose([XPOINTS,YPOINTS/TRAJ]),fmt='%10.5e')
+    

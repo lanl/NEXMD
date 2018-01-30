@@ -1,0 +1,34 @@
+\contentsline {section}{\numberline {1}Contributors (Alphabetical Order)}{3}
+\contentsline {subsection}{\numberline {1.1}Principal Investigators}{3}
+\contentsline {subsection}{\numberline {1.2}Developers}{3}
+\contentsline {section}{\numberline {2}Introduction}{4}
+\contentsline {section}{\numberline {3}Compiling NEXMD}{5}
+\contentsline {section}{\numberline {4}General Procedure}{5}
+\contentsline {section}{\numberline {5}The Input File}{6}
+\contentsline {section}{\numberline {6}Modeling Photoinduced Dynamics and Preparing Input Files}{16}
+\contentsline {subsection}{\numberline {6.1}Geometry Optimization}{16}
+\contentsline {subsection}{\numberline {6.2}Ground-State Trajectory}{16}
+\contentsline {subsection}{\numberline {6.3}General Outline of getexcited.py}{16}
+\contentsline {subsection}{\numberline {6.4}Single-Point Calculations}{17}
+\contentsline {subsection}{\numberline {6.5}Optical Spectrum}{19}
+\contentsline {subsection}{\numberline {6.6}NEXMD}{21}
+\contentsline {subsection}{\numberline {6.7}Adiabatic Simulation from NEXMD Geometries}{24}
+\contentsline {section}{\numberline {7}Analyzing Results}{26}
+\contentsline {subsection}{\numberline {7.1}Relaxation Rates}{26}
+\contentsline {subsection}{\numberline {7.2}PESs and NACTs}{27}
+\contentsline {subsection}{\numberline {7.3}Geometry Analysis}{30}
+\contentsline {subsection}{\numberline {7.4}Dipole Analysis}{32}
+\contentsline {subsection}{\numberline {7.5}Transition Density Analysis}{34}
+\contentsline {section}{\numberline {8}Code Testing Tools}{36}
+\contentsline {subsection}{\numberline {8.1}Timings}{36}
+\contentsline {section}{\numberline {9}Submitting Jobs}{38}
+\contentsline {section}{\numberline {10}Restarting Simulations}{38}
+\contentsline {section}{\numberline {11}Complete Restart of Unfinished Trajectories}{41}
+\contentsline {section}{\numberline {12}Output Files}{42}
+\contentsline {section}{\numberline {A}Appendix}{46}
+\contentsline {subsection}{\numberline {A.1}Example Input File: Geometry Optimization}{46}
+\contentsline {subsection}{\numberline {A.2}Example Input File: Ground-State Trajectory}{50}
+\contentsline {subsection}{\numberline {A.3}Example Input File: Single-Point Calculation}{54}
+\contentsline {subsection}{\numberline {A.4}Example Input File: Adiabatic Excited-State Trajectory}{58}
+\contentsline {subsection}{\numberline {A.5}Example Input File: Non-Adiabatic Excited-State Trajectory}{62}
+\contentsline {subsection}{\numberline {A.6}Benchmarks: Excited-State Populations and Timings}{66}

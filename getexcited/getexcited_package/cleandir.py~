@@ -1,0 +1,21 @@
+#/usr/bin/python
+
+from numpy import *
+import numpy as np
+
+def CLEANDIR():
+
+    NAMDIR = raw_input('NAESMD directory: ')
+    if not os.path.exists(NAMDIR):
+        print 'Path %s does not exist.' % (NAMDIR)
+        sys.exit()
+    NAMDS = next(os.walk('%s' % (NAMDIR)))[1]
+    NAMDS = [ x for x in NAMDS if 'NAMD' in x ]
+    NAMDS.sort()
+    if not os.path.exists('%s/header' % (NAMDIR)):
+        print 'Path %s/header does not exist.' % (NAMDIR)
+        sys.exit()
+    HEADER = open('%s/header' % (NAMDIR),'r')
+    HEADER = HEADER.readlines()
+
+    
