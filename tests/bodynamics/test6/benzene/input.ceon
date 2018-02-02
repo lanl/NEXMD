@@ -68,7 +68,7 @@
    n_quant_steps=0, ! Number of quantum steps for each classical step [4]
    moldyn_deriv_flag=1, ! (0) None, (1) Analytical, or (2) Numerical [1]
    num_deriv_step=1.0d-5, ! Displacement for numerical derivatives, A [1.0d-3]
-   rk_tolerance=1.0d-7, ! Tolerance for the Runge-Kutta propagator [1.0d-7]
+   rk_tolerance=1.0d-6, ! Tolerance for the Runge-Kutta propagator [1.0d-7]
 
    !***** Non-Adiabatic Parameters
    decoher_type=0, ! Type of decoherence: Reinitialize (0) Never, 

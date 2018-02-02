@@ -452,7 +452,7 @@ end subroutine
         n_exc_states_propagate=0 ! total number of excited state to propagate
         out_count_init=0 ! iniit count for output files
         time_init=0.d0 ! initial time, fs
-        rk_tolerance=1.d-7 ! tolerance for Runge-Kutta propagator
+        rk_tolerance=1.d-6 ! tolerance for Runge-Kutta propagator
         time_step=0.1d0 ! classical time step, fs
         n_class_steps=1 ! number of classical steps
         n_quant_steps=4 ! number of quantum steps for each classical step
