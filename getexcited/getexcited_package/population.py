@@ -1,28 +1,32 @@
 #/usr/bin/python
 
 '''
- ___________________________________________________________________
-|                                                                   |
-| This function collects NEXMD populations from surface hopping     |
-| and from quantum populations.                                     |
-|                                                                   |
-| Two files are generated in the current working directory if       |
-| collecting NEXMD populations are requested, 'pop.out' and         |
-| 'pop.err'.  In 'pop.out', first column is time in fs, followed by |
-| the average population on each PES, followed by the sum of all    |
-| PES populations (should be = 1.0), followed by the average        |
-| populations from quantum coefficients, followed by the sum of     |
-| quantum populations (should be = 1.0).  In 'pop.err', first       |
-| column is directory of trajectory, third column is the time at    |
-| which the trajectory has ended in fs, or 'does not exist'.  The   |
-| 'pop.err' file is not generated if all trajectories are complete. |
-|                                                                   |
-| 'Completed' trajectories are trajectories that have completed     |
-| within the time defined by user while executing this function.    |
-| 'Excellent' trajectories are trajectories that have completed     |
-| within the time defined in 'header' located in the NEXMD          |
-| directory.                                                        |
-|___________________________________________________________________|
+
+This function collects NEXMD populations from surface hopping
+and populations from Schrodinger equation.
+
+Two files are generated in the current working directory if
+collecting NEXMD populations are requested, 'pop.out' and
+'pop.err'.  In 'pop.out', first column is time in fs, followed by
+the average population on each PES, followed by the sum of all
+PES populations (should be = 1.0), followed by the average
+populations from quantum coefficients, followed by the sum of
+quantum populations (should be = 1.0).  In 'pop.err', first
+column is directory of trajectory, third column is the time at
+which the trajectory has ended in fs, or 'does not exist'.  The
+'pop.err' file is not generated if all trajectories are complete.              
+
+'Completed' trajectories are trajectories that have completed
+within the time defined by user while executing this function.
+'Excellent' trajectories are trajectories that have completed
+within the time defined in 'header' located in the NEXMD
+directory.                                                        
+
+Output Files:
+- pop_[type].out, where [type] = mean_ensemble
+
+Error Files:
+- pop_[type].err, where [type] = mean_ensemble
 
 '''
 
@@ -51,15 +55,15 @@ def population(header):
 
     ## Information from header ##
     if not os.path.exists('%s/header' % (NEXMDir)):
-        print 'path %s/header does not exist.' % (NEXMDir)
+        print 'Path %s/header does not exist.' % (NEXMDir)
         sys.exit()
     header = header('%s/header' % (NEXMDir))
-
+        
     ## Adding + 1 to include zeroth time-step ##
     header.n_class_steps = header.n_class_steps + 1
 
     ## Collection time ##
-    tcoll = input('Collect populations up to what time in femtoseconds: ')
+    tcoll = input('Calculate populations up to what time in femtoseconds?\nNote that averaged results will only include trajectories that are complete up to this time: ')
     if isinstance(tcoll, int) == False and isinstance(tcoll, float) == False:
         print 'Time must be integer or float.'
         sys.exit()
@@ -68,21 +72,21 @@ def population(header):
         sys.exit()
     tcoll = np.float(tcoll)
     if tcoll > (header.n_class_steps - 1)*header.time_step:
-        tcoll = (header.n_class_steps - 1)*header.time_step
+        tcoll = (header.n_class_steps -1)*header.time_step
 
     ## Number of classical time-steps ##
     tscol = 0
     while tscol*header.time_step*header.out_data_steps <= tcoll:
         tscol += 1
-
+    
     ## Collection time array ##
     times = np.around(np.linspace(header.time_init, tcoll, tscol), decimals = 3)
     fpoph = np.zeros((tscol,header.n_exc_states_propagate))
     fpopc = np.zeros((tscol,header.n_exc_states_propagate))
-
+    
     ## Collect populations ##
-    output = open('%s/pop.out' % (cwd),'w')
-    error = open('%s/pop.err' % (cwd),'w')
+    output = open('%s/pop_mean_ensemble.out' % (cwd),'w')
+    error = open('%s/pop_mean_ensemble.err' % (cwd),'w')
     ttraj = 0
     ctraj = 0
     etraj = 0
@@ -149,5 +153,4 @@ def population(header):
     if errflag == 1:
         print 'One or more trajectories have experienced an error, check pop.err.'
     else:
-        os.remove('%s/pop.err' % (cwd))
-
+        os.remove('%s/pop_mean_ensemble.err' % (cwd))

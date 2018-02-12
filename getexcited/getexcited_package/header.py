@@ -179,7 +179,7 @@ class header(object):
                 self.out_count_init = np.int(line.split()[0][len('out_count_init='):-1])
             ## End output and log parameters ##
             '''
-            ## Check is coefficients are set ##
+            ## Check if coefficients are set ##
             if 'quant_amp_phase' in line:
                 header.quant_amp_phase = 'The quant_amp_phase flag is in the header.'
 
