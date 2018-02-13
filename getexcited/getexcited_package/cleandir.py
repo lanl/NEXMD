@@ -74,7 +74,7 @@ def cleandir(header):
             print 'Path %sdirlist1 does not exist.' % (NEXMD)
             sys.exit()
         dirlist1 = np.int_(np.genfromtxt('%s/dirlist1' % (NEXMD)))
-        if isinstance(dirlist1,int) == true:
+        if isinstance(dirlist1,int) == True:
             dirlist1 = np.array([dirlist1])
         dirlist = open('%s/dirlist' % (NEXMD),'w')
         for dir in dirlist1:
@@ -97,13 +97,13 @@ def cleandir(header):
                 if not os.path.exists('%s/%04d/input.ceon' % (NEXMD,dir)):
                     print 'path %s%04d/input.ceon does not exist.' % (NEXMD,dir)
                     sys.exit()
-                input = open('%s/%04d/input.ceon' % (NEXMD,dir),'r')
-                ninput = open('%s/%04d/ninput.ceon' % (NEXMD,dir),'w')
-                for line in input:
+                old_inputfile = open('%s/%04d/input.ceon' % (NEXMD,dir),'r')
+                new_inputfile = open('%s/%04d/ninput.ceon' % (NEXMD,dir),'w')
+                for line in old_inputfile:
                     if 'n_class_steps' in line:
-                        ninput.write('   n_class_steps=%d, ! number of classical steps [1]\n' % (header.n_class_steps - 1))
+                        new_inputfile.write('   n_class_steps=%d, ! number of classical steps [1]\n' % (header.n_class_steps - 1))
                     else:
-                        ninput.write(line)
+                        new_inputfile.write(line)
                 os.rename('%s/%04d/ninput.ceon' % (NEXMD,dir), '%s/%04d/input.ceon' % (NEXMD,dir))
                 clnflag = 0
                 traj += 1
