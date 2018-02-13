@@ -2,8 +2,7 @@
 
 '''
 
-This function calculates excited-state permanent dipole
-moment in time.
+This function calculates dipole moment in time.
 
 The dipole moment at every time-step is determined by the
 dipole moment of the occupied state according to the
@@ -37,10 +36,10 @@ dotted with the dipole moment
 > for options [2b]: angle (degrees)
 
 Output Files:
-- permdipole_[type].out, where [type] = single, mean_ensemble, raw_ensemble
+- [dipole_type]_[type].out, where [dipole_type] = gsdipole, transdipole, excdipole and [type] = single, mean_ensemble, raw_ensemble
 
 Error Files:
-- permdipole_[type].err, where [type] = single, mean_ensemble, raw_ensemble
+- [dipole_type]_[type].err, where [dipole_type] = gsdipole, transdipole, excdipole and [type] = single, mean_ensemble, raw_ensemble
 
 '''
 
@@ -54,9 +53,13 @@ import fileinput
 
 cwd = os.getcwd()
 
-def permdipole(pathtopack,header):
+def dipole(pathtopack,header,dipole_type):
+    
+    type_name = ['ground-state', 'transition', 'excited-state'][dipole_type]
+    file_name = ['gsdipole', 'transdipole','excdipole'][dipole_type]
+    grep_name= ['Ground State Molecular Dipole Moment (A.U.)', 'Frequencies (eV) and Transition Dipole Moments (AU)','Frequencies (eV) and Total Molecular Dipole Moments (Debye)'][dipole_type]
 
-    print 'Calculating excited-state permanent dipole moment as a function of time.'
+    print 'Calculating %s dipole moment as a function of time.' % (type_name)
 
     ## Type of calculation and directory check ##
     dynq = input('Calculate dipole moment along one trajectory or an ensemble of trajectories?\nAnswer one [1] or ensemble [0]: ')
@@ -68,7 +71,7 @@ def permdipole(pathtopack,header):
         if not os.path.exists(NEXMDir):
             print 'Path %s does not exist.' % (NEXMDir)
             sys.exit()
-        ## check if NEXMD folders exist ##
+        ## Check if NEXMD folders exist ##
         NEXMDs = glob.glob('%s/NEXMD*/' % (NEXMDir))
         NEXMDs.sort()
         if len(NEXMDs) == 0:
@@ -179,18 +182,21 @@ def permdipole(pathtopack,header):
     ## Number of dipoles ##
     edipoles = ccoll
 
+    ## Number of lines to grep ##
+    nlines_grep = [1, header.n_exc_states_propagate, header.n_exc_states_propagate][dipole_type]
+
     ## Collection time array ##
     times = np.linspace(header.time_init, ccoll - header.time_step*header.out_data_steps*header.out_coords_steps, num)
 
-    ## Grep permanent dipole moments and states from ensembles ##
+    ## Grep dipole moments and states from ensembles ##
     if dynq == 0: ## ensemble
-        print 'Checking permanent dipole moments and states.  Please wait ...'
+        print 'Checking dipole moments and states.  Please wait ...'
         ## Checks to make sure scripts are available ##
         if not os.path.exists('%s/getexcited_package/collectdipline.sh' % (pathtopack)):
             print 'The script, collectdipline.sh, must be in the getexcited_package.'
             sys.exit()
-        if not os.path.exists('%s/getexcited_package/collectpermdipole.sh' % (pathtopack)):
-            print 'The script, collectpermdipole.sh, must be in the getexcited_package.'
+        if not os.path.exists('%s/getexcited_package/collectdipole.sh' % (pathtopack)):
+            print 'The script, collectdipole.sh, must be in the getexcited_package.'
             sys.exit()
         ## Generation of error file ##
         error = open('%s/dipole_collection_ensemble.err' % (cwd),'w')
@@ -222,7 +228,7 @@ def permdipole(pathtopack,header):
                     print >> error, 'Path %s%04d/dipline.out does not exist.' % (NEXMD,dir)
                     errflag = 1
                     continue
-                print '%s%04d' % (NEXMD,dir), 'dipole lines in md.out found'
+                print '%s%04d dipole lines in md.out found' % (NEXMD,dir)
                 ## data = [line number of classical step, classical step] ##
                 data = np.genfromtxt('%s/%s/%04d/dipline.out' % (cwd,NEXMD,dir))
                 tdipoles = len(data)
@@ -231,54 +237,57 @@ def permdipole(pathtopack,header):
                     print >> error, 'There is an inconsistency in time-step in %s%04d/dipline.out.' % (NEXMD,dir)
                     errflag = 1
                     continue
-                ## Delete previous permdipole.out if exists ##
-                if os.path.exists('%s/%s/%04d/permdipole.out' % (cwd,NEXMD,dir)):
-                    os.remove('%s/%s/%04d/permdipole.out' % (cwd,NEXMD,dir))
+                ## Delete previous dipole file if exists ##
+                if os.path.exists('%s/%s/%04d/%s.out' % (cwd,NEXMD,dir,file_name)):
+                    os.remove('%s/%s/%04d/%s.out' % (cwd,NEXMD,dir,file_name))
                 ## Grep dipoles from standard output ##
-                subprocess.call(shlex.split('sh %s/getexcited_package/collectpermdipole.sh %d' % (pathtopack, header.n_exc_states_propagate + 2)))
-                if not os.path.exists('%s/%s/%04d/permdipole.out' % (cwd,NEXMD,dir)):
-                    print >> error, 'Path %s%04d/permdipole.out does not exist.' % (NEXMD,dir)
+                subprocess.call(shlex.split('sh %s/getexcited_package/collectdipole.sh %d %d' % (pathtopack, dipole_type, nlines_grep + 2)))
+                if not os.path.exists('%s/%s/%04d/%s.out' % (cwd,NEXMD,dir,file_name)):
+                    print >> error, 'Path %s%04d/%s.out does not exist.' % (NEXMD,dir,file_name)
                     errflag = 1
                     continue
-                print '%s%04d' % (NEXMD,dir), 'dipoles in md.out extracted'
+                print '%s%04d dipoles in md.out extracted' % (NEXMD,dir)
                 ## Another check to ensure dipole calculation ##
-                with open('%s/%s/%04d/permdipole.out' % (cwd,NEXMD,dir),'r') as data:
-                    if len(data.readlines()) != tdipoles*(header.n_exc_states_propagate + 3):
-                        print >> error, 'Path %s%04d/permdipole.out is incomplete.' % (NEXMD,dir)
+                with open('%s/%s/%04d/%s.out' % (cwd,NEXMD,dir,file_name),'r') as data:
+                    if len(data.readlines()) != tdipoles*(nlines_grep + 3):
+                        print >> error, 'Path %s%04d/%s.out is incomplete.' % (NEXMD,dir,file_name)
                         errflag = 1
-                        os.remove('%s/%s/%04d/permdipole.out' % (cwd,NEXMD,dir))
+                        os.remove('%s/%s/%04d/%s.out' % (cwd,NEXMD,dir,file_name))
                         continue
                 ## Delete previous pop.out if exists ##
                 if os.path.exists('%s/%s/%04d/pop.out' % (cwd,NEXMD,dir)):
                     os.remove('%s/%s/%04d/pop.out' % (cwd,NEXMD,dir))
                 ## Get states ##
-                if header.bo_dynamics_flag == 1: ## adiabatic
-                    states = np.int_(np.ones(edipoles)*header.exc_state_init)
-                if header.bo_dynamics_flag == 0: ## nonadiabatic
-                    ## Check coefficient file exists ##
-                    if not os.path.exists('%s/%s/%04d/coeff-n.out' % (cwd,NEXMD,dir)):
-                        print >> error, 'Path %s%04d/coeff-n.out does not exist.' % (NEXMD,dir)
-                        errflag = 1
-                        continue
-                    data = open('%s/%s/%04d/coeff-n.out' % (cwd,NEXMD,dir),'r')
-                    data = data.readlines()
-                    states = np.zeros(edipoles)
-                    index = 0
-                    for line in data[0:tscol:header.out_data_steps*header.out_coords_steps]:
-                        val = line.split()
-                        pes = np.int(val[0])
-                        time = np.around(np.float(val[1]), decimals = 3)
-                        ## another check to ensure dipole calculation ##
-                        if time != times[index]:
-                            print >> error, 'There is an inconsistency in time-step in %s%04d/coeff-n.out at %.3f fs' % (NEXMD,dir,times[index])
+                if dipole_type == 0: ## ground-state
+                    states = np.ones(edipoles) ## ground-state is set to 1 for grep
+                else:
+                    if header.bo_dynamics_flag == 1: ## adiabatic
+                        states = np.int_(np.ones(edipoles)*header.exc_state_init)
+                    if header.bo_dynamics_flag == 0: ## nonadiabatic
+                        ## Check coefficient file exists ##
+                        if not os.path.exists('%s/%s/%04d/coeff-n.out' % (cwd,NEXMD,dir)):
+                            print >> error, 'Path %s%04d/coeff-n.out does not exist.' % (NEXMD,dir)
                             errflag = 1
-                            break
-                        states[index] = pes
-                        index += 1
-                    ## if simulation becomes adiabatic after nonadiabatic ##
-                    if len(data[0:tscol:header.out_data_steps*header.out_coords_steps]) < edipoles:
-                        states[index::] = pes
-                ## save populations to file ##
+                            continue
+                        data = open('%s/%s/%04d/coeff-n.out' % (cwd,NEXMD,dir),'r')
+                        data = data.readlines()
+                        states = np.zeros(edipoles)
+                        index = 0
+                        for line in data[0:tscol:header.out_data_steps*header.out_coords_steps]:
+                            val = line.split()
+                            pes = np.int(val[0])
+                            time = np.around(np.float(val[1]), decimals = 3)
+                            ## Another check to ensure dipole calculation ##
+                            if time != times[index]:
+                                print >> error, 'There is an inconsistency in time-step in %s%04d/coeff-n.out at %.3f fs' % (NEXMD,dir,times[index])
+                                errflag = 1
+                                break
+                            states[index] = pes
+                            index += 1
+                        ## If simulation becomes adiabatic after nonadiabatic ##
+                        if len(data[0:tscol:header.out_data_steps*header.out_coords_steps]) < edipoles:
+                                states[index::] = pes
+                ## Save populations to file ##
                 np.savetxt('pop.out', np.transpose([times,states]), fmt=['%10.5e','%d'])
         if errflag == 1:
             print 'One or more trajectories have experienced an error, check dipole_collection_ensemble.err.'
@@ -291,15 +300,15 @@ def permdipole(pathtopack,header):
         else:
             os.remove('%s/dipole_collection_ensemble.err' % (cwd))
 
-    ## Grep permanent dipole moments and states from single trajectory ##
+    ## Grep dipole moments and states from single trajectory ##
     if dynq == 1: ## single trajectory
-        print 'Checking permanent dipole moments and states.  Please wait ...'
+        print 'Checking dipole moments and states.  Please wait ...'
         ## Checks to make sure scripts are available ##
         if not os.path.exists('%s/getexcited_package/collectdipline.sh' % (pathtopack)):
             print 'The script, collectdipline.sh, must be in the getexcited_package.'
             sys.exit()
-        if not os.path.exists('%s/getexcited_package/collectpermdipole.sh' % (pathtopack)):
-            print 'The script, collectpermdipole.sh, must be in the getexcited_package.'
+        if not os.path.exists('%s/getexcited_package/collectdipole.sh' % (pathtopack)):
+            print 'The script, collectdipole.sh, must be in the getexcited_package.'
             sys.exit()
         ## Go to directory ##
         os.chdir('%s/%s' % (cwd,NEXMDir))
@@ -320,51 +329,54 @@ def permdipole(pathtopack,header):
         if np.array_equal(np.around(data[1:edipoles:1,1]*header.time_step, decimals = 3), times[1:edipoles:1]) == False:
             print 'There is an inconsistency in time-step in %s/dipline.out.' % (NEXMDir)
             sys.exit()
-        ## Delete previous permdipole.out if exists ##
-        if os.path.exists('%s/%s/permdipole.out' % (cwd,NEXMDir)):
-            os.remove('%s/%s/permdipole.out' % (cwd,NEXMDir))
+        ## Delete previous dipole file if exists ##
+        if os.path.exists('%s/%s/%s.out' % (cwd,NEXMDir,file_name)):
+            os.remove('%s/%s/%s.out' % (cwd,NEXMDir,file_name))
         ## Grep dipoles from standard output ##
-        subprocess.call(shlex.split('sh %s/getexcited_package/collectpermdipole.sh %d' % (pathtopack, header.n_exc_states_propagate + 2)))
-        if not os.path.exists('%s/%s/permdipole.out' % (cwd,NEXMDir)):
-            print 'Path %s/permdipole.out does not exist.' % (NEXMDir)
+        subprocess.call(shlex.split('sh %s/getexcited_package/collectdipole.sh %d %d' % (pathtopack, dipole_type, nlines_grep + 2)))
+        if not os.path.exists('%s/%s/%s.out' % (cwd,NEXMDir,file_name)):
+            print 'Path %s/%s.out does not exist.' % (NEXMDir,file_name)
             sys.exit()
         print '%s dipoles in md.out extracted' % (NEXMDir)
         ## Another check to ensure dipole calculation ##
-        with open('%s/%s/permdipole.out' % (cwd,NEXMDir),'r') as data:
-            if len(data.readlines()) != tdipoles*(header.n_exc_states_propagate + 3):
-                print 'Path %s/permdipole.out is incomplete.' % (NEXMDir)
+        with open('%s/%s/%s.out' % (cwd,NEXMDir,file_name),'r') as data:
+            if len(data.readlines()) != tdipoles*(nlines_grep + 3):
+                print 'Path %s/%s.out is incomplete.' % (NEXMDir,file_name)
                 sys.exit()
         ## Delete previous pop.out if exists ##
         if os.path.exists('%s/%s/pop.out' % (cwd,NEXMDir)):
             os.remove('%s/%s/pop.out' % (cwd,NEXMDir))
         ## Get states ##
-        if header.bo_dynamics_flag == 1: ## adiabatic
-            states = np.int_(np.ones(edipoles)*header.exc_state_init)
-        if header.bo_dynamics_flag == 0: ## nonadiabatic
-            ## Check coefficient file exists ##
-            if not os.path.exists('%s/%s/coeff-n.out' % (cwd,NEXMDir)):
-                print 'Path %s/coeff-n.out does not exist.' % (NEXMDir)
-                sys.exit()
-            data = open('%s/%s/coeff-n.out' % (cwd,NEXMDir),'r')
-            data = data.readlines()
-            states = np.zeros(edipoles)
-            index = 0
-            for line in data[0:tscol:header.out_data_steps*header.out_coords_steps]:
-                val = line.split()
-                pes = np.int(val[0])
-                time = np.around(np.float(val[1]), decimals = 3)
-                ## Another check to ensure dipole calculation ##
-                if time != times[index]:
-                    print 'There is an inconsistency in time-step in %s/coeff-n.out at %.3f fs.' % (NEXMDir,times[index])
+        if dipole_type == 0: ## ground-state
+            states = np.ones(edipoles) # ground state is set to 1 for grep
+        else:
+            if header.bo_dynamics_flag == 1: ## adiabatic
+                states = np.int_(np.ones(edipoles)*header.exc_state_init)
+            if header.bo_dynamics_flag == 0: ## nonadiabatic
+                ## Check coefficient file exists ##
+                if not os.path.exists('%s/%s/coeff-n.out' % (cwd,NEXMDir)):
+                    print 'Path %s/coeff-n.out does not exist.' % (NEXMDir)
                     sys.exit()
-                states[index] = pes
-                index += 1
-            ## If simulation becomes adiabatic after nonadiabatic ##
-            if len(data[0:tscol:header.out_data_steps*header.out_coords_steps]) < edipoles:
-                states[index::] = pes
+                data = open('%s/%s/coeff-n.out' % (cwd,NEXMDir),'r')
+                data = data.readlines()
+                states = np.zeros(edipoles)
+                index = 0
+                for line in data[0:tscol:header.out_data_steps*header.out_coords_steps]:
+                    val = line.split()
+                    pes = np.int(val[0])
+                    time = np.around(np.float(val[1]), decimals = 3)
+                    ## Another check to ensure dipole calculation ##
+                    if time != times[index]:
+                        print 'There is an inconsistency in time-step in %s/coeff-n.out at %.3f fs.' % (NEXMDir,times[index])
+                        sys.exit()
+                    states[index] = pes
+                    index += 1
+                ## If simulation becomes adiabatic after nonadiabatic ##
+                if len(data[0:tscol:header.out_data_steps*header.out_coords_steps]) < edipoles:
+                    states[index::] = pes
         ## Save populations to file ##
         np.savetxt('pop.out', np.transpose([times,states]), fmt=['%10.5e','%d'])
-    
+
     ## Collect user-defined vector in the molecule to determine dipole direction for ensembles ##
     if dynq == 0: ## ensemble
         os.chdir('%s' % (cwd))
@@ -534,9 +546,9 @@ def permdipole(pathtopack,header):
     ## Collect dipole moment along a single trajectory ##
     if dynq == 1: ## single trajectory
         os.chdir('%s' % (cwd))
-        print 'Collecting permanent dipole moment along a single trajectory.  Please wait ...'
+        print 'Collecting dipole moment along a single trajectory.  Please wait ...'
         ## Generate output file ##
-        output = open('%s/permdipole_single.out' % (cwd),'w')
+        output = open('%s/%s_single.out' % (cwd,file_name),'w')
         ttraj = 0
         ctraj = 0
         etraj = 0
@@ -549,10 +561,10 @@ def permdipole(pathtopack,header):
         tsteps = len(data) - 1
         ## Generate array with indices of the dipole blocks along trajectory ##
         if tsteps >= tscol:
-            if not os.path.exists('%s/permdipole.out' % (NEXMDir)):
-                print 'Path %s/permdipole.out does not exist.' % (NEXMDir)
+            if not os.path.exists('%s/%s.out' % (NEXMDir,file_name)):
+                print 'Path %s/%s.out does not exist.' % (NEXMDir,file_name)
                 sys.exit()
-            data = open('%s/permdipole.out' % (NEXMDir),'r')
+            data = open('%s/%s.out' % (NEXMDir,file_name),'r')
             data = data.readlines()
             lend = len(data)
             ndipoles = 0
@@ -560,7 +572,7 @@ def permdipole(pathtopack,header):
             index = 0
             array = np.array([])
             for line in data:
-                if 'Frequencies (eV) and Total Molecular Dipole Moments (Debye)' in line:
+                if '%s' % (grep_name) in line:
                     if ndipoles == 0:
                         time = header.time_init
                     else:
@@ -573,7 +585,7 @@ def permdipole(pathtopack,header):
                 index += 1
             ## Another check to ensure dipole calculation ##
             if ndipoles != edipoles:
-                print 'Number of dipoles detected in %s/permdipole.out, %d, does not match the expected %d.' % (NEXMDir,ndipoles,edipoles)
+                print 'Number of dipoles detected in %s/%s.out, %d, does not match the expected %d.' % (NEXMDir,file_name,ndipoles,edipoles)
                 sys.exit()
             ## Append lines for last dipole set ##
             if tflag == 1:
@@ -583,7 +595,7 @@ def permdipole(pathtopack,header):
             array = np.int_(array)
             ## Another check to ensure dipole calculation ##
             if ndipoles == 0:
-                print 'No dipoles were found in %s/permdipole.out' % (NEXMDir)
+                print 'No dipoles were found in %s/%s.out' % (NEXMDir,file_name)
                 sys.exit()
             ## Open the user-defined vector file = [time, vx, vy, vz] ##
             if not os.path.exists('%s/uservec.out' % (NEXMDir)):
@@ -593,15 +605,16 @@ def permdipole(pathtopack,header):
             ## Open population data = [time, state] ##
             states = np.genfromtxt('%s/pop.out' % (NEXMDir))
             ## Collect dipole along a single trajectory ##
-            sdipole = np.zeros((ndipoles,2))
+            sdipole_vec = np.zeros((ndipoles, 4))
+            sdipole_dir = np.zeros((ndipoles, 1))
             for ndipole in np.arange(ndipoles):
                 dipoles = data[array[ndipole] + 1:array[ndipole + 1]:1]
-                vdipole = np.float_(dipoles[np.int(states[ndipole, 1])].split()[2:5:1]) ## extracts dipole vector
-                mdipole = np.float(dipoles[np.int(states[ndipole, 1])].split()[5]) ## extracts dipole magnitude
-                cosine = np.arccos(np.dot(vdipole, uservec[ndipole,1:4:1])/(np.linalg.norm(vdipole)*np.linalg.norm(uservec[ndipole,1:4:1]))) if dotq == 1 else 0 ## inverse cosine of the dot product
-                sdipole[ndipole] = np.array([mdipole, cosine])
+                vdipole = np.float_(dipoles[np.int(states[ndipole, 1])].split()[0 if dipole_type == 0 else 2::1]) ## extracts dipole vector and magnitude
+                cosine = np.arccos(np.dot(vdipole[0:3:1], uservec[ndipole,1:4:1])/(np.linalg.norm(vdipole[0:3:1])*np.linalg.norm(uservec[ndipole,1:4:1]))) if dotq == 1 else 0 ## inverse cosine of the dot product
+                sdipole_vec[ndipole] = np.array(vdipole)
+                sdipole_dir[ndipole] = cosine
             ## Delete extraneous data ##
-            os.remove('%s/permdipole.out' % (NEXMDir))
+            os.remove('%s/%s.out' % (NEXMDir,file_name))
             os.remove('%s/pop.out' % (NEXMDir))
             os.remove('%s/uservec.out' % (NEXMDir))
             print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
@@ -622,12 +635,12 @@ def permdipole(pathtopack,header):
             print >> output, 'Completed trajectories: ', '%04d' % (ctraj)
             print >> output, 'Excellent trajectories: ', '%04d' % (etraj)
             for ndipole in np.arange(ndipoles):
-                print >> output, '%0*.2f' % (len(str((header.n_class_steps))) + 2, header.time_step*header.out_data_steps*header.out_coords_steps*ndipole), '%d' % (states[ndipole, 1]), '%03.6f' % (sdipole[ndipole,0]), '%.6f' % (np.degrees(sdipole[ndipole,1]))
+                print >> output, '%0*.2f' % (len(str((header.n_class_steps))) + 2, header.time_step*header.out_data_steps*header.out_coords_steps*ndipole), '%d' % (states[ndipole, 1] - 1 if dipole_type == 0 else states[ndipole, 1]), ' '.join(str('%03.6f' % (x)) for x in sdipole_vec[ndipole]), '%.6f' % (np.degrees(sdipole_dir[ndipole]))
 
     ## Calculate mean dipole from ensemble of trajectories ##
     if dynq == 0 and typeq == 0: ## mean from ensemble
         os.chdir('%s' % (cwd))
-        print 'Collecting mean permanent dipole moment from ensemble.  Please wait ...'
+        print 'Collecting mean dipole moment from ensemble.  Please wait ...'
         ## Determine total number of trajectories in ensemble ##
         with open('%s/totdirlist' % (NEXMDir),'w') as data:
             for NEXMD in NEXMDs:
@@ -641,8 +654,8 @@ def permdipole(pathtopack,header):
             dirlist1 = np.array([dirlist1])
         os.remove('%s/totdirlist' % (NEXMDir))
         ## Generate output and error files ##
-        output = open('%s/permdipole_mean_ensemble.out' % (cwd),'w')
-        error = open('%s/permdipole_mean_ensemble.err' % (cwd),'w')
+        output = open('%s/%s_mean_ensemble.out' % (cwd,file_name),'w')
+        error = open('%s/%s_mean_ensemble.err' % (cwd,file_name),'w')
         ## Generate dipole arrays for final results ##
         fdipole = np.zeros(len(times)) ## magnitude
         fcosine = np.zeros(len(times)) ## direction
@@ -671,12 +684,12 @@ def permdipole(pathtopack,header):
                 tsteps = len(data) - 1
                 ## Generate array with indices of the dipole blocks along a single trajectory ##
                 if tsteps >= tscol:
-                    if not os.path.exists('%s/%04d/permdipole.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/permdipole.out does not exist.' % (NEXMD,dir)
+                    if not os.path.exists('%s/%04d/%s.out' % (NEXMD,dir,file_name)):
+                        print >> error, 'Path %s%04d/%s.out does not exist.' % (NEXMD,dir,file_name)
                         errflag = 1
                         ttraj += 1
                         continue
-                    data = open('%s/%04d/permdipole.out' % (NEXMD,dir),'r')
+                    data = open('%s/%04d/%s.out' % (NEXMD,dir,file_name),'r')
                     data = data.readlines()
                     lend = len(data)
                     ndipoles = 0
@@ -684,7 +697,7 @@ def permdipole(pathtopack,header):
                     index = 0
                     array = np.array([])
                     for line in data:
-                        if 'Frequencies (eV) and Total Molecular Dipole Moments (Debye)' in line:
+                        if '%s' % (grep_name) in line:
                             if ndipoles == 0:
                                 time = header.time_init
                             else:
@@ -697,7 +710,7 @@ def permdipole(pathtopack,header):
                         index += 1
                     ## Check to ensure dipole calculation ##
                     if ndipoles != edipoles:
-                        print >> error, 'Number of dipoles detected in %s%04d/permdipole.out, %d, does not match the expected %d.' % (NEXMD,dir,ndipoles,edipoles)
+                        print >> error, 'Number of dipoles detected in %s%04d/%s.out, %d, does not match the expected %d.' % (NEXMD,dir,file_name,ndipoles,edipoles)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -709,7 +722,7 @@ def permdipole(pathtopack,header):
                     array = np.int_(array)
                     ## Another check to ensure dipole calculation ##
                     if ndipoles == 0:
-                        print >> error, 'No dipoles were found in %s%04d/permdipole.out' % (NEXMD,dir)
+                        print >> error, 'No dipoles were found in %s%04d/%s.out' % (NEXMD,dir,file_name)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -727,17 +740,16 @@ def permdipole(pathtopack,header):
                     scosine = np.zeros(ndipoles)
                     for ndipole in np.arange(ndipoles):
                         dipoles = data[array[ndipole] + 1:array[ndipole + 1]:1]
-                        vdipole = np.float_(dipoles[np.int(states[ndipole, 1])].split()[2:5:1]) ## extracts dipole vector
-                        mdipole = np.float(dipoles[np.int(states[ndipole, 1])].split()[5]) ## extracts dipole magnitude
-                        cosine = np.arccos(np.dot(vdipole, uservec[ndipole,1:4:1])/(np.linalg.norm(vdipole)*np.linalg.norm(uservec[ndipole,1:4:1]))) if dotq == 1 else 0 ## inverse cosine of the dot product
-                        sdipole[ndipole] = mdipole
+                        vdipole = np.float_(dipoles[np.int(states[ndipole, 1])].split()[0 if dipole_type == 0 else 2::1]) ## extracts dipole vector and magnitude
+                        cosine = np.arccos(np.dot(vdipole[0:3:1], uservec[ndipole,1:4:1])/(np.linalg.norm(vdipole[0:3:1])*np.linalg.norm(uservec[ndipole,1:4:1]))) if dotq == 1 else 0 ## inverse cosine of the dot product
+                        sdipole[ndipole] = vdipole[-1]
                         scosine[ndipole] = cosine
                         edipole[ndipole,ctraj] = sdipole[ndipole]
                         ecosine[ndipole,ctraj] = scosine[ndipole]
                     fdipole += sdipole
                     fcosine += scosine
                     ## Delete extraneous data ##
-                    os.remove('%s/%04d/permdipole.out' % (NEXMD,dir))
+                    os.remove('%s/%04d/%s.out' % (NEXMD,dir,file_name))
                     os.remove('%s/%04d/pop.out' % (NEXMD,dir))
                     os.remove('%s/%04d/uservec.out' % (NEXMD,dir))
                     print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
@@ -769,17 +781,17 @@ def permdipole(pathtopack,header):
             for ndipole in np.arange(ndipoles):
                 print >>  output, '%0*.2f' % (len(str((header.n_class_steps))) + 2, header.time_step*header.out_data_steps*header.out_coords_steps*(ndipole)), '%03.6f' % (fdipole[ndipole]), '%03.6f' % (edipole[ndipole]), '%.6f' % (np.degrees(fcosine[ndipole])), '%.6f' % (np.degrees(ecosine[ndipole]))
         if errflag == 1:
-            print 'One or more trajectories have experienced an error, check permdipole_mean_ensemble.err.'
+            print 'One or more trajectories have experienced an error, check %s_mean_ensemble.err.' % (file_name)
         else:
-            os.remove('%s/permdipole_mean_ensemble.err' % (cwd))
+            os.remove('%s/%s_mean_ensemble.err' % (cwd,file_name))
     
     ## Collect dipoles from ensemble of trajectories at all time-steps ##
     if dynq == 0 and typeq == 1: ## all from ensemble
         os.chdir('%s' % (cwd))
-        print 'Collecting all permanent dipole moments from ensemble.  Please wait ...'
+        print 'Collecting all dipole moments from ensemble.  Please wait ...'
         ## Generate output and error files ##
-        output = open('%s/permdipole_raw_ensemble.out' % (cwd),'w')
-        error = open('%s/permdipole_raw_ensemble.err' % (cwd),'w')
+        output = open('%s/%s_raw_ensemble.out' % (cwd,file_name),'w')
+        error = open('%s/%s_raw_ensemble.err' % (cwd,file_name),'w')
         ttraj = 0
         etraj = 0
         errflag = 0
@@ -801,12 +813,12 @@ def permdipole(pathtopack,header):
                 data = data.readlines()
                 tsteps = len(data) - 1
                 ## Generate array with indices of the dipole blocks along trajectory ##
-                if not os.path.exists('%s/%04d/permdipole.out' % (NEXMD,dir)):
-                    print >> error, 'Path %s%04d/permdipole.out does not exist.' % (NEXMD,dir)
+                if not os.path.exists('%s/%04d/%s.out' % (NEXMD,dir,file_name)):
+                    print >> error, 'Path %s%04d/%s.out does not exist.' % (NEXMD,dir,file_name)
                     errflag = 1
                     ttraj += 1
                     continue
-                data = open('%s/%04d/permdipole.out' % (NEXMD,dir),'r')
+                data = open('%s/%04d/%s.out' % (NEXMD,dir,file_name),'r')
                 data = data.readlines()
                 lend = len(data)
                 ndipoles = 0
@@ -814,7 +826,7 @@ def permdipole(pathtopack,header):
                 index = 0
                 array = np.array([])
                 for line in data:
-                    if 'Frequencies (eV) and Total Molecular Dipole Moments (Debye)' in line:
+                    if '%s' % (grep_name) in line:
                         if ndipoles == 0:
                             time = header.time_init
                         else:
@@ -824,7 +836,7 @@ def permdipole(pathtopack,header):
                     index += 1
                 ## Another check to ensure dipole calculation ##
                 if ndipoles != edipoles:
-                    print >> error, 'Number of dipoles detected in %s%04d/permdipole.out, %d, does not match the expected %d.' % (NEXMD,dir,ndipoles,edipoles)
+                    print >> error, 'Number of dipoles detected in %s%04d/%s.out, %d, does not match the expected %d.' % (NEXMD,dir,file_name,ndipoles,edipoles)
                     errflag = 1
                     ttraj += 1
                     continue
@@ -833,7 +845,7 @@ def permdipole(pathtopack,header):
                 array = np.int_(array)
                 ## Another check to ensure the dipole calculation ##
                 if ndipoles == 0:
-                    print >> error, 'No dipoles were found in %s%04d/permdipole.out.' % (NEXMD,dir)
+                    print >> error, 'No dipoles were found in %s%04d/%s.out.' % (NEXMD,dir,file_name)
                     errflag = 1
                     ttraj += 1
                     continue
@@ -854,12 +866,11 @@ def permdipole(pathtopack,header):
                 ## Collect dipole along a single trajectory ##
                 for ndipole in np.arange(ndipoles):
                     dipoles = data[array[ndipole] + 1:array[ndipole + 1]:1]
-                    vdipole = np.float_(dipoles[np.int(states[ndipole, 1])].split()[2:5:1]) ## extracts dipole vector
-                    mdipole = np.float(dipoles[np.int(states[ndipole, 1])].split()[5]) ## extracts dipole magnitude
-                    cosine = np.arccos(np.dot(vdipole, uservec[ndipole,1:4:1])/(np.linalg.norm(vdipole)*np.linalg.norm(uservec[ndipole,1:4:1]))) if dotq == 1 else 0 ## inverse cosine of the dot product
-                    print >> output,  '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, header.time_step*header.out_data_steps*header.out_coords_steps*ndipole), '%d' % (states[ndipole, 1]), '%03.6f' % (mdipole), '%.6f' % (np.degrees(cosine))
+                    vdipole = np.float_(dipoles[np.int(states[ndipole, 1])].split()[0 if dipole_type == 0 else 2::1]) ## extracts dipole vector and magnitude
+                    cosine = np.arccos(np.dot(vdipole[0:3:1], uservec[ndipole,1:4:1])/(np.linalg.norm(vdipole[0:3:1])*np.linalg.norm(uservec[ndipole,1:4:1]))) if dotq == 1 else 0 ## inverse cosine of the dot product
+                    print >> output,  '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, header.time_step*header.out_data_steps*header.out_coords_steps*ndipole), '%d' % (states[ndipole, 1] - 1 if dipole_type == 0 else states[ndipole, 1]), ' '.join(str('%03.6f' % (x)) for x in vdipole), '%.6f' % (np.degrees(cosine))
                 ## Delete extraneous data ##
-                os.remove('%s/%04d/permdipole.out' % (NEXMD,dir))
+                os.remove('%s/%04d/%s.out' % (NEXMD,dir,file_name))
                 os.remove('%s/%04d/pop.out' % (NEXMD,dir))
                 os.remove('%s/%04d/uservec.out' % (NEXMD,dir))
                 print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
@@ -873,6 +884,6 @@ def permdipole(pathtopack,header):
             print 'Total trajectories:', '%04d' % (ttraj)
             print 'Excellent trajectories:', '%04d' % (etraj)
         if errflag == 1:
-            print 'One or more trajectories have experienced an error, check permdipole_raw_ensemble.err.'
+            print 'One or more trajectories have experienced an error, check %s_raw_ensemble.err.' % (file_name)
         else:
-            os.remove('%s/permdipole_raw_ensemble.err' % (cwd))
+            os.remove('%s/%s_raw_ensemble.err' % (cwd,file_name))

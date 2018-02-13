@@ -2525,7 +2525,7 @@ end if
      betas_am1(atomic_number) = -1.25974355D0
      betap_am1(atomic_number) = -0.77836604D0
      FN1_am1(1,atomic_number) = 2.55017735D0
-     FN2_am1(1,atomic_number) = 2.55017735D0
+     FN2_am1(1,atomic_number) = 4.29397225D0
      FN3_am1(1,atomic_number) = 0.79989601D0
      FN1_am1(2,atomic_number) =-0.00565806D0
      FN2_am1(2,atomic_number) = 2.96053910D0

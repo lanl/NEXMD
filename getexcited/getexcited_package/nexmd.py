@@ -217,7 +217,7 @@ def nexmd(header):
             dirlist1 = np.array([dirlist1])
         os.remove('%s/totdirlist' % (outdir))
         ntraj = len(dirlist1)
-        ntrajq = input('How many trajectories for NEXMD? enter a number no greater than %d: ' % (ntraj))
+        ntrajq = input('How many trajectories for NEXMD? Enter a number no greater than %d: ' % (ntraj))
         if isinstance(ntrajq, int) == False:
             print 'Number of trajectories must be integer.'
             sys.exit()
