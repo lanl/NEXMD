@@ -1,0 +1,11 @@
+for i in `cat cont1`
+do
+cp $i.DATA EVEC.DATA
+./cubemain.x
+mv EVEC.0001.cube $i.cube
+./trimcube.x -t 0.02 $i.cube > l.cube
+mv l.cube $i.cube
+#gzip $i
+echo $i
+done
+
