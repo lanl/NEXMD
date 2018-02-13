@@ -212,7 +212,7 @@ contains
                 write(unitcard,440) ' Number of atoms:'
                 write(unitcard,99) sim%naesmd%natom
                 write(unitcard,441) ' Number of orbitals:'
-                write(unitcard,99) sim%naesmd%nao
+                write(unitcard,99) sim%naesmd%nbasis
                 write(unitcard,445) ' Number of occupied orbitals:'
                 write(unitcard,222) ' 1'
                 write(unitcard,442) ' Number of eigenvectors printed:'
@@ -229,6 +229,7 @@ contains
                     ! to be used in case we want to print the transition densities of all the states at t=0
                     write(unitcard,*) sim%dav%v2(sim%dav%Nb*(k-1)+k,kki)
                 end do
+				write(unitcard,*) ""
                 close(unitcard)
             ! to be used in case we want to print the transition densities of all the states at t=0
             end do
@@ -516,7 +517,7 @@ contains
                     write(unitcard,440) ' Number of atoms:'
                     write(unitcard,99) sim%naesmd%natom
                     write(unitcard,441) ' Number of orbitals:'
-                    write(unitcard,99) sim%naesmd%nao
+                    write(unitcard,99) sim%naesmd%nbasis
                     write(unitcard,445) ' Number of occupied orbitals:'
                     write(unitcard,222) ' 1'
                     write(unitcard,442) ' Number of eigenvectors printed:'
@@ -532,6 +533,7 @@ contains
                     do k=1,sim%dav%Nb
                         write(unitcard,*) sim%dav%v2(sim%dav%Nb*(k-1)+k,kki)
                     end do
+					write(unitcard,*) ""
                     close(unitcard)
                 end do
             end if
