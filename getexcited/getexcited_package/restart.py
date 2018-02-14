@@ -1,33 +1,30 @@
 #/usr/bin/python
 
 '''
- ___________________________________________________________________
-|                                                                   |
-| This function prepares restart input files for NEXMD.             |
-|                                                                   |
-| If restart input files are requested, the function searches for   |
-| trajectories that did not complete up to the user-defined         |
-| number of classical steps and prepares input files with the name  |
-| 'input.ceon' in their respective directories.  The input file is  |
-| prepared with coordinates, velocities, quantum coefficients, and  |
-| last-residing surface taken from the 'restart.out' file.  These   |
-| are data from the last-generated time-step.  Within each 'NEXMD#' |
-| folder, with directories that contain restart input files, a new  |
-| 'dirlist' will be generated with a list of restart directories.   |
-| An error file, 'restart.err', lists the directories that either   |
-| (1) do not contain 'energy-ev.out' files, from which the last     |
-| time-step is determined, or (2) have incomplete 'restart.out'     |
-| files.  The former generally means the trajectory did not start   |
-| when NEXMD was first attempted.  The 'restart.err' file is not    |
-| generated if there are no such trajectories.  During every        |
-| iteration of requesting restart input files, a file containing    |
-| the random seeds is generated with the name 'rseedslist#'.  Part  |
-| of this function deletes the data at all time-steps after the     |
-| time-step of the 'restart.out' file.  The purpose of this is to   |
-| have continuous set of data along the trajectory with no repeated |
-| information.  An error file called 'delextra.out' is generated if |
-| one or more output files do not exist.                            |
-|___________________________________________________________________|
+
+This function prepares restart input files for NEXMD.
+
+If restart input files are requested, the function searches for
+trajectories that did not complete up to the user-defined
+number of classical steps and prepares input files with the name
+'input.ceon' in their respective directories.  The input file is
+prepared with coordinates, velocities, quantum coefficients, and
+last-residing surface taken from the 'restart.out' file.  These are
+data from the last-generated time-step.  Within each 'NEXMD#' folder,
+with directories that contain restart input files, a new 'dirlist'
+will be generated with a list of restart directories.  An error file,
+'restart.err', lists the directories that either (1) do not contain
+'energy-ev.out' files, from which the last time-step is determined,
+or (2) have incomplete 'restart.out' files.  The former generally
+means the trajectory did not start when NEXMD was first attempted.
+The 'restart.err' file is not generated if there are no such
+trajectories.  During every iteration of requesting restart input
+files, a file containing the random seeds is generated with the name
+'rseedslist#'.  Part of this function deletes the data at all
+time-steps after the time-step of the 'restart.out' file.  The purpose
+of this is to have continuous set of data along the trajectory with no
+repeated information.  An error file called 'delextra.out' is
+generated if one or more output files do not exist.
 
 '''
 
@@ -235,7 +232,7 @@ def restart(pathtopack,header):
                     ## Make new input file ##
                     inputfile = open('%s/%04d/input.ceon' % (NEXMD,dir),'w')
                     for line in header:
-                        if 'rnd_seed' in line:
+                        if 'rnd_seed_flag' in line:
                             inputfile.write('   rnd_seed=%d, ! seed for the random number generator\n' % (rseed if randq == 1 else rseeds[traj]))
                         else:
                             if 'exc_state_init_flag' in line:
@@ -250,14 +247,14 @@ def restart(pathtopack,header):
                                         if 'out_count_init' in line:
                                             inputfile.write('   out_count_init=%d, ! initial count for output files [0]\n' % (maxview))
                                         else:
-                                            if 'nucl_coord_veloc' in line:
+                                            if 'nucl_coord_veloc_flag' in line:
                                                 for line in coords:
                                                     inputfile.write(line)
                                                 inputfile.write('\n')
                                                 for line in velocs:
                                                     inputfile.write(line)
                                             else:
-                                                if 'quant_amp_phase' in line:
+                                                if 'quant_amp_phase_flag' in line:
                                                     inputfile.write('$coeff\n')
                                                     for line in ncoeffs:
                                                         inputfile.write('  %.10f  %.10f\n' % (line[0],line[1]))
@@ -348,7 +345,7 @@ def restart(pathtopack,header):
             ## Make new input file ##
             inputfile = open('%s/input.ceon' % (NEXMDir),'w')
             for line in header:
-                if 'rnd_seed' in line:
+                if 'rnd_seed_flag' in line:
                     inputfile.write('   rnd_seed=%d, ! seed for the random number generator\n' % (rseed if randq == 1 else rseeds[traj]))
                 else:
                     if 'exc_state_init_flag' in line:
@@ -363,14 +360,14 @@ def restart(pathtopack,header):
                                 if 'out_count_init' in line:
                                     inputfile.write('   out_count_init=%d, ! initial count for output files [0]\n' % (maxview))
                                 else:
-                                    if 'nucl_coord_veloc' in line:
+                                    if 'nucl_coord_veloc_flag' in line:
                                         for line in coords:
                                             inputfile.write(line)
                                         inputfile.write('\n')
                                         for line in velocs:
                                             inputfile.write(line)
                                     else:
-                                        if 'quant_amp_phase' in line:
+                                        if 'quant_amp_phase_flag' in line:
                                             inputfile.write('&coeff\n')
                                             for line in ncoeffs:
                                                 inputfile.write('  %.10f  %.10f\n' % (line[0],line[1]))

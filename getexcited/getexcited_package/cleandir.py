@@ -1,21 +1,19 @@
 #/usr/bin/python
 
 '''
- ___________________________________________________________________
-|                                                                   |
-| This function cleans out the directories of unfinished            |
-| trajectories.  At times, you may experience strange behavior on   |
-| you HPC cluster.  A complete restart of unfinished trajectories   |
-| may be desired when this occurs.                                  |
-|                                                                   |
-| If cleaning out the directories of unfinished trajectories is     |
-| requested, this function determines the number of classical steps |
-| from the 'header' in the NEXMD directory and searches all         |
-| trajectories.  Completed trajectories are not affected.  In the   |
-| directories of unfinished trajectories, all files are deleted     |
-| except for the original 'input.ceon' file.  This option should    |
-| only be used if the restart option is not more suitable!          |
-|___________________________________________________________________|
+
+This function cleans out the directories of unfinished trajectories.
+At times, you may experience strange behavior on the cluster.  A
+complete restart of unfinished trajectories may be desired when this
+occurs.
+
+If cleaning out the directories of unfinished trajectories is
+requested, this function determines the number of classical steps from
+the 'header' in the NEXMD directory and searches all trajectories.
+Completed trajectories are not affected.  In the directories of
+unfinished trajectories, all files are deleted except for the original
+'input.ceon' file.  This option should only be used if the restart
+option is not more suitable!
 
 '''
 

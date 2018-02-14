@@ -1,29 +1,26 @@
 #/usr/bin/python
 
 '''
- ___________________________________________________________________
-|                                                                   |
-| This function generates an optical spectrum from single-point     |
-| calculations.                                                     |
-|                                                                   |
-| One of two files will be generated in the current working         |
-| directory if an optical spectrum is requested, 'ceo_<type>.out'   |
-| or 'ceo.err'.  Here, <type> is 'gauss' or 'lorentz'. These refer  |
-| to Gaussian or Lorentzian lineshapes, respectively.  In           |
-| 'ceo.out', the spectrum is generated with one of these            |
-| lineshapes.  Both the lineshape and the width are defined by the  |
-| user.  The outputted spectrum is a sum of all spectra determined  |
-| from initial geometries, divided the number of geometries.  The   |
-| 'collectceo.sh' script, located in the getexcited_package is      |
-| called to grep excitation energies and oscillator strengths from  |
-| single-point calculations.  In 'ceo.out', first column is energy  |
-| in eV, followed by the spectrum associated to each state,         |
-| followed by the total spectrum.  Spectra should be interpreted as |
-| relative absorbance in arbitrary units.  In 'ceo.err',            |
-| directories of single-point calculations that are incomplete are  |
-| listed. The 'ceo.out' file cannot be generated unless all         |
-| single-point calculations are complete.                           |
-|___________________________________________________________________|
+
+This function generates an optical spectrum from single-point
+calculations.
+
+One of two files will be generated in the current working
+directory if an optical spectrum is requested, 'ceo_<type>.out'
+or 'ceo.err'.  Here, <type> is 'gauss' or 'lorentz'. These refer
+to Gaussian or Lorentzian lineshapes, respectively.  In 'ceo.out',
+the spectrum is generated with one of these lineshapes.  Both the
+lineshape and the width are defined by the user.  The outputted
+spectrum is a sum of all spectra determined from initial geometries,
+divided the number of geometries.  The 'collectceo.sh' script,
+located in the getexcited_package is called to grep excitation
+energies and oscillator strengths from single-point calculations.
+In 'ceo.out', first column is energy in eV, followed by the spectrum
+associated to each state, followed by the total spectrum.  Spectra
+should be interpreted as relative absorbance in arbitrary units.
+In 'ceo.err', directories of single-point calculations that are
+incomplete are listed. The 'ceo.out' file cannot be generated unless
+all single-point calculations are complete.
 
 '''
 
