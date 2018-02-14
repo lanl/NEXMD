@@ -1,28 +1,26 @@
 #/usr/bin/python
 
 '''
- ___________________________________________________________________
-|                                                                   |
-| This function prepares input files for non-adiabatic              |
-| excited-state molecular dynamics (NEXMD).                         |
-|                                                                   |
-| A general header called 'header' must be in the NEXMD directory   |
-| (e.g. NEXMD) and must have all inputs set except for:             |
-|                                                                   |
-| 1) Random seed (rnd_seed)                                         |
-| 2) Initial excited state (exc_state_init_flag)                    |
-| 3) Initial nuclear coordinates and velocities (nucl_coord_veloc)  |
-| 4) Initial quantum amplitudes and phase (quant_amp_phase)         |
-|                                                                   |
-| In parentheses shown above, are flags in 'header' that label      |
-| these inputs. This function finds these labels and fills them in  |
-| accordingly. A 'ceo.err' file will be generated in case there     |
-| exists incomplete single-point calculations.                      |
-|                                                                   |
-| NOTE: All NEXMD folders and rseedslists, inside the NEXMD         |
-| directory, will be deleted if this function is completely         |
-| executed!                                                         |
-|___________________________________________________________________|
+
+This function prepares input files for non-adiabatic
+excited-state molecular dynamics (NEXMD).
+
+A general header called 'header' must be in the NEXMD directory
+(e.g. NEXMD) and must have all inputs set except for:
+
+1) Random seed (rnd_seed_flag)
+2) Initial excited state (exc_state_init_flag)
+3) Initial nuclear coordinates and velocities (nucl_coord_veloc_flag)
+4) Initial quantum amplitudes and phase (quant_amp_phase_flag)
+
+In parentheses shown above, are flags in 'header' that label
+these inputs. This function finds these labels and fills them in
+accordingly. A 'ceo.err' file will be generated in case there
+exists incomplete single-point calculations.
+
+NOTE: All NEXMD folders and rseedslists, inside the NEXMD
+directory, will be deleted if this function is completely
+executed!
 
 '''
 
@@ -83,20 +81,20 @@ def nexmd(header):
     #waves = 1 # only for old code
     #wavec = 1 # only for old code
     ## possible combinations ##
-    ## state set, coefficients set          (waves = 1, wavec = 1) - single state
-    ## state set, coefficients not set      (waves = 1, wavec = 0) - single state
-    ## state not set, coefficients set      (waves = 0, wavec = 1) - ridiculous (exit system)
-    ## state not set, coefficients not set  (waves = 0, wavec = 0) - photoexcited wavepacket
+    ## state set, coefficients set          (state_set = 1, coeff_set = 1) - single state
+    ## state set, coefficients not set      (state_set = 1, coeff_set = 0) - single state
+    ## state not set, coefficients set      (state_set = 0, coeff_set = 1) - ridiculous (exit system)
+    ## state not set, coefficients not set  (state_set = 0, coeff_set = 0) - photoexcited wavepacket
     try:
         header.exc_state_init
         state_set = 1
     except AttributeError:
         state_set = 0
     try:
-        header.quant_amp_phase
+        header.quant_amp_phase_flag
         coeff_set = 0
     except AttributeError:
-        state_set = 1
+        coeff_set = 1
     if state_set == 1 and coeff_set == 1 or state_set == 1 and coeff_set == 0:
         print 'All trajectories will begin on state %d.' % (header.exc_state_init)
     if state_set == 0 and coeff_set == 1:
@@ -108,47 +106,6 @@ def nexmd(header):
         if not os.path.exists(spdir):
             print 'Path %s does not exist.' % (spdir)
             sys.exit()
-
-    '''
-        Probably garabage, but keep until above is confirmed to work
-    ## Check running dynamics and type of initial excitation ##
-    if not os.path.exists('%s/header' % (outdir)):
-        print 'Path %s/header does not exist.' % (outdir)
-        sys.exit()
-    header = open('%s/header' % (outdir),'r')
-    header = header.readlines()
-    waves = 0
-    wavec = 0
-    #waves = 1 # only for old code
-    #wavec = 1 # only for old code
-    ## possible combinations ##
-    ## state set, coefficients set          (waves = 1, wavec = 1) - single state
-    ## state set, coefficients not set      (waves = 1, wavec = 0) - single state
-    ## state not set, coefficients set      (waves = 0, wavec = 1) - ridiculous (exit system)
-    ## state not set, coefficients not set  (waves = 0, wavec = 0) - photoexcited wavepacket
-    for line in header:
-        if 'n_class_steps' in line:
-            tsmax = np.int(line.split()[0][len('n_class_steps='):-1])
-        if 'exc_state_init' in line:
-            waves = 1
-            cstate = np.int(line.split()[0][len('exc_state_init='):-1])
-        if 'quant_amp_phase' not in line:
-            wavec = 1
-    if tsmax <= 0:
-        print 'Must change n_class_steps in %s/header to greater than 0 for dynamics.' % (outdir)
-        sys.exit()
-    if waves == 1 and wavec == 1 or waves == 1 and wavec == 0:
-        print 'All trajectories will begin on state %d.' % (cstate)
-    if waves == 0 and wavec == 1:
-        print 'There is an inconsistency in header.\ninput exc_state_init is not set, while coefficients are set.'
-        sys.exit()
-    if waves == 0 and wavec == 0:
-        print 'Initial excited states will model a photoexcited wavepacket according to the optical spectrum.'
-        spdir = raw_input('single-point calculations directory: ')
-        if not os.path.exists(spdir):
-            print 'Path %s does not exist.' % (spdir)
-            sys.exit()
-        '''
     
     ## Find geometries ##
     if not os.path.exists('%s/coords.xyz' % (gsdir)):
@@ -395,7 +352,7 @@ def nexmd(header):
                     else:
                         iceoflag = 1
                 if iceoflag == 1:
-                    print >> error, '%s%04d/ceo.out' % (spNEXMD,dir), 'does not exist'
+                    print >> error, '%s%04d/ceo.out does not exist' % (spNEXMD,dir)
                     rseeds[traj] = -123456789
                     ceoflag = 1
                     iceoflag = 0
@@ -420,13 +377,13 @@ def nexmd(header):
                 velocs = datav[arrayv[dir]+2:arrayv[dir+1]-1:1]
                 inputfile = open('%s/NEXMD%d/%04d/input.ceon' % (outdir,NEXMD,dir),'w')
                 for line in header.file:
-                    if 'rnd_seed' in line:
+                    if 'rnd_seed_flag' in line:
                         inputfile.write('   rnd_seed=%d, ! seed for the random number generator\n' % (rseeds[traj]))
                     else:
                         if 'exc_state_init_flag' in line:
                             inputfile.write('   exc_state_init=%d, ! initial excited state (0 - ground state) [0]\n' % (state))
                         else:
-                            if 'nucl_coord_veloc' in line:
+                            if 'nucl_coord_veloc_flag' in line:
                                 inputfile.write('&coord\n')
                                 aindex = 0
                                 for line in coords:
@@ -439,7 +396,7 @@ def nexmd(header):
                                     inputfile.write(line)
                                 inputfile.write('&endveloc\n')
                             else:
-                                if 'quant_amp_phase' in line:
+                                if 'quant_amp_phase_flag' in line:
                                     inputfile.write('&coeff\n')
                                     for line in qpop:
                                         inputfile.write('  %.3f  %.3f\n' % (line,0.0))
@@ -474,27 +431,27 @@ def nexmd(header):
                 velocs = datav[arrayv[dir]+2:arrayv[dir+1]-1:1]
                 inputfile = open('%s/NEXMD%d/%04d/input.ceon' % (outdir,NEXMD,dir),'w')
                 for line in header.file:
-                    if 'rnd_seed' in line:
-                        inputfile.write('   rnd_seed=%d, ! seed for the random number generator\n' % (rseeds[traj])) ## for new code
-                        #inputfile.write('%d ! seed for the random number generator\n' % (rseeds[traj])) ## for old code
+                    if 'rnd_seed_flag' in line:
+                        inputfile.write('   rnd_seed=%d, ! seed for the random number generator\n' % (rseeds[traj])) ## for new code (NEXMD)
+                        #inputfile.write('%d ! seed for the random number generator\n' % (rseeds[traj])) ## for old code (NAESMD)
                     else:
-                        if 'nucl_coord_veloc' in line:
-                            inputfile.write('&coord\n')  ## for new code
-                            #inputfile.write('$coord\n')  ## for old code
+                        if 'nucl_coord_veloc_flag' in line:
+                            inputfile.write('&coord\n')  ## for new code (NEXMD)
+                            #inputfile.write('$COORD\n')  ## for old code (NAESMD)
                             aindex = 0
                             for line in coords:
                                 val = line.split()
                                 inputfile.write('{:>6}  {:>12}  {:>12}  {:>12}'.format(anum[aindex],val[1],val[2],val[3]))
                                 inputfile.write('\n')
                                 aindex += 1
-                            inputfile.write('&endcoord\n\n&veloc\n')  ## for new code
-                            #inputfile.write('$endcoord\n\n$veloc\n') ## for old code
+                            inputfile.write('&endcoord\n\n&veloc\n')  ## for new code (NEXMD)
+                            #inputfile.write('$ENDCOORD\n\n$VELOC\n') ## for old code (NAESMD)
                             for line in velocs:
                                 inputfile.write(line)
                             inputfile.write('&endveloc\n')
-                            #inputfile.write('$endveloc\n')
+                            #inputfile.write('$ENDVELOC\n') ## for old code (NAESMD)
                         else:
-                            if 'quant_amp_phase' in line:
+                            if 'quant_amp_phase_flag' in line:
                                 inputfile.write('&coeff\n')
                                 for line in qpop:
                                     inputfile.write('  %.3f  %.3f\n' % (line,0.0))

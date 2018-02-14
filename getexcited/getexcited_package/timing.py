@@ -1,20 +1,18 @@
 #/usr/bin/python
 
 '''
- ___________________________________________________________________
-|                                                                   |
-| This function collects timings from all trajectories.             |
-|                                                                   |
-| If this function is requested, the timings located at the end of  |
-| the standard output files (i.e. md.out) are outputted to a file   |
-| called 'timing.out'.  The first column is directory of the        |
-| trajectory, followed by its total CPU time, and timings for the   |
-| ground state, excited states, adiabatic forces, and non-adiabatic |
-| derivatives, respectively.  These timings, averaged over all      |
-| trajectories, are also printed to screen when this function is    |
-| executed.  An error file called 'timing.err' will be generated if |
-| any problems occur such as non-existent or incomplete files.      |
-|___________________________________________________________________|
+
+This function collects timings from all trajectories.
+
+If this function is requested, the timings located at the end of the
+standard output files (i.e. md.out) are outputted to a file called
+'timing.out'.  The first column is directory of the trajectory,
+followed by its total CPU time, and timings for the ground state,
+excited states, adiabatic forces, and non-adiabatic derivative coupling,
+respectively.  These timings, averaged over all trajectories, are also
+printed to screen when this function is executed.  An error file called
+'timing.err' will be generated if any problems occur such as
+non-existent or incomplete files.
 
 '''
 
@@ -90,7 +88,7 @@ def timing(pathtotime):
 
     ## Extract and combine timings ##
     timing = open('%s/timing.out' % (cwd),'w')
-    times = np.zeros(5) ## change 5 to 1 for old code
+    times = np.zeros(5) ## change 5 to 1 for old code (NAESMD)
     traj = 0
     for NEXMD in NEXMDs:
         dirlist1 = np.int_(np.genfromtxt('%s/%s/dirlist1' % (cwd,NEXMD)))
@@ -99,14 +97,14 @@ def timing(pathtotime):
         for dir in dirlist1:
             data = open('%s/%s/%04d/timing.out' % (cwd,NEXMD,dir),'r')
             data = data.readlines()
-            data = np.delete(data, (1), axis = 0) ## comment out for old code
+            data = np.delete(data, (1), axis = 0) ## comment out for old code (NAESMD)
             tarray = np.array([])
             index = 0
             for line in data:
                 val = line.split()
                 if index == 0:
                     tarray = np.append(tarray, np.float(val[5]))
-                else: ## comment out for old code
+                else: ## comment out for old code (NAESMD)
                     tarray = np.append(tarray, np.float(val[0]))
                 index += 1
             times += tarray
@@ -116,7 +114,7 @@ def timing(pathtotime):
             traj += 1
     times = times/traj
     print 'Mean total cpu [s]:', '%06d' % (times[0])
-    ## comment all below for old code ##
+    ## comment all below for old code (NAESMD) ##
     print 'Mean ground state [s]:', '%06d' % (times[1])
     print 'Mean excited states [s]:', '%06d' % (times[2])
     print 'Mean adiabatic forces [s]:', '%06d' % (times[3])

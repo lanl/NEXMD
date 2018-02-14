@@ -1,29 +1,26 @@
 #/usr/bin/python
 
 '''
- ___________________________________________________________________
-|                                                                   |
-| This function prepares input files for an adiabatic simulation,   |
-| where geometries are taken from a separate NEXMD simulation       |
-| located in another directory.                                     |
-|                                                                   |
-| This function searches for geometries at a user-defined time in   |
-| directory A and generates input files for an adiabatic simulation |
-| in directory B.  Typically, directory A is a non-adiabatic        |
-| simulation.  In directory B, there must be a 'header' file,       |
-| with all inputs set except for 'rand_seed' and                    |
-| 'nucl_coord_veloc'.  Since B is an adiabatic simulation,          |
-| 'exc_state_init' must be specified in 'header'.  It is also       |
-| important to have the 'bo_dynamics_flag' set to '1', indicating   |
-| adiabatic dynamics.  The user may choose to use a pre-generated   |
-| list of random seeds.  The 'rseedslist' list will be generated in |
-| the directory of the adiabatic simulation.  Any problems that may |
-| occur during generation of input files will be stated in the      |
-| error file, 'newsim.err'.                                         |
-|                                                                   |
-| NOTE: All NEXMD folders and rseedslists, inside directory B, will |
-| be deleted if this function is completely executed!               |
-|___________________________________________________________________|
+
+This function prepares input files for an adiabatic simulation, where
+geometries are taken from a separate NEXMD simulation located in
+another directory.
+
+This function searches for geometries at a user-defined time in
+directory A and generates input files for an adiabatic simulation in
+directory B.  Typically, directory A is a non-adiabatic simulation.
+In directory B, there must be a 'header' file, with all inputs set
+along with 'rnd_seed_flag' and 'nucl_coord_veloc_flag'.  Since B is an
+adiabatic simulation, 'exc_state_init' must be specified in 'header'.
+It is also important to have the 'bo_dynamics_flag' set to '1',
+indicating adiabatic dynamics.  The user may choose to use a
+pre-generated list of random seeds.  The 'rseedslist' list will be
+generated in the directory of the adiabatic simulation.  Any problems
+that may occur during generation of input files will be stated in the
+error file, 'newsim.err'.
+
+NOTE: All NEXMD folders and rseedslists, inside directory B, will be
+deleted if this function is completely executed!
 
 '''
 
@@ -313,10 +310,10 @@ def newsim(header):
             velocs = datav[tarrayv[traj][0] + 2:tarrayv[traj][1] - 1:1]
             inputfile = open('%s/NEXMD%d/%04d/input.ceon' % (newdir,NEXMD,dir),'w')
             for line in new_header.file:
-                if 'rnd_seed' in line:
+                if 'rnd_seed_flag' in line:
                     inputfile.write('   rnd_seed=%d, ! seed for the random number generator\n' % (rseeds[traj]))
                 else:
-                    if 'nucl_coord_veloc' in line:
+                    if 'nucl_coord_veloc_flag' in line:
                         inputfile.write('&coord\n')
                         aindex = 0
                         for line in coords:
