@@ -1,23 +1,21 @@
 #/usr/bin/python
 
 '''
- ___________________________________________________________________
-|                                                                   |
-| This function prepares input files for single-point calculations. |
-|                                                                   |
-| A general header called 'header' must be in the single-point      |
-| directory (e.g. singlepoint) and must have all inputs set except  |
-| for:                                                              |
-|                                                                   |
-| 1) Initial nuclear coordinates and velocities (nucl_coord_veloc)  |
-|                                                                   |
-| In parentheses shown above, is the flag in 'header' that labels   |
-| this input.  This function finds this label and fills it in       |
-| accordingly.                                                      |
-|                                                                   |
-| NOTE: All NEXMD folders, inside the single-point directory, will  |
-| be deleted if this function is completely executed!               |
-|___________________________________________________________________|
+
+This function prepares input files for single-point calculations.
+
+A general header called 'header' must be in the single-point
+directory (e.g. singlepoint) and must have all inputs set except
+for:
+
+1) Initial nuclear coordinates and velocities (nucl_coord_veloc_flag)
+
+In parentheses shown above, is the flag in 'header' that labels
+this input.  This function finds this label and fills it in
+accordingly.
+
+NOTE: All NEXMD folders, inside the single-point directory, will
+be deleted if this function is completely executed!
 
 '''
 
@@ -208,7 +206,7 @@ def spcalc(header):
             os.makedirs('%s/NEXMD%d/%04d' % (outdir,NEXMD,dir))
             inputfile = open('%s/NEXMD%d/%04d/input.ceon' % (outdir,NEXMD,dir),'w')
             for line in header.file:
-                if 'nucl_coord_veloc' in line:
+                if 'nucl_coord_veloc_flag' in line:
                     inputfile.write('&coord\n')
                     aindex = 0
                     for line in coords:

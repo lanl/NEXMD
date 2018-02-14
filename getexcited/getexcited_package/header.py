@@ -180,7 +180,7 @@ class header(object):
             ## End output and log parameters ##
             '''
             ## Check if coefficients are set ##
-            if 'quant_amp_phase' in line:
-                header.quant_amp_phase = 'The quant_amp_phase flag is in the header.'
+            if 'quant_amp_phase_flag' in line:
+                header.quant_amp_phase_flag = 'The quant_amp_phase_flag is in the header.'
 
             line_num += 1
