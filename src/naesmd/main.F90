@@ -164,22 +164,22 @@ subroutine nexmd_sim(sim)
     sim%naesmd%icontw=1
     !Open output files
     if(Nsim.eq.1) then
-	    call open_output(sim,sim%ibo,sim%naesmd%tfemto,sim%md%imdtype,sim%lprint)
-	    sim%naesmd%ihop=sim%qmmm%state_of_interest 
+            call open_output(sim,sim%ibo,sim%naesmd%tfemto,sim%md%imdtype,sim%lprint)
+            sim%naesmd%ihop=sim%qmmm%state_of_interest 
     else
-	    call open_output_multi(sim,sim%ibo,sim%naesmd%tfemto,sim%md%imdtype,sim%lprint)
-	    sim%naesmd%ihop=sim%qmmm%state_of_interest 
+            call open_output_multi(sim,sim%ibo,sim%naesmd%tfemto,sim%md%imdtype,sim%lprint)
+            sim%naesmd%ihop=sim%qmmm%state_of_interest 
     endif
     call writeoutputini(sim,sim%ibo,sim%naesmd%yg,sim%lprint)
 
     sim%rk_comm%tmax=sim%naesmd%nstep*sim%naesmd%dtmdqt
     do i =1,sim%excN
-	sim%rk_comm%thresholds(i)=1.0d0
-	sim%rk_comm%thresholds(i+sim%excN)=6.29d0
+        sim%rk_comm%thresholds(i)=1.0d0
+        sim%rk_comm%thresholds(i+sim%excN)=6.29d0
     enddo
-    if((sim%naesmd%nstep.gt.0).and.(sim%naesmd%nquantumreal.gt.0)) then
-	    call setup(sim%rk_comm,sim%naesmd%tfemto,sim%naesmd%yg,sim%rk_comm%tmax,sim%rk_comm%rk_tol,sim%rk_comm%thresholds, &
-	'M','R')
+    if((sim%naesmd%nstep.gt.0).and.(sim%naesmd%nquantumreal.gt.0).and.(sim%ibo.ne.1)) then
+            call setup(sim%rk_comm,sim%naesmd%tfemto,sim%naesmd%yg,sim%rk_comm%tmax,sim%rk_comm%rk_tol,sim%rk_comm%thresholds, &
+        'M','R')
     endif
     do imdqt=1,sim%naesmd%nstep !Main loop
         !Classical propagation step - BOMD or NAESMD
@@ -213,7 +213,9 @@ subroutine nexmd_sim(sim)
             ! Loop for quantum propagation steps
             ! that implies CEO energy calculations
             !--------------------------------------------------------------------
-            call quantum_propagation(sim, imdqt)         
+            if(sim%ibo.ne.1) then
+                    call quantum_propagation(sim, imdqt)         
+            endif
             !--------------------------------------------------------------------
             ! last part of velocity verlet algorithm
             ! for ehrenfest should go after evalhop
@@ -276,7 +278,7 @@ subroutine nexmd_sim(sim)
     write (6,*)
     write (6,*) '|^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|'
     write (6,8) '| MD normal termination at ', datetime,' |'
-    write (6,9) '| MD total CPU time	    ',  time11, ' seconds |'
+    write (6,9) '| MD total CPU time            ',  time11, ' seconds |'
     write(6,301) itime11,itime3,itime2,itime1
     write(6,*)
 
@@ -317,7 +319,7 @@ end subroutine
     !
     subroutine init_main(sim, inputfdes)
         use naesmd_constants
-	use communism, only : simulation_t 
+        use communism, only : simulation_t 
         implicit none
         type(simulation_t),pointer::sim
         _REAL_,allocatable::xx(:),yy(:),zz(:)
@@ -326,39 +328,39 @@ end subroutine
         integer :: i,j,k,ii,jjj
         integer :: Na, Nm, N1, N2, N3
         integer slen
-	integer :: itime1
+        integer :: itime1
         character*(150) txt
         character(100) ::  filename
         _REAL_ :: rk_tolerance
         logical moldyn_found
         ! variables of the moldyn namelist
-	    integer natoms
-	    integer bo_dynamics_flag,exc_state_init,n_exc_states_propagate
-	    integer out_count_init
-	    _REAL_ time_init,time_step
-	    integer n_class_steps,n_quant_steps,quant_coeffs_reinit
-	    _REAL_ num_deriv_step,therm_temperature
-	    integer therm_type
-	    _REAL_ berendsen_relax_const
-	    integer heating,heating_steps_per_degree,out_data_steps
-	    integer out_coords_steps
-	    _REAL_ therm_friction
-	    integer rnd_seed,out_data_cube,verbosity,moldyn_deriv_flag
-	    _REAL_ quant_step_reduction_factor
-	    _REAL_ decoher_e0,decoher_c
-	    integer decoher_type,dotrivial
-	    _REAL_ deltared
-	    integer iredpot,nstates
-	    namelist /moldyn/ natoms,bo_dynamics_flag,exc_state_init, &
-		n_exc_states_propagate,out_count_init,time_init, &
-		rk_tolerance,time_step,n_class_steps,n_quant_steps, &
-		num_deriv_step, &
-		therm_temperature,therm_type, &
-		berendsen_relax_const,heating, &
-		heating_steps_per_degree,out_data_steps,out_coords_steps, &
-		therm_friction,rnd_seed,out_data_cube,verbosity,moldyn_deriv_flag, &
-		quant_step_reduction_factor,decoher_e0,decoher_c,decoher_type,dotrivial,&
-		iredpot,nstates,deltared
+            integer natoms
+            integer bo_dynamics_flag,exc_state_init,n_exc_states_propagate
+            integer out_count_init
+            _REAL_ time_init,time_step
+            integer n_class_steps,n_quant_steps,quant_coeffs_reinit
+            _REAL_ num_deriv_step,therm_temperature
+            integer therm_type
+            _REAL_ berendsen_relax_const
+            integer heating,heating_steps_per_degree,out_data_steps
+            integer out_coords_steps
+            _REAL_ therm_friction
+            integer rnd_seed,out_data_cube,verbosity,moldyn_deriv_flag
+            _REAL_ quant_step_reduction_factor
+            _REAL_ decoher_e0,decoher_c
+            integer decoher_type,dotrivial
+            _REAL_ deltared
+            integer iredpot,nstates
+            namelist /moldyn/ natoms,bo_dynamics_flag,exc_state_init, &
+                n_exc_states_propagate,out_count_init,time_init, &
+                rk_tolerance,time_step,n_class_steps,n_quant_steps, &
+                num_deriv_step, &
+                therm_temperature,therm_type, &
+                berendsen_relax_const,heating, &
+                heating_steps_per_degree,out_data_steps,out_coords_steps, &
+                therm_friction,rnd_seed,out_data_cube,verbosity,moldyn_deriv_flag, &
+                quant_step_reduction_factor,decoher_e0,decoher_c,decoher_type,dotrivial,&
+                iredpot,nstates,deltared
         !dtnact is the incremental time to be used at nact calculation
         sim%naesmd%dtnact=0.002d0
 
@@ -632,10 +634,10 @@ end subroutine
         end if
 
         write(6,*)'Starting time, fs        ',sim%naesmd%tfemto
-        write(6,*)'Time step, fs		      ',sim%naesmd%dtmdqt*convtf
+        write(6,*)'Time step, fs                      ',sim%naesmd%dtmdqt*convtf
         write(6,*)'Number of classical steps (CS) ',sim%naesmd%nstep
         write(6,*)'Quantum steps/per CS         ',sim%naesmd%nquantumreal
-        !	write(6,*)	'Vibr. modes to consider      ',   symm
+        !        write(6,*)        'Vibr. modes to consider      ',   symm
         write(6,*)'Displacement for deriv. [A]   ',sim%qmmm%numder_step
 
         if(therm_type.eq.0) then
@@ -890,13 +892,13 @@ end subroutine
         !Remove rotation and translation from initial velocity
         write(6,*)'Rescaling velocity'
         call rescaleveloc(sim%naesmd%rx,sim%naesmd%ry,sim%naesmd%rz, &
-		sim%naesmd%vx,sim%naesmd%vy,sim%naesmd%vz,sim%naesmd%massmdqt,sim%naesmd%natom)
+                sim%naesmd%vx,sim%naesmd%vy,sim%naesmd%vz,sim%naesmd%massmdqt,sim%naesmd%natom)
 
         ! compute kinetic energy, for cartesian option
         sim%naesmd%kin=0.d0
         do i=1,sim%naesmd%natom
             sim%naesmd%kin=sim%naesmd%kin+sim%naesmd%massmdqt(i)* &
-		(sim%naesmd%vx(i)**2+sim%naesmd%vy(i)**2+sim%naesmd%vz(i)**2)/2
+                (sim%naesmd%vx(i)**2+sim%naesmd%vy(i)**2+sim%naesmd%vz(i)**2)/2
         end do
 
         write(6,*)
