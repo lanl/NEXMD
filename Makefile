@@ -385,6 +385,7 @@ gnu_debug:  nexmd.exe
 
 ic:   FC = ifort
 ic:   CC = icc
+ic:   MODOPT = -module 
 ic:   FFLAG = -O3 -mcmodel=medium
 ic:   LDFLAGS = $(FFLAG)
 ic:   nexmd.exe
