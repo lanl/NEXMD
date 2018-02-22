@@ -109,7 +109,7 @@ C end loop over inummd
         Double Precision sto,voxel,CM(3),coeff1,coeff2
         Double Precision local_x,local_y,local_z,local_r,
      &                   current_x,current_y,current_z,
-     &                   mocoeff(numatoms*5,5),orbcoeff(100,2),
+     &                   mocoeff(numatoms,5),orbcoeff(numatoms,2),
      &                   readcoeff(numorbs),cubit(6),padding,
      &                   cmax,cmin,cormax(3)
 	Integer i,j,atype(numatoms),orbcount,
