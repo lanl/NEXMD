@@ -49,6 +49,7 @@ module naesmd_module
 	    integer uumdqtflag
 	    integer iview,jend,decorhop
 	    integer iseedmdqt,conthop,conthop2
+        integer fix
 	    _REAL_ temp0,tempf,tempi,tao
 	    integer,allocatable :: iordenhop(:),iorden(:)
 	    integer,allocatable:: atomtype(:) !atom types currently max 1000
@@ -113,6 +114,7 @@ module naesmd_module
 	    character*200 txtinput(1000)
 	    _REAL_ cadiabhop
 	    _REAL_,allocatable:: scprreal(:,:)
+        integer ifxd(1:1000)
 	  
 
 	end type naesmd_structure
