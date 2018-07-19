@@ -351,6 +351,7 @@ end subroutine
             integer decoher_type,dotrivial
             _REAL_ deltared
             integer iredpot,nstates
+            integer ifixed
             namelist /moldyn/ natoms,bo_dynamics_flag,exc_state_init, &
                 n_exc_states_propagate,out_count_init,time_init, &
                 rk_tolerance,time_step,n_class_steps,n_quant_steps, &
@@ -360,7 +361,7 @@ end subroutine
                 heating_steps_per_degree,out_data_steps,out_coords_steps, &
                 therm_friction,rnd_seed,out_data_cube,verbosity,moldyn_deriv_flag, &
                 quant_step_reduction_factor,decoher_e0,decoher_c,decoher_type,dotrivial,&
-                iredpot,nstates,deltared
+                iredpot,nstates,deltared,ifixed
         !dtnact is the incremental time to be used at nact calculation
         sim%naesmd%dtnact=0.002d0
 
@@ -479,6 +480,7 @@ end subroutine
         iredpot=0 !don't reduce the number of potentials during dynamics
         nstates=2 !do 2 states higher by default for iredpot
         deltared=1 !do 1 eV higher in energy for iredpot
+        ifixed=0 ! do not use fixed atoms
  
         if(sim%Nsim.eq.1) then
               open (inputfdes,file='input.ceon',status='old')
@@ -498,6 +500,14 @@ end subroutine
         else
             write(6,*)'Could not find moldyn namelist'
             stop
+        endif
+
+        if(ifixed.ne.0) then
+          open(617,file='fixed_atoms')
+          do i=1,ifixed
+             read(617,*) sim%naesmd%ifxd(i) 
+          enddo
+          close(617)
         endif
         
         sim%naesmd%iredpot=iredpot
@@ -576,6 +586,7 @@ end subroutine
         if(therm_type==0) sim%naesmd%ensemble ='energy'
         if(therm_type==1) sim%naesmd%ensemble ='langev'
         if(therm_type==2) sim%naesmd%ensemble ='temper'
+        sim%naesmd%fix = ifixed 
 
         sim%naesmd%tao=berendsen_relax_const
 
