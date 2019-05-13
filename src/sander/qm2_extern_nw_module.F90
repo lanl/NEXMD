@@ -129,7 +129,6 @@ contains
       subdir='./'//trim(id)//'/'
       call_buffer=' mkdir -p '//trim(subdir)//'; cd '//trim(subdir)//'; mv ../'//inpfile//' .;'
     end if
-    !stat = system(trim(call_buffer)//' '//program//' '//inpfile)
     stat = system(program //' ' //inpfile //'>' //logfile) 
     if ( stat /= 0 ) then
        call sander_bomb('get_nw_forces (qm2_extern_nw_module)', & 
@@ -635,8 +634,6 @@ contains
           end if
 
           do i = 1, nqmatoms
-            ! Format from nwchem-6.0/src/gradients/grad_force.F line 1054
-            ! format(1X,I3,1X,A4,2(1X,3(1X,F10.6)))
 
             ! MJW TODO; this is too dirty
             read (read_buffer, '(1X,I3,1X,A4,2(1X,3(1X,F10.6)))', iostat = ios) &
@@ -683,8 +680,6 @@ contains
             endif
 
             do i = 1, nclatoms
-              ! Format from nwchem-6.1/src/property/hnd_elfmap.F line 300
-              ! i5,1x,a2,3f10.5,4f15.6
               read (read_buffer, '(i5,1x,a2,3f10.5,4f15.6)', iostat = ios) &
                                     nulli, nulli, nullr, nullr, nullr, dxyzcl(1:3,i), nullr
 

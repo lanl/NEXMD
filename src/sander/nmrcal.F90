@@ -459,7 +459,7 @@ subroutine nmrcal(x,f,name,irsnam,ipres,rimass,enmr,devdis,devang, &
       call ndvprt(x,f,name,irsnam,ipres,nres,iscrth,natom, &
             rimass,ntb,nmrnum,nstep,iwork(jnmrat),iwork(jrsttyp), &
             work(jrstwt),iwork(jxpk), &
-            iwork(jnmrst),work(j1nmr),work(j2nmr),work(j3nmr), &
+            iwork(jnmrst)crg_reloc.F90,work(j1nmr),work(j2nmr),work(j3nmr), &
             work(j4nmr),work(jk2nmr),work(jk3nmr), &
             iwork(jcomdf),iwork(jfntyp),iwork(jgravt),iwork(jaltd), &
             work(jbave),work(jbav0),work(jaave),work(jaav0), &
@@ -556,7 +556,7 @@ subroutine nmrcal(x,f,name,irsnam,ipres,rimass,enmr,devdis,devang, &
    return
    
    9000 format(' Error: Unrecognized option passed to NMRCAL: CALTYP = ', &
-         a4)
+         a4)crg_reloc.F90
 end subroutine nmrcal 
 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -597,7 +597,7 @@ subroutine restal(iscop1,in,itotst,ichgwt,nmrnum,itimav, &
    !               user about problems will be generated during the call to
    !               NMRRED
    
-   use nmr
+   use nmrcrg_reloc.F90
    implicit none
 
    integer:: i, iaaver, ialtd, iat, iat1, iat2, iat3, iat4, iat5, &
@@ -639,7 +639,7 @@ subroutine restal(iscop1,in,itotst,ichgwt,nmrnum,itimav, &
    
    equivalence (iat(1),iat1),(iat(2),iat2)
    equivalence (iat(3),iat3),(iat(4),iat4)
-   equivalence (iat(5),iat5),(iat(6),iat6)
+   equivalence (iat(5),iatcrg_reloc.F905),(iat(6),iat6)
    equivalence (iat(7),iat7),(iat(8),iat8)
 
    ! Added 9/2007 by Matthew Seetin to enable new planar restraints
@@ -684,7 +684,7 @@ subroutine restal(iscop1,in,itotst,ichgwt,nmrnum,itimav, &
    iformw = 0
    call nmlsrc('formwt',in,ifind)
    if (ifind == 1) then
-      read(in,*)
+      read(incrg_reloc.F90,*)
       iformw = 1
    end if
    
@@ -721,7 +721,7 @@ subroutine restal(iscop1,in,itotst,ichgwt,nmrnum,itimav, &
          ! ===============================
          
       else
-         read(iin,9005,end=1001,err=1005) type,istep1,istep2, &
+crg_reloc.F90         read(iin,9005,end=1001,err=1005) type,istep1,istep2, &
                value1,value2,iinc,imult
       end if
       
@@ -882,10 +882,6 @@ subroutine restal(iscop1,in,itotst,ichgwt,nmrnum,itimav, &
       return
    end if
 
-   !9001 FORMAT(16I5)
    9004 format(a80)
    9005 format(a8,2i7,2f12.6,2i7)
-   !9020 FORMAT(11I5)
-   !9029 FORMAT(4(1X,A4))
-   !9030 FORMAT(6F12.6)
 end subroutine restal 

@@ -374,9 +374,6 @@ subroutine aveint(xave,xave0,xnow,tau,dt,navint,ipower,itype, &
    integer, parameter :: NUMBER_OF_TYPES = 7
    integer, save :: nsteps(NUMBER_OF_TYPES) = 0
    integer, save :: icalls(NUMBER_OF_TYPES) = 0
-   ! nsteps(itype) : The number of calls with IFLAG.LE.1 (i.e. calls
-   !                 where the integral sum was updated).
-   ! icalls(itype) : Number of calls with IFLAG=0 or 1.
 
    integer i
    _REAL_  dtu
@@ -1128,11 +1125,6 @@ subroutine gendisnrg(x,f,dfr,coord,i1,i2,i3,i4,i5,i6,i7,i8,rstwt,&
          !     --older version, with c = r1; dangerous if input files are not
          !           correctly modified!
          
-         !         A = 3.D0*DIF1**2 - 2.D0*R1*DIF1
-         !         B = -2.D0*DIF1**3 + R1*DIF1**2
-         !         DIF = RIJ - R3
-         !         E = K3*(R1*DIF + B/DIF + A)
-         !         DF = K3*(R1 - B/DIF**2)
          
          !      -- following lines assume c=0, so potential becomes flat at
          !            large distances:
@@ -1537,7 +1529,6 @@ subroutine jnrg  (x         ,f         ,ajval     ,i1        , &
       call aveint(tave1,tave01,ajnow,tauave,dt,navint,ipower,3, &
             incflg,iflg,ajval,denom)
       
-      ! DRAVDR is the factor d(<J>)/d(J(t))
       
       if (iave == 1 .and. iflag /= 1) &
             dravdr = ((ajval/ajnow)**(1+ipower))*dt/denom
@@ -1721,7 +1712,6 @@ subroutine jnrg  (x         ,f         ,ajval     ,i1        , &
       df = 2.0d0 * k3 * dif1
       e = df * (ajval-r4) + k3*dif1*dif1
    end if
-   !     write(6,*) 'ajval,e: ',ajval,e
    if (iflag == 2) then
       ajave = 0.0
       nj = 0
@@ -2973,7 +2963,6 @@ subroutine ndvprt(x,f,name,irsnam,ipres,nres,iscrth,natom,rimass, &
    9085 format('| ',30x,'RMS deviation from ideal angles: ',f10.3)   
    9086 format('Error: Atom groupings not supported for j-coupling restraints.')
    9087 format('Error: Improper restraint specified.')
-   ! 9088 format('Error: Invalid residue number or atom name in restraint.')
    9089 format(' ',a14,' -- ',a14,':',4f9.3,' p')
    9090 format(' ',a14,' -- ',a14,':',4f9.3,' n')
    9091 format(' ',a14,' -- ',a14,':',4f9.3,' g')
@@ -3186,7 +3175,6 @@ subroutine nmrgrp(i,kat,lastpk,iscrth,natom,nmrat,nmrcom,in,iout, &
    implicit none
    integer:: i, ierr, igr, ii, in, iout, ipack, ipres, iresid, &
         iscrth, k, kat, lastpk, maxgrp, maxigr, natom, nmrat, nmrcom, nres
-   !     CHARACTER*80 ALINE
    character(len=4) grnam(*),name(*)
    dimension nmrat(16,*),nmrcom(2,*),iscrth(*),igr(200),ipres(*)
    do k = 1,natom
@@ -3250,17 +3238,6 @@ subroutine nmrgrp(i,kat,lastpk,iscrth,natom,nmrat,nmrcom,in,iout, &
    return
    
    ! End-of-file read errors:
-   
-   !1001 WRITE(IOUT,2000)
-   !     call mexit(iout, 1)
-   
-   ! Other read errors (probably format mismatch):
-   
-   !1005 BACKSPACE(IN)
-   !     READ(IN,9004) ALINE
-   !     WRITE(IOUT,2001) ALINE
-   !     call mexit(iout, 1)
-   
    ! A group-defining atom number was out-of-range
    
    1007 write(iout,2003) k
@@ -3274,15 +3251,12 @@ subroutine nmrgrp(i,kat,lastpk,iscrth,natom,nmrat,nmrcom,in,iout, &
    call mexit(6, 1)
    
    
-   ! 2000 format(' Error: End of file read.')
-   ! 2001 format(' Error reading the line:',/,a80)
    2003 format(' Error: Atom ',i2,' in following group definition is', &
          ' greater than total # atoms')
    2005 format(' Error: Too many atom ranges need to be stored for ', &
          'center-of-mass distance',/,t9,'restraints. ', &
          'MAXGRP =',i5,'. This needs to be increased.')
    9001 format(16i5)
-   ! 9004 format(a80)
    9088 format('Error: Invalid residue number or atom name in restraint.')
 end subroutine nmrgrp 
 
@@ -3479,21 +3453,16 @@ subroutine nmrnrg(x,f,rimass,ntb,nmrnum,nstep,nmrat,resttype,rstwtarr,&
    ! Main loop over all the restraints:
    
    do i=1,nmrnum
-!        write(*,*) 'restr num ',i
         
         if(morse.eq.1) then
         
          if(jar.eq.0.and.i.eq.1)  then
-!         call morse(natoms,De,ro,nat1,nat2,X,F)    
           call smorse(NATOM,rk2nmr(2,i),r2nmr(2,i),nmrat(1,i), &
                      nmrat(2,i),X,F)                     
          goto 12      
          elseif(jar.eq.1.and.i.eq.2) then
-!         write(*,*) 'Force befoe',F(nmrat(1,i)+1),F(nmrat(1,i)+2),F(nmrat(1,i)+3)
-!         write(*,*) 'MAIN: ',matom,(nmrat(1,i)+3)/3,(nmrat(2,i)+3)/3
          call smorse(matom,rk2nmr(2,i),r2nmr(2,i),nmrat(1,i),   &
                      nmrat(2,i),X,F)
-!         write(*,*) 'Force post',F(nmrat(1,i)+1),F(nmrat(1,i)+2),F(nmrat(1,i)+3)            
          goto 12
          endif
    
@@ -3837,7 +3806,6 @@ subroutine nmrnrg(x,f,rimass,ntb,nmrnum,nstep,nmrat,resttype,rstwtarr,&
    ! torsions, and my new planar restraints
    
    return
-   ! 9002 format(9f8.3)
    9074 format('Error: Atom groupings not supported for j-coupling restraints.')
    9075 format('Error: Improper restraint specified.')
 end subroutine nmrnrg 
@@ -5850,14 +5818,11 @@ subroutine nmrred(x,name,ipres,rimass,r1nmr,r2nmr,r3nmr,r4nmr, &
          'same sign.')
    9013 format(' Warning: Averaging request ignored.')
    9015 format(' Warning: ISTEP1 >= ISTEP2')
-   !9020 FORMAT(11I5)
    9025 format(t27,'** No restraint defined **')
    9026 format(t23,' Number of restraints read = ',i5)
    9027 format(/,t19,'Done reading weight changes/NMR restraints',/ /)
    9028 format(' Error: Maximum allowable number of restraints', &
          ' (',i5,') exceeded.')
-   !9029 FORMAT(4(1X,A4))
-   !9030 FORMAT(6F12.6)
    9031 format(' Restraints will be read from file: ',a)
    9032 format(' INITIAL restraints/deviations/energy contributions:')
    9033 format(' Initial restraints echoed to file: ',a)
@@ -5881,8 +5846,6 @@ subroutine nmrred(x,name,ipres,rimass,r1nmr,r2nmr,r3nmr,r4nmr, &
    9049 format('******',/,1x,a4,'(',i5,')-',a4,'(',i5,')-',a4,'(',i5,')-', &
          a4,'(',i5,')-',/,1x,a4,'(',i5,')-',a4,'(',i5,')-',a4,'(',i5,')-', &
          a4,'(',i5,')',t53,'NSTEP1=',i6,' NSTEP2=',i6)
-   ! 9050 format('******',/,1x,a4,'(',i5,')-',a4,'(',i5,')-',a4,'(',i5,')-', &
-   !       a4,'(',i5,')-',/,1x,a4,'(',i5,')-',a4,'(',i5,')',t53,'NSTEP1=',i6,' NSTEP2=',i6)
    9065 format(' Atom ranges defining Center of Mass Group in the first position: ')
    9066 format(5(1x,i5,' -> ',i5,'/'))
    9067 format(' Atom ranges defining Center of Mass Group in the second position: ')
@@ -5890,7 +5853,6 @@ subroutine nmrred(x,name,ipres,rimass,r1nmr,r2nmr,r3nmr,r4nmr, &
    9069 format(' Requested file redirections:')
    9070 format(t3,a,t13,'= ',a)
    9071 format(t3,'No valid redirection requests found')
-   ! 9072 format('In Jarzynsky runs, there must only one restraint, stopping program')
    9073 format('Error: Invalid residue number or atom name in restraint.')
    9074 format('Error: Atom groupings not supported for j-coupling restraints.')
    9075 format('Error: Improper restraint specified.')
@@ -5900,7 +5862,6 @@ subroutine nmrred(x,name,ipres,rimass,r1nmr,r2nmr,r3nmr,r4nmr, &
                ' cannot be the same in a plane restraint.')
    9079 format('Warning: Both iat(1) and "restraint" variables specified.', &
                'Using only iat() and not parsing the contents of "restraint."')
-   ! 9080 format('Warning: Both rk2/rk3/rk2a/rk3a and k0/k0a defined.', &
    !            'Using only original-style restraint definition and not r0/k0/r0a/k0a."')
 end subroutine nmrred 
 
@@ -6653,8 +6614,6 @@ subroutine parsgen(restraint,iat,igrarr,subgrpatoms,k,closparen,iatidx,comidx,cu
   
   9000 format('Warning: More characters in restraint beyond final atom necessary')
   9001 format('Using only first ',i1,' atoms.')
-  ! 9002 format('Error: No valid restraint type specified.')
-  ! 9003 format('Error: Invalid residue number or atom name in restraint.')
   9004 format('Error: Manual atom grouping specified, but none defined.')
   9005 format('Error: Invalid group number in restraint.')
   9006 format('Error: Invalid atom or grouping specified in restraint.')
@@ -7240,18 +7199,12 @@ subroutine parsrest(restraint,iat,igrarr,rstwt,name,ipres,nres,iout)
   9000 format('Warning: More characters in restraint beyond final atom necessary')
   9001 format('Using only first ',i1,' atoms.')
   9002 format('Error: No valid restraint type specified.')
-  ! 9003 format('Error: Invalid residue number or atom name in restraint.')
   9004 format('Error: Manual atom grouping specified, but none defined.')
   9005 format('Error: Invalid group number in restraint.')
   9006 format('Error: Invalid atom or grouping specified in restraint.')
   9007 format('Error: Too many atoms specified to use plane restraint.')
-  ! 9008 format('Error: No closing parenthesis for plane grouping in restraint.')
-  ! 9014 format('Error: No closing parenthesis for COM grouping in restraint.')
-  ! 9009 format('Error: No parentheses specified to define plane grouping in restraint.')
-  ! 9010 format('Error: No atoms specified within COM grouping in restraint.')
   9011 format('Error: Must specify four atoms for a plane grouping.')
   9012 format('Error: Not enough atoms or groupings specified in restraint.')
-  ! 9013 format('Warning: More atom groups defined than necessary in restraint.')
   9999 format('restraint = "',(a),'"')
   
   
@@ -8541,7 +8494,6 @@ end subroutine tornrg
 ! SUBROUTINE  MORSE by Anadra and MM (17-04-06)
 subroutine smorse(natoms,De,r0,nori1,nori2,X,F)
 
-!      call smorse(NATOM,rk2nmr(2,i),r2nmr(2,i),nmrat(1,i), &
           
         
         implicit none
@@ -8551,18 +8503,7 @@ subroutine smorse(natoms,De,r0,nori1,nori2,X,F)
         nat1=(nori1+3)/3
         nat2=(nori2+3)/3
 
-!        write(*,*)  natoms 
-!        write(*,*)  De                
-!        write(*,*)  r0             
-!        write(*,*)  nat1        
-!        write(*,*)  nat2
-        
-
-!        write(6,*) 'MORSE SUBROUTINE WORKING'
-        
-!    De=21.383
     Beta=4.
-!    r0=1.78
 
 
 ! calcula el valor de la coord de reaccion del SISTEMA
@@ -8576,9 +8517,6 @@ subroutine smorse(natoms,De,r0,nori1,nori2,X,F)
     
     Em=De*( exp(-2*Beta*(rc-r0)) - 2*exp(-1*Beta*(rc-r0)) )
 
-!       if(MOD(nstep,NTWE).eq.0) then
-!        write(10,'(a5,2f12.5)') 'MORSE',rc,Em
-!        endif
 
 
 

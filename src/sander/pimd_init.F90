@@ -93,11 +93,6 @@ subroutine pimd_init(natom,mass,winv,v,pimdtype)
 
    real_mass(1:natom) = mass(1:natom)
 
-!#ifdef LES
-!   call part_pimd_init()
-!#else
-!   call full_pimd_init()
-!#endif
 
    kT = kB * temp0
    beta = 1.0d0 / kT

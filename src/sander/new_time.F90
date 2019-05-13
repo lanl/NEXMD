@@ -590,9 +590,9 @@ subroutine finish_timers(all)
                   end if
                end if
             end if
-         end if  ! ( t_level(i) == j )
-      end do  !  i = 1,maxtime
-   end do  !  j = 1, max
+         end if 
+      end do  
+   end do  
 
    return
 end subroutine finish_timers
@@ -659,12 +659,12 @@ subroutine write_timers(all,nf)
          else
             write(nf,30)space(1:length(j)),t_string(i),t,p,short
          end if
-      end if  ! ( t_print(i) > 0 )
+      end if  
       if ( tnext_p(i) /= 0 )then
          i = tnext_p(i)
          goto 10
       end if
-   end do  !  k = 1,t_numtree
+   end do  
    29 format('|',a,a,1x,f10.2,' (100.0% of ',a,')')
    30 format('|',a,a,1x,f10.2,' (',f5.2,'% of ',a,')')
    return

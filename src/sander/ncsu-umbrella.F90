@@ -347,11 +347,7 @@ pure NCSU_REAL function hill(x)
 
    x2 = (HALF*x)**2
 
-!   if (x2.lt.ONE) then
     hill = SCALE*(x2 - ONE)**2
-!   else
-!      hill = ZERO
-!   end if
 
 end function hill
 

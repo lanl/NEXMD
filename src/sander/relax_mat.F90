@@ -627,7 +627,6 @@ subroutine calrate(ddep,rate,trp)
                trp(jj,ii) = ddep(ii,jj)*(s1 + s2 + s0)*popisq
             end if
 #ifdef DEBUG_NMR
-            !           write(6,*) 'trp:',ii,jj,trp(ii,jj),trp(jj,ii)
 #endif
             
          end if  ! (ii == jj)
@@ -754,8 +753,6 @@ subroutine corf(x, khyd, lhyd, kreal, lreal, newf, amass)
             ddfac(n) = -two/frq
          end if
       end do
-      !     end if
-      !     if (first) then
       
       !   --- set up fluctuations for the "fixed" frequencies:
       
@@ -818,8 +815,6 @@ subroutine corf(x, khyd, lhyd, kreal, lreal, newf, amass)
                
                !    here is (possibly) quantum amplitude, but classical motion:
                
-               !        call amrand(s)
-               !        amp = sqrt(2.d0*dfac(n))*cos(twopi*s)
                
                !        here is Gaussian with the quantum std. deviation:
                
@@ -1003,9 +998,6 @@ subroutine dinten(amat,ii,jj,ddrat,dorat,dint,taum)
    
    ! --- (zeroing out of Dint is now handled in remarc!)
    
-   !     do muk=1,nath3
-   !       Dint(muk) = 0.0
-   !     end do
    lm = 0
    do r=1,natmet
       
@@ -1897,10 +1889,6 @@ subroutine remarc(ddep,dddep,f,xhyd,ksub,dorat,ddrat, &
                   secndo = secndo + scont
                else
                   
-                  !             secndo = secndo + rate(ii,ll)*rate(ll,jj)*
-                  !    .         (exp(-rate(ii,ii)*taum)*(delil*delij) +
-                  !    .          exp(-rate(ll,ll)*taum)*(delil*deljl) -
-                  !    .          exp(-rate(jj,jj)*taum)*(deljl*delij))
                   
                   secnda = fac*etp(ii)*(delil*delij)
                   secndb = fac*etp(ll)*(delil*deljl)
@@ -2014,11 +2002,6 @@ subroutine remarc(ddep,dddep,f,xhyd,ksub,dorat,ddrat, &
                      !             different, remove the "go to 122" above, and uncomment
                      !             the following statement:
                      
-                     !               thir = -rate(ii,ll)*rate(ll,mm)*rate(mm,jj)*
-                     !    .            (etp(jj)*delta(jj,ii)*delta(jj,ll)*delta(jj,mm) +
-                     !    .             etp(ii)*delta(ii,jj)*delta(ii,ll)*delta(ii,mm) +
-                     !    .             etp(ll)*delta(ll,ii)*delta(ll,jj)*delta(ll,mm) +
-                     !    .             etp(mm)*delta(mm,ii)*delta(mm,jj)*delta(mm,ll))
                   end if
                   thirdo = thirdo + thir
                   
@@ -2287,7 +2270,6 @@ subroutine remarc(ddep,dddep,f,xhyd,ksub,dorat,ddrat, &
             f(i3real+1) = f(i3real+1) - dpen*dint(i3+1)
             f(i3real+2) = f(i3real+2) - dpen*dint(i3+2)
             f(i3real+3) = f(i3real+3) - dpen*dint(i3+3)
-            !           write(6,*) i,ihyp(i),Dint(i3+1),Dint(i3+2),Dint(i3+3)
          end do
          
          !  --- zero out calculated intensity and Dint, for preparation

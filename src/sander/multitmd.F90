@@ -144,14 +144,8 @@ subroutine mtmdread(refcrds,mtmdrmsdarr,mtmdfrc,mtmdmaskarr,mtmdsteps,mtmdtgtatm
     ! in the mtmd file to use an unformatted (binary) reference file.
     ! DRR - File opening/closing is now done in rdrest. reflun is set to 10
     !       inside rdrest (although it should probably be defined in files.h). 
-    !if (mtmdform <= 0) then
-    !  call amopen(reflun,refin,'O','U','R')
-    !else
-    !  call amopen(reflun,refin,'O','F','R')
-    !end if
     
     call rdrest(natom,mtmdform,refin,refcrds(crd_ptr))
-    !close(reflun)
     
     write(6,'(a,a)') '     Read in coords from ', refin(1:len_trim(refin))
     
@@ -209,7 +203,7 @@ subroutine mtmdread(refcrds,mtmdrmsdarr,mtmdfrc,mtmdmaskarr,mtmdsteps,mtmdtgtatm
         mtmdfrc(1,i) = (mtmdforce2 - mtmdforce) / (step2 - step1)
         mtmdfrc(2,i) = mtmdforce2 - mtmdfrc(1,i) * step2
       end if
-    end if  ! (nstep2 == 0 .or. ifvari <= 0 .or. nstep1 == nstep2)
+    end if  
     
   end do ! close loop over all targets
   

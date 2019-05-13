@@ -503,15 +503,6 @@ contains
       ! ELECTRIC field (for external point charges for QM/MM)
       ! AWG: This is disabled at the moment
       ! AWG: We need to add QM region extraction and link atom setup first
-      ! if(natoms > num_atoms) then
-      !   write(iunit,'(a)') 'Efield'
-      !   do i = 1, natoms
-      !     if(qmmm_struct%qm_xcrd(4,i) /= 0) then
-      !       write(iunit, '(f0.12,1x, f0.12, 1x, f0.12, 1x, f0.12)') qmmm_struct%qm_xcrd(1:4,i)
-      !     end if
-      !   end do
-      !     write(iunit,'(a,/)') 'End' 
-      ! end if
        
       ! XC keyword
       write(iunit,'(a,/,a,/,a,/)')&

@@ -145,7 +145,6 @@ contains
           AIPSVC(1)=9.0D0/14.0D0
           AIPSVC(2)=-3.0D0/28.0D0
           AIPSVC(3)=6.0D0/7.0D0
-!          PIPSVCC=67.0D0/28.0D0+7.0D0/16.0D0
         PIPSVCC=ONE+AIPSVC(0)+AIPSVC(1)+AIPSVC(2)+AIPSVC(3)
         PIPSVC0=AIPSVC(0)-PIPSVCC
         BIPSVC(1)=TWO*AIPSVC(1)
@@ -156,7 +155,6 @@ contains
         AIPSVA(1)=9.0D0/26.0D0
         AIPSVA(2)=-3.0D0/13.0D0
         AIPSVA(3)=27.0D0/26.0D0
-!        PIPSVAC=28.0D0/13.0D0+5.0D0/787.0D0
         PIPSVAC=ONE+AIPSVA(0)+AIPSVA(1)+AIPSVA(2)+AIPSVA(3)
         PIPSVA0=AIPSVA(0)-PIPSVAC
         BIPSVA(1)=FOUR*AIPSVA(1)
@@ -196,7 +194,6 @@ contains
       DO ITI=1,NTYPE
         iaci = ntype * (ITI - 1)
         ic = ico(iaci+ITI)
-!        IC=ITI*(ITI-1)/2+ITI
         AIJ=CN1(IC)
         CIJ=CN2(IC)
         NITI=NSUMIT(ITI)
@@ -207,10 +204,7 @@ contains
         NNBIPST=NNBIPST+NITI*NITI
         DO ITJ=ITI+1,NTYPE
           NITJ=NSUMIT(ITJ)
-!   iaci = ntypes * (iac(i) - 1)
-!   ic = ico(iaci+iac(j))
           ic = ico(iaci+ITJ)
-!          IC=ITJ*(ITJ-1)/2+ITI
           AIJ=CN1(IC)
           CIJ=CN2(IC)
           ANIJ=NITI*NITJ
@@ -427,9 +421,6 @@ SUBROUTINE EEXIPS(ENB,EEL,IFRSTA,ILASTA,NTB,NTYPES,IAC,ICO,numex,natex,CG, &
             CGIJ=CGI*CGI
             EELIJ=HALF*CGIJ*PIPSE0*RIPSR
             EEL=EEL+EELIJ
-            !if ( ifcr /= 0 ) then
-            !   call cr_add_dcdr_factor( i, 2.0*cgi*half*pipse0*ripsr )
-            !end if
          ENDIF
          IF(TVIPS)THEN
             ITI=IAC(I)
@@ -473,10 +464,6 @@ SUBROUTINE EEXIPS(ENB,EEL,IFRSTA,ILASTA,NTB,NTYPES,IAC,ICO,numex,natex,CG, &
             DEU=U2*(BIPSE(1)+U2*(BIPSE(2)+U2*(BIPSE(3))))
             EELIJ=CGIJ*(PE-PIPSEC)
             EEL=EEL+EELIJ
-            !if ( ifcr /= 0 ) then
-            !   call cr_add_dcdr_factor( i, (pe-pipsec)/rips * cg(j) )
-            !   call cr_add_dcdr_factor( j, (pe-pipsec)/rips * cgi )
-            !end if
             DIJ=-CGIJ*DEU/R2
            ELSE
             DIJ=ZERO
@@ -488,15 +475,9 @@ SUBROUTINE EEXIPS(ENB,EEL,IFRSTA,ILASTA,NTB,NTYPES,IAC,ICO,numex,natex,CG, &
               CIJ=CN2(IC)*RIPS6R
               U4=U2*U2
 
-!  L-J r6 term
-!   etr6=1/r6+a0+r2*(a1+r2*(a2+a3*r2))
-!   detr6/dr*r1=-6/r6+r2*(d1+r2*(d2+d3*r2))
 !
             PVC=CIJ*(AIPSVC(0)+U2*(AIPSVC(1)+U2*(AIPSVC(2)+U2*(AIPSVC(3))))-PIPSVCC)
             DVCU=CIJ*(U2*(BIPSVC(1)+U2*(BIPSVC(2)+U2*BIPSVC(3))))
-!  L-J r12 term 
-!   etr12=1/r12+a0+r2*(a1+r2*(a2+a3*r2))
-!   detr12/dr*r1=-12/r12+r2*(d1+r2*(d2+d3*r2))
 !
             PVA=AIJ*(AIPSVA(0)+U4*(AIPSVA(1)+U4*(AIPSVA(2) +U4*(AIPSVA(3))))-PIPSVAC)
             DVAU=AIJ*(U4*(BIPSVA(1)+U4*(BIPSVA(2)+U4*BIPSVA(3))))
@@ -959,7 +940,6 @@ end subroutine aipspbc
   call timer_start(TIME_AIPS_FUNC)
         CALL PBC_IPS_ENG(kbot, ktop)
    call timer_stop_start(TIME_AIPS_FUNC,TIME_AIPS_FFT)
-!   call timer_stpstrt(T_ipsafunc,T_ipsafft)     !##NEWTIMER
    call get_stack(l_fftw,sizffwrk,routine)
    call get_stack(l_tmpy,2*nfftdim1,routine)
    call get_stack(l_alpha,nfft1,routine)
@@ -1236,8 +1216,6 @@ end subroutine aipspbc
               U2=R2*RIPS2R
               R2R=R2/(R2*R2+TEN_TO_MINUS10)
 !  Electrostatic IPS
-!   etr1=1/r+r2*(a1+r2*(a2+r2*(a3+r2*(a4+r2*(a5+a6*r2)))))
-!   detr1/dr*r=-1/r+r2*(d1+r2*(d2+r2*(d3+r2*(d4+r2*(d5+d6*r2)))))
 ! 
               PE=CIPSDE(0)+U2*(CIPSDE(1)+U2*(CIPSDE(2)+U2*(CIPSDE(3))))+PDEC
               DPE=U2*(DIPSDE(1)+U2*(DIPSDE(2)+U2*(DIPSDE(3))))
@@ -1248,14 +1226,10 @@ end subroutine aipspbc
               U6R=ONE/U4/U2
               U12R=U6R*U6R
 !  L-J r6 term
-!   etr6=1/r6+a0+r2*(a1+r2*(a2+r2*(a3+r2*(a4+r4*(a5+a6*r4)))))
-!   detr6/dr*r1=-6/r6+r2*(d1+r2*(d2+r2*(d3+r2*(d4+r4*(d5+d6*r4)))))
 !
         PVC=CIPSDVC(0)+U2*(CIPSDVC(1)+U2*(CIPSDVC(2)+U2*(CIPSDVC(3))))+PDVCC
               DPVC=U2*(DIPSDVC(1)+U2*(DIPSDVC(2)+U2*(DIPSDVC(3))))
 !  L-J r12 term --neglected
-!   etr12=1/r12+a0+r2*(a1+r2*(a2+r2*(a3+r4*(a4+r4*(a5+a6*r4)))))
-!   detr12/dr*r1=-6/r6+r2*(d1+r2*(d2+r2*(d3+r4*(d4+r4*(d5+d6*r4)))))
 !
               ENBIJ=ENBIJ-PVC
               DVIJ=-DPVC
@@ -1263,8 +1237,6 @@ end subroutine aipspbc
             R2R=ONE/R2
             U2=R2*RIPSC2R
 !  Electrostatic IPS
-!   etr1=1/r+r2*(a1+r2*(a2+r2*(a3+r2*(a4+r2*(a5+a6*r2)))))
-!   detr1/dr*r=-1/r+r2*(d1+r2*(d2+r2*(d3+r2*(d4+r2*(d5+d6*r2)))))
 !
             U1=SQRT(U2)
             PE=ONE/U1+CIPSE(0)+U2*(CIPSE(1)+U2*(CIPSE(2)+U2*(CIPSE(3))))-PEC
@@ -1276,14 +1248,10 @@ end subroutine aipspbc
             U6R=ONE/U4/U2
             U12R=U6R*U6R
 !  L-J r6 term
-!   etr6=1/r6+a0+r2*(a1+r2*(a2+r2*(a3+r2*(a4+r4*(a5+a6*r4)))))
-!   detr6/dr*r1=-6/r6+r2*(d1+r2*(d2+r2*(d3+r2*(d4+r4*(d5+d6*r4)))))
 !
         PVC=U6R+CIPSVC(0)+U2*(CIPSVC(1)+U2*(CIPSVC(2)+U2*(CIPSVC(3))))-PVCC
         DPVC=-SIX*U6R+U2*(DIPSVC(1)+U2*(DIPSVC(2)+U2*(DIPSVC(3))))
 !  L-J r12 term --neglected
-!   etr12=1/r12+a0+r2*(a1+r2*(a2+r2*(a3+r4*(a4+r4*(a5+a6*r4)))))
-!   detr12/dr*r1=-6/r6+r2*(d1+r2*(d2+r2*(d3+r4*(d4+r4*(d5+d6*r4)))))
 !
             ENBIJ=ENBIJ-PVC*RIPSC6R
             DVIJ=-DPVC*RIPSC6R
@@ -1482,10 +1450,8 @@ subroutine aips_grad_sumrc( &
 #  ifdef CRAY_PVP
 #    define MPI_DOUBLE_PRECISION MPI_REAL8
 #  endif
-   !     _REAL_ Q(nfftdim1*2,nfftdim2,mxyslabs)
    _REAL_ q(*),w(*)
 #else
-   !     _REAL_ Q(nfftdim1*2,nfftdim2,nfft3)
    _REAL_ q(*),w(*)
    
    
@@ -1721,9 +1687,9 @@ subroutine aips_sumrc( &
 #endif
             
 
-         end do  !  k1 = 1, nf1+1
-      end do  !  k3 = 1,nfft3
-   end do  !  k2q = 1, mxzslabs
+         end do
+      end do
+   end do
 
    eerq = eipsael+cfact * enq
    eerw = eipsanb+cfact * enw

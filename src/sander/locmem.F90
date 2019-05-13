@@ -325,11 +325,6 @@ subroutine locmem()
    ! Removed expansion of h_ptr to include m12, m14 and m16,
    ! since these appear to no longer be used.
    ! BPR 15/7/2009
-   !call adj_mem_ptr( h_ptr, m12, natom )
-   !if (ipol > 0) then
-   !   call adj_mem_ptr( h_ptr, m14, 15*natom )
-   !end if
-   !call adj_mem_ptr( h_ptr, m16, 2*natom )
    
    lasth = h_ptr
    

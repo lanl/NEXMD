@@ -713,12 +713,6 @@ subroutine qm_fill_qm_xcrd_periodic(x,natom, &
 
 !  !---- Create new fractional coordinates with new origin
 !    !--- find bounds and cut in fracs
-!   fbndx0 = (bxbnd(1)-offset(1))*bxinv(1)
-!   fbndx1 = (bxbnd(2)-offset(1))*bxinv(1)
-!   fbndy0 = (bxbnd(3)-offset(2))*bxinv(2)
-!   fbndy1 = (bxbnd(4)-offset(2))*bxinv(2)
-!   fbndz0 = (bxbnd(5)-offset(3))*bxinv(3)
-!   fbndz1 = (bxbnd(6)-offset(3))*bxinv(3)
 
     !---- run through coords to get fracs, select those within
     !     bounding box + cutoff

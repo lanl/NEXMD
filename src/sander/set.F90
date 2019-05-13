@@ -739,7 +739,6 @@ subroutine setnoshake(ix,noshakegp,ntc,num_noshake)
    integer iano,jano,i,j,maxbond
    logical ilap, jlap
 
-   ! write(6,'(20i3)') (noshakegp(i), i=1,natom)
 
    num_noshake = 0
    ix(noshake:noshake+nbonh-nbona-1) = 0

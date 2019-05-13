@@ -117,25 +117,6 @@ subroutine qm_ewald_setup(totkq,kappa, kmaxqx,kmaxqy,kmaxqz,ksqmaxq, natom,nquan
         write (6,'(/a)') '|QMMM: KVector division among threads:'
         write (6,'(a)') '|QMMM:                  Start       End      Count'
 
-!The FOLLOWING CODE SHOULD WORK FINE BUT THE INTEL COMPILER SEEMS TO MISCOMPILE
-!THE i=1,iminus loop DUE TO A COMPILER BUG. SO I HAVE WRITTEN A WORK AROUND BELOW.
-!        !Already know my own.
-!        write(6,'(a,i8,a,i8,a,i8,a)') &
-!              '|QMMM: Thread(   0): ',qmmm_mpi%kvec_start,'->',qmmm_mpi%kvec_end, &
-!                                     '  (',qmmm_mpi%kvec_end-qmmm_mpi%kvec_start+1,')'
-!        iminus = qmmm_mpi%numthreads-1
-!        do i = 1, iminus
-!          call mpi_recv(istartend,2,mpi_integer,i,i,qmmm_mpi%commqmmm,istatus,ier)
-!          write(6,'(a,i4,a,i8,a,i8,a,i8,a)') &
-!              '|QMMM: Thread(',i,'): ',istartend(1),'->',istartend(2), &
-!                                     '  (',istartend(2)-istartend(1)+1,')'
-!        end do
-!      else
-!        !Send a message to the master with our counts in.
-!        istartend(1) = qmmm_mpi%kvec_start
-!        istartend(2) = qmmm_mpi%kvec_end
-!        call mpi_ssend(istartend,2,mpi_integer,0,qmmm_mpi%mytaskid,qmmm_mpi%commqmmm,ier)
-!      end if
       end if
       if (qmmm_mpi%commqmmm_master) then
 !WORKAROUND FOR BUGGY INTEL COMPILER
@@ -417,7 +398,6 @@ subroutine qm_ewald_mm_pot(qm_xcrd, npairs, qm_coords, natom,rij_incore, rij_dat
     !position for the K-space Ewald summation.
     qmewald%mmpot(1:qmmm_struct%nquant_nlink) = 0.0d0 !Zeros entire array
     loop_count = 0
-!    do i = 1, totkq
     do i = qmmm_mpi%kvec_start, qmmm_mpi%kvec_end
       loop_count = loop_count + 1
       ktgs(1:8) = zero
@@ -506,7 +486,6 @@ subroutine qm_ewald_mm_pot(qm_xcrd, npairs, qm_coords, natom,rij_incore, rij_dat
   if (rij_incore) then
     !Our QM-MM distances have already been calculated and stored
     loop_count = 0
-!    do i = 1, nquant_nlink
     do i = qmmm_mpi%nquant_nlink_start, qmmm_mpi%nquant_nlink_end
       mmpottmp = zero
       qmewald%coulpot(i)=zero
@@ -589,7 +568,6 @@ subroutine qm_ewald_qm_pot(nquant,nlink,scf_mchg,qm_coords,kvec)
   !Calculate the K space potential between only QM atoms
   loop_count = 0
   qmewald%qmpot(1:qmmm_struct%nquant_nlink) = zero !Zero's entire array
-!  do i = 1, totkq
   do i = qmmm_mpi%kvec_start, qmmm_mpi%kvec_end
     loop_count = loop_count+1
     ktgs(1:8) = zero
@@ -646,7 +624,6 @@ subroutine qm_ewald_qm_pot(nquant,nlink,scf_mchg,qm_coords,kvec)
   esfact = -two*qmewald%kappa*INVSQRTPI
   wfact = -PI/(qmewald%kappa*qmewald%kappa)/volume
   
-!  do i =1,nquant_nlink
   do i = qmmm_mpi%nquant_nlink_start, qmmm_mpi%nquant_nlink_end
     chg_qm = scf_mchg(i)
     qmi(1:3) = qm_coords(1:3,i)
@@ -659,7 +636,6 @@ subroutine qm_ewald_qm_pot(nquant,nlink,scf_mchg,qm_coords,kvec)
       call erfcfun(rij*qmewald%kappa, erfcx)
       qmewald%qmpot(j) = qmewald%qmpot(j) - chg_qm*(one - erfcx)*onerij + wfact*chg_qm
     end do
-    !i=j
     qmewald%qmpot(i) = qmewald%qmpot(i) + esfact*chg_qm + wfact*chg_qm
     iplus = i+1
     do j = iplus, qmmm_struct%nquant_nlink
@@ -848,7 +824,6 @@ subroutine qm_ewald_get_forces(qm_xcrd, qm_coords, natom, &
     !Our QM-MM distances have already been calculated and stored
     loop_count = 0
 
-!    do i = 1, nquant_nlink
     do i = qmmm_mpi%nquant_nlink_start, qmmm_mpi%nquant_nlink_end
       inner_loop_count = 1
       qmmulik_chg=scf_mchg(i)*AU_TO_KCAL*BOHRS_TO_A
@@ -874,7 +849,6 @@ subroutine qm_ewald_get_forces(qm_xcrd, qm_coords, natom, &
     end do !i=1, nquant
   else
     !We have to calculate the distance between QM-MM pairs on the fly
-!    do i = 1, nquant_nlink
     do i = qmmm_mpi%nquant_nlink_start, qmmm_mpi%nquant_nlink_end
       inner_loop_count = 1
       qmmulik_chg=scf_mchg(i)*AU_TO_KCAL*BOHRS_TO_A
@@ -950,7 +924,6 @@ subroutine qm_ewald_get_forces(qm_xcrd, qm_coords, natom, &
   if (.not. qmmm_nml%qm_pme) then
     qmewald%d_ewald_mm = zero !Natom array of force on mm atoms due to QM ewald field
     loop_count = 0
-!    do ii = 1, totkq
     do ii = qmmm_mpi%kvec_start, qmmm_mpi%kvec_end
       loop_count = loop_count+1
       ccfk(1:3) = dvectors(1:3,loop_count)
@@ -976,7 +949,6 @@ subroutine qm_ewald_get_forces(qm_xcrd, qm_coords, natom, &
           ktgs(6) = ktgs(6) + mmchg * x_sin*y_cos*z_sin
           ktgs(7) = ktgs(7) + mmchg * x_cos*y_sin*z_sin
           ktgs(8) = ktgs(8) + mmchg * x_sin*y_sin*z_sin
-!         end if
       end do
       do j = 1, qmmm_struct%nquant_nlink
         x_cos =qmewald%qmktable(1,j,loop_count)

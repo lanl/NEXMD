@@ -72,7 +72,6 @@ subroutine rgroup(natom,natc,nres,ngrp,ipres,lbres,igraph,isymbl, &
       if (i <= 2 .or. i == MAX_RES_FIELDS) ifld(i) = 0
    end do
 
-!  data ifld  / 2*0, 13*2, 5*0 /
    data jfld  / 4*1, 16*0 /
    data katn  /'ATOM'/
    data ifind /'FIND'/
@@ -331,7 +330,6 @@ subroutine rgroup(natom,natc,nres,ngrp,ipres,lbres,igraph,isymbl, &
    16 continue
    if(lsign == 1) ngrp = ngrp-1
    if(itime == 0) ngrp = ngrp-1
-   !       IF(ISRCH.GT.0) WRITE(6,199)
    if(writeout) write(6,222) natmg
    goto 22
    
@@ -357,14 +355,6 @@ subroutine rgroup(natom,natc,nres,ngrp,ipres,lbres,igraph,isymbl, &
          weit(natc) = weit(i)
       end do
       
-      !       ----- do not PRINT THE HISTORY OF CONSTRAINED ATOMS -----
-      ! if(writeout) write(6,9108)
-      ! do i = 1,natc
-      !    j = igroup(i)
-      !    j3 = 3*j-3
-      !    if(writeout) write(6,9118) i,j,igraph(j),isymbl(j),itree(j), &
-      !          (xc(j3+k),k=1,3), weit(i)
-      ! end do
       
    else if (idecomp > 0) then
       
@@ -426,7 +416,6 @@ subroutine rgroup(natom,natc,nres,ngrp,ipres,lbres,igraph,isymbl, &
          igroup(i) = ngrp+1
       end do
       if(misc) ngrp = ngrp+1
-      !       IF(MISC) WRITE(6,9308) NGRP
    end if
    
    ! for targeted MD, support only 1 group for now
@@ -439,11 +428,9 @@ subroutine rgroup(natom,natc,nres,ngrp,ipres,lbres,igraph,isymbl, &
       9205 format ("ONLY 1 GROUP ALLOWED")
    end if
 
-   !  11 FORMAT(A4,1X,7(2I5))
    199 format(6x,'END OF ATOM SPECIFICATION',/)
    200 format(6x,'ALL ATOMS THAT MEET 1 OF THE FOLLOWING', &
          ' SPECIFICATIONS WILL BE INCLUDED IN GROUP BELOW',/)
-   !  61 FORMAT(A4,A2,A1,A4)
    202 format(6x,'GRAPH NAME  = ',a4,2x,'SYMBOL  = ',a2,4x, &
          'TREE SYMBOL  = ',a1,5x,'RESIDUE TYPE  = ',a4,/)
    66 format(6x,'**** NUMBER OF FIND CARDS  = ',i5,2x, &
@@ -455,12 +442,8 @@ subroutine rgroup(natom,natc,nres,ngrp,ipres,lbres,igraph,isymbl, &
    222 format(6x,'Number of atoms in this group  = ',i5)
    127 format(6x,'***PROBLEMS WITH GROUP',a4,14i5,'*******',/)
    9018 format(/5x,'GROUP',i5,' HAS HARMONIC CONSTRAINTS',f12.5)
-   !9118 format(i5,i6,1x,a4,1x,2a4,3f10.4,f12.5)
-   !9108 format(/ /10x,'HISTORY OF CONSTRAINED ATOMS',/ /)
    9208 format(20a4)
    9218 format(1x,20a4)
-   !9308 FORMAT(/5X,'THE GROUP ',I4, ' CONTAINS ALL ATOMS NOT DEFINED',
-   !    +       ' AS GROUPS BY THE INPUT',/)
    return
 
    contains   

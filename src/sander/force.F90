@@ -394,9 +394,6 @@ subroutine force(xx,ix,ih,ipairs,x,f,ener,vir, &
         !========================================================
         !                      REGULAR QMMM
         !========================================================
-        !if(qmmm_nml%idc>0)then
-        !   call qm_div(x, ix, f, escf, ih(m06))
-        !else
 
          
       call qm_mm(x, natom,qmmm_struct%scaled_mm_charges, &
@@ -410,7 +407,7 @@ subroutine force(xx,ix,ih,ipairs,x,f,ener,vir, &
         !                  END REGULAR QMMM
         !========================================================
       call timer_stop(TIME_QMMM)
-   end if !if(qmmm_nml%ifqnt)
+   end if 
 
    !---------------------------------------------------------------
    !END qm/mm contributions
@@ -423,7 +420,6 @@ subroutine force(xx,ix,ih,ipairs,x,f,ener,vir, &
    !*****************************************************
 
 !  Reconstruct the simulation cell if there is any change
-!  call inipupcell(natms,qcell,cell,xxx,yyy,zzz)
    do iPup=1,3    !vector loop
      do jPup=1,3  !Component loop
        qcell((iPup-1)*3+jPup) = ucell(jPup,iPup)
@@ -452,7 +448,6 @@ subroutine force(xx,ix,ih,ipairs,x,f,ener,vir, &
      if(ifbox == 2) call wrap_to(nspm,ix(i70),r_stack(l_puptmp),box)
    end if
 
-!  write(6,*) 'Updating PUPIL data structures'
 
 !  Preparing the coordinates, velocity and classic forces
 !  to get quantum force
@@ -461,9 +456,6 @@ subroutine force(xx,ix,ih,ipairs,x,f,ener,vir, &
      bs2 = (iPup-1)*3
      do jPup=1,3
        qcdata(bs1+jPup) = r_stack(l_puptmp + bs2 + jPup - 1)
-!        qcdata(bs1+jPup) = x(bs2+jPup)
-!          write(6,*) 'Coordinate.',iPup,'==>',realStack(lcrd+bs2+jPup-1),x(bs2+jPup)
-!          write(6,*) 'Velocity...',iPup,'==>',realStack(lvel+bs2+jPup-1)
        qcdata(bs1+3+jPup) = realStack(lvel+bs2+jPup-1)
        qcdata(bs1+6+jPup) = f(bs2+jPup)
      enddo
@@ -708,13 +700,11 @@ subroutine force(xx,ix,ih,ipairs,x,f,ener,vir, &
                        crg_m0,cn1,cn2,asol,bsol,energy_m0,epolar, &
                        f_scratch,xx,ix,ipairs,xx(l45),virvsene, xx(lpol),xx(ldf), &
                        xx(lpol2), .false. , cn3, cn4, cn5 )
-                  !write (6,*) 'Em0', energy_m0
                   ! call with water charges set to zero
                   call ewald_force(x,natom,ix(i04),ix(i06), &
                        crg_w0,cn1,cn2,asol,bsol,energy_w0,epolar, &
                        f_scratch,xx,ix,ipairs,xx(l45),virvsene, xx(lpol),xx(ldf), &
                        xx(lpol2), .false. , cn3, cn4, cn5 )
-                  !write (6,*) 'Ew0', energy_w0
                   ! call with full charges but no vdw interaction between solute and solvent
                   call ewald_force(x,natom,ix(i04),ix(i06), &
                        xx(l15),cn1_lrt,cn2_lrt,asol,bsol,eelt,epolar, &
@@ -735,14 +725,12 @@ subroutine force(xx,ix,ih,ipairs,x,f,ener,vir, &
             else ! just call ewald_force normally
              call ewald_force(x,natom,ix(i04),ix(i06), &
                 xx(l15),cn1,cn2,asol,bsol,eelt,epolar, &
-!               f,xx,ix,ipairs,xx(l45),virvsene, xx(lpol),.false. &
-! Modified by WJM, YD, mjhsieh
                 f,xx,ix,ipairs,xx(l45),virvsene,xx(lpol),xx(ldf), &
                  xx(lpol2), .false. , cn3, cn4, cn5 )
   
-            end if ! ilrt /= 0
-         end if ! induced > 0
-      end if ! iamoeba == 1
+            end if 
+         end if 
+      end if
 
       call timer_stop(TIME_EWALD)
 
@@ -769,7 +757,7 @@ subroutine force(xx,ix,ih,ipairs,x,f,ener,vir, &
          pot%elec  = pot%elec  + eelex
       endif
 
-   end if  ! ( igb == 0 .and. ipb == 0 .and. iyammp == 0 )
+   end if  
 
    call timer_stop(TIME_NONBON)
 
@@ -809,7 +797,7 @@ subroutine force(xx,ix,ih,ipairs,x,f,ener,vir, &
          call pbtimer_summary
          call timer_stop(TIME_NPFORCE)
 
-      end if  ! ( igb == 10 .or. ipb /= 0 )
+      end if 
 
 #ifdef MPI
    end if
@@ -1067,8 +1055,6 @@ subroutine force(xx,ix,ih,ipairs,x,f,ener,vir, &
    else if(ifcap == 4) then
       write(6,*) 'No energy expression for orthorhombic boundary known yet'
       call mexit(6,1)
-      !call orth(natom,ix(ibellygp),x,f,eorth)
-      !ene(20) = ene(20) + eorth
    end if
    ! No energy expression for ifcap == 5 given because only
    !    one step of minimization is allowed with this.
@@ -1126,7 +1112,7 @@ subroutine force(xx,ix,ih,ipairs,x,f,ener,vir, &
 #  endif
 #endif
 
-   end if  ! ( igb /= 0 .and. igb /= 10 .and. ipb == 0 )
+   end if
 
 #ifdef RISMSANDER
    
@@ -1227,7 +1213,6 @@ subroutine force(xx,ix,ih,ipairs,x,f,ener,vir, &
 #ifdef DSSP
    if( idssp > 0 ) then
       call fdssp( natom,x,f,edssp )
-!     write(6,*) 'edssp = ', edssp
    else
       edssp = 0.d0
    end if
@@ -1237,10 +1222,6 @@ subroutine force(xx,ix,ih,ipairs,x,f,ener,vir, &
 
 #ifndef LES
    if( igb == 0 .and. ipb == 0 ) then
-      !ene(11) = enb14
-      !ene(14) = 0.d0
-      !ene(12) = ee14
-      !ene(15) = 0.d0 !mjw TODO Grok this...
       pot%vdw_14   = pot%vdw_14   + enb14
       pot%elec_14  = pot%elec_14  + ee14
 
@@ -1332,21 +1313,12 @@ subroutine force(xx,ix,ih,ipairs,x,f,ener,vir, &
 !  Adding the quantum forces from last QM calculation
    do iPup=1,pupqatoms
      bs1 = (abs(pupqlist(iPup))-1)*3
-     !write(6,"(a10,2x,i4,3(2x,e16.10))") 'Classic F:',abs(pupqlist(iPup)), &
-     !                                              (f(bs1+jPup),jPup=1,3)
      do jPup=1,3
        bs2    = bs1    + jPup
        f(bs2) = f(bs2) + qfpup(bs2)
      enddo
-     !write(6,"(a10,2x,i4,3(2x,e16.10))") 'Quantum F:',abs(pupqlist(iPup)), &
-     !                                          (qfpup(bs1+jPup),jPup=1,3)
    enddo
 
-!Final forces
-!   do iPup=1,natom
-!     bs2 = (iPup-1)*3
-!     write(6,"(a10,2x,i4,3(2x,e16.10))") 'Total F:',iPup,(f(bs2+jPup),jPup=1,3)
-!   enddo
 
 !  Disconnecting qmmmm interactions
    qmmm_nml%ifqnt = .false.
@@ -1378,7 +1350,6 @@ subroutine force(xx,ix,ih,ipairs,x,f,ener,vir, &
 
 #if defined(MPI)
 #ifdef LES
-!KFW   if( ipimd>0) then
    if( nbead > 0 ) then
       call mpi_allreduce ( nrg_all, nrg_bead, nbead, MPI_DOUBLE_PRECISION &
                          , MPI_SUM, commsander, ierr )

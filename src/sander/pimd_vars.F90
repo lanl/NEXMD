@@ -16,8 +16,6 @@ module pimd_vars
   integer :: nbead
   integer :: natomCL
   integer :: nthermo
-  ! itimass = cntrl option for thermodynamic integration w.r.t. mass.
-  ! itimass = 0: no TI(default), 1: virial estimator, 2: thermodynamic estimator
   integer :: itimass
   _REAL_  :: equal_part
   _REAL_  :: Epot_external, Epot_spring, Epot_deriv,Eimp_virial
@@ -25,7 +23,6 @@ module pimd_vars
   _REAL_  :: nbead_inv
   _REAL_  :: bnd_vir(3,3)
   _REAL_  :: tau_vol=20.4550d0
-  ! dmdlm = d mass / d lambda / mass (for TI w.r.t. mass)
   _REAL_, allocatable :: dmdlm(:)
   _REAL_, allocatable :: x_centroid(:,:), real_mass(:), nrg_all(:) &
                        , tempbuf(:,:), cartpos(:,:), cartvel(:,:)

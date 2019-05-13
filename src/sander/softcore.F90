@@ -432,7 +432,6 @@ module softcore
       if (ier_alloc /= 0) call sander_bomb('sc_check_perturbed_molecules[softcore.f]', &
            'cant allocate molecule_type_partner','')
 
-      !write (6,*) nummols, 'Molecules on this side, ', nummols_partner, ' on the partner side'
 
       ! check which molecules are partially softcore
       i=0
@@ -497,7 +496,6 @@ module softcore
          end if
       end do
 
-      !write (6,'(a)') 'Final molecule types:'
       
       imol=0
       do i = 1, nummols
@@ -513,7 +511,6 @@ module softcore
             imol = imol + 1
          end if
       end do
-      !write (6, '(i5,a)') imol,'Molecules are nonsoftcore on both sides'
 
       return
 
@@ -793,16 +790,12 @@ end subroutine sc_pscale
             v(frcmask(i)) = weight1 * v(frcmask(i)) + weight0 * vcopy(frcmask_partner(i))
          end do
          do i=1,3*nsoftcore
-            ! The following would scale down velocities on non-shared atoms
-            ! v(frcmask_sc(i)) = weight1 * v(frcmask_sc(i))
          end do
       else
          do i=1,3*nmixed
             v(frcmask(i)) = weight1 * vcopy(frcmask_partner(i)) + weight0 * v(frcmask(i))
          end do
          do i=1,3*nsoftcore
-            ! The following would scale down velocities on non-shared atoms
-            ! v(frcmask_sc(i)) = weight0 * v(frcmask_sc(i))
          end do
       end if
 

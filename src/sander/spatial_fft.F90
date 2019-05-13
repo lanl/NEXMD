@@ -723,12 +723,6 @@ integer function location( k_length, k_inf, k, &
   integer  i_inf     ! infimum of the closed interval, intent(in)
   integer  i         ! element of the closed interval, intent(in)
 
-!  ASSERT( k_inf <= k                         )
-!  ASSERT(          k <= k_inf + k_length - 1 )
-!  ASSERT( j_inf <= j                         )
-!  ASSERT(          j <= j_inf + j_length - 1 )
-!  ASSERT( i_inf <= i                         )
-!  ASSERT(          i <= i_inf + i_length - 1 )
   location = j_length * i_length * ( k - k_inf ) + &
                         i_length * ( j - j_inf ) + &
                                    ( i - i_inf )
@@ -813,11 +807,6 @@ Subroutine transpose( data, from_partition, transposed_data, &
   integer send_request(numtasks)
   integer send_status(MPI_STATUS_SIZE,numtasks)
 
-!  integer recv_offset(0:MAX_PROCESSORS - 1) !saved recv buf proc offsets
-!  integer recv_request(MAX_PROCESSORS)
-!  integer recv_status(MPI_STATUS_SIZE,MAX_PROCESSORS)
-!  integer send_request(MAX_PROCESSORS)
-!  integer send_status(MPI_STATUS_SIZE,MAX_PROCESSORS)
 
   integer size
   integer step
@@ -932,8 +921,6 @@ Subroutine transpose( data, from_partition, transposed_data, &
         jto   = kto + (j - con_to_inf)- alt_to_inf*pre_from_len*con_to_len
         jfrom = kfrom + (j - alt_from_inf) * con_from_len - con_from_inf
         do i = alt_to_inf, alt_to_sup
-!           ito   = jto + i*pre_from_len * con_to_len
-!           ifrom = jfrom + i
 
            ! the altered in the from-partition is the same direction
            ! as the contiguous in the to-partition.
@@ -1079,7 +1066,6 @@ Subroutine ftranspose( data, from_partition, transposed_data, &
   send_timer    = TIME_FFTXTRA6
   packsend_timer    = TIME_FFTCOMM4
   call timer_start(waitall_timer)
-!  call timer_start(trans_timer)
 
   call mpi_type_contiguous( 1, MPI_DOUBLE_COMPLEX, mpi_data_type, mpi_ierr )
   call mpi_type_commit( mpi_data_type, mpi_ierr )
@@ -1133,7 +1119,6 @@ Subroutine ftranspose( data, from_partition, transposed_data, &
      endif
   enddo
   call timer_stop(postrcv_timer)
-!  call timer_stop(trans_timer)
 
   ! Pack data in transposed order and send
 
@@ -1153,8 +1138,6 @@ Subroutine ftranspose( data, from_partition, transposed_data, &
                    -alt_r_to_inf*alt_from_len
               kfrom = jfrom + (k - pre_from_inf) *  con_from_len-con_from_inf
               do i = alt_r_to_inf, alt_r_to_sup
-!                 ito = kto + i*alt_from_len
-!                 ifrom = kfrom + i
 
                  ! the contiguous in the from-partition is the same direction
                  ! as the altered in the to-partition.

@@ -48,7 +48,6 @@ subroutine get_nb_energy(iac,ico,ntypes,charge, &
    _REAL_ force(3,numatoms),eelt,epol,evdw,ehb
    _REAL_ eedvir,filter_cut, &
 ! M-WJ, WJM, YD
-!         dipole(3,*),field(3,*)
          dipole(3,*),field(3,*),pol(*),dipdamp
    _REAL_ dampfactor(*),pol2(*)
 ! mjhsieh
@@ -140,7 +139,6 @@ subroutine get_nb_energy(iac,ico,ntypes,charge, &
                   call free_stack(l_real_df,routine)
                   call free_istack(l_int,routine)
 ! WJ
-!               else if ( mpoltype == 1 )then
                else if ( mpoltype > 0 ) then
 !
                   call short_ene_dip(i,xk,yk,zk,ipairs(numpack),ntot,nvdw, &
@@ -148,9 +146,6 @@ subroutine get_nb_energy(iac,ico,ntypes,charge, &
                         eed_cub,eed_lin,charge,dipole, &
                         ntypes,iac,ico,cn1,cn2,asol,bsol,filter_cut, &
 ! WJ
-!                       eelt,epol,evdw,ehb,force,field,dir_vir, &
-!                       ee_type,eedmeth,dxdr,eedvir)
-!!                      eelt,epol,evdw,ehb,force,field,pol,dipdamp,dir_vir, &
 !Modified by WJM
                         eelt,epol,evdw,ehb,force,field,pol,dampfactor,pol2,dir_vir, &
 !
@@ -531,8 +526,6 @@ subroutine short_ene(i,xk,yk,zk,ipairs,ntot,nvdw,nhbnd, &
          !---TD Got the idea for B_l from Walter Smith's CCP5 article 1982
          !   Ewald for point multipoles
          
-         !b0 = switch*delrinv
-         !b1 = b0 - d_switch_dx*dxdr
          cgj = charge(j)
          comm1 = cgi*cgj
          delr2inv = delrinv*delrinv
@@ -1133,18 +1126,6 @@ subroutine short_ene(i,xk,yk,zk,ipairs,ntot,nvdw,nhbnd, &
                call cr_add_dcdr_factor( i, b2*cgj )
                call cr_add_dcdr_factor( j, b2*cgi )
             end if
-!#   ifdef PIMD
-!            if(cnum(i).eq.0.and.cnum(j).eq.0) then
-!               nrg_ele(1:nbead)=nrg_ele(1:nbead) + comm1*b0
-!            else 
-!               if(cnum(i).ne.0) then
-!                  nrg_ele(cnum(i)) = nrg_ele(cnum(i)) + comm1*b0
-!               else
-!                  nrg_ele(cnum(j)) = nrg_ele(cnum(j)) + comm1*b0
-!               end if
-!            end if
-!
-!#   endif
          end if
 #else
          b0 = cgi*cgj*delrinv
@@ -1471,9 +1452,6 @@ subroutine short_ene_dip(i,xk,yk,zk,ipairs,numtot,numvdw, &
       eed_cub,eed_lin,charge,dipole, &
       ntypes,iac,ico,cn1,cn2,asol,bsol,filter_cut, &
 ! M-WJ
-!      eelt,epol,evdw,ehb,frc,field,dir_vir, &
-!      ee_type,eedmeth,dxdr,eedvir)
-!      eelt,epol,evdw,ehb,frc,field,pol,dipdamp,dir_vir, &
 ! Modified by WJM, YD
       eelt,epol,evdw,ehb,frc,field,pol,dampfactor,pol2,dir_vir, &
 !
@@ -1485,7 +1463,6 @@ subroutine short_ene_dip(i,xk,yk,zk,ipairs,numtot,numvdw, &
 
    use nblist, only: bckptr,imagcrds,tranvec
 ! M-WJ
-!   use constants, only : zero, one, two, three, five, six, twelve, third, half
    use constants, only : zero, one, two, three, four, five, six, twelve, third, half
 !
    implicit none
@@ -1502,7 +1479,6 @@ subroutine short_ene_dip(i,xk,yk,zk,ipairs,numtot,numvdw, &
    integer ntypes,iac(*),ico(*)
    _REAL_ cn1(*),cn2(*),asol(*),bsol(*), &
 ! M-WJ
-!         eelt,epol,evdw,ehb,frc(3,*),field(3,*)
          eelt,epol,evdw,ehb,frc(3,*),field(3,*),pol(*),dipdamp
 ! Modified by WJM, YD
    _REAL_ dampfactor(*),pol2(*)
@@ -1625,14 +1601,12 @@ subroutine short_ene_dip(i,xk,yk,zk,ipairs,numtot,numvdw, &
             lambda5 = one
             lambda7 = one
          else if ( mpoltype == 2 ) then
-! pol2()=sqrt(pol()/dampfactors())
             au3 = delr*delr2 / (pol2(i)*pol2(j))
             exp_au3 = exp(-au3)
             lambda3 = one - exp_au3
             lambda5 = one - (one+au3)*exp_au3
             lambda7 = one - (one + au3 + three/five*au3*au3)*exp_au3
          else if ( mpoltype == 3 ) then
-! pol2()=pol()**sixth/sqrt(dampfactors())
             au = delr / (pol2(i)*pol2(j))
             exp_au = exp(-au)
             a2u2 = au*au
@@ -1642,7 +1616,6 @@ subroutine short_ene_dip(i,xk,yk,zk,ipairs,numtot,numvdw, &
             lambda5=lambda3-a3u3/six*exp_au
             lambda7=lambda5-a4u4/six/five*exp_au
          else if ( mpoltype == 4 ) then
-! pol2()=sqrt(dampfactors())*pol()**(1/6)
             v = delr / (pol2(i)*pol2(j))
             if ( v < one ) then
                v3 = v*v*v
@@ -1695,23 +1668,14 @@ subroutine short_ene_dip(i,xk,yk,zk,ipairs,numtot,numvdw, &
          dotij = dipole(1,i)*dipole(1,j)+dipole(2,i)*dipole(2,j)+ &
                dipole(3,i)*dipole(3,j)
          
-         ! gradi phii = cgj*rij*B1 + dipj*B1 - dotjr*rij*B2
-         ! so epol = -cgi*dotjr*B1 + (cgj*B1 - dotjr*B2)*dotir + dotij*B1
          
          eelt = eelt + cgi*cgj*b0
          term = cgj*dotir-cgi*dotjr+dotij
          epol = epol + term*b1 - dotir*dotjr*b2
          term0 = cgi*cgj*b0 + term*b1 - dotir*dotjr*b2
          
-         ! so ene = ene + term0; dfx = dterm0_dx etc
-         ! grad term0 = term1*rij + B1*grad_i term - grad_i dotir*dotjr*B2
-         ! grad_i term = -cgj*dip_i + cgi*dip_j
-         ! grad_i dotir = -dip_i; similar for dotjr
-         ! grad_i term0 = term1*rij + (-cgj*B1+dotjr*B2)*dip_i +
-         !                (cgi*B1+dotir*B2)*dip_j
          
 ! M-WJ
-!         term1 = cgi*cgj*b1 + term*b2 - dotir*dotjr*b3
          term1 = cgi*cgj*b1_o + term*b2 - dotir*dotjr*b3
 !
          termi = cgi*b1+dotir*b2
@@ -1770,12 +1734,6 @@ subroutine short_ene_dip(i,xk,yk,zk,ipairs,numtot,numvdw, &
          !         ---field related quantities
          
 ! M-WJ
-!        dphii_dx = termj*delx + b1*dipole(1,j)
-!        dphii_dy = termj*dely + b1*dipole(2,j)
-!        dphii_dz = termj*delz + b1*dipole(3,j)
-!        dphij_dx = -termi*delx + b1*dipole(1,i)
-!        dphij_dy = -termi*dely + b1*dipole(2,i)
-!        dphij_dz = -termi*delz + b1*dipole(3,i)
          dphii_dx = termj_o*delx + b1*dipole(1,j)
          dphii_dy = termj_o*dely + b1*dipole(2,j)
          dphii_dz = termj_o*delz + b1*dipole(3,j)
@@ -1861,14 +1819,12 @@ subroutine short_ene_dip(i,xk,yk,zk,ipairs,numtot,numvdw, &
             lambda5 = one
             lambda7 = one
          else if ( mpoltype == 2 ) then
-! pol2()=sqrt(pol()/dampfactors())
             au3 = delr*delr2 / (pol2(i)*pol2(j))
             exp_au3 = exp(-au3)
             lambda3 = one - exp_au3
             lambda5 = one - (one+au3)*exp_au3
             lambda7 = one - (one + au3 + three/five*au3*au3)*exp_au3
          else if ( mpoltype == 3 ) then
-! pol2()=pol()**sixth/sqrt(dampfactors())
             au = delr / (pol2(i)*pol2(j))
             exp_au = exp(-au)
             a2u2 = au*au
@@ -1878,7 +1834,6 @@ subroutine short_ene_dip(i,xk,yk,zk,ipairs,numtot,numvdw, &
             lambda5=lambda3-a3u3/six*exp_au
             lambda7=lambda5-a4u4/six/five*exp_au
          else if ( mpoltype == 4 ) then
-! pol2()=sqrt(dampfactors())*pol()**(1/6)
             v = delr / (pol2(i)*pol2(j))
             if ( v < one ) then
                v3 = v*v*v
@@ -1908,10 +1863,6 @@ subroutine short_ene_dip(i,xk,yk,zk,ipairs,numtot,numvdw, &
          b2 = b2 * lambda5
          b3 = b3 * lambda7
 !
-         !         B0 = switch*delr*delr2inv
-         !         B1 = (B0 - d_switch_dx*dxdr)*delr2inv
-         !         B2 = (Three*B1 - fac*ewaldcof*d_switch_dx)*delr2inv
-         !         B3 = (Five*B2 - fac*fac*ewaldcof*d_switch_dx)*delr2inv
          
          dotjr = dipole(1,j)*delx+dipole(2,j)*dely+dipole(3,j)*delz
          dotir = dipole(1,i)*delx+dipole(2,i)*dely+dipole(3,i)*delz
@@ -1922,7 +1873,6 @@ subroutine short_ene_dip(i,xk,yk,zk,ipairs,numtot,numvdw, &
          epol = epol + term*b1 - dotir*dotjr*b2
          term0 = cgi*cgj*b0 + term*b1 - dotir*dotjr*b2
 ! M-WJ
-!         term1 = cgi*cgj*b1 + term*b2 - dotir*dotjr*b3
          term1 = cgi*cgj*b1_o + term*b2 - dotir*dotjr*b3
 !
          termi = cgi*b1+dotir*b2
@@ -1980,12 +1930,6 @@ subroutine short_ene_dip(i,xk,yk,zk,ipairs,numtot,numvdw, &
          !         ---field related quantities
          
 ! M-WJ
-!        dphii_dx = termj*delx + b1*dipole(1,j)
-!        dphii_dy = termj*dely + b1*dipole(2,j)
-!        dphii_dz = termj*delz + b1*dipole(3,j)
-!        dphij_dx = -termi*delx + b1*dipole(1,i)
-!        dphij_dy = -termi*dely + b1*dipole(2,i)
-!        dphij_dz = -termi*delz + b1*dipole(3,i)
          dphii_dx = termj_o*delx + b1*dipole(1,j)
          dphii_dy = termj_o*dely + b1*dipole(2,j)
          dphii_dz = termj_o*delz + b1*dipole(3,j)

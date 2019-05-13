@@ -157,7 +157,6 @@ subroutine pcshift(natom,x,f)
    ! final result
    
    if (natom < 0) then
-      !        call CALCRESID(vett)
       rewind(53)
       write(53,*) ' Final pseudocontact shifts'
       call dispshift

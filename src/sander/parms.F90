@@ -45,8 +45,6 @@ common/iparms/ipn
 ! improper torsional parameters (NPTRA-NIMPRP is the number of regular
 ! torsional parameters).
 
-! nttyp = ntypes*(ntypes+1)/2 
-!       = number of 1-4 types
 
 #define BC_PRMLIM 6
 integer, parameter :: num_bc_prmlim = BC_PRMLIM

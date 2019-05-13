@@ -49,7 +49,6 @@ module nose_hoover_module
   !..................................................
 
   integer, save :: print_level = 0   !! output is suppressed
-!!  integer :: print_level = 1
 
   !..................................................
 

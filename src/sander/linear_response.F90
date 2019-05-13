@@ -84,19 +84,14 @@ contains
 
     do i=1,natom
        if ( nlrt(i) == 1 ) then
-          !write (6,*) 'Molecule: atom ',i
           crg_m0(i) = 0.0d0
           crg_w0(i) = charge(i)
        else
-          !write (6,*) 'Solvent: atom ',i
           crg_m0(i) = charge(i)
           crg_w0(i) = 0.0d0
        end if
     end do
 
-    !do i=1, natom
-    !   write (6,*) charge(i), crg_m0(i), crg_w0(i)
-    !end do
 
     solute_type(1:ntypes) = 0
     solvent_type(1:ntypes) = 0
@@ -109,8 +104,6 @@ contains
        end if
     end do
 
-    !write (6,*) 'solute types:', solute_type(1:ntypes)
-    !write (6,*) 'solvent types:', solvent_type(1:ntypes)
 
     do i=1, ntypes
        if (solute_type(i) == solvent_type(i)) then
@@ -128,14 +121,11 @@ contains
              if ( solvent_type(i) == solvent_type(j) ) then
                 cn1_lrt(index) = cn1(index)
                 cn2_lrt(index) = cn2(index)
-                !write (6,*) 'Interaction ',i,j,index,' is maintained'
              else 
                 cn1_lrt(index) = 0.0d0
                 cn2_lrt(index) = 0.0d0
-                !write (6,*) 'Interaction ',i,j,index,' is nullified'
              end if
           else
-             !write (6,*) 'Interaction ',i,j,index,' is special case and skipped'
           end if
        end do
     end do
@@ -167,8 +157,6 @@ contains
           lrtsasa2 = lrtsasa2 + (sasa*sasa)
 
           write (6,'(a,f12.4,a,f12.4,a,f12.4)') 'LIE: EE ', elrt_tmp, ' VDW ', energy_vdw0, ' SASA ', sasa
-          !write (6,'(a,f12.4,a,f12.4,a,f12.4,a,f12.4,a,f12.4)') 'EE ', energy, ' EnoM ', energy_m0, ' EnoW ', energy_w0, ' Elrt ', elrt_tmp, ' Evdw ', energy_vdw0
-          !write (6,'(a,f12.4)') 'E(LRT) = ', elrt_tmp
        end if
     end if
 
@@ -224,16 +212,11 @@ contains
     crd(2,1:numlrt) = b * crd(2,1:numlrt)
     crd(3,1:numlrt) = c * crd(3,1:numlrt)
 
-    !write (6,*) 'Fracked and Imaged:'
-    !do i=1,numlrt
-    !   write (6,'(a,i6,f8.4,f8.4,f8.4,f8.4)') 'Atom:',i,crd(1,i),crd(2,i),crd(3,i),radii(i)
-    !end do
     ! Prepare the icosasurf
     sasa = 0
     count=0
     ! compute all intersolute distances and the SAS
     do i=1,numlrt
-       !write (6,*) 'Atom ',i,' Pos: ', crd(1,i),crd(2,i),crd(3,i)
        do j=1,numlrt
           if ( i /= j ) then
              dx = crd(1,i)-crd(1,j)
@@ -244,25 +227,19 @@ contains
              if ( vdwrad2 > dist2 ) then
                 count = count + 1
                 ineighbor(count) = j
-                !write (6,'(a,i6,i6)') 'Neighbors: ',i,j
-                !write (6,'(a,i6,i6,f8.4,f8.4,f8.4)') 'Neighbors: ',i,j,sqrt(dist2),vdwrad(i),vdwrad(j)
              else
-                !write (6,'(a,i6,i6,f8.4,f8.4,f8.4)') 'Non-Neigh: ',i,j,sqrt(dist2),vdwrad(i),vdwrad(j)
              end if
           end if
        end do
        count = count + 1
        ineighbor(count)=0
-       !write (6,*) 'Atom ',i,' Neigh: ', count
        if(i == 1) then
           ineighborpt = 1
           call icosa_init(2, 3, zero)
        end if
        sasa = sasa + icosa_sphere_approx(i,crd,radii,ineighborpt,ineighbor,0)       
-       !write (6,*) 'After: ',i, sasa
     end do
 
-    !write (6,*) 'Total SASA: ', sasa
 
     return
 

@@ -188,9 +188,6 @@ contains
       rborn_ave => x(l188:l188+natom-1)
       rborn_fluct => x(l189:l189+natom-1)
 
-      !p_conp => x(l50:l50+ntbond-1)
-      !p_nmr_scratch => x(l95:l95+???)
-      !p_tma => x(l75:l75+natom-1)
 
       if (nmropt >= 2) then
          nmr_imet => ix(i65:i65+mxsub*isubi-1)

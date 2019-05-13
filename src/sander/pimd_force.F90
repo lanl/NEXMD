@@ -551,7 +551,6 @@ include 'mpif.h'
 
 ! CHANGE LATER IF WE DON'T DO (FAKE) MD ON ENDPOINTS!
    if( mybeadid==1.or.mybeadid==neb_nbead) then
-        !write (6,*) "I am first or last bead, returning "
 #  ifdef NEBDEBUG
       write(worldrank+50,'(a)') "-------------------------------------------------"
 #  endif
@@ -671,10 +670,8 @@ include 'mpif.h'
 
     do i=1,nattgtrms
       iatom=rmsgp(i)
-      !write (6,*) "i,iatom ",i,iatom
 
       iatm3 = 3*(iatom - 1)
-      !write (6,*) " f is ",f(iatm3+1),f(iatm3+2),f(iatm3+3)
 
       ! this is "real" force along tangent
       dotproduct = dotproduct + f(iatm3+1)*tangents(iatm3+1)
@@ -692,7 +689,6 @@ include 'mpif.h'
       dotproduct2 = dotproduct2 + springforce(iatm3+2)*tangents(iatm3+2)
       dotproduct2 = dotproduct2 + springforce(iatm3+3)*tangents(iatm3+3)
 
-      !write (6,*) " springf is ",springforce(iatm3+1),springforce(iatm3+2),springforce(iatm3+3)
 
       energy = energy + 0.5*spring2*(xnext(iatm3+1)-x(iatm3+1))*(xnext(iatm3+1)-x(iatm3+1))
       energy = energy + 0.5*spring2*(xnext(iatm3+2)-x(iatm3+2))*(xnext(iatm3+2)-x(iatm3+2))
@@ -703,10 +699,6 @@ include 'mpif.h'
       energy = energy + 0.5*spring*(x(iatm3+3)-xprev(iatm3+3))*(x(iatm3+3)-xprev(iatm3+3))
    end do
 
-    !write (6,*) "dotproduct is ",dotproduct   
-    !write (6,*) "dotproduct2 is ",dotproduct2 
-    !write (6,*) "tangents are "
-    !write (6,*) tangents(1:last_neb_atom*3)
 
     tempdot=0.d0
 
@@ -741,14 +733,7 @@ include 'mpif.h'
 ! don't support it since it's not clear how to change for pNEB if 
 ! we don't know what it is.
 
-   !dotproduct = 0.d0
-   !dotproduct2= 0.d0
-   !do iatm3 = 1,3*natom
-      !dotproduct = dotproduct + f(iatm3)*f(iatm3)
-      !dotproduct2= dotproduct2+ v(iatm3)*v(iatm3)
-   !enddo
 
-   !nebrms = dotproduct
 
 #  ifdef NEBDEBUG
    write(worldrank+50,'(a)') "-------------------------------------------------"
@@ -824,19 +809,12 @@ end subroutine pimd_neb_energy_report
 
    if( i_qi == 2 ) then
 
-! write(6,*) 'hbar = ', hbar
-! write(6,*) 'beta = ', beta
-! write(6,*) 'kB = ', kB
-! write(6,*) 'temp0 = ', temp0
 
       beta = 1.0d0 / ( kB * temp0 )
       coeff = dble( ncopy ) / ( hbar * beta )**2
 
-! 03162009      coeff_F  = 2.0d0 / dble( ncopy )
       coeff_F  = 2.0d0
-!     coeff_F  = 2.0d0 / dble( ncopy )
 
-! 03132009      coeff_G1 = 6.0d0 * dble( ncopy ) / beta / beta
       coeff_G1 = 2.0d0 * dble( 3*natomCL) * dble( ncopy ) / beta / beta
       coeff_G2 = 4.0d0 * coeff / beta
 
@@ -899,11 +877,8 @@ end subroutine pimd_neb_energy_report
 !
          gradRC_norm(n) = sqrt( gnorm )
 
-!        ftmp = ftmp * dot_product( gradRC(:,n), dx(:) )
          ftmp = ftmp * dot_product( -gradRC(:,n), dx(:) ) / gradRC_norm(n)
 
-!        write(6,*) '>>> dx(:) = ', dx(:)
-!        write(6,*) '>>> gradRC = ', gradRC(:,n), n
 
       enddo
 
@@ -919,17 +894,6 @@ end subroutine pimd_neb_energy_report
 
 
 ! +++++++++++++++++++++++++++++++
-! write(6,*) 
-! write(6,*) ' natom = ', natom
-! write(6,*) ' nbead decrypt' 
-! write(6,*) ' bead index, atom index'
-
-!     do n = 1, ncopy
-!        do m = 1, natomCL
-!           mm = bead_dcrypt( m, n )
-!           write(6,*) n, mm, mass(mm)
-!        enddo
-!     enddo
 
       F_sum1 = 0.0d0
 
@@ -1011,23 +975,14 @@ end subroutine pimd_neb_energy_report
 !kfw  Ftot = - coeff * ( F_sum1 - F_sum2 ) * 2.0d0 + coeff_F * ( F_sum3 - F_sum4 )
 
 ! The factor of 1/2 is to convert to 1/2 m V^2, so as to get the correct units
-!kfw  Gtot = coeff_G1 - coeff_G2 * G_sum * 2.0d0
       Gtot = coeff_G1 - coeff_G2 * G_sum
-!     Gtot = coeff_G1 - coeff_G2 * G_sum * 0.50d0
 
       f_v  = fv
       F_QI = Ftot
       G_QI = Gtot
 
-!     write(6,*) '<<< coeff, F_sum1, F_sum2 = ', coeff, F_sum1, F_sum2
-!     write(6,*) '<<< coeff_F, F_sum3, F_sum4 = ', coeff_F, F_sum3, F_sum4
-!     write(6,*) '<<< vel0_bead = ', vel0_bead(:)
 
-!   write(6,*) '>>> ncopy = ', ncopy
 
-!   write(6,*) '>>> f_v = ', fv, coeff, ftmp
-!   write(6,*) '>>>   F = ', F_QI
-!   write(6,*) '>>>   G = ', Gtot
 
 
    endif

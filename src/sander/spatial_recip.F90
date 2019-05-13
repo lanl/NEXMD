@@ -323,7 +323,6 @@ subroutine spatial_fill_charge_grid(natom,charge, &
   use ew_bspline,only:kbot,ktop
   
    implicit none
-!   double complex :: q(siz_q)
    integer,intent(in) :: natom,order,nfft1,nfft2,nfft3,siz_q
    integer,intent(in) :: nfftdim1,nfftdim2,nfftdim3
    _REAL_ fr1(natom),fr2(natom),fr3(natom)
@@ -389,7 +388,6 @@ subroutine spatial_fill_charge_grid(natom,charge, &
                if ( j >= jbot .and. j <= jtop ) then
                   jq = j - ygridmin
                   iqj = iqk + (jq-1)*2*sp_len1
-!                  if( j0 < 0 ) iqj = iqj + 2*nfft2*nfftdim1
                   
                   prod = theta2(ith2,im)*theta3(ith3,im)*charge(n)
                   i0 = i00 + 1
@@ -514,9 +512,7 @@ subroutine spatial_grad_sumrc( &
                        do ith1 = 1,order
                           i0 = i0 + 1
                           if (i0 >= 1) then
-                             !term = q(i0 + iqj)
                           else
-                             !term = q(i0 + nfft1 + iqj)
                           end if
                           f1 = f1 + q * theta1(ith1,im) * f1fac
                        end do
@@ -560,7 +556,6 @@ subroutine spatial_grad_sumrc( &
                  if ( j >= jbot .and. j <= jtop ) then
                     jq = j - ygridmin
                     iqj = iqk + (jq-1)*2*xdim
-                    !iqj = iqk + j0*2*xdim
                     i0 = i00 + 1
                     f1fac =  theta2(ith2,im) *  theta3(ith3,im) * chargen
                     f2fac = dtheta2(ith2,im) *  theta3(ith3,im) * chargen

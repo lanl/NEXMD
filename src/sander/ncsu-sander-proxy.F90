@@ -104,7 +104,6 @@ end function multisander_numgroup
 
 NCSU_PURE_EXCEPT_ASSERT integer function multisander_rem()
    implicit none
-   ! ncsu_assert(saved_rem.ne.-3212341)
    multisander_rem = saved_rem
 end function multisander_rem
 

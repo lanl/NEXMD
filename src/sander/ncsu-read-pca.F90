@@ -75,7 +75,6 @@ subroutine read_avgcrd(cv, avgcrd_file)
   read(CRD_UNIT1, '(A1)') dummy
   read(CRD_UNIT1, '(A1)') dummy
 
-!  read(CRD_UNIT1, '(7F11.5)') (cv%avgcrd(i),i=first*3-2,(last-first+1)*3)
   read(CRD_UNIT1, '(7F11.5)') (cv%avgcrd(i), i=1, 3*cv%i(3))
 
 
@@ -93,7 +92,6 @@ subroutine read_refcrd(cv, refcrd_file)
 
   character(len = *), intent(in)  :: refcrd_file
 
-!  integer, intent(in) :: first, last
 
   integer :: i
   character :: dummy
@@ -103,7 +101,6 @@ subroutine read_refcrd(cv, refcrd_file)
   read(REF_UNIT1, '(A1)') dummy
   read(REF_UNIT1, '(A1)') dummy
 
-!  read(REF_UNIT1, '(6F12.7)') (cv%r(i), i=first*3-2, (last-first+1)*3)
   read(REF_UNIT1, '(6F12.7)') (cv%r(i), i=1, 3*cv%i(1))
   
   close(REF_UNIT1)
@@ -120,25 +117,17 @@ subroutine read_index(cv, index_file)
 
   type(colvar_t), intent(inout)  :: cv
 
-!  character(len = *), intent(in)  :: crd_file
 
   character(len = *), intent(in)  :: index_file
 
-!  integer, intent(in) :: first, last
 
-!  integer, intent (in) :: nsolut
 
   integer :: i, tempi, nref, npca
 
-!  character :: dummy
 
-!  open(REF_UNIT1, FILE = crd_file)
   open(IDX_UNIT1, FILE = index_file)
   ! skip the first two lines of the CRD files 
-!  read(REF_UNIT1, '(A1)') dummy
-!  read(REF_UNIT1, '(A1)') dummy
 
-!  read(REF_UNIT1, '(6F12.7)') (cv%r(i), i=first*3-2, (last-first+1)*3)
 
    read(IDX_UNIT1, *) (tempi, cv%state_ref(i), cv%state_pca(i), i=1, cv%i(1))
    
@@ -157,7 +146,6 @@ subroutine read_index(cv, index_file)
       
    end do
   
-  ! write(*,*) "nref=", nref, " npca=", npca, " cv%i(1)=", cv%i(1), " cv%i(2)=", cv%i(2), " cv%i(3)=", cv%i(3) 
   
    ncsu_assert( nref == cv%i(2) )
    ncsu_assert( npca == cv%i(3) )

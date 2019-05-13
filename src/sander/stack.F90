@@ -145,7 +145,6 @@ subroutine get_istack(ipointer,isize,routine)
          call mexit(6,1)
       endif
       istack_resized=.true.
-!      write(6,'("|  lastist = ",i12)')lastist
    end if
    itop_stk = itop_stk+isize
    inum_stkptrs=inum_stkptrs+1
@@ -157,7 +156,6 @@ subroutine get_istack(ipointer,isize,routine)
    end if
    istk_ptr(inum_stkptrs)=ipointer
    ihighest_stk=max(ihighest_stk,itop_stk)
-!  write(6,'(a,2i10)') '  get_istack: ', itop_stk, isize
    return
  end subroutine get_istack
 
@@ -176,7 +174,6 @@ subroutine get_stack(ipointer,isize,routine)
    !     All calls must originate from same routine unless
    !      stack is clear
 
-   !write(6,*)"Get_stack called from",routine,isize
    len_routine = len_trim(routine)
    if(len_routine == 0)then
       write(6,*)"ERROR get_stack passed no routine name"
@@ -412,7 +409,6 @@ subroutine resize_istack(isize,lastist)
   integer, intent(in) :: isize
   integer, intent(inout) :: lastist
 
-!  write(6,'("| Reallocating istack from ", i12, " to ",i12)')lastist,isize
  
    alloc_ier=0
    if(.not. istack_resized) then
@@ -457,7 +453,6 @@ subroutine resize_stack(isize,lastrst)
   integer, intent(out) :: lastrst
   
   
-!  write(6,'("| Reallocating r_stack from ", i12, " to ",i12)')lastrst,isize
  
   alloc_ier=0
   if(.not. rstack_resized) then

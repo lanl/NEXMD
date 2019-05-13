@@ -374,7 +374,6 @@ subroutine runmd(xx,ix,ih,ipairs,x,winv,amass,f, &
    end if
 #endif
       
-   ! If NTWPRT.NE.0, only print the atoms up to this value
    nrx  = nr3
    if (ntwprt > 0) nrx = ntwprt*3
    
@@ -717,7 +716,6 @@ subroutine runmd(xx,ix,ih,ipairs,x,winv,amass,f, &
 #if defined(MPI) && defined(LES)
          if ( ievb == 1 .and. i_qi > 0) then
             call evb_umb ( f, cartpos, real_mass, natom, istart3, iend3 )
-! 03132009            if( i_qi == 2 ) call qi_corrf_les ( cartpos, amass )
             if( i_qi == 2 ) call qi_corrf_les ( cartpos, real_mass )
             evb_nrg(1) = evb_frc%evb_nrg
             evb_nrg(2) = evb_vel0%evb_nrg
@@ -1206,8 +1204,6 @@ subroutine runmd(xx,ix,ih,ipairs,x,winv,amass,f, &
    !    old ekmh value since it was reset after we left runmd last time.
    !    DAN ROE: Only for ntt==1??
    if (rem>0.and.mdloop>=1) then
-      ! if (master) write(6,'(a,f16.6)') "Resetting ekmh to ",remd_ekmh
-      ! write(50+worldrank,'(a,f16.6)') "Resetting ekmh to ",remd_ekmh
       ekmh=remd_ekmh
    endif
 #endif
@@ -1315,7 +1311,6 @@ subroutine runmd(xx,ix,ih,ipairs,x,winv,amass,f, &
 #if defined(MPI) && defined(LES)
          if ( ievb == 1 .and. i_qi > 0) then
             call evb_umb ( f, cartpos, real_mass, natom, istart3, iend3 )
-! 03132009            if( i_qi == 2 ) call qi_corrf_les ( cartpos, amass )
             if( i_qi == 2 ) call qi_corrf_les ( cartpos, real_mass )
             evb_nrg(1) = evb_frc%evb_nrg
             evb_nrg(2) = evb_vel0%evb_nrg
@@ -1600,18 +1595,14 @@ subroutine runmd(xx,ix,ih,ipairs,x,winv,amass,f, &
            if (csurften == 1) then          ! Surface tension in the x direction
              ener%surface_ten = &
              box(1) * (ener%pres(1) - 0.5d0 * (ener%pres(2) + ener%pres(3))) / (ninterface * ten_conv )
-             !pbc_box(1) / ninterface / ten_conv * (press(1) - 0.5d0 * (press(2) + press(3)))
 
            else if (csurften .eq. 2) then     ! Surface tension in the y direction
              ener%surface_ten = &
              box(2) * (ener%pres(2) - 0.5d0 * (ener%pres(1) + ener%pres(3))) / (ninterface * ten_conv )
-             !pbc_box(2) / ninterface / ten_conv * (press(2) - 0.5d0 * (press(1) + press(3)))
  
            else
-           !else if (csurften .eq. 3) then     ! Surface tension in the z direction
              ener%surface_ten = &
              box(3) * (ener%pres(3) - 0.5d0 * (ener%pres(1) + ener%pres(2))) / (ninterface * ten_conv )
-             ! pbc_box(3) / ninterface / ten_conv * (press(3) - 0.5d0 * (press(1) + press(2)))
 
            end if
 
@@ -1645,14 +1636,6 @@ subroutine runmd(xx,ix,ih,ipairs,x,winv,amass,f, &
                 xx, ix, ih, ipairs, qsetup, do_list_update, &
                 corrected_energy, aqmmm_flag)
 
-! ALTERNATIVE APPROACH:
-!      if (ad_qmmm%calc_wbk) then
-!         call ad_qmmm_check_matching_partitions()
-!         if (ad_qmmm%mismatch) then
-!            call force()
-!         end if
-!         call ad_qmmm_energy()
-!      end if
 
 ! test
       i3 = 3*(istart-1)
@@ -1753,7 +1736,6 @@ subroutine runmd(xx,ix,ih,ipairs,x,winv,amass,f, &
    !  Car-Parrinello on dipoles:  note that the (small?) kinetic energy
    !       of the dipoles is included in the epol energy
 ! M_WJ
-!  if ( induced == 1 .and. indmeth == 3 ) call cp_dips(natom,xx(lpol),xx,dt)
    if ( induced > 0 .and. indmeth == 3 ) call cp_dips(natom,xx(lpol),xx,dt)
 
    
@@ -2201,11 +2183,6 @@ subroutine runmd(xx,ix,ih,ipairs,x,winv,amass,f, &
       endif
       
 #  ifdef LES
-      !if ( ipimd.eq.CMD ) then
-      !   call mpi_reduce(eke_cmd,tmp_eke_cmd,1,MPI_DOUBLE_PRECISION, &
-      !        mpi_sum,0,commsander,ierr)
-      !   eke_cmd = tmp_eke_cmd
-      !endif
       if ( .not. mpi_orig .and. numtasks > 1 ) then
         if ( temp0les < 0 ) then
           mpitmp(1) = eke
@@ -2482,7 +2459,6 @@ subroutine runmd(xx,ix,ih,ipairs,x,winv,amass,f, &
       endif
   
 ! M-WJ
-!      if( ixdump .and. (induced == 1 .and. indmeth == 3 ) )then
       if( ixdump .and. (induced > 0 .and. indmeth == 3 ) )then
 !
          call xdist(xx(ldipvel), xx(lfrctmp), natom)
@@ -2652,7 +2628,6 @@ subroutine runmd(xx,ix,ih,ipairs,x,winv,amass,f, &
      ! ntp = 3, semiisotropic pressure coupling
      ! (currently only for csurften>0, constant surface tension)
 
-     !else if (ntp > 2) then
      else
 
         if (csurften > 0) then
@@ -2673,7 +2648,6 @@ subroutine runmd(xx,ix,ih,ipairs,x,winv,amass,f, &
             rmu(2) = (1.d0 - dtcp * (pres0y - ener%pres(2)))**third
             rmu(3) = (1.d0 - dtcp * (pres0z - press_tan_ave))**third
 
-          !else if (csurften == 3) then   ! For surface tension in the z !direction
           else
             pres0x = pres0z - gamma_ten_int * ten_conv / box(3)
             pres0y = pres0x
@@ -3049,7 +3023,6 @@ subroutine runmd(xx,ix,ih,ipairs,x,winv,amass,f, &
          end if  ! ( iwrap == 0 )
 
 ! M-WJ
-!        if( igb == 0 .and. induced == 1 .and. indmeth == 3) &
          if( igb == 0 .and. ipb == 0 .and. induced > 0 .and. indmeth == 3) &
 !
             call wrt_dips(xx(linddip),xx(ldipvel),nr,t,title)
@@ -3614,12 +3587,9 @@ subroutine runmd(xx,ix,ih,ipairs,x,winv,amass,f, &
 
 #if defined(RISMSANDER) && defined(RISM_DEBUG)
    if(rismprm%irism == 1) then
-!!$   write(6,*) "END OF STEP",natom
-!     call calc_cm(x,cm,amass,natom)
       angvel=0
       do m=1,natom
          r = x((m-1)*3+1:(m-1)*3+3)-cm
-!!$      write(6,*) m,v((m-1)*3+1:(m-1)*3+3)
          call cross(r,v((m-1)*3+1:(m-1)*3+3),rxv)
          angvel = angvel + rxv/sum(r**2)
       end do
@@ -3629,22 +3599,9 @@ subroutine runmd(xx,ix,ih,ipairs,x,winv,amass,f, &
          r = x((m-1)*3+1:(m-1)*3+3)-cm
          call cross(r,v((m-1)*3+1:(m-1)*3+3),rxv)
          proj = sum(r*angvel)/sum(angvel**2)*angvel
-!!$      write(6,*) "angvel   ",angvel
-!!$      write(6,*) "r   ",r,sum((r)**2)
-!!$      write(6,*) "proj",proj
-!!$      write(6,*) "r-proj",r-proj,sum((r-proj)**2)
          moi=moi+amass(m)*sum((r-proj)**2)
          erot = erot + .5*amass(m)*sum((r-proj)**2)*sum((rxv/sum(r**2))**2)
       end do
-!!$   write(6,*) moi
-!!$   do m=1,3
-!!$      write(6,*) m,sum(v(m:3*natom:3))
-!!$      write(6,*) m,sum(amass(1:natom)*v(m:3*natom:3))
-!!$      write(6,*) m,angvel(m),sum(angvel**2)
-!!$   end do
-!!$   write(6,*) "EROT", 0.5*moi*sum(angvel**2), erot
-!!$   write(6,*) "EROT", erot
-!!$   call mexit(6,1)
    end if
 #endif /*RISMSANDER && RISM_DEBUG*/
 
@@ -3725,8 +3682,6 @@ subroutine runmd(xx,ix,ih,ipairs,x,winv,amass,f, &
    if (icfe /= 0 .and. idecomp /= 0) then
       if( idecomp == 1 .or. idecomp == 2 ) then
          call collect_dec(nrs)
-      !else if( idecomp == 3 .or. idecomp == 4 ) then
-      !   call collect_dec(npdec*npdec)
       end if
    end if
 
@@ -3895,7 +3850,6 @@ subroutine quench(f,v)
    if (dotproduct>0.0d0) then
       v(1:3*natom) = dotproduct*f(1:3*natom)*force
    else 
-      !v(1:3*natom) = 0.0d0
       v(1:3*natom) = vfac*dotproduct*f(1:3*natom)*force
    end if
    

@@ -235,7 +235,6 @@ function icosa_patch_approx(i, x, vdwrad, &
 
         ! ---   finish recursion
 
-        !write(6,*) 'EOR ', i, iatinclcnt1, iatinclcnt2, iatinclcnt3
 
         nof_exc = 0
         if(exc1) then
@@ -327,7 +326,6 @@ function icosa_patch_approx(i, x, vdwrad, &
                                          4 * nof_parts, &
                                          idecomp) 
         else if(idecomp.gt.0) then
-          !write(6,*) 'TR1 ', i, iatinclcnt1, iatinclcnt12, iatinclcnt31
           call decsasa_icosa(i,iatinclcnt1,iatincl1, &
                              -total_sas/4.0d0/3.0d0, &
                              idecomp)
@@ -352,7 +350,6 @@ function icosa_patch_approx(i, x, vdwrad, &
                                          4 * nof_parts, &
                                          idecomp)
         else if(idecomp.gt.0) then
-          !write(6,*) 'TR2 ', i, iatinclcnt2, iatinclcnt23, iatinclcnt12
           call decsasa_icosa(i,iatinclcnt2,iatincl2, &
                              -total_sas/4.0d0/3.0d0, &
                              idecomp)
@@ -377,7 +374,6 @@ function icosa_patch_approx(i, x, vdwrad, &
                                          4 * nof_parts, &
                                          idecomp)
         else if(idecomp.gt.0) then
-          !write(6,*) 'TR3 ', i, iatinclcnt3, iatinclcnt31, iatinclcnt23
           call decsasa_icosa(i,iatinclcnt3,iatincl3, &
                              -total_sas/4.0d0/3.0d0, &
                              idecomp)
@@ -402,7 +398,6 @@ function icosa_patch_approx(i, x, vdwrad, &
                                          4 * nof_parts, &
                                          idecomp)
         else if(idecomp.gt.0) then
-          !write(6,*) 'TRC ', i, iatinclcnt12, iatinclcnt23, iatinclcnt31
           call decsasa_icosa(i,iatinclcnt12,iatincl12, &
                              -total_sas/4.0d0/3.0d0, &
                              idecomp)

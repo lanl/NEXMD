@@ -659,13 +659,6 @@ subroutine colvar_mdread(cv, node, cvno)
    ! read refcrd from "refcrd" 
    ! store in cv% r 
    if (type == 'PCA') then
-!       first = 1
-!       last  = sander_nsolut()
-!       crdsize = (last-first+1)*3
-       
-!       write(*,*) "sander_nsolut=", sander_nsolut();
-       
-!       ncsu_assert(cv%i(1)*3 == crdsize)
          
        found2 = node_lookup_string(node, 'refcrd', ref_file)
        if (.not. found2) then
@@ -673,7 +666,6 @@ subroutine colvar_mdread(cv, node, cvno)
                NCSU_ERROR, 'could not find ''reference coordinates'' for CV #', n
             call terminate()
        else
-       ! write (unit = OUT_UNIT, fmt = *) 'crdsize is', crdsize
        ! allocate and read reference crd file into CV      
        	   if(cv%i(1) > 0) then 
               allocate(cv%r(cv%i(1)*3), stat = error)
@@ -694,14 +686,10 @@ subroutine colvar_mdread(cv, node, cvno)
             call terminate()
       else
       ! allocate and read evec crd into CV 
-!            if(crdsize > 0) then
-!              allocate(cv%evec(crdsize), stat = error)
             if(cv%i(3)>0) then
              	 allocate( cv%evec(cv%i(3)*3), stat = error)
-              ! write (unit = OUT_UNIT, fmt = *) 'crdsize is', crdsize
               if (error /= 0) &
                  NCSU_OUT_OF_MEMORY
-!              call read_evec(cv, evec_file, first, last)
               call read_evec(cv, evec_file)
               write (unit = OUT_UNIT, fmt = '(a,a,a,a)', advance = 'NO') NCSU_INFO, &
               'evec_file = ', trim(evec_file), ' ('
@@ -720,13 +708,10 @@ subroutine colvar_mdread(cv, node, cvno)
       	
       	
       ! allocate and read average crd into CV 
-!          if(crdsize > 0) then
-!              allocate(cv%avgcrd(crdsize), stat = error)
            if(cv%i(3)>0) then
               allocate( cv%avgcrd(cv%i(3)*3), stat = error)
               if (error /= 0) &
                  NCSU_OUT_OF_MEMORY
-!             call read_avgcrd(cv, avg_file, first, last)
               
               call read_avgcrd(cv, avg_file)
               write (unit = OUT_UNIT, fmt = '(a,a,a,a)', advance = 'NO') NCSU_INFO, &
@@ -791,9 +776,7 @@ subroutine colvar_bootstrap(cv, cvno, amass)
    NCSU_REAL,      intent(in)    :: amass(*)
 
 #ifdef MPI
-!   integer :: bcastdata(5), ierr  
    integer :: bcastdata(8), ierr
-   ! original: integer :: bcastdata(3), ierr
 #include "ncsu-mpi.h"
 
    !
@@ -895,7 +878,7 @@ subroutine colvar_bootstrap(cv, cvno, amass)
       ncsu_assert(ierr == 0)
    else
       nullify(cv%r)
-   end if ! bcastdata(3) > 0
+   end if 
 
    ! 
    ! cv % avgcrd    

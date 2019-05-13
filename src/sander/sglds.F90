@@ -276,7 +276,6 @@ contains
           DO M=1,3
             I3=I3+1
             SHKSG(I3)=FACT*(X(I3)-DSG(I3))
-            !FSG(I3)=FSG(I3)+SGAVG1*SHKSG(I3)
           ENDDO
         ENDDO
       ELSE
@@ -892,7 +891,6 @@ subroutine sgld_exchg(irep)
    integer  ierror, istatus(mpi_status_size)
    call mpi_sendrecv_replace(sgft,nsgld_real, mpi_double_precision, &
                    irep, 511, irep, 511, commmaster, istatus, ierror)
-    !call mpi_barrier(commmaster, ierror)
    return
    end subroutine sgld_exchg
 
@@ -915,11 +913,6 @@ subroutine rxsgld_scale(stagid,nr,myscaling,amass,v)
    _REAL_ ek,elf,ehf,elh,amassi,vi,vlf,vhf,chk,hfscale
    _REAL_ temp1(10),temp2(10)
 !--------------------
-         !if (sanderrank==0) then
-         !   write (6,'(a,i4,2x,f8.3,a,2f8.3)') &
-         !      "RXSGLD: stagid, scalsg  ",stagid,myscalsg,&
-         !      " to match sgft,tempsg,: ",sgft,tempsg
-         !endif
       call mpi_bcast(stagid,1,mpi_integer,0,commsander,ierror)
 
          ! All processes scale velocities.
@@ -986,8 +979,6 @@ subroutine rxsgld_scale(stagid,nr,myscaling,amass,v)
          if(chk>0.0d0)hfscale=(sqrt(chk)-elh)/ehf
          hfscale=max(hfscale,0.5d0)
          hfscale=min(hfscale,2.0d0)
-         !write(6,*)"scales:",stagid,sanderrank, &
-         !        myscaling,myscalsg,hfscale,ek,elf,ehf
          do i = 1,nr
            do j=3*i-2,3*i
              if(i<jsta.or.i>jend)then

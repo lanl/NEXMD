@@ -102,25 +102,16 @@ function colvar_value(cv, x) result(value)
    ncsu_assert(cv%type == COLVAR_PCA)
    ncsu_assert(associated(cv%i))
 
-!  i1: nsolut
-!  i2: nref
-!  i3: npca
 
    i1 = cv%i(1) 
    i2 = cv%i(2)
    i3 = cv%i(3)
   
-!   nsolut = sander_nsolut() 
- 
-!   natoms = i2 - i1 + 1
-!   ncsu_assert(natoms > 1)
 
     natoms = i1
     ncsu_assert(natoms > 1)
     
-!    ncsu_assert(i1 == nsolut)
 
-!   allocate(fit_crd(3*natoms), stat = error)   
    allocate(fit_crd(3*cv%i(3)), stat = error)
    
    if (error /= 0) &
@@ -136,7 +127,6 @@ function colvar_value(cv, x) result(value)
    do a = 1, cv%i(1)
    	  if(cv%state_ref(a) == 0) cycle
       a3 = 3*a 
-!      x_cm = x_cm + priv%mass(n)*x(a3 - 2:a3)  
       x_cm = x_cm + priv%mass(a)*x(a3 - 2:a3)  
 
       n = n + 1 
@@ -146,7 +136,6 @@ function colvar_value(cv, x) result(value)
 
    x_cm = x_cm/priv%total_mass 
    
-!   write(*,*) "x_cm=, worldrank=", x_cm, worldrank
    
    ! computer translated moving atoms for all solutes     
    n = 1
@@ -165,7 +154,6 @@ function colvar_value(cv, x) result(value)
    ! Calculate transposed rotation matrix U 
    call rmsd_q3u(priv%quaternion, priv%U) 
    
-!   write(*,*) "priv%U=, worldrank=", priv%U, worldrank
  
    ! Calculate fitted crd (from i1-i2 ONLY) wrt to original ref_crd     
    ! best fit X for ref_crd : U*cm_crd + ref_cm 
@@ -175,13 +163,9 @@ function colvar_value(cv, x) result(value)
    ! cm_crd includes 1:nsolut
    ! fit_crd includes i1:i2  
    n = 1 
-!   do a = i1, i2
     do a = 1, cv%i(1)
     	if(cv%state_pca(a) == 0) cycle
       a3 = 3*a
-!      fit_crd(3*n-2:3*n) = (matmul(priv%U, priv%cm_crd(a3-2:a3)) &
-!                        + priv%ref_cm - cv%avgcrd(a3-2:a3))  & 
-!                        * sqrt(priv%mass(a)) 
 
        fit_crd(3*n-2:3*n) = (matmul(priv%U, priv%cm_crd(a3-2:a3)) &
                          + priv%ref_cm - cv%avgcrd(3*n-2:3*n))  & 
@@ -194,8 +178,6 @@ function colvar_value(cv, x) result(value)
 
 
    ! Calculate projection
-   ! P = XT  
-!   priv%value = dot_product(fit_crd,cv%evec(i1*3-2:i2*3)) 
    priv%value = dot_product(fit_crd,cv%evec(1:3*i3))
    value = priv%value  
    
@@ -239,19 +221,14 @@ subroutine colvar_force(cv, x, fcv, f)
    i1 = cv%i(1) 
    i2 = cv%i(2)
    i3 = cv%i(3)
-!   natoms = i2 - i1 + 1
-!   natoms = i1
    npca = i3
    
-!   ncsu_assert(natoms > 1)
    ncsu_assert(npca > 1)
 
    priv => get_priv(cv)
-   !ncsu_assert(priv%value > ZERO)
    ncsu_assert(priv%total_mass > ZERO)
 
 #ifdef MPI
-!   a = natoms/sandersize
    a = npca/sandersize
    if (a.gt.0) then
       if (sanderrank.ne.(sandersize - 1)) then
@@ -259,14 +236,12 @@ subroutine colvar_force(cv, x, fcv, f)
          a_last = (sanderrank + 1)*a
       else
          a_first = 1 + sanderrank*a
-         ! a_last = natoms
          a_last = npca
          
       end if
    else
       if (sanderrank.eq.0) then
          a_first = 1
-         ! a_last = natoms
          a_last = npca
       else
          a_first = 1
@@ -275,14 +250,9 @@ subroutine colvar_force(cv, x, fcv, f)
    end if
    do a = a_first, a_last
 #else
-!   do a = 1, natoms
    do a = 1, npca
 #endif /* MPI */
-!      a3 = 3*(i1 + a - 1)
        a3 = 3*cv%ipca_to_i(a)
-!      if(state_pca(a) == 0) cycle
-      ! dc/dx = transpose(T)*U 
-!      f(a3 - 2:a3) = f(a3 - 2:a3) + fcv * matmul(cv%evec(a3 - 2:a3), priv%U)*sqrt(priv%mass(i1 + a - 1))! now evec has the same index as force 
        f(a3 - 2:a3) = f(a3 - 2:a3) + fcv * matmul(cv%evec(3*a - 2 : 3*a), priv%U)*sqrt(priv%mass(cv%ipca_to_i(a)))
        
    end do
@@ -314,9 +284,6 @@ subroutine colvar_bootstrap(cv, cvno, amass)
 
    ncsu_assert(cv%type == COLVAR_PCA)
 
-!   natoms = cv%i(2) - cv%i(1) + 1 
-!   nsolut = sander_nsolut()
-!   ncsu_assert(nsolut == cv%i(1))
 
 !  make sure that there are only three integers 
    call check_i(cv%i, cvno, 'PCA', 3)
@@ -382,7 +349,6 @@ subroutine print_details(cv, lun)
    ncsu_assert(cv%type == COLVAR_PCA)
    ncsu_assert(associated(cv%i))
 
-!  call print_i(cv%i, lun)
    call print_pca(cv%i, lun)
 
 end subroutine print_details

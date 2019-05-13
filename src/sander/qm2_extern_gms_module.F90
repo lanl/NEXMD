@@ -511,60 +511,6 @@ contains
     end do
     write(iurun,'(a,/)') ' $END'
 
-    ! $VEC card and $GUESS cards (for restart)
-    !if (first_call) then
-    !
-    !   first_call = .false.
-    !
-    !else
-    !
-    !   open (unit=iudat, file=datfile, status='old', iostat=ios)
-    !   if ( ios /= 0 ) then
-    !      call sander_bomb('write_inpfile (qm2_extern_gms_module)', &
-    !           'Error opening GAMESS punch file '//trim(datfile)//' from previous step', &
-    !           'Will quit now')
-    !   end if
-    !   
-    !   found = .false.
-    !   do
-    !      read (iudat, '(a)', iostat = ios) read_buffer
-    !      ! End of file; data not found
-    !      if (ios < 0) then
-    !         call sander_bomb('write_inpfile (qm2_extern_gms_module)', &
-    !              'Error reading GAMESS data from file '//trim(datfile)//' ($VEC card not found)', &
-    !              'Will quit now')
-    !      end if
-    !      if (trim(read_buffer) == ' $VEC') then
-    !         found = .true.
-    !         write (iurun, '(a)') read_buffer
-    !         do
-    !            read (iudat, '(a)', iostat = ios) read_buffer
-    !            ! End of file; End block not found
-    !            if (ios < 0) then
-    !               call sander_bomb('write_inpfile (qm2_extern_gms_module)', &
-    !                    'Error reading GAMESS data from file '//trim(datfile)//' ($END of $VEC card not found)', &
-    !                    'Will quit now')
-    !            end if
-    !            if (trim(read_buffer) == ' $END') then
-    !               exit
-    !            else
-    !               write (iurun, '(a)') read_buffer
-    !               read (read_buffer, *) norb
-    !            end if
-    !         end do
-    !      end if
-    !      if (found) exit
-    !   end do
-    !
-    !   close(iudat)
-    !   
-    !   write (iurun, '(2(a,/),a,i0,/,a,/)') &
-    !        ' $GUESS'       , &
-    !        'GUESS = MOREAD', &
-    !        'NORB=',norb    , &
-    !        ' $END'
-    !
-    !end if
     
     close(iurun)
 

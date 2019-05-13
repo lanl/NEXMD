@@ -29,8 +29,6 @@ _REAL_, dimension(1:3,1:18), save :: tranvec
 
 !-------------  ew_unitcell.h --------------------------
 integer, parameter :: BC_EWUCR=54, BC_EWUCI=3
-!#define BC_EWUCR 54
-!#define BC_EWUCI 3
 
 _REAL_ :: a,b,c,alpha,beta,gamma,volume
 _REAL_ :: ucell,recip,dirlng,reclng,sphere,cutoffnb
@@ -687,7 +685,6 @@ subroutine nonbond_list(crd,iac,ico,iblo,inb,ntypes, &
    end if  ! (i_do_direct)
    call mpi_barrier(commsander,ierr)
 #endif
-!   if( (nbtell > 1) .and. .not. master ) write(6, '(a,i10,a,i4)') &
 !            '| Local SIZE OF NONBOND LIST = ', listtot,'   PE',mytaskid
    if( (first_list_flag .or. (nbtell == 1))  .and. master ) then
       write(6, '(a,i10)') &
@@ -950,8 +947,8 @@ subroutine grid_image(natom, verbose, periodic)
                   f3*ucell(3,3)
                bckptr(numimage) = j
             end do
-      end if  ! (my_grids(index) == 1)
-   end do  !  index = 1,nucgrd
+      end if  
+   end do 
    if(master) then
       if (verbose == 1)write(6,*)'grid_image: numimage = ',numimage
    end if
@@ -1098,13 +1095,13 @@ subroutine grid_pointers(nghbptr,nghtran,periodic,nogrdptrs)
                   end do
                   nghbptr(0,index0) = num
                   180 continue
-               end do  !  i1 = 1,nucgrd1
-            end do  !  i2 = 1,nucgrd2
-         end do  !  i3 = 1,nucgrd3
+               end do  
+            end do  
+         end do 
       end if  ! (nogrdptrs)
       numnptrs = maxnptrs
       return
-   end if  ! (periodic == 0)
+   end if 
    !-------------------------------------------------------------------------
    do i3 = 1,nucgrd3
       i3grd=sizgrd12*(i3-1)
@@ -1197,9 +1194,9 @@ subroutine grid_pointers(nghbptr,nghtran,periodic,nogrdptrs)
                   end do
                end do
             endif ! index within lo and hi
-         end do   !  280 i1 = 1,nucgrd1
-      end do  !  i2 = 1,nucgrd2
-   end do  ! i3 = 1,nucgrd3
+         end do   
+      end do 
+   end do
 
    numnptrs = num
 
@@ -1251,7 +1248,6 @@ subroutine setup_grids(periodic,nogrdptrs,verbose)
    parameter(sizmaxhb=1.34d0)    ! max bond length for h to heavy atom
 
    nghb0=nghb
-   !      if(periodic.eq.0) nghb0=max(3.,cutlist/5.d0)
    nghb1 = nghb0
    nghb2 = nghb0
    nghb3 = nghb0
@@ -1353,7 +1349,6 @@ subroutine setup_grid_sizes(periodic,nogrdptrs,verbose)
    parameter(sizmaxhb=1.34d0)    ! max bond length for h to heavy atom
 
    nghb0=nghb
-   !      if(periodic.eq.0) nghb0=max(3.,cutlist/5.d0)
    nghb1 = nghb0
    nghb2 = nghb0
    nghb3 = nghb0
@@ -1682,7 +1677,7 @@ subroutine pack_nb_list(kk,i,xk,yk,zk,imagcrds,cutoffsq, &
                
                end if
             end if
-         end do  !  m = kk+1,numlist
+         end do
       else check_softcore ! atom i IS a softcore atom
          do m = kk+1,numlist            
          
@@ -1707,7 +1702,7 @@ subroutine pack_nb_list(kk,i,xk,yk,zk,imagcrds,cutoffsq, &
                   iws(lps) = ior(n,ishft(itran(m),27)) ! bitwise optimization
                end if
             end if
-         end do  !  m = kk+1,numlist
+         end do
       end if check_softcore
    else softcore_on
 # endif
@@ -1747,7 +1742,7 @@ subroutine pack_nb_list(kk,i,xk,yk,zk,imagcrds,cutoffsq, &
                end if
             end if
          end if
-      end do  !  m = kk+1,numlist
+      end do
 # ifdef MPI /* SOFT CORE */
    end if softcore_on
 # endif 
@@ -1890,7 +1885,7 @@ subroutine pack_nb_nogrdptrs(kk,i,xk,yk,zk,imagcrds,cutoffsq, &
                   end if
                end if
             end if
-         end do  !  m = kk+1,numlist
+         end do  
       else check_softcore ! atom i IS a softcore atom
          do m = kk+1,numlist
             jtran=5
@@ -1919,7 +1914,7 @@ subroutine pack_nb_nogrdptrs(kk,i,xk,yk,zk,imagcrds,cutoffsq, &
                   end if
                end if
             end if
-         end do  !  m = kk+1,numlist
+         end do
       end if check_softcore
 
    else softcore_on ! softcore is not on, build list the usual way
@@ -1958,7 +1953,7 @@ subroutine pack_nb_nogrdptrs(kk,i,xk,yk,zk,imagcrds,cutoffsq, &
 
             end if
          end if
-      end do  !  m = kk+1,numlist
+      end do
 #ifdef MPI /* SOFT CORE */
    end if softcore_on
 #endif
@@ -2102,13 +2097,11 @@ subroutine adjust_imagcrds(crd,natom)
    !   ---- Periodic systems
    !        find change since last step:
    
-   !call Trace_integer( "natom = ", natom )
    i=0
    do while ( i < natom )
       i=i+1
       if(mygrdlist(i) == 1)then
          j = bckptr(i)
-         !call Trace_integer( "mygrdlist(i) == 1; bckptr(i) = ", j )
          dfrac(1,j) = fraction(1,j) - savfrac(1,j)
          dfrac(2,j) = fraction(2,j) - savfrac(2,j)
          dfrac(3,j) = fraction(3,j) - savfrac(3,j)
@@ -2374,8 +2367,6 @@ end subroutine check_skin
 !+ [Enter a one-line description of subroutine fill_tranvec here]
 subroutine fill_tranvec()
    implicit none
-!!!#  include "ew_tran.h"
-!!!#  include "ew_cntrl.h"
    integer iv,i0,i1,i2,i3
    
    iv=0

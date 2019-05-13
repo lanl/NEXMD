@@ -261,7 +261,6 @@ subroutine fastwat(igraph,nres,ipres,lbres, &
       end do
       if(ibgion /= 0 .and. ienion /= 0) then
          ! Output result
-         !!!write(iout,9002) ienion - ibgion + 1
       end if
    end if
    
@@ -358,7 +357,6 @@ subroutine quick3(x0, xh, ifstwr, natom, nres, ipres)
          istart = max(ipres(ibgwat),iparpt(mytaskid) + 1)
          iend = min(ipres(ienwat)+2,iparpt(mytaskid+1))
       end if
-      ! write(0,*) 'calling setlep',mytaskid,istart,iend,ibgwat,ienwat
       
 #else
       istart = ipres(ibgwat)
@@ -472,7 +470,6 @@ subroutine setlep (iwatat, natom, x0, x1, mxatm, iorwat, rbtarg)
    _REAL_  xakszd, yakszd, zakszd, xaksxd, yaksxd, zaksxd
    _REAL_  xaksyd, yaksyd, zaksyd
    
-   !        if ( abs(za1d) .ge. ra) then
 
    ra = rbtarg(1)
    rb = rbtarg(2)
@@ -566,11 +563,6 @@ subroutine setlep (iwatat, natom, x0, x1, mxatm, iorwat, rbtarg)
       yc1d = trns12*xc1 + trns22*yc1 + trns32*zc1
       zc1d = trns13*xc1 + trns23*yc1 + trns33*zc1
       
-      !        if ( abs(za1d) .ge. ra) then
-      !          write  (6,699)
-      !  699     format (5x,' ### SETLEP : deviation is too big !! ')
-      !          call exit
-      !        endif
       !                                                --- Step2  A2_prime ---
       
       sinphi = za1d * onera
@@ -580,7 +572,6 @@ subroutine setlep (iwatat, natom, x0, x1, mxatm, iorwat, rbtarg)
 
       ya2d =   ra * cosphi
       xb2d = - rc * cospsi
-      !        xc2d =   rc * cospsi
       yb2d = - rb * cosphi - rc *sinpsi * sinphi
       yc2d = - rb * cosphi + rc *sinpsi * sinphi
       xb2d2 = xb2d * xb2d
@@ -588,7 +579,6 @@ subroutine setlep (iwatat, natom, x0, x1, mxatm, iorwat, rbtarg)
             + (zb1d-zc1d) * (zb1d-zc1d)
       deltx = 2.d0 * xb2d + sqrt ( 4.d0 * xb2d2 - hh2 + hhhh )
       xb2d = xb2d - deltx * 0.5d0
-      !        xc2d = xc2d + deltx * 0.5d0
       
       !                                                --- Step3  al,be,ga ---
       
@@ -680,7 +670,6 @@ subroutine setlev (iwatat, natom, x, y, z, vx, vy, vz)
    !*****************************************************************
    _REAL_  wh, wo, wohh, woh, whh, woh2, wowh2, whwh
    _REAL_  wohwoh, wohwo, whhwh
-   !     parameter (wo = 16.000d0 , wh = 1.008d0 , wohh = 18.016d0)
    data wo   /16.000d0/ , wh  /1.008d0/ &
          , woh  /17.008d0/ , whh /2.016d0/ &
          , woh2 /34.016d0/
@@ -972,8 +961,6 @@ subroutine b4setl(rhh,roh,rbtarg)
    _REAL_  rhh,roh,rbtarg(9), x(2,3)
 
    _REAL_  wh, wo, onewohh
-   !     PARAMETER (WO = 16.000D0 , WH = 1.008D0 , WOHH = 18.016D0)
-   !     PARAMETER (RHH=1.5136D0 , ROH=0.9572D0)
 
    _REAL_  comx, comy
    _REAL_  dis
@@ -1009,11 +996,6 @@ subroutine b4setl(rhh,roh,rbtarg)
    rbtarg(5) = rbtarg(4)*rbtarg(4)
    rbtarg(9) = 1.0d0/dis
    
-   !     print*,'ra=  ',rbtarg(1)
-   !     print*,'rb=  ',rbtarg(2)
-   !     print*,'rc=  ',rbtarg(3)
-   !     print*,'rc2= ',rbtarg(4)
-   !     print*,'hhhh=',rbtarg(5)
 
    return
 end subroutine b4setl 

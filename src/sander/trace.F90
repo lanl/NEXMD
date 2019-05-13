@@ -355,7 +355,6 @@ module trace
       ! column 2 (i2 xor r2), etc.
       ! all arguments are optional.
       ! Example invocation:
-      !   call Trace_table( i1=i, i2=j, i3=k, r4=data(i,j,k) )
       !
       !------------------------------------------------------------------
       implicit none

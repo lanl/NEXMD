@@ -589,7 +589,6 @@ function lines(path, t) result(y)
       ncsu_assert(n.ge.1)
       ncsu_assert(n.lt.npoints)
 
-      ! 0 < s < 1 between path(n) and path(n + 1)
       s = (npoints - 1)*t - n + 1
       y = (ONE - s)*path(n) + s*path(n + 1)
    end if
