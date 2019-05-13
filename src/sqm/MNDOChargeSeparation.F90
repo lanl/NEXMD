@@ -119,7 +119,6 @@ subroutine GetDDAndPho(qm2_params,qmmm_struct, qmtype, DD, PO)
       D        = AIJ52/SQRT(5.0D0)
 !C     PREVIOUS STATEMENT AS IN THE TCA PAPER,
 !C     NEXT STATEMENT AS A POSSIBLE ALTERNATIVE.
-!C     FG       = qm2_params%REPD(33)-1.6D0*qm2_params%REPD(35) 
       DD(5) = D
       FG=GetOneCenter2Electron(qm2_params,qmtype, 23)
       FG1=GetOneCenter2Electron(qm2_params,qmtype, 35)
@@ -133,8 +132,6 @@ subroutine GetDDAndPho(qm2_params,qmmm_struct, qmtype, DD, PO)
       PO(8) = POIJ(0,ONE,0.2D0*(FG+TWO*FG1+TWO*FG2))
 !CDEC  NEXT TWO STATEMENTS RUN INTO COMPILER BUG ON DEC ALPHA (OSF1).
 !C     THEY ARE REPLACED BY TWO MATHEMATICALLY EQUIVALENT STATEMENTS.
-!C     D        = SQRT(AIJ63/7.0D0)
-!C     D        = D*SQRT(TWO)
       D        = AIJ63/7.0D0
       D        = SQRT(TWO*D)
       DD(6) = D
@@ -244,16 +241,6 @@ function GetOneCenter2Electron(qm2_params,qmType, index) result(integral)
          R244 = qm2_params%G2SD(qmType)
       end if
 !!     KEEP PREDEFINED SLATER-CONDON PARAMETERS (IF REQUESTED).
-!      IF(IF0SD.GT.0) THEN
-!         R016  = F0SD
-!      ELSE
-!         F0SD = R016
-!      ENDIF
-!      IF(IG2SD.GT.0) THEN
-!         R244  = G2SD
-!      ELSE
-!         G2SD = R244
-!      ENDIF
 ! *** COMPUTE ONE-CENTER TWO-ELECTRON INTEGRALS
 !     FROM THE SLATER-CONDON PARAMETERS.
       qm2_params%REPD( 1) = R016

@@ -23,23 +23,17 @@
    _REAL_::zz1(qmmm_struct%nquant_nlink)
    _REAL_,intent(out) :: dxyz(qmmm_struct%nquant_nlink*3)
    _REAL_::dxyz1(3,qmmm_struct%nquant_nlink)
-   !_REAL_,intent(in) :: xyz_in(3,qmmm_struct%nquant_nlink)
    _REAL_::xyz(3*qmmm_struct%nquant_nlink)
-!	_REAL_ dgs1(Nm),desa1(Nm),desb1(Nm)
-!	_REAL_ dgs2(Nm),desa2(Nm),desb2(Nm)
-!  _REAL_ r(N3_M),disp0(N3_M)            ! atomic cartesian coordinates
    _REAL_ Omega,Omega_,EE0,EE0_,dEE0,f,dOmega,t,d,d1,ff
    
    integer mdflag
    character*20 datetime, keywr*40, machname*36
-!	_REAL_ Omega_f(Mx_M)
    _REAL_ Egr, E0_f
    integer, allocatable :: imodimp(:), jmodimp(:)
    integer imimp
    integer get_time
    _REAL_ tmark
    integer jm
-!  _REAL_ ftemp(nmax*3)
    real time11,time12,time13,time23
    save time11,time12,time13,time23
 
@@ -75,29 +69,6 @@
    Omega=0.0
    Omega_=0.0
 !
-   ! ALLOCATE ARRAYS
-   !allocate(imodimp(qmmm_struct%nquant_nlink*3), jmodimp(qmmm_struct%nquant_nlink*3), stat=ier)
-   !REQUIRE(ier==0)
-   !allocate(xx1(qmmm_struct%nquant_nlink), yy1(qmmm_struct%nquant_nlink), zz1(qmmm_struct%nquant_nlink), stat=ier)
-   !REQUIRE(ier==0)
-   !allocate(dxyz(qmmm_struct%nquant_nlink*3), stat=ier)
-   !REQUIRE(ier==0)
-   !allocate(dxyz1(3,qmmm_struct%nquant_nlink), stat=ier)
-   !REQUIRE(ier==0)
-   !allocate(xyz(3,qmmm_struct%nquant_nlink), stat=ier)
-   !REQUIRE(ier==0)
-   ! END ALLOCATE ARRAYS
-
-! find current cartesian coordinates:
-!      do j = 1,natom
-!        xx1(j) = rx(j)
-!        yy1(j) = ry(j)
-!        zz1(j) = rz(j) 
-!      enddo
-!
-!      do j=1,Nm
-!         imodimp(j)=1
-!      enddo
 
 ! Cartesian coordinates are now located in qmmm_module
 ! But they are only there AFTER sqm is run outside this subroutine b/c it's passed in
@@ -112,45 +83,16 @@
       end do
    end do
 
-!	do j=1,3*qmmm_struct%nquant_nlink
-!		imodimp(j)=1
-!	end do
-
-! find analytical derivatives:
-
-! OLD CODE BLOCK 1
-! First of all calculate current Hamiltonian
-!      mdflag=0
-!      call input1(keywr,Na,xx1,yy1,zz1,atoms,mdflag)
-!	write(6,*)  'tt'
-!	call prmat1(Nb,tt)	
-!	call dcopy(Lt,tt,one,rhoLZ,one) 		
-! Now calculate calculate ground state:
-!      call scf(tt,ee,uu,eta,xi,Nit,rdamp,iflagS,mdflag)
-!        write(6,*)  'We got out of SCF cmltest'
-!        call flush(6)
-!      E0_f=(Enucl+Eelec+Esol)*feV
-
-! END OLD CODE BLOCK 1
 
 ! NEW CODE BLOCK 1
    ! The above block calculates the desired Hamiltonian and calcs the GS.
    ! SQM does this all at once
-!	call sqm_energy(qmmm_struct%nquant_nlink, xyz, Escf, born_radii, one_born_radii, &
-!                 intdiel, extdiel, Arad, qm2_struct%scf_mchg )
    ! No solvent effects have been added yet
    E0_f=qmmm_struct%elec_eng+qmmm_struct%enuclr_qmmm+qmmm_struct%enuclr_qmqm
 
-   !write(6,*)  'E_elect=', qmmm_struct%elec_eng 
-   !write(6,*)  'Enucl=', qmmm_struct%enuclr_qmmm + qmmm_struct%enuclr_qmqm
-   !write(6,*)  'E0_f=', E0_f
 
 ! END NEW CODE BLOCK 1
 
-! OLD CODE BLOCK 2
-   ! Store ground state density (AO) in in rhogr for future
-   !	call dcopy(Lt,tt,one,rhogr,one)      
-! END OLD CODE BLOCK 2
 
 ! NEW CODE BLOCK 2
    rhogr=>qm2_struct%den_matrix
@@ -172,12 +114,6 @@
 ! END REFORMED CODE BLOCK 3
 
 ! Calculate excited states and excited state density matrix T+Z in rhoTZ
-! OLD CODE BLOCK 4
-   ! call LZ(rhogr,rhoTZ,rhoLZ,istate)
-!       do j=1,istate
-!        Omega_f(j)=e0(kx(j))
-!       enddo
-! END OLD CODE BLOCK 4
 
 ! NEW CODE BLOCK 4
    ! Call to LZ() replaced by ex. st. den. matrix wrapper
@@ -191,19 +127,6 @@
 
 
 ! Get appropriate transition density and rhoTZ to AO
-! OLD CODE BLOCK 5
-!       call mo2sitef (Nb,uu,rhoTZ,tz_scratch(1),tz_scratch(Mb+1))
-!c        write(6,*)  'T+Z in MO'
-!c       call prmat(Nb,rhoTZ)
-!c        write(6,*)  'T+Z in AO'
-!c       call prmat(Nb,tz_scratch(1))
-!       call packing(Nb,tz_scratch(1),rhoTZ,'s')
-!c        write(6,*)  'T+Z in AO'
-!c       call prmat1(Nb,rhoTZ)
-!
-!      call getmodef(M2_M,Mx_M,Np,Nh,kx(istate),v0,tz_scratch(1))
-!      call mo2sitef (Nb,uu,tz_scratch(1),rhoLZ,tz_scratch(Mb+1))
-! END OLD CODE BLOCK 5
 ! NEW CODE BLOCK 5
       call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%rhoTZ,qm2ds%tz_scratch(1), &
          qm2ds%tz_scratch(qm2ds%Nb**2+1))
@@ -226,34 +149,6 @@
    if(ideriv>=2) then   ! Fast GS MOPAC derivatives
 ! END REFORMED CODE BLOCK 6
 
-! OLD CODE BLOCK 7
-!****************************************
-! start the bucle for derivatives calculations
-!**********************************************
-
-!c Figure type of derivetives to make:
-
-!c Assign coordinates and zero derivatives
-!       do j = 1, Na
-!         xyz(1,j) = rx(j)
-!         xyz(2,j) = ry(j)
-!         xyz(3,j) = rz(j)
-!         dxyz1(1,j) = 0.0
-!         dxyz1(2,j) = 0.0
-!         dxyz1(3,j) = 0.0
-!        enddo
-
-!c Calculate ground state derivatives E_gr^x=E_nucl^x+E_el^x
-!c   E_el^x=1/2 Tr((t^x+F^x) rho)
-        
-!         call DCART(xyz,dxyz1,rhogr)
-!c Convert from kcal/A to eV/A
-!       do j = 3,N3,3
-!         dxyz(j-2) = -dxyz1(1,j/3)/23.061
-!         dxyz(j-1) = -dxyz1(2,j/3)/23.061
-!         dxyz(j) = -dxyz1(3,j/3)/23.061
-!       enddo
-! END OLD CODE BLOCK 7
 ! NEW CODE BLOCK 7
       dxyz1=0.d0
       ! Calculate ground state derivatives E_gr^x=E_nucl^x+E_el^x
@@ -273,18 +168,6 @@
       end do
 ! END NEW CODE BLOCK 7
 
-!c Calculate excited state derivatives Omega^x=Tr(F^x rhoTZ)+Tr(V^x(xi) xi^+)
-! OLD CODE BLOCK 8
-!      if (ihop.gt.0) then
-!c Term 1: Tr(F^x rhoTZ)
-!         call DCART1(xyz,dxyz1,rhogr,rhoTZ)
-!c Convert from kcal/A to eV/A
-!       do j = 3,N3,3
-!         dxyz(j-2) = dxyz(j-2)-dxyz1(1,j/3)/23.061
-!         dxyz(j-1) = dxyz(j-1)-dxyz1(2,j/3)/23.061
-!         dxyz(j) = dxyz(j)    -dxyz1(3,j/3)/23.061
-!       enddo            
-! END OLD CODE BLOCK 8
 ! NEW CODE BLOCK 8
 
 !COSMO GRADIENT HERE? NEED TO IMPLEMENT COSMO GRADIENT IN THIS PART? OR CAN
@@ -304,12 +187,6 @@
          ! Convert from kcal/A to eV/A.
          ! Maps matrix onto vector. Only works when -Mbounds is not specified as compiler flag
          ! dxyz(1:qmmm_struct%nquant_nlink*3) = dxyz(1:qmmm_struct%nquant_nlink*3)-dxyz1(1:qmmm_struct%nquant_nlink*3)*KCAL_TO_EV
-         ! This will work with or without Mbounds. Less efficient.
-         !do i=1,qmmm_struct%nquant_nlink
-         !   do j=1,3
-         !      dxyz((i-1)*3+j)=dxyz((i-1)*3+j)-dxyz1(j,i)*KCAL_TO_EV
-         !   end do
-         !end do
         
          !Add solvent part (symmetric only b/c symmetric matrix)  
          if((ceps.gt.1.d0).and.(solvent_model.gt.0).and.(potential_type.eq.3)) then
@@ -328,28 +205,6 @@
 ! END NEW CODE BLOCK 8
 
 ! Term 2: Tr(V^x(xi) xi^+)
-! OLD CODE BLOCK 9
-!c Term 2: Tr(V^x(xi) xi^+)
-!c Symmetric part
-!          call packing(Nb,rhoLZ,tz_scratch(1),'s')
-!          call DCART2(xyz,dxyz1,tz_scratch(1))
-!c Convert from kcal/A to eV/A
-!       do j = 3,N3,3
-!         dxyz(j-2) = dxyz(j-2)-dxyz1(1,j/3)/23.061
-!         dxyz(j-1) = dxyz(j-1)-dxyz1(2,j/3)/23.061
-!         dxyz(j) = dxyz(j)      -dxyz1(3,j/3)/23.061
-!       enddo
-!
-!c Antisymmetric part     
-!          call packing(Nb,rhoLZ,tz_scratch(1),'u')  
-!          call DCART2(xyz,dxyz1,tz_scratch(1))
-!c Convert from kcal/A to eV/A
-!       do j = 3,N3,3
-!         dxyz(j-2) = dxyz(j-2)-dxyz1(1,j/3)/23.061
-!         dxyz(j-1) = dxyz(j-1)-dxyz1(2,j/3)/23.061
-!         dxyz(j) = dxyz(j)      -dxyz1(3,j/3)/23.061
-!       enddo            
-! END OLD CODE BLOCK 9
 
 ! NEW CODE BLOCK 9
       ! Symmetric part
@@ -404,41 +259,9 @@
 
 !		else	! "Standard CEO derivatives"
 
-! OLD CODE BLOCK 10
-!      do im = 1,Nm
-!         itime1=get_time()
-!            ff=1.0
-!10      continue 
-!            d1=d*ff       
-!            mdflag=0
-!c Make geometry increments 
-!c Find differences Vc^+ - Vc^- and t^+ - t^-
-!
-!c Increment -
-!            do j = 3,N3,3
-!               xx1(j/3) = rx(j/3) - d1*v(j-2,im)
-!               yy1(j/3) = ry(j/3) - d1*v(j-1,im)
-!               zz1(j/3) = rz(j/3) - d1*v(j,im)
-!            enddo
-!c Find Hamiltonian 	
-!            call input1(keywr,Na,xx1,yy1,zz1,atoms,mdflag)
-! END OLD CODE BLOCK 10
-
-! NEW CODE BLOCK 10
-!			do im = 1,qmmm_struct%nquant_nlink*3
-!				do j = 3,qmmm_struct%nquant_nlink*3,3
-!					xx1(j/3) = rx(j/3) - d1*v(j-2,im)
-!					yy1(j/3) = ry(j/3) - d1*v(j-1,im)
-!					zz1(j/3) = rz(j/3) - d1*v(j,im)
-!				end do
-!
-!				call input1(xx1,yy1,zz1)
-!			end do
-! END NEW CODE BLOCK 10
       end if
    end if
 
-   !write(6,*)"qmmm_nml%verbosity=",qmmm_nml%verbosity	 	
    if(qmmm_mpi%commqmmm_master .AND. qmmm_nml%verbosity > 3) then	
       !If verbosity level is greater than 3 we also print the force array on the
       !QM atoms

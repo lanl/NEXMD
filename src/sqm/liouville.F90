@@ -162,7 +162,6 @@
       end do
 
       l = l + 1
-!     if (abs(etas(l)).gt.1d-10) stop 'Vxi: design'
    end do
    return
 

@@ -434,7 +434,6 @@ subroutine eval(natom,nres,prnlev,igraph,isymbl,ipres,lbres,  &
             end if
          else
             ! mask was allocated in a calling routine already (e.g. ambmask.f)
-            ! print *, "buffer=",buffer(1:index(buffer,';'))
             call selectElemMask(natom,nres,igraph,isymbl,ipres,lbres,  &
                                 buffer,mask)
             ! push the mask(1:natom) array to the stack
@@ -700,7 +699,6 @@ subroutine noneq(op, mask2, diststr, natom, nres, ipres, crd, mask)
    i = index(diststr,';') - 1
    if (i > 0) then
       read(diststr(2:i),*,iostat=ios) dist
-      ! debug: write(*,'("dist=",F8.2)') dist
       if (ios > 0) call error1("noneq", "error parsing distance cutoff value")
       d2 = dist*dist
    else
@@ -812,18 +810,14 @@ subroutine residue_numlist(numlist,mask,nres,ipres)
       end if
       if (symbol.eq.','.or. p == inplen) then
          if (.not. dash) then
-            !print *, "res1: >>",buffer(1:i-1),"<<"
             read(buffer(1:i-1),*,iostat=ios) res1
             ! check for read errors:
             if (ios > 0) call error1("residue_numlist",  &
                               "error reading residue number")
             ! check for res1 value not necessary: resnum_select()
             ! will not cause "out of array boundary"
-            ! if (res1 < 1) res1 = 1
-            ! if (res1 > nres) res1 = nres
             call resnum_select(res1, res1, mask, nres, ipres)
          else
-            !print *, "res2: >>",buffer(1:i-1),"<<"
             read(buffer(1:i-1),*,iostat=ios) res2
             ! check for read errors:
             if (ios > 0) call error1("residue_numlist",  &
@@ -833,7 +827,6 @@ subroutine residue_numlist(numlist,mask,nres,ipres)
          end if
          i = 1
       else if (symbol.eq.'-') then
-         !print *, "res1: >>",buffer(1:i-1),"<<"
          read(buffer(1:i-1),*,iostat=ios) res1
          ! check for read errors:
          if (ios > 0) call error1("residue_numlist",  &
@@ -926,8 +919,6 @@ subroutine atom_numlist(numlist,mask,natom)
                               "error reading atom number")
             ! check at1 value not necessary, atnum_select()
             ! will not cause "out of array boundary"
-            ! if (at1 < 1) at1 = 1
-            ! if (at1 > natom) at1 = natom
             call atnum_select(at1, at1, mask, natom)
          else
             read(buffer(1:i-1),*,iostat=ios) at2

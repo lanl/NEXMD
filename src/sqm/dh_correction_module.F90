@@ -700,7 +700,6 @@ contains
              shift=pi*120.d0/180.d0
           else
              shift=pi*109.48d0/180.d0
-!             shift=0.0d0
           endif
        endif
 

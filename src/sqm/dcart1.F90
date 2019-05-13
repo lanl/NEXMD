@@ -51,7 +51,6 @@ subroutine dcart1(qmmm_nml, qm2_params, qm2_rij_eqns, qmmm_mpi, qm2_struct, qm2d
       _REAL_ e_repul(22) !Used when qmqm_erep_incore = false
       _REAL_ pair_force(3)
       integer loop_count !Keeps track of number of times through nquant * (nquant-1)/2 loop
-!      _REAL_ psum(36) !36 = max combinations with heavy and heavy = 4 orbs * 4 orbs (Note, no d orb support)
       _REAL_ psum(MaxValenceOrbitals**2*3) 
       _REAL_ ptzsum(MaxValenceOrbitals**2*3) ! CML for excited state DM 7/13/12
       _REAL_ xyz_qmi(3), xyz_qmj(3), vec_qm_qm1, vec_qm_qm2, vec_qm_qm3
@@ -70,12 +69,6 @@ subroutine dcart1(qmmm_nml, qm2_params, qm2_rij_eqns, qmmm_mpi, qm2_struct, qm2d
       _REAL_, target :: F(MaxValenceOrbitals*(MaxValenceOrbitals*2+1)) !BTN 10/08/2017 place to store fock matrix
       integer natom
       
-!#define change 1.D-4
-!#define halfChange 5.D-5
-!!one/change = 10000
-!#define onechange 10000
-!#define delAdj 1.0D-8
-!#define TWOONEdelAdj 50000000
 
    if (qmmm_nml%qmqm_exc_analyt) then !We do analytical derivatives
 		! CML as of right now, fully analytical derivatives for the excited

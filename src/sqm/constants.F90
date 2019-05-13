@@ -134,11 +134,7 @@ module constants
   _REAL_, parameter :: CHARGE_ON_ELEC = 1.60217733d-19 !Charge on an electron in Coulombs
   _REAL_, parameter :: BOHR_RADIUS = 52.9177249d-12 ! in meter
   _REAL_, parameter :: BOHRS_TO_A = 0.529177249D0   ! Bohrs * this = angstroms - Same constants as used in dynamo v2.
-  !_REAL_, parameter :: BOHRS_TO_A = 0.52917706D0   ! Bohrs * this = angstroms - Same constants as used in Gaussian 98
-  !_REAL_, parameter :: BOHRS_TO_A = 0.529177D0     ! Bohrs * this = angstroms - Same constants as used in Mopac6 hcore.f
-  !_REAL_, parameter :: BOHRS_TO_A = 0.529167D0     !                            as used in Mopac6 repp.f
   _REAL_, parameter :: A_TO_BOHRS = 1.0d0 / BOHRS_TO_A
-  !_REAL_, parameter :: A_TO_BOHRS = 1.88976D0      !Same constants as used in Mopac6 gover.f
   _REAL_, parameter :: A2_TO_BOHRS2 = A_TO_BOHRS * A_TO_BOHRS !Mopac6 uses 3.5711928576D0 in gover.f for this.
   _REAL_, parameter :: A3_TO_BOHRS3 = A2_TO_BOHRS2 * A_TO_BOHRS
   _REAL_, parameter :: A4_TO_BOHRS4 = A2_TO_BOHRS2 * A2_TO_BOHRS2
@@ -149,7 +145,6 @@ module constants
   _REAL_, parameter :: COULOMB_CONST_E = HART_BOHR_TO_JOULE_A*AVOGADRO/JPKC
                                                 !Coulomb's constant for charges in units of e
                                                 !This is the same as AMBER_ELECTROSTATIC2 but to higher precision
-  !_REAL_, parameter :: AU_TO_EV = ONE_AU  !Conversion from AU to EV - not used because we match dynamo v2 below.
   _REAL_, parameter :: AU_TO_EV = 27.21d0 !Conversion from AU to EV - Same as dynamo v2 uses and Gaussian 98
                                           !Note (RCW+MC): more precise would be: 1 a.u. 27.211396 eV
                                           !Mopac6 uses 27.21D0 in calpar.f, delri.f and repp.f but in
@@ -160,7 +155,6 @@ module constants
   _REAL_, parameter :: SXNTH_AU_TO_EV  = EIGHTH_AU_TO_EV * half
   _REAL_, parameter :: A2_TO_BOHRS2xAU_TO_EV = A2_TO_BOHRS2*AU_TO_EV
 
-  !_REAL_, parameter :: EV_TO_KCAL = 23.060362D0      !Conversion from EV to KCAL/MOL
   !Dynamo parameter
   _REAL_, parameter :: EV_TO_KCAL = 23.061d0  !Dynamo's conversion
                                               !Mopac6 uses 23.061 in ffhpol.f analyt.f compfg.f datin.f dcart.f

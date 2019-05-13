@@ -64,9 +64,6 @@
    nd1=min(j1+2,nd/2)
    if (qm2ds%mdflag.ge.0) j1=qm2ds%Mx ! No shift is allowed for MD points
       
-!	if (irflag.gt.1.and.mdflag.lt.0) then
-   !qm2ds%irflag=5
-   !write(6,*)"qm2ds%irflag=",qm2ds%irflag
 
    if (qm2ds%irflag.gt.1) then
 !     Calculations will start from irflag state for ceo
@@ -114,15 +111,6 @@
       write(6,*)'qm2ds%istore_M=',qm2ds%istore_M
    end if
 
-!	if (irflag.gt.1.and.Nb.gt.100.and.mdflag.gt.0) then
-!	   qm2ds%istore=min(Mx,Mx_ss)
-! --- read stored modes from the previous calculations in MD run
-!         open (10,file='modes-ao.b',form='unformatted',status='old')       
-!         do j=1,qm2ds%istore
-!	    read (10) (v2(i,j),i=1,Nb*Nb) 
-!	   enddo
-!	   close(10)	  
-!	endif	 
 
    if(qm2ds%istore.gt.0) then ! MD point only!!!!	 
 !     recover excited state vectors from AO representation in v2
@@ -135,8 +123,6 @@
 ! kav: the lines below are commented out since they are not present in original davidson
 ! 
 ! CML TEST 7/15/12
-   !if(qm2ds%mdflag /= 0) qm2ds%istore = qm2ds%Mx ! If first run, don't try and recover vectors. Do it on future calls.
-   !if (qm2ds%mdflag /= 0) qm2ds%istore = 0 ! If first run, don't try and recover vectors. Do it on future calls. ! KGB
 !
 !--------------------------------------------------------------------
 !  Begin big loop
@@ -146,7 +132,6 @@
    if (j0.lt.qm2ds%Mx) then 
 
    iloops=iloops+1
-!	if (iloops.eq.2) j1=j1/2 ! After the first one convergence is slow
    j1=min(j1,(qm2ds%Mx-j0))
    nd1=min(j1+2,nd/2)
 
@@ -179,7 +164,6 @@
    end do
 
 ! try to find vector new vectors in the batch:
-!write(6,*) 'Entering davidson0'
    call davidson0(qm2_params,qmmm_nml,qmmm_mpi, cosmo_c_struct, qm2_struct,qm2ds,&
       qmmm_struct,qm2ds%Ncis,lprint,qm2ds%ftol0,qm2ds%ftol1,qm2ds%ferr, &
       qm2ds%Np,qm2ds%Nh,j0,j1, &
@@ -206,10 +190,6 @@
 
    
 ! Write vectors only for BIG sizes in the case of crash/restart       	  
-!   write(6,*) "Davidson Eigenvectors"
-!   do j=1,j0
-!     write(6, '(40e18.9)') (qm2ds%v0(i,j),i=1,qm2ds%Nrpa)
-!   end do
    
    if(qm2ds%mdflag.lt.0.and.qm2ds%Nb.gt.100) then
       open (qm2ds%modes_unit,file=trim(qm2ds%modes_b),form='unformatted')
@@ -255,49 +235,26 @@
             -ddot(qm2ds%Ncis,qm2ds%v0(qm2ds%Ncis+1,j),one, &
             qm2ds%v0(qm2ds%Ncis+1,j),one)
 
-!         do i = 1,M4
-!            fn = fn + v0(i,j)**2 - v0(i+M4,j)**2
-!         enddo
 
          f=1/sqrt(abs(fn))
          call dscal(qm2ds%Nrpa,f,qm2ds%v0(1,j),one)
 
-!         do i = 1,M2
-!            v0(i,j) = f*v0(i,j)
-!         enddo
-!      write(6,*) j, f
       end do
 
 !     write to the hard disk
       call rrdpsort(qm2ds%e0,qm2ds%Mx,qm2ds%kx,2)
-!	  do i=1,M4
-!	     xi_old(i)=v0(i,2)+v0(i+M4,2)
-!	  enddo
-!	  f2= ddot(M4,xi_old,one,xi_old,one)
-!	  f2 = 1/sqrt(abs(f2))
-!	  do i=1,M4
-!	    xi_old(i)=f2*xi_old(i)
-!	  enddo
 
       if (qm2ds%mdflag.lt.0) then
          open (qm2ds%modes_unit,file=trim(qm2ds%modes_b),form='unformatted')
          open (qm2ds%ee_unit,file=trim(qm2ds%ee_b))
-!        open (11,file='modes.in',access='append')
-!        write(11,210)
-!        write(11,210) '$MODES'
 !
          do j=1,qm2ds%Mx
             write (qm2ds%modes_unit) (qm2ds%v0(i,qm2ds%kx(j)),i=1,qm2ds%Nrpa)
             write (qm2ds%ee_unit,*)  qm2ds%e0(j)
-!	         write(11,200) j,e0(j),1
          end do
  
          close(qm2ds%modes_unit)
          close(qm2ds%ee_unit)
-!        write(11,210) '$ENDMODES'           
-!        close(11)
-!200     format(i7,g20.12,i4)
-!210     format(A)
       end if
    end if
 
@@ -311,55 +268,8 @@
       do j=1,qm2ds%Mx
          call mo2site(qm2ds,qm2ds%v0(1,j),qm2ds%v2(1,j),qm2ds%rrwork)
       end do
-!	 if (Nb.gt.100) then
-! --- write stored modes from the previous calculations in MD run
-!         open (10,file='modes-ao.b',form='unformatted')       
-!         do j=1,qm2ds%istore
-!	    write (10) (v2(i,j),i=1,Nb*Nb) 
-!	   enddo
-!	   close(10)
-!	 endif  	  	 
    end if
 
-!      if (mdflag.ne.0) then
-! Calculate the densities of the excited states.
-! This is exact for CIS (davcis) and approximate for RPA (davrpa)
-! In the matrix form it is given as [[xi^+,rho],eta]
-!        f0=0.0
-!          f1=1.0
-!          f11=-1.0
-!	  l=0
-!         do j=1,Mx_s
-!	  do k=1,Mx_s
-!	   l=l+1
-! Make [xi^+,rho]
-!          do i = 1,M4
-!            rrwork(Mb+i) = - v0(i+M4,j)
-!                rrwork(Mb+M4+i) = v0(i,j)
-!          enddo
-! Here rrwork(Mb+1) contains [xi^+,rho] with 2*M4 elements
-
-! Now expand matrices to square form
-!         call expinter(Nb,Np,Nh,M4,rrwork(Mb+1),eta)
-!         call expinter(Nb,Np,Nh,M4,v0(1,k),xi)
-
-!        write(6,*) 'States', j, k
-!	write (6,*) '[xi^+,rho]'
-!        call prmat(Nb,eta)
-!        write (6,*) 'xi'
-!        call prmat(Nb,xi)
-
-! Finally commute [eta,xi]
-!         call dgemm('N','N',Nb,Nb,Nb,f1,eta,Nb,xi,Nb,f0,rrwork(1),Nb)
-!         call dgemm('N','N',Nb,Nb,Nb,f11,xi,Nb,eta,Nb,f1,rrwork(1),Nb)
-! Here rrwork(1) has excited state density (delta rho) of state j and k in MO
-!         call copying(Mb,rrwork(1),v2(1,l))
-
-!	write (6,*) '[[xi^+,rho],eta]'
-!        call prmat(Nb,rrwork(1))       
-!         enddo
-!	enddo
-!       endif
    return     
    end
 
@@ -421,7 +331,6 @@
 
    one=1
 
-!	if (lprint.gt.1) write(6,*) 'Start Davidson'
    icount=0
    nd1_old=0
    m=0
@@ -541,8 +450,6 @@
    do j=1,nd1
       do i=1,nd1
          f1= ddot(M4,vexp1(1,i),one,vexp1(1,j),one)
-!	  if (i.eq.j) write(6,*) i,j,f1
-!        if (f1.gt.1.0E-15.and.i.ne.j) write(6,*) i,j,f1
          if(f1.gt.1.0E-15.and.i.ne.j) goto 90
       end do
    end do
@@ -571,13 +478,6 @@
    if(nd1.gt.nd.or.istore.gt.0) then  ! Use vectors from the previous step
       istore=0
       if (lprint.gt.4) write(6,*) 'Restart Davidson with guesses from the previous step'
-!	   do j=1,j1
-!	    write(6,*) 'Mode',j, e0(j)
-!	    write(6,*) 'MO_p-h'
-!	    call prarr(M4,v0(1,j)) 
-!	    write(6,*) 'MO_h-p'
-!	    call prarr(M4,v0(M4+1,j))
-!         enddo
       if(lprint.gt.4) write(6,*) 'Restart loop = ',iloop
       icount=0
       nd1_old=0
@@ -607,10 +507,6 @@
          end do
       end if
 
-!	   do j=1,nd1
-!	    write(6,*) '#',j
-!	    call prarr(M4,vexp1(1,j)) 
-!	   enddo
 
 !  Orthogonalize and normalize new expansion vectors
 12    continue
@@ -636,10 +532,8 @@
          call dscal(M4,f2,vexp1(1,j),one)
       end do
 
-!	 write(6,*) 'Expansion vectors left', nd1
 
 !  Check
-!	 write(6,*) 'Check expansion to expansion'
       do j=1,nd1
        do i=1,nd1
           f1=ddot(M4,vexp1(1,i),one,vexp1(1,j),one)
@@ -663,7 +557,6 @@
       call dcopy(M4,vexp1(1,i),one,eta,one)
       call Lxi_testing(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct, &
                        qm2ds,qmmm_struct,eta,vexp(1,i),cosmo_c_struct%solvent_model)
-      !call Lxi(eta,vexp(1,i),solvent_model)	
        
 ! CIS - set Y=0
       if(idav.eq.1) then
@@ -703,13 +596,6 @@
 
    nd1_old=nd1
 
-     !!JAB Testing
-     !do i=1,nd1 !!JAB Checking matrix elements
-!	do j=1,nd1
-!	write(6,*) 'Ray1',i,j,ray1(i,j)
-!	enddo 
- !    enddo
-     !!JAB Testing
 
 ! form ray1a=sqrt(b(A-B)b)
    f1=1.0
@@ -717,36 +603,7 @@
 
    call dcopy(nd*nd,ray1,one,rayvR,one)
 
-   !call symmetr(nd,rayvR) !!JAB Test
 
-   !if (qm2ds%verbosity > 4) 
-   !print*,'1 qm2ds%Nrpa=',qm2ds%Nrpa
-
-   !!JAB Testing
-   !Check matrix symmetry as required by dsyev eigenproblem routine
-        !if(.not.check_symmetry(rayvR,nd)) then
-                        
-        !write(6,*) 'M4',M4,'qm2ds%nb',qm2ds%nb,'size(vexp(:,1))',size(vexp(:,1))
-        !write(6,*) 'TEST nd1    nd1     orb     orb        rayvR(i.j)      rayvR(j.i)      vexp    vexp1'
-        !do i=1,nd1
-        !do j=1,nd1
-        !c=0
-        !do k=1,qm2ds%nb
-        !do l=1,qm2ds%nb/2
-        !u=(k-1)*qm2ds%nb/2+l
-        !c=c+1
-        !write(6,"(5I4,8g15.5)")&
-        ! i,j,k,l,c,rayvR(i,j),rayvR(j,i),vexp1(u,i),vexp(u,j),vexp1(u,j),vexp(u,i),&
-        ! vexp1(u,i)*vexp(u,j),vexp1(u,j)*vexp(u,i)
-        !end do
-        !end do
-        !end do
-        !end do
-        !write(6,*)"Error: rayvR non-symmetric. Something is wrong&
-        !                 with the Liouville equation.(x_n|L(x_m)).ne.(x_m|L(x_n))"
-        !stop
-        !end if
-   !!End JAB Testing
    write(6,*)'info00',info 
  
    call dsyev ('v','u',nd1,rayvR,nd,raye,xi,qm2ds%Nrpa,info) 
@@ -767,30 +624,12 @@
  
    call dgemm('N','N',nd1,nd1,nd1,f1,rayvR,nd,rayv,nd,f0,ray1a,nd) !
 
-!	write(6,*) 'ray1 eigenvalues'
-!	call prarr(nd1,raye)
-!	call prarr(nd1,raye1)
-!	write(6,*) 'ray1a = sqrt(ray1)'
-!	do i=1,nd1
-!	 call prarr(nd1,ray1a(1,i))
-!	enddo 
-
-! form ray=Sqrt[b(A-B)b]*b(A+B)b*Sqrt[b(A-B)b] and Diagonalize
 
    call dgemm('N','N',nd1,nd1,nd1,f1,ray2,nd,ray1a,nd,f0,rayv,nd)
    call dgemm('N','N',nd1,nd1,nd1,f1,ray1a,nd,rayv,nd,f0,ray,nd)
    call dcopy(nd*nd,ray,one,rayv,one)
    call symmetr(nd,rayv)
 
-   !!JAB Testing
-   !Check matrix symmetry as required by dsyev eigenproblem routine
-   !     if(.not.check_symmetry(rayv,nd)) then
-   !              write(6,*) "rayv symmetric"
-   !     else
-   !              write(6,*) "Error: rayv non-symmetric"
-   !              !stop
-   !     end if
-   !!End JAB Testing
 
 ! find eigenvalues and eigenvectors of ray
    write(6,*)'info0',info
@@ -799,19 +638,6 @@
       raye(j) = Sign(Sqrt(Abs(raye(j))),raye(j))
    enddo
 
-!      write(6,*) 'ray'
-!	do i=1,nd1
-!	 call prarr(nd1,ray(1,i))
-!	enddo	
-!	write(6,*) 'ray eigenvalues'
-!	call prarr(nd1,raye)	
-!	call prarr(nd1,raye1)
-!      write(6,*) 'rayv'
-!	do i=1,nd1
-!	 call prarr(nd1,rayv(1,i))
-!	enddo
-
-! current EigenVectors rayv = Sqrt(1/b(A-B)b))|X+Y>
 ! Solve for Right EigenVector  rayvR = |X+Y>=ray1a*rayv
    call dgemm('N','N',nd1,nd1,nd1,f1,ray1a,nd,rayv,nd,f0,rayvR,nd)
 ! Solve for Left EigenVector  
@@ -823,14 +649,6 @@
        rayvL(i,j)=rayvL(i,j)/raye(j)
     end do
    end do
-!      write(6,*) 'right rayvR'
-!	do i=1,nd1
-!	 call prarr(nd1,rayvR(1,i))
-!	enddo
-!      write(6,*) 'left rayvL'
-!	do i=1,nd1
-!	 call prarr(nd1,rayvL(1,i))
-!	enddo
 
    if(lprint.gt.2) then 
       write(6,*)'info',info
@@ -885,11 +703,6 @@
       f2=1/sqrt(abs(f2))
       call dscal(2*M4,f2,v0(1,j),one)
 
-! 	  write(6,*) 'Mode',j, raye(j)
-!  	  write(6,*) 'MO_p-h'
-!  	  call prarr(M4,v0(1,j)) 
-!  	  write(6,*) 'MO_h-p'
-!  	  call prarr(M4,v0(M4+1,j))	  	   
    end do
  
 ! FIND eigenvalue, residual vectors and residual norm:
@@ -903,8 +716,6 @@
       
       call Lxi_testing(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct, qm2_struct,qm2ds,qmmm_struct, &
                        v0(1,j),eta,cosmo_c_struct%solvent_model) !L(xi) output in eta !!JAB
-      !call Lxi(v0(1,j),eta,solvent_model)	
-      !write(6,*)"loc(v0(1,j))=",j,loc(v0(1,j))	
       f1=ddot(M4,v0(1,j),one,eta(1),one) &
          -ddot(M4,v0(1+M4,j),one,eta(1+M4),one)
 ! CIS
@@ -996,20 +807,6 @@
 
    if(lprint.gt.4) write(6,*) 'New perturbed m=',m
   
-!  Orthogonalize and normalize residual vectors to found eigenvectors
-!	 do j=nd1+1,nd1+m
-!	  do i=1,j0
-!	   f1= -0.5*(ddot(M4,v0(1,i),one,vexp1(1,j),one)
-!     +       +ddot(M4,v0(1,i),one,vexp1(1,j),one))
-!         f1= f1/ddot(M4,v0(1,i),one,v0(1,i),one)
-!	   call daxpy(M4,f1,v0(1,i),one,vexp1(1,j),one) 
-!	  enddo
-!	  f2= ddot(M4,vexp1(1,j),one,vexp1(1,j),one)
-!        f2 = 1/sqrt(abs(f2))
-!	   call dscal(M4,f2,vexp1(1,j),one)
-!	 enddo
-
-!  Orthogonalize and normalize residual vectors to expansion vectors
 15 continue
 
    do j=1+nd1,nd1+m
@@ -1034,31 +831,18 @@
       call dscal(M4,f2,vexp1(1,j),one)
    end do
 !  Check
-!	 write(6,*) 'Check expansion to expansion'
    do j=1+nd1,nd1+m
     do i=1,j-1
        f1=ddot(M4,vexp1(1,i),one,vexp1(1,j),one)
-!      if (f1.gt.1.0E-15) write(6,*) i,j,f1
        if(f1.gt.1.0E-15.and.i.ne.j) goto 15          
     end do
    end do
 
-!           do j=1,nd1+m
-!	     write(6,*) '#',j
-!	     call prarr(M4,vexp1(1,j)) 
-!           enddo
 
    if(lprint.gt.1) write(6,*) 'Perturbed left m=',m
 
    if(m.eq.0) then      
       write(6,*) 'Run out of expansion vectors'
-!           do j=1,nd1
-!	     write(6,*) '#',j
-!	     write(6,*) 'MO_p-h'
-!	     call prarr(M4,vexp(1,j)) 
-!	     write(6,*) 'MO_h-p'
-!	     call prarr(M4,vexp(M4+1,j))
-!           enddo
       goto 100 
    end if
 
@@ -1073,34 +857,6 @@
       nd1=nd1+m
    endif
 
-!  Check
-!	 write(6,*) 'Check expansion to found'
-!	 do j=1,nd1
-!	  do i=1,j0
-!	   f1= ddot(M4,v0(1,i),one,vexp(1,j),one)
-!        if (f1.gt.1.0E-15) write(6,*) i,j,f1
-!        enddo
-!	 enddo
-
-!  Check
-!	 write(6,*) 'Check expansion to expansion'
-!	 do j=1,nd1
-!	  do i=1,nd1
-!	   f1= ddot(M4,vexp(1,i),one,vexp(1,j),one)
-!        if (f1.gt.1.0E-15) write(6,*) i,j,f1
-!        enddo
-!	 enddo
-
-!      write(6,*) 'Expansion vectors' 
-!	do j=1,nd1+m
-!	 write(6,*) '#',j
-!	 write(6,*) 'MO_p-h'
-!	 call prarr(M4,vexp(1,j)) 
-!	 write(6,*) 'MO_h-p'
-!	 call prarr(M4,vexp(M4+1,j))
-!	enddo
- 
-!	 stop
    goto 10
 
 100   continue
@@ -1112,13 +868,6 @@
     
    if(lprint.gt.0) then
       write(6,*) '@@@@ Davidson subroutine Found vectors',j0
-!           do j=1,j0
-!	      write(6,*) 'Mode',j, e0(j)
-!	      write(6,*) 'MO_p-h'
-!	      call prarr(M4,v0(1,j)) 
-!	      write(6,*) 'MO_h-p'
-!	      call prarr(M4,v0(M4+1,j))
-!           enddo
    end if
 
 910   format(' ', 100g11.3)

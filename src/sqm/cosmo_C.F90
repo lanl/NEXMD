@@ -1,6 +1,5 @@
 #include "dprec.fh"
 module cosmo_C
-  !USE vast_kind_param, ONLY:  double
   implicit none
 
   private

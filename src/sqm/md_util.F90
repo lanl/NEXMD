@@ -144,8 +144,6 @@ subroutine prmat(n,d)
 	enddo
 
 	910  format(' ', 40g11.3)
-! 910  format(' ', 40ES14.5)
-! 910  format(' ', 20f11.7)
 	return
 end subroutine prmat
 
@@ -175,7 +173,6 @@ subroutine prmat1(n,d)
       do i=1,n
          write(6,910) (d(i*(i-1)/2+j),j=1,i)
       enddo 
-!910  format(' ', 10g10.3)
  910  format(' ', 20f11.7)
       return
 end subroutine prmat1

@@ -47,7 +47,6 @@ subroutine dcart2(qm2_params, qmmm_nml, qm2_rij_eqns, qm2_struct,qm2ds,qmmm_stru
       _REAL_ e_repul(22) !Used when qmqm_erep_incore = false
       _REAL_ pair_force(3)
       integer loop_count !Keeps track of number of times through nquant * (nquant-1)/2 loop
-!      _REAL_ psum(36) !36 = max combinations with heavy and heavy = 4 orbs * 4 orbs (Note, no d orb support)
       _REAL_ psum(MaxValenceOrbitals**2*3) 
       _REAL_ xyz_qmi(3), xyz_qmj(3), vec_qm_qm1, vec_qm_qm2, vec_qm_qm3
       integer natqmi, natqmj, qmitype, qmjtype
@@ -63,12 +62,6 @@ subroutine dcart2(qm2_params, qmmm_nml, qm2_rij_eqns, qm2_struct,qm2ds,qmmm_stru
       _REAL_ htype, fqmii(3)
       integer natom
       
-!#define change 1.D-4
-!#define halfChange 5.D-5
-!!one/change = 10000
-!#define onechange 10000
-!#define delAdj 1.0D-8
-!#define TWOONEdelAdj 50000000
 
    if (qmmm_nml%qmqm_exc_analyt) then !We do analytical derivatives
 		! CML as of right now, fully analytical derivatives for the excited
@@ -309,7 +302,6 @@ subroutine qm2_dhc2(qm2_params,qmmm_nml,qm2_rij_eqns,qm2_struct,qmmm_struct, &
     n_atomic_orbi,n_atomic_orbj,  &
     ii,jj,core,rotationMatrix,H)
    
-   !call qm2_core_core_repulsion(iqm, jqm, rij, oneOverRij, RI, enuclr) !not used
         
     ! put what we have now to the Fock matrix
     F(1:linear)=H(1:linear)
@@ -338,7 +330,6 @@ subroutine qm2_dhc2(qm2_params,qmmm_nml,qm2_rij_eqns,qm2_struct,qmmm_struct, &
 	F=F*2
 
     EE=qm2_helect2(n_atomic_orbi+n_atomic_orbj-1,P,H,F)   ! CML 7/13/12
-!    DENER=EE+ENUCLR
     ! SQM uses only RHF, so we need to multiply by 2 for the upper triangle.
     ! If UHF is implemented in the future, we need to make sure we calculate the
     ! upper triangle of the matrix as well. CML 6/26/12
