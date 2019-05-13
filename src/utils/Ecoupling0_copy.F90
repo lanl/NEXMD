@@ -19,7 +19,6 @@ implicit none
 
 !VARIABLES FOR INPUT AND READING FILES
       real, allocatable, dimension(:,:) :: xyz1, charge1, xyz2, charge2
-     ! real, allocatable, dimension(:,:):: displace, rotate
       integer, allocatable, dimension(:) :: nstates, ncharges
       integer :: nmolec
       character(LEN=2), allocatable,dimension(:) :: poletype1,poletype2
@@ -65,7 +64,6 @@ open(71,file=filename2,status='old')
 read(71,'(I5,I5)') nstates(1),nstates(2)
 read(71,'(F5.1,1X,F5.1,1X,F5.1)') displace1(1),displace1(2),displace1(3)
 read(71,'(F5.1,1X,F5.1,1X,F5.1)') displace2(1),displace2(2),displace2(3)
-!read(71,'(F5,.1,1X,F5.1,1X,F5.1)') mu(1),mu(2)
 close(71)
 
 !Writing instructions that were read
@@ -105,15 +103,11 @@ allocate(VSQ(nstates(1),nstates(2)))
 
 !!READ FILES
 nmolec=1
-    !write(fname2,'(I1)') nmolec !molecule number for filename
-    !filename=fname1//fname2//fname3 !piece together filename
     write(6,*) 'Opening file ',filename
     call readfile(nstates(1),ncharges(1),xyz1,charge1,poletype1,'molec1.in')
 write(6,*) size(charge1)
 nmolec=2
     write(fname2,'(I1)') nmolec !molecule number for filename
-    !filename=fname1//fname2//fname3 !piece together filename
-    !write(6,*) 'Opening file ',filename
     call readfile(nstates(2),ncharges(2),xyz2,charge2,poletype2,'molec2.in')
 write(6,*) size(charge2)
 
@@ -137,7 +131,6 @@ do n1=1,ncharges(1)
 do n2=1,ncharges(2)
     
     R=sqrt((xyz1(1,n1)-xyz2(1,n2))**2+(xyz1(2,n1)-xyz2(2,n2))**2+(xyz1(3,n1)-xyz2(3,n2))**2)*A_to_Bohr
-    !write(6,*) R    
     if (R<1) then
         write(6,*)'**Charges',n1,n2,'are close at',R,'Bohr'
         STOP

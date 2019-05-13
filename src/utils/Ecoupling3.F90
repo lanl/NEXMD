@@ -61,7 +61,6 @@ open(71,file=filename2,status='old')
 read(71,'(I5,I5)') nstates(1),nstates(2)
 read(71,'(F5.1,1X,F5.1,1X,F5.1)') displace1(1),displace1(2),displace1(3)
 read(71,'(F5.1,1X,F5.1,1X,F5.1)') displace2(1),displace2(2),displace2(3)
-!read(71,'(F5.1,1X,F5.1,1X,F5.1)') mu(1),mu(2)
 close(71)
 
 write(6,*)'Calculating V for',nstates(1),'and',nstates(2),'states.'
@@ -73,7 +72,6 @@ write(6,*)'Displacement for molecule 2:',displace2
 OPEN(71,file='molec1.in')
 do n1=1,5
 READ(71,"(A)",ERR=5,END=20) junk
-!rite(6,*) filename
 enddo
 5 CONTINUE
 ncharges(1)=1
@@ -148,7 +146,6 @@ do n1=1,ncharges(1)
   do n2=1,ncharges(2)
     
     R=sqrt((xyz1(1,n1)-xyz2(1,n2))**2+(xyz1(2,n1)-xyz2(2,n2))**2+(xyz1(3,n1)-xyz2(3,n2))**2)*A_to_Bohr
-    !write(6,*) R    
     if (R<1) then
         write(6,*)'**Charges',n1,n2,'are close at',R,'Bohr'
         STOP
@@ -162,7 +159,6 @@ do n1=1,ncharges(1)
 end do
 
 write(6,"(F8.5,2X,F8.5,2X,I2,2X,I2)") V(l1,l2),V(l1,l2)*27.2114,l1,l2
-!write(6,*) V(l1,l2)
 enddo
 enddo
 
@@ -210,7 +206,6 @@ implicit none
   do while (1==1)
       
       READ(71,'(A)',END=200) header !Check for the header to start reading
-    !write(6,*) 'reading header',header
     if (index(header,'Atom') .NE. 0 ) then !Check for start to read
     write(6,*) 'Reading transition ',m
       do while (1==1) !n=1,ncharges !capture data for normal mode nstates
@@ -229,7 +224,6 @@ implicit none
 
   200 Continue
   write(6,*) 'File succefully read'
-  !write(6,*) LOC(charge(ncharges,nstates))
   close(71)
 
 RETURN

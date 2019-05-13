@@ -19,7 +19,6 @@ implicit none
 
 !VARIABLES FOR INPUT AND READING FILES
       real, allocatable, dimension(:,:) :: xyz1, charge1, xyz2, charge2
-     ! real, allocatable, dimension(:,:):: displace, rotate
       integer, allocatable, dimension(:) :: nstates, ncharges
       integer :: nmolec
       character(LEN=2), allocatable,dimension(:) :: poletype1,poletype2
@@ -65,7 +64,6 @@ open(71,file=filename2,status='old')
 read(71,'(I5,I5)') nstates(1),nstates(2)
 read(71,'(F5.1,1X,F5.1,1X,F5.1)') displace1(1),displace1(2),displace1(3)
 read(71,'(F5.1,1X,F5.1,1X,F5.1)') displace2(1),displace2(2),displace2(3)
-!read(71,'(F5,.1,1X,F5.1,1X,F5.1)') mu(1),mu(2)
 close(71)
 
 !Writing instructions that were read
@@ -119,14 +117,10 @@ allocate(VSQ(nstates(1),nstates(2)))
 
 !!READ FILES
 nmolec=1
-    !write(fname2,'(I1)') nmolec !molecule number for filename
-    !filename=fname1//fname2//fname3 !piece together filename
     write(6,*) 'Opening file ',filename
     call readfile(nstates(1),ncharges(1),xyz1,charge1,poletype1,'molec1.in')
 write(6,*) size(charge1)
 nmolec=2
-    !write(fname2,'(I1)') nmolec !molecule number for filename
-    !filename=fname1//fname2//fname3 !piece together filename
     write(6,*) 'Opening file ',filename
     call readfile(nstates(2),ncharges(2),xyz2,charge2,poletype2,'molec2.in')
 write(6,*) 'here is the size of charge2',size(charge2)
@@ -157,19 +151,6 @@ do n2=1,ncharges(2)
         STOP
     end if
 
-    !V(l1,l2)=V(l1,l2)+charge1(n1,l1)*charge2(n2,l2)/R
-   ! if (poletype1(n1).EQ.'M'.AND.poletype2(n2).EQ.'M') then
-    !VM(l1,l2)=VM(l1,l2)+charge1(n1,l1)*charge2(n2,l2)/R
-    !endif
-    !if (poletype1(n1).EQ.'D'.AND.poletype2(n2).EQ.'D') then
-    !VD(l1,l2)=VD(l1,l2)+charge1(n1,l1)*charge2(n2,l2)/R
-    !endif
-    !if (poletype1(n1).EQ.'LQ'.AND.poletype2(n2).EQ.'LQ') then
-    !VLQ(l1,l2)=VLQ(l1,l2)+charge1(n1,l1)*charge2(n2,l2)/R
-    !endif
-    !if (poletype1(n1).EQ.'SQ'.AND.poletype2(n2).EQ.'SQ') then
-    !VSQ(l1,l2)=VSQ(l1,l2)+charge1(n1,l1)*charge2(n2,l2)/R
-    !endif
    
 end do
 end do
@@ -238,7 +219,6 @@ implicit none
           READ(71,1000,ERR=100,END=200) xyz(1,n),xyz(2,n),&
                                 xyz(3,n),charge(n,m),&
                                 poletype(n)
-!write(6,*) xyz(1,n)
        enddo
 
     endif

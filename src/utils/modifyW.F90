@@ -68,7 +68,6 @@ integrals=qm2ds%W
     write(6,*) 'Reducing all 2e integrals'
     integrals=integrals*Wreduce !!JAB
     qm2_params%onec2elec_params=qm2_params%onec2elec_params*Wreduce
-    !write(6,"(5F12.8)") integrals
     endif !!JAB  
 
 qm2ds%W=integrals
@@ -85,17 +84,13 @@ subroutine averageE()
 ! and 2 refer to the molecule
 !***********************************************************************
 
-!use qmmm_module, only : qmmm_struct, qm2_struct, qm2_params
 use qm2_davidson_module
-   !real, intent(in) :: Escale
    integer :: p   
 
    do p=1,qm2ds%Nb/2
-      !do h=qm2ds%Np+1,qm2ds%Nb
        qm2ds%ehf(2*p)=(qm2ds%ehf(2*p)+qm2ds%ehf(2*p-1))/2
        qm2ds%ehf(2*p-1)=qm2ds%ehf(2*p)
 
-       ! if(choice==1.AND.p*2.NE.(qm2ds%Np.OR.qm2ds%Np+1)) then
    end do
 
 

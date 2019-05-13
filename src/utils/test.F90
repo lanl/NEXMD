@@ -31,7 +31,6 @@ open(10,file='couple.in',status='old')
 read(10,'(I5,I5)') nstates(1),nstates(2)
 read(10,'(F8.1,F8.1,F8.1)') displace1(1),displace1(2),displace1(3)
 read(10,'(F8.1,F8.1,F8.1)') displace2(1),displace2(2),displace2(3)
-!read(71,'(F5.1,1X,F5.1,1X,F5.1)') mu(1),mu(2)
 
 
 
