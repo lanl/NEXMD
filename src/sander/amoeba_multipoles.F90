@@ -57,8 +57,6 @@ subroutine AM_MPOLE_get_start_end_lists()
 ! first local mpoles boundaries
   call AMOEBA_get_startlist_endlist(num_multipoles,  &
                              start_multipoles,end_multipoles,siztask)
-  !write(6,*)'start_multipoles,end_multipoles = ', &
-         !start_multipoles,end_multipoles
 ! next chiral
   start_chiral_frame_list = 0
   end_chiral_frame_list = 0
@@ -95,8 +93,6 @@ subroutine AM_MPOLE_get_start_end_lists()
   enddo
   ! one more to get 1st list item that works
   start_frame_def_list = start_frame_def_list + 1
-  !write(6,*)'start_frame_def_list,end_frame_def_list = ', &
-         !start_frame_def_list,end_frame_def_list
 end subroutine AM_MPOLE_get_start_end_lists
 !---------------------------------------------------------
 
@@ -153,7 +149,6 @@ function AM_MPOLE_readparm(nf,num_atoms)
     write(6,*)'mismatch between num_multipoles and num_atoms'
     call mexit(6,1)
   endif
-  !write(6,*)'num_multipoles = ',num_multipoles
   !allocate
   allocate(local_multipole(10,num_multipoles),stat=ier)
   REQUIRE(ier==0)
@@ -172,7 +167,6 @@ function AM_MPOLE_readparm(nf,num_atoms)
   REQUIRE(ier==0)
 
   call AMOEBA_get_numlist('AMOEBA_CHIRAL_FRAME_',nf,num_chiral_frame_list)
-  !write(6,*)'num_chiral_frame_list = ',num_chiral_frame_list
   !allocate
   if ( num_chiral_frame_list > 0 )then
     allocate(buf(3,num_chiral_frame_list),stat=ier)
@@ -194,7 +188,6 @@ function AM_MPOLE_readparm(nf,num_atoms)
     do_flag = ibclr(do_flag,VALID_BIT)
     return
   endif
-  !write(6,*)'num_frame_def_list = ',num_frame_def_list
   !allocate
   allocate(buf(5,num_frame_def_list),stat=ier)
   REQUIRE(ier==0)
@@ -621,7 +614,6 @@ subroutine AM_MPOLE_accum_de_ddefpts(numatoms,axis_order,   &
       sizp2 = sqrt( p2(1)**2 + p2(2)**2 + p2(3)**2 )
       do j = 1,3
         p2unit(j) = p2(j) / sizp2
-!       p1unit(j) = u(j) so no need to recalculate
       enddo
       dot21 = u(1)*p2(1) + u(2)*p2(2) + u(3)*p2(3)
       dot12 = p1(1)*p2unit(1) + p1(2)*p2unit(2) + p1(3)*p2unit(3)
@@ -736,8 +728,8 @@ subroutine AM_MPOLE_de_ddefpts_to_atoms(num_fr_deflist,fr_deflist, &
       vzx = vzx + dedz*dx
       vzy = vzy + dedz*dy
       vzz = vzz + dedz*dz
-    endif !i > 0 .and. j > 0
-  enddo !n = 1,num_fr_deflist
+    endif 
+  enddo 
   virial(1,1) = virial(1,1) + vxx
   virial(1,2) = virial(1,2) + half*(vxy + vyx)
   virial(1,3) = virial(1,3) + half*(vxz + vzx)
@@ -796,8 +788,6 @@ subroutine XFORM_MPOLE_matrix(A_xy,Mpole_xy,order)
    Mpole_xy(j,1) = 0.d0
   enddo
 ! DIPOLES
-! d_yk = A_xy(k,1)*d_x1 + A_xy(k,2)*d_x2 + A_xy(k,3)*d_x3
-! D'_j
   do j = 2,4
     do k = 2,4
       Mpole_xy(j,k) = A_xy(j-1,k-1)
@@ -811,9 +801,6 @@ subroutine XFORM_MPOLE_matrix(A_xy,Mpole_xy,order)
     enddo
   enddo
 ! QUADRUPOLES
-! q_ykyl = sum_i,j (A_xy(k,i)*A_xy(l,j)+A_xy(k,j)*A_xy(l,i))*(q_xixj+q_xjxi)
-! Mp(5) = q_y1y1,..,Mp(7) = q_y3y3,Mp(8) = q_y1y2+q_y2y1,.,Mp(10)=q_y2y3+q_y3y2
-! Q'_kk
   do ind1 = 1,3
     k = qind1(ind1)
     do ind2 = 1,6
@@ -1020,11 +1007,8 @@ subroutine XFORM_MPOLE_deriv_matrix(A_xy,DA_xy,DMpole_xy,order)
     DMpole_xy(j,1) = 0.d0
   enddo
 ! DIPOLES
-! d_yk = A_xy(k,1)*d_x1 + A_xy(k,2)*d_x2 + A_xy(k,3)*d_x3
-! D'_j
   do j = 2,4
     do k = 2,4
-!     Mpole_xy(j,k) = A_xy(j-1,k-1)
       DMpole_xy(j,k) = DA_xy(j-1,k-1)
     enddo
   enddo
@@ -1036,27 +1020,20 @@ subroutine XFORM_MPOLE_deriv_matrix(A_xy,DA_xy,DMpole_xy,order)
     enddo
   enddo
 ! QUADRUPOLES
-! q_ykyl = sum_i,j (A_xy(k,i)*A_xy(l,j)+A_xy(k,j)*A_xy(l,i))*(q_xixj+q_xjxi)
-! Mp(5) = q_y1y1,..,Mp(7) = q_y3y3,Mp(8) = q_y1y2+q_y2y1,.,Mp(10)=q_y2y3+q_y3y2
-! Q'_kk
   do ind1 = 1,3
     k = qind1(ind1)
     do ind2 = 1,6
       i = qind1(ind2)
       j = qind2(ind2)
-!     Mpole_xy(ind1+4,ind2+4) = A_xy(k,i)*A_xy(k,j)
       DMpole_xy(ind1+4,ind2+4) = DA_xy(k,i)*A_xy(k,j) + A_xy(k,i)*DA_xy(k,j)
     enddo
   enddo
-! Q'_kl
   do ind1 = 4,6
     k = qind1(ind1)
     l = qind2(ind1)
     do ind2 = 1,6
       i = qind1(ind2)
       j = qind2(ind2)
-!     Mpole_xy(ind1+4,ind2+4) =   &
-!            A_xy(k,i)*A_xy(l,j) + A_xy(k,j)*A_xy(l,i)
       DMpole_xy(ind1+4,ind2+4) =     &
             DA_xy(k,i)*A_xy(l,j) + DA_xy(k,j)*A_xy(l,i) +    &
              A_xy(k,i)*DA_xy(l,j) + A_xy(k,j)*DA_xy(l,i)
@@ -1077,23 +1054,18 @@ subroutine XFORM_MPOLE_deriv_matrix(A_xy,DA_xy,DMpole_xy,order)
       i = oind1(ind2)
       j = oind2(ind2)
       k = oind3(ind2)
-!     Mpole_xy(ind1+10,ind2+10) = A_xy(l,i)*A_xy(l,j)*A_xy(l,k)
       DMpole_xy(ind1+10,ind2+10) =    &
                 DA_xy(l,i)*A_xy(l,j)*A_xy(l,k) +    &
                 A_xy(l,i)*DA_xy(l,j)*A_xy(l,k) +    &
                 A_xy(l,i)*A_xy(l,j)*DA_xy(l,k) 
     enddo
   enddo
-! O'_llm
   do ind1 = 4,9
     l = oind1(ind1)
     m = oind3(ind1)
     do ind2 = 1,9
       i = oind1(ind2)
       k = oind3(ind2)
-!     Mpole_xy(ind1+10,ind2+10) =   &
-!          A_xy(l,i)*A_xy(l,i)*A_xy(m,k) +    &
-!          2.d0 * A_xy(l,i)*A_xy(m,i)*A_xy(l,k)
       DMpole_xy(ind1+10,ind2+10) =   &
            DA_xy(l,i)*A_xy(l,i)*A_xy(m,k) +     &
            2.d0 * DA_xy(l,i)*A_xy(m,i)*A_xy(l,k)
@@ -1104,10 +1076,6 @@ subroutine XFORM_MPOLE_deriv_matrix(A_xy,DA_xy,DMpole_xy,order)
            A_xy(l,i)*A_xy(l,i)*DA_xy(m,k) +    &
            2.d0 * A_xy(l,i)*A_xy(m,i)*DA_xy(l,k)
     enddo
-!   Mpole_xy(ind1+10,20) =
-!          A_xy(l,1)*A_xy(l,2)*A_xy(m,3) +
-!          A_xy(l,1)*A_xy(m,2)*A_xy(l,3) +
-!          A_xy(m,1)*A_xy(l,2)*A_xy(l,3)
     DMpole_xy(ind1+10,20) =    &
            DA_xy(l,1)*A_xy(l,2)*A_xy(m,3) +    &
            DA_xy(l,1)*A_xy(m,2)*A_xy(l,3) +    &
@@ -1121,26 +1089,18 @@ subroutine XFORM_MPOLE_deriv_matrix(A_xy,DA_xy,DMpole_xy,order)
            A_xy(l,1)*A_xy(m,2)*DA_xy(l,3) +   &
            A_xy(m,1)*A_xy(l,2)*DA_xy(l,3)
   enddo
-! O'_123
-! Mpole_xy(20,11) = 6.d0*A_xy(1,1)*A_xy(2,1)*A_xy(3,1)
   DMpole_xy(20,11) = 6.d0*DA_xy(1,1)*A_xy(2,1)*A_xy(3,1)
   DMpole_xy(20,11) = DMpole_xy(20,11) + 6.d0*A_xy(1,1)*DA_xy(2,1)*A_xy(3,1)
   DMpole_xy(20,11) = DMpole_xy(20,11) + 6.d0*A_xy(1,1)*A_xy(2,1)*DA_xy(3,1)
-! Mpole_xy(20,12) = 6.d0*A_xy(1,2)*A_xy(2,2)*A_xy(3,2)
   DMpole_xy(20,12) = 6.d0*DA_xy(1,2)*A_xy(2,2)*A_xy(3,2)
   DMpole_xy(20,12) = DMpole_xy(20,12) + 6.d0*A_xy(1,2)*DA_xy(2,2)*A_xy(3,2)
   DMpole_xy(20,12) = DMpole_xy(20,12) + 6.d0*A_xy(1,2)*A_xy(2,2)*DA_xy(3,2)
-! Mpole_xy(20,13) = 6.d0*A_xy(1,3)*A_xy(2,3)*A_xy(3,3)
   DMpole_xy(20,13) = 6.d0*DA_xy(1,3)*A_xy(2,3)*A_xy(3,3)
   DMpole_xy(20,13) = DMpole_xy(20,13) + 6.d0*A_xy(1,3)*DA_xy(2,3)*A_xy(3,3)
   DMpole_xy(20,13) = DMpole_xy(20,13) + 6.d0*A_xy(1,3)*A_xy(2,3)*DA_xy(3,3)
   do ind2 = 4,9
     i = oind1(ind2)
     k = oind3(ind2)
-!   Mpole_xy(20,10+ind2) = 2.d0*
-!          (  A_xy(1,i)*A_xy(2,i)*A_xy(3,k) +
-!             A_xy(1,i)*A_xy(2,k)*A_xy(3,i) +
-!             A_xy(1,k)*A_xy(2,i)*A_xy(3,i) )
     DMpole_xy(20,10+ind2) = 2.d0*   &
            (  DA_xy(1,i)*A_xy(2,i)*A_xy(3,k) +    &
               DA_xy(1,i)*A_xy(2,k)*A_xy(3,i) +    &
@@ -1154,13 +1114,6 @@ subroutine XFORM_MPOLE_deriv_matrix(A_xy,DA_xy,DMpole_xy,order)
               A_xy(1,i)*A_xy(2,k)*DA_xy(3,i) +   &
               A_xy(1,k)*A_xy(2,i)*DA_xy(3,i) )
   enddo
-!     Mpole_xy(20,20) =
-!             A_xy(1,1)*A_xy(2,2)*A_xy(3,3) +
-!             A_xy(1,1)*A_xy(3,2)*A_xy(2,3) +
-!             A_xy(2,1)*A_xy(1,2)*A_xy(3,3) +
-!             A_xy(2,1)*A_xy(3,2)*A_xy(1,3) +
-!             A_xy(3,1)*A_xy(1,2)*A_xy(2,3) +
-!             A_xy(3,1)*A_xy(2,2)*A_xy(1,3)
   DMpole_xy(20,20) =    &
               DA_xy(1,1)*A_xy(2,2)*A_xy(3,3) +   &
               DA_xy(1,1)*A_xy(3,2)*A_xy(2,3) +   &
@@ -1199,8 +1152,6 @@ subroutine XFORM_MPOLE_deriv_matrix(A_xy,DA_xy,DMpole_xy,order)
       j = hind2(ind2)
       k = hind3(ind2)
       l = hind4(ind2)
-!         Mpole_xy(ind1+20,ind2+20) =
-!              A_xy(m,i)*A_xy(m,j)*A_xy(m,k)*A_xy(m,l)
       DMpole_xy(ind1+20,ind2+20) =   &
                DA_xy(m,i)*A_xy(m,j)*A_xy(m,k)*A_xy(m,l)
       DMpole_xy(ind1+20,ind2+20) = DMpole_xy(ind1+20,ind2+20) +  &
@@ -1219,9 +1170,6 @@ subroutine XFORM_MPOLE_deriv_matrix(A_xy,DA_xy,DMpole_xy,order)
     do ind2 = 1,9
       i = hind1(ind2)
       j = hind4(ind2)
-!         Mpole_xy(ind1+20,ind2+20) =
-!              A_xy(m,i)*A_xy(m,i)*A_xy(m,i)*A_xy(n,j) + 3.d0*
-!              A_xy(m,i)*A_xy(m,i)*A_xy(n,i)*A_xy(m,j)
       DMpole_xy(ind1+20,ind2+20) =   &
                DA_xy(m,i)*A_xy(m,i)*A_xy(m,i)*A_xy(n,j) + 3.d0*   &
                DA_xy(m,i)*A_xy(m,i)*A_xy(n,i)*A_xy(m,j)
@@ -1240,10 +1188,6 @@ subroutine XFORM_MPOLE_deriv_matrix(A_xy,DA_xy,DMpole_xy,order)
       i = hind1(ind2)
       j = hind3(ind2)
       k = hind4(ind2)
-!         Mpole_xy(ind1+20,ind2+20) =
-!              A_xy(m,i)*A_xy(m,i)*A_xy(m,j)*A_xy(n,k) +
-!              A_xy(m,i)*A_xy(m,i)*A_xy(m,k)*A_xy(n,j) + 2.d0*
-!              A_xy(m,i)*A_xy(m,j)*A_xy(m,k)*A_xy(n,i)
       DMpole_xy(ind1+20,ind2+20) =   &
                DA_xy(m,i)*A_xy(m,i)*A_xy(m,j)*A_xy(n,k) +  &
                DA_xy(m,i)*A_xy(m,i)*A_xy(m,k)*A_xy(n,j) + 2.d0*  &
@@ -1271,9 +1215,6 @@ subroutine XFORM_MPOLE_deriv_matrix(A_xy,DA_xy,DMpole_xy,order)
     do ind2 = 1,9
       i = hind1(ind2)
       j = hind4(ind2)
-!        Mpole_xy(ind1+20,ind2+20) = 3.d0 * (
-!              A_xy(m,i)*A_xy(m,i)*A_xy(n,i)*A_xy(n,j) +
-!              A_xy(m,i)*A_xy(m,j)*A_xy(n,i)*A_xy(n,i)  )
       DMpole_xy(ind1+20,ind2+20) = 3.d0 * (   &
                DA_xy(m,i)*A_xy(m,i)*A_xy(n,i)*A_xy(n,j) +   &
                DA_xy(m,i)*A_xy(m,j)*A_xy(n,i)*A_xy(n,i)  )
@@ -1295,11 +1236,6 @@ subroutine XFORM_MPOLE_deriv_matrix(A_xy,DA_xy,DMpole_xy,order)
       i = hind1(ind2)
       j = hind3(ind2)
       k = hind4(ind2)
-!         Mpole_xy(ind1+20,ind2+20) =
-!              A_xy(m,i)*A_xy(m,i)*A_xy(n,j)*A_xy(n,k) +
-!              A_xy(m,j)*A_xy(m,k)*A_xy(n,i)*A_xy(n,i) +  2.d0*
-!              A_xy(m,i)*A_xy(m,j)*A_xy(n,i)*A_xy(n,k) +  2.d0*
-!              A_xy(m,i)*A_xy(m,k)*A_xy(n,i)*A_xy(n,j)
       DMpole_xy(ind1+20,ind2+20) =    &
                DA_xy(m,i)*A_xy(m,i)*A_xy(n,j)*A_xy(n,k) +    &
                DA_xy(m,j)*A_xy(m,k)*A_xy(n,i)*A_xy(n,i) +  2.d0*    &
@@ -1332,10 +1268,6 @@ subroutine XFORM_MPOLE_deriv_matrix(A_xy,DA_xy,DMpole_xy,order)
     do ind2 = 1,9
       i = hind1(ind2)
       j = hind4(ind2)
-!         Mpole_xy(ind1+20,ind2+20) =
-!             3.d0*A_xy(m,i)*A_xy(m,i)*A_xy(n,i)*A_xy(p,j) +
-!             3.d0*A_xy(m,i)*A_xy(m,i)*A_xy(n,j)*A_xy(p,i) +
-!             6.d0*A_xy(m,i)*A_xy(m,j)*A_xy(n,i)*A_xy(p,i)
       DMpole_xy(ind1+20,ind2+20) =    &
               3.d0*DA_xy(m,i)*A_xy(m,i)*A_xy(n,i)*A_xy(p,j) +    &
               3.d0*DA_xy(m,i)*A_xy(m,i)*A_xy(n,j)*A_xy(p,i) +    &
@@ -1358,14 +1290,6 @@ subroutine XFORM_MPOLE_deriv_matrix(A_xy,DA_xy,DMpole_xy,order)
       i = hind1(ind2)
       j = hind3(ind2)
       k = hind4(ind2)
-!         Mpole_xy(ind1+20,ind2+20) =
-!              A_xy(m,i)*A_xy(m,i)*A_xy(n,j)*A_xy(p,k) +
-!              A_xy(m,i)*A_xy(m,i)*A_xy(n,k)*A_xy(p,j) + 2.d0 * (
-!              A_xy(m,i)*A_xy(m,j)*A_xy(n,i)*A_xy(p,k) +
-!              A_xy(m,i)*A_xy(m,j)*A_xy(n,k)*A_xy(p,i) +
-!              A_xy(m,i)*A_xy(m,k)*A_xy(n,i)*A_xy(p,j) +
-!              A_xy(m,i)*A_xy(m,k)*A_xy(n,j)*A_xy(p,i) +
-!              A_xy(m,j)*A_xy(m,k)*A_xy(n,i)*A_xy(p,i) )
       DMpole_xy(ind1+20,ind2+20) =    &
                DA_xy(m,i)*A_xy(m,i)*A_xy(n,j)*A_xy(p,k) +    &
                DA_xy(m,i)*A_xy(m,i)*A_xy(n,k)*A_xy(p,j) + 2.d0 * (   &
@@ -1445,8 +1369,6 @@ subroutine XFORM_MPOLE_field_matrix(A_xy,Field_xy,order)
     Field_xy(j,1) = 0.d0
   enddo
 ! DIPOLES
-! d_yk = A_xy(k,1)*d_x1 + A_xy(k,2)*d_x2 + A_xy(k,3)*d_x3
-! D'_j
   do j = 2,4
     do k = 2,4
       Field_xy(j,k) = A_xy(j-1,k-1)
@@ -1460,9 +1382,6 @@ subroutine XFORM_MPOLE_field_matrix(A_xy,Field_xy,order)
     enddo
   enddo
 ! QUADRUPOLES
-! q_ykyl = sum_i,j (A_xy(k,i)*A_xy(l,j)+A_xy(k,j)*A_xy(l,i))*(q_xixj+q_xjxi)
-! Mp(5) = q_y1y1,..,Mp(7) = q_y3y3,Mp(8) = q_y1y2+q_y2y1,.,Mp(10)=q_y2y3+q_y3y2
-! Q'_kk
   do ind1 = 1,3
     l = qind1(ind1)
     do ind2 = 1,3

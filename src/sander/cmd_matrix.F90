@@ -88,7 +88,6 @@ subroutine transformation_matrix ( nbead )
 
   omega_nmode(1) = omega_P
 
-! if(master) write(6,'(A,I2,A,F15.8)') "omega(", 1, ") = ", omega_nmode(1)
 
   do n = 2, nbead
      if ( adiab_param < 1.d0 ) then
@@ -96,7 +95,6 @@ subroutine transformation_matrix ( nbead )
      else
         omega_nmode( n ) = omega_P
      endif
-!    if(master) write(6,'(A,I2,A,F15.8)') "omega(", n, ") = ", omega_nmode(n)
   end do
 
 end subroutine

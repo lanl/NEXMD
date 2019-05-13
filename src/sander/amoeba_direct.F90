@@ -178,10 +178,10 @@ subroutine AM_DIRECT_ene_frc(ipairs,crd,x,ind_dip_d,ind_dip_p, &
                call  AM_VDW_DIRECT_ene_frc_i(i,ipairs(numpack),ntot,xk,yk,zk, &
                                    crd,ene_vdw,frc,virial)
                numpack = numpack + ntot
-            end if  ! ( ntot > 0 )
-         end do  !  k = ncell_lo,ncell_hi
-      end if  ! ( numimg(k) > 0 )
-   end do  !  index = myindexlo,myindexhi
+            end if  
+         end do  
+      end if  
+   end do  
    call timer_stop(TIME_SHORT_ENE)
    return
 end subroutine AM_DIRECT_ene_frc
@@ -215,10 +215,10 @@ subroutine AM_DIRECT_count_num_ee_pairs( &
                                    xk,yk,zk,ee_dsum_cut,  &
                                    num_pairs_in_ee_cut)
                numpack = numpack + ntot
-            end if  ! ( ntot > 0 )
-         end do  !  k = ncell_lo,ncell_hi
-      end if  ! ( numimg(k) > 0 )
-   end do  !  index = myindexlo,myindexhi
+            end if  
+         end do  
+      end if  
+   end do  
 
 end subroutine AM_DIRECT_count_num_ee_pairs
 !-------------------------------------------------------
@@ -435,7 +435,6 @@ subroutine AM_DIRECT_permfield_i(i,ipairs,numtot,xk,yk,zk, &
          Rn_2(Ind_110) = delx*Rn_1(Ind_010)
          Rn_2(Ind_101) = delx*Rn_1(Ind_001)
          Rn_2(Ind_011) = dely*Rn_1(Ind_001)
-         !Rn_3(Ind_000) = B(n-3) --don't need this one in any field calc
          Rn_3(Ind_100) = delx*Rn_2(Ind_000)
          Rn_3(Ind_010) = dely*Rn_2(Ind_000)
          Rn_3(Ind_001) = delz*Rn_2(Ind_000)
@@ -765,7 +764,6 @@ subroutine AM_DIRECT_ene_force_i(i,ipairs,numtot,xk,yk,zk, &
          ! TD Got the idea for B_l from Walter Smith's CCP5 article 1982
          ! Ewald for point multipoles
          ! B_l satisfies grad_i B_l(|r_j - r_i|) = (r_j - r_i)B_{l+1}(|r_j-r_i|)
-         ! grad_j B_l(|r_j - r_i|) = -grad_i B_l(|r_j - r_i|)
          
          B(0) = switch*delr*delr2inv
          fact = d_switch_dx*dxdr
@@ -1329,7 +1327,6 @@ subroutine AM_DIRECT_ene_force_i(i,ipairs,numtot,xk,yk,zk, &
             Rn_3(Ind_102) = delx*Rn_2(Ind_002)
             Rn_3(Ind_012) = dely*Rn_2(Ind_002)
             Rn_3(Ind_111) = delx*Rn_2(Ind_011)
-            !Rn_4(Ind_000) = BD(n-4) NOT NEEDED
             Rn_4(Ind_100) = delx*Rn_3(Ind_000)
             Rn_4(Ind_010) = dely*Rn_3(Ind_000)
             Rn_4(Ind_001) = delz*Rn_3(Ind_000)
@@ -1365,13 +1362,6 @@ subroutine AM_DIRECT_ene_force_i(i,ipairs,numtot,xk,yk,zk, &
             Rn_4(Ind_121) = delx*Rn_3(Ind_021)
             Rn_4(Ind_112) = delx*Rn_3(Ind_012)
             if ( is_polarizable(i) )then
-               ! phi(Ind_000) NOT NEEDED
-               !phi(Ind_000)= &
-                      !Rn_4(Ind_000)*gmj(Ind_000)+Rn_4(Ind_100)*gmj(Ind_100)+ &
-                      !Rn_4(Ind_010)*gmj(Ind_010)+Rn_4(Ind_001)*gmj(Ind_001)+ &
-                      !Rn_4(Ind_200)*gmj(Ind_200)+Rn_4(Ind_020)*gmj(Ind_020)+ &
-                      !Rn_4(Ind_002)*gmj(Ind_002)+Rn_4(Ind_110)*gmj(Ind_110)+ &
-                      !Rn_4(Ind_101)*gmj(Ind_101)+Rn_4(Ind_011)*gmj(Ind_011)
                phi(Ind_100)= &
                     -(Rn_4(Ind_100)*gmj(Ind_000)+Rn_4(Ind_200)*gmj(Ind_100)+ &
                       Rn_4(Ind_110)*gmj(Ind_010)+Rn_4(Ind_101)*gmj(Ind_001)+ &

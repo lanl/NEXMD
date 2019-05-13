@@ -601,7 +601,6 @@ subroutine AM_REG_ANGLES_bcast
 
    if(.not.master) then
       call AMOEBA_get_startlist_endlist(num_list,startlist,endlist,siztask)
-      !allocate scratch
       allocate(fn(siztask),stat=ierr)
       allocate(arg(siztask),stat=ierr)
       allocate(dfn_darg(siztask),stat=ierr)
@@ -622,8 +621,6 @@ function AM_REG_ANGLES_readparm(nf)
     do_flag = ibclr(do_flag,VALID_BIT)
     return
   endif
-  !write(6,*)'num_list = ',num_list
-  !allocate
   dim1 = 4 ! 3 atoms plus param ptr
   allocate(list(dim1,num_list),stat=ier)
   if ( ier /= 0 )then
@@ -636,7 +633,6 @@ function AM_REG_ANGLES_readparm(nf)
     do_flag = ibclr(do_flag,VALID_BIT)
     return
   endif
-  !allocate
   allocate(force_constant(num_params),stat=ier1)
   allocate(equil_value(num_params),stat=ier2)
   if ( (ier1/=0) .or. (ier2/=0) )then
@@ -648,7 +644,6 @@ function AM_REG_ANGLES_readparm(nf)
   call AM_VAL_read_equil_value('AMOEBA_REGULAR_ANGLE_',nf,  &
               num_params,equil_value)
   call AMOEBA_get_startlist_endlist(num_list,startlist,endlist,siztask)
-  !allocate
   allocate(fn(siztask),stat=ier1)
   allocate(arg(siztask),stat=ier2)
   allocate(dfn_darg(siztask),stat=ier3)
@@ -935,7 +930,6 @@ subroutine AM_TRIG_ANGLES_bcast
 
    if(.not.master) then
       call AMOEBA_get_startlist_endlist(num_list,startlist,endlist,siztask)
-      !allocate scratch
       allocate(fn(siztask),stat=ierr)
       allocate(arg(siztask),stat=ierr)
       allocate(dfn_darg(siztask),stat=ierr)
@@ -957,8 +951,6 @@ function AM_TRIG_ANGLES_readparm(nf)
     do_flag = ibclr(do_flag,VALID_BIT)
     return
   endif
-  !write(6,*)'num_list = ',num_list
-  !allocate
   dim1 = 5 ! 4 atoms plus param ptr
   allocate(list(dim1,num_list),stat=ier)
   if ( ier /= 0 )then
@@ -971,7 +963,6 @@ function AM_TRIG_ANGLES_readparm(nf)
     do_flag = ibclr(do_flag,VALID_BIT)
     return
   endif
-  !allocate
   allocate(force_constant(num_params),stat=ier1)
   allocate(equil_value(num_params),stat=ier2)
   if ( (ier1/=0) .or. (ier2/=0) )then
@@ -983,7 +974,6 @@ function AM_TRIG_ANGLES_readparm(nf)
   call AM_VAL_read_equil_value('AMOEBA_TRIGONAL_ANGLE_',nf,  &
               num_params,equil_value)
   call AMOEBA_get_startlist_endlist(num_list,startlist,endlist,siztask)
-  !allocate
   allocate(fn(siztask),stat=ier1)
   allocate(arg(siztask),stat=ier2)
   allocate(dfn_darg(siztask),stat=ier3)
@@ -1109,8 +1099,6 @@ subroutine AM_TRIG_ANGLES_get_args(crd,alist,equil_value,arg,darg_dcrdijkl)
     xcen = crd(1,j) - dotp*p(1)
     ycen = crd(2,j) - dotp*p(2)
     zcen = crd(3,j) - dotp*p(3)
-! dcen_dv1_p = -(v3.dp_dv1_p)p - (v3.p)dp_dv1_p
-! dcen_dv2_p = -(v3.dp_dv2_p)p - (v3.p)dp_dv2_p
     dotp1 = v3(1)*dp_dv1_p(1)+v3(2)*dp_dv1_p(2)+v3(3)*dp_dv1_p(3)
     dotp2 = v3(1)*dp_dv2_p(1)+v3(2)*dp_dv2_p(2)+v3(3)*dp_dv2_p(3)
     dxcen_dv1_p = -(dotp1*p(1) + dotp*dp_dv1_p(1))
@@ -1308,7 +1296,6 @@ subroutine AM_OPBEND_ANGLES_bcast
 
    if(.not.master) then
       call AMOEBA_get_startlist_endlist(num_list,startlist,endlist,siztask)
-      !allocate scratch
       allocate(fn(siztask),stat=ierr)
       allocate(arg(siztask),stat=ierr)
       allocate(dfn_darg(siztask),stat=ierr)
@@ -1329,8 +1316,6 @@ function AM_OPBEND_ANGLES_readparm(nf)
     do_flag = ibclr(do_flag,VALID_BIT)
     return
   endif
-  !write(6,*)'num_list = ',num_list
-  !allocate
   dim1 = 5 ! 4 atoms plus param ptr
   allocate(list(dim1,num_list),stat=ier)
   if ( ier /= 0 )then
@@ -1343,7 +1328,6 @@ function AM_OPBEND_ANGLES_readparm(nf)
     do_flag = ibclr(do_flag,VALID_BIT)
     return
   endif
-  !allocate
   allocate(force_constant(num_params),stat=ier)
   if ( (ier/=0)  )then
     write(6,*)'failed to allocate parms; num_params = ',num_params
@@ -1352,7 +1336,6 @@ function AM_OPBEND_ANGLES_readparm(nf)
   call AM_VAL_read_force_constant('AMOEBA_OPBEND_ANGLE_',nf,  &
               num_params,force_constant)
   call AMOEBA_get_startlist_endlist(num_list,startlist,endlist,siztask)
-  !allocate
   allocate(fn(siztask),stat=ier1)
   allocate(arg(siztask),stat=ier2)
   allocate(dfn_darg(siztask),stat=ier3)
@@ -1610,7 +1593,6 @@ subroutine AM_TORSIONS_bcast
 
    if(.not.master) then
       call AMOEBA_get_startlist_endlist(num_list,startlist,endlist,siztask)
-      !allocate scratch
       allocate(fn(siztask),stat=ierr)
       REQUIRE(ierr==0)
       allocate(cosarg(siztask),stat=ierr)
@@ -1639,8 +1621,6 @@ function AM_TORSIONS_readparm(nf)
     do_flag = ibclr(do_flag,VALID_BIT)
     return
   endif
-  !write(6,*)'num_list = ',num_list
-  !allocate
   dim1 = 5 ! 4 atoms plus param ptr
   allocate(list(dim1,num_list),stat=ier)
   if ( ier /= 0 )then
@@ -1653,7 +1633,6 @@ function AM_TORSIONS_readparm(nf)
     do_flag = ibclr(do_flag,VALID_BIT)
     return
   endif
-  !allocate
   allocate(force_constant(num_params),stat=ier1)
   allocate(periodicity(num_params),stat=ier2)
   allocate(phase(num_params),stat=ier3)
@@ -1675,7 +1654,6 @@ function AM_TORSIONS_readparm(nf)
   enddo
   deallocate(phase)
   call AMOEBA_get_startlist_endlist(num_list,startlist,endlist,siztask)
-  !allocate
   allocate(fn(siztask),stat=ier1)
   allocate(cosarg(siztask),stat=ier2)
   allocate(sinarg(siztask),stat=ier2)
@@ -1940,7 +1918,6 @@ subroutine AM_STRETCH_TORSIONS_bcast
 
    if(.not.master) then
       call AMOEBA_get_startlist_endlist(num_list,startlist,endlist,siztask)
-      !allocate scratch
       allocate(fn(siztask),stat=ierr)
       REQUIRE(ierr==0)
       allocate(cosarg(siztask),stat=ierr)
@@ -1974,8 +1951,6 @@ function AM_STRETCH_TORSIONS_readparm(nf)
     do_flag = ibclr(do_flag,VALID_BIT)
     return
   endif
-  !write(6,*)'num_list = ',num_list
-  !allocate
   dim1 = 5 ! 4 atoms plus param ptr
   allocate(list(dim1,num_list),stat=ier)
   if ( ier /= 0 )then
@@ -2015,7 +1990,6 @@ function AM_STRETCH_TORSIONS_readparm(nf)
   enddo
   deallocate(phase)
   call AMOEBA_get_startlist_endlist(num_list,startlist,endlist,siztask)
-  !allocate
   allocate(fn(siztask),stat=ier)
   REQUIRE(ier==0)
   allocate(cosarg(siztask),stat=ier)
@@ -2352,7 +2326,6 @@ subroutine AM_PITORSIONS_bcast
 
    if(.not.master) then
       call AMOEBA_get_startlist_endlist(num_list,startlist,endlist,siztask)
-      !allocate scratch
       allocate(fn(siztask),stat=ierr)
       REQUIRE(ierr==0)
       allocate(cosarg(siztask),stat=ierr)
@@ -2382,8 +2355,6 @@ function AM_PITORSIONS_readparm(nf)
     do_flag = ibclr(do_flag,VALID_BIT)
     return
   endif
-  !write(6,*)'num_list = ',num_list
-  !allocate
   dim1 = 7 ! 6 atoms plus param ptr
   allocate(list(dim1,num_list),stat=ier)
   if ( ier /= 0 )then
@@ -2396,7 +2367,6 @@ function AM_PITORSIONS_readparm(nf)
     do_flag = ibclr(do_flag,VALID_BIT)
     return
   endif
-  !allocate
   allocate(force_constant(num_params),stat=ier1)
   allocate(periodicity(num_params),stat=ier2)
   allocate(phase(num_params),stat=ier3)
@@ -2418,7 +2388,6 @@ function AM_PITORSIONS_readparm(nf)
   enddo
   deallocate(phase)
   call AMOEBA_get_startlist_endlist(num_list,startlist,endlist,siztask)
-  !allocate
   allocate(fn(siztask),stat=ier1)
   allocate(cosarg(siztask),stat=ier2)
   allocate(sinarg(siztask),stat=ier2)
@@ -2463,7 +2432,6 @@ subroutine AM_PITORSIONS_eval(crd,frc,ene,vir)
 #include "do_flag.h"
 
   integer j,k
-! initialize
   energy = 0.d0
   do k = 1,3
     do j = 1,3
@@ -2719,7 +2687,6 @@ subroutine AM_STRETCH_BEND_bcast
 
    if(.not.master) then
       call AMOEBA_get_startlist_endlist(num_list,startlist,endlist,siztask)
-      !allocate scratch
       allocate(arg1(siztask),stat=ierr)
       REQUIRE(ierr==0)
       allocate(arg2(siztask),stat=ierr)
@@ -2746,8 +2713,6 @@ function AM_STRETCH_BEND_readparm(nf)
     do_flag = ibclr(do_flag,VALID_BIT)
     return
   endif
-  !write(6,*)'num_list = ',num_list
-  !allocate
   dim1 = 4 ! 3 atoms plus param ptr
   allocate(list(dim1,num_list),stat=ier)
   if ( ier /= 0 )then
@@ -2760,7 +2725,6 @@ function AM_STRETCH_BEND_readparm(nf)
     do_flag = ibclr(do_flag,VALID_BIT)
     return
   endif
-  !allocate
   allocate(force_constant(num_params),stat=ier1)
   allocate(angle_equil_value(num_params),stat=ier2)
   allocate(bond1_equil_value(num_params),stat=ier3)
@@ -2778,7 +2742,6 @@ function AM_STRETCH_BEND_readparm(nf)
   call AM_VAL_read_equil_value('AMOEBA_STRETCH_BEND_BOND2_',nf,  &
               num_params,bond2_equil_value)
   call AMOEBA_get_startlist_endlist(num_list,startlist,endlist,siztask)
-  !allocate
   allocate(arg1(siztask),stat=ier1)
   allocate(arg2(siztask),stat=ier2)
   allocate(darg1_dcrd(9,siztask),stat=ier3) !3 atoms to get derivs wrt
@@ -3172,8 +3135,6 @@ function AM_TOR_TOR_readparm(nf)
     do_flag = ibclr(do_flag,VALID_BIT)
     return
   endif
-  !write(6,*)'num_list = ',num_list
-  !allocate
   dim1 = 6 ! 5 atoms plus param ptr
   allocate(list(dim1,num_list),stat=ier)
   if ( ier /= 0 )then
@@ -3186,7 +3147,6 @@ function AM_TOR_TOR_readparm(nf)
     do_flag = ibclr(do_flag,VALID_BIT)
     return
   endif
-  !allocate
   allocate(torsion_torsion_table(num_params),stat=ier)
   if ( ier /= 0 )then
     write(6,*)'failed to allocate torsion_torsion_table; num_params = ', &
@@ -3200,7 +3160,6 @@ function AM_TOR_TOR_readparm(nf)
                                  nf,torsion_torsion_table(n))
   enddo
   call AMOEBA_get_startlist_endlist(num_list,startlist,endlist,siztask)
-  !allocate
   allocate(arg1(siztask),stat=ier1)
   allocate(arg2(siztask),stat=ier2)
   allocate(darg1_dcrd(12,siztask),stat=ier3) !4 atoms to get derivs wrt

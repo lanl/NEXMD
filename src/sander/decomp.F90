@@ -615,10 +615,6 @@ subroutine decphi(nat1,nat2,nat3,nat4,fval)
    
    ! --- Echo result
    
-   !      write(6,*) inat1,nres1,isside1,
-   !     +           inat2,nres2,isside2,
-   !     +           inat3,nres3,isside3,
-   !     +           inat4,nres4,isside4
    
    ! --- Decompose
    
@@ -766,18 +762,6 @@ subroutine decsasa(nty,nat1,nat2,nat3,fval)
    
    ! --- Echo result
    
-   !      if(ntype.eq.1) then
-   !        write(6,*) nat1,nres1,isside1, isprot1, fval
-   !      else if(ntype.eq.2) then
-   !        write(6,*) nat1,nres1,isside1, isprot1, &
-   !                   nat2,nres2,isside2, isprot2, &
-   !                   fval
-   !      else if(ntype.eq.3) then
-   !        write(6,*) nat1,nres1,isside1, isprot1, &
-   !                   nat2,nres2,isside2, isprot2, &
-   !                   nat3,nres3,isside3, isprot3, &
-   !                   fval
-   !      end if
    
    ! --- Decompose
    !     here: nat1 solely determines if sidechain or backbone
@@ -925,9 +909,6 @@ subroutine decsasa_icosa(nat1,iatinclcnt,iatincl,fval,idecomp)
       
       ! --- Echo result
    
-      !     write(6,*) nat1,nres1,isside1, isprot1, &
-      !                nat2,nres2,isside2, isprot2, &
-      !                fval
    
       ! --- Decompose
       !     here: nat1 solely determines if sidechain or backbone

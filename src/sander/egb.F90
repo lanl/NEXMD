@@ -739,11 +739,6 @@ subroutine egb(x,f,rborn,fs,reff,onereff,charge,iac,ico,numex, &
       end if
       call vdinvsqrt( icount, r2x, vectmp5 ) !1/rij
 
-      ! vectmp1 = Exp(-rij^2/[4*ai*aj])
-      ! vectmp2 = 1/fij
-      ! vectmp3 = -kappa*fij - if kappa/=zero, otherwise = fij
-      ! vectmp4 = exp(-kappa*fij)
-      ! vectmp5 = 1/rij - note with qmmm this contains the
                           !distance to mm_link pairs not to QM link atoms.
    
   !---- Start first outer loop ----
@@ -770,7 +765,6 @@ subroutine egb(x,f,rborn,fs,reff,onereff,charge,iac,ico,numex, &
               if(alpb == 1) then ! Sigalov Onufriev ALPB:
                  fgbk = fgbk+(fgbk*one_Arad_beta*(-vectmp3(k)*onekappa)) 
 
-                 ! (-kappa*fij*exp(-kappa*fij)(1 + fij*ab/A)/Eout)*(1/fij+ab/A)
                  ! Note: -vectmp3(k)*onekappa = fij
               end if
            end if
@@ -830,8 +824,6 @@ subroutine egb(x,f,rborn,fs,reff,onereff,charge,iac,ico,numex, &
            temp6 = -qiqj*temp4*(dl + fgbk)
 #endif
 
-           ! -qiqj/fij^3*[1/Ein - e(-Kfij)/Eout) -kappa*fij*
-           ! exp(-kappa*fij)(1 + fij*a*b/A ) /Eout]
 
            temp1 = vectmp1(k) !Exp(-rij^2/[4*ai*aj]) 
            de = temp6*(one - fourth*temp1)
@@ -1257,8 +1249,6 @@ subroutine egb(x,f,rborn,fs,reff,onereff,charge,iac,ico,numex, &
             dvdl = dvdl - (half*dl*dcharge(i)*dcharge(i)-qid2h)*onereff(i)
          end if
         
-         ! qi2h = qiqj/2
-         ! qid2h = qiqj/2*[1/Ein - exp[-kappa*effbornrad]/Eout] 
          ! temp7 = ... + qiqj/2*[1/Ein - exp[-kappa*effbornrad]/Eout]
          !         -kappa*qiqj/2*exp[-kappa*effbornrad]/Eout*effbornrad
          ! temp7 without the -sumdeijda part is the diagonal gradient.
@@ -1423,11 +1413,6 @@ subroutine egb(x,f,rborn,fs,reff,onereff,charge,iac,ico,numex, &
                  datmp = tmpsd*sj*dij2i*dij2i*dumbo
                
                  !     ---check accuracy of above Taylor series:
-                 !      kk1 = kk1 + 1
-                 !      datmp2 = vectmp2(kk1)*sj*(-Half*dij2i + vectmp2(kk1)) +
-                 !              Fourth*dij3i*vectmp4(kk1)
-                 !      if( abs( datmp/datmp2 - 1.d0 ) .gt. 0.00001) &
-                 !             write(6,*) i,j, datmp, datmp2
                
               else if( dij > ri+sj ) then
                  
@@ -1484,7 +1469,7 @@ subroutine egb(x,f,rborn,fs,reff,onereff,charge,iac,ico,numex, &
 
                  datmp = datmp + ((2 * mdist + (nine/five) * mdist5) &
                        *neckMaxVal(neckidx(i),neckidx(j))*gbneckscale)/temp1
-              end if !f( (igb == 7 .or. igb == 8) .and. dij < rborn(i) +rborn(j) + GBNECKCUT)
+              end if 
     
 #ifdef LES       
               ! loop over pairs of radii 
@@ -1575,8 +1560,8 @@ subroutine egb(x,f,rborn,fs,reff,onereff,charge,iac,ico,numex, &
 
 #endif /*LES*/
 
-           end if ! (dij <= rgbmax +sj)
-         end do  !  k=1,icount
+           end if  
+         end do   
 
          if (qmmm_nml%ifqnt) then
            if (qmmm_struct%mm_link_mask(i)) then
@@ -1639,10 +1624,6 @@ subroutine egb(x,f,rborn,fs,reff,onereff,charge,iac,ico,numex, &
 #endif
 
 
-          !  if(i == 1) then
-          !     ineighborpt = 1
-          !     call icosa_init(2, 3, zero)
-          !  end if
             totsasa = totsasa + icosa_sphere_approx(i,x, &
                    vdwrad,ineighborpt,ineighbor,idecomp)
             
@@ -1806,7 +1787,7 @@ VACUUM3 &
                end if
                de = (twelve*f12 - ten*f10)*r2inv
 #endif
-             end if !if ic>0
+             end if 
              de = de*nrespai
              dedx = de * xij
              dedy = de * yij
@@ -1817,8 +1798,8 @@ VACUUM3 &
              f(3*j-2) = f(3*j-2) - dedx
              f(3*j-1) = f(3*j-1) - dedy
              f(3*j  ) = f(3*j  ) - dedz
-           end if !if r2<=cut
-         end if !if not skipv(i)
+           end if 
+         end if 
        end do
 
 #ifdef LES
@@ -1827,12 +1808,12 @@ VACUUM3 &
        f(3*mm_no-2) = f(3*mm_no-2) + dumx
        f(3*mm_no-1) = f(3*mm_no-1) + dumy
        f(3*mm_no  ) = f(3*mm_no  ) + dumz
-     end do ! i = 1, qmmm_struct%nlink
+     end do 
      call timer_stop(TIME_QMMMGBENERGY)
      call timer_stop(TIME_QMMMENERGY)
 !------------ END MM LINK PAIR VDW ---------------------
      call timer_stop(TIME_QMMM)
-   end if !if ifqnt.
+   end if 
 !======== END QMMM ==========
 
    return
@@ -2036,8 +2017,8 @@ subroutine egb_calc_radii(igb,natom,x,fs,reff,onereff,fsmax,rgbmax, &
                  vectmp5(kk2) = one
               end if
            end if
-        end if ! (dij <= rgbmax+si .or. dij <= rgbmax+sj)       
-      end do  !  k = 1, icount
+        end if        
+      end do  
       
 #ifdef LES
 ! these arrays for vector calls are not changed by LES
@@ -2184,7 +2165,7 @@ subroutine egb_calc_radii(igb,natom,x,fs,reff,onereff,fsmax,rgbmax, &
               temp4 = temp4 - gbneckscale *neck
            end if
 
-        end if !(dij <= rgbmax +si)
+        end if 
 ! now add the calculated descreening component to onereff
       
 #ifdef LES
@@ -2314,9 +2295,6 @@ subroutine egb_calc_radii(igb,natom,x,fs,reff,onereff,fsmax,rgbmax, &
 #endif
       call vdtanh(vecend, vectmp3, vectmp3)
 
-      ! vectmp1 = 1.0d0/rborn
-      ! vectmp2 = 1.0d0/(rborn-offset)
-      ! vectmp3 = tanh( (gbalpha + gbgamma*psi_i*psi_i - gbbeta*psi_i )*psi_i )
 
       onereff(1:vecend) = vectmp2(1:vecend) - &
                             (vectmp3(1:vecend)*vectmp1(1:vecend))

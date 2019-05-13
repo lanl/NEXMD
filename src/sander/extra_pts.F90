@@ -281,8 +281,6 @@ subroutine init_extra_pts(ibh,jbh,icbh, &
          chngmask,verbose)
    call copy_14nb(nb_14_list,ix(inb_14),numnb14)
    
-   !      ---if frameon = 1 use frames and forces to define ep's
-   !      ---else use their masses and amber force params
    
    if ( frameon == 1 )then
       
@@ -523,9 +521,9 @@ subroutine define_frames(natom,isymbl, &
             write(6,*) 'define: ',n,numnghbr(1,n), &
                   numnghbr(2,n),numnghbr(3,n)
             call mexit(6,1)
-         end if  !  ( numnghbr(1,n) == 0  .and. numnghbr(2,n) == 2
-      end if  !  ( numnghbr(1,n) == 0  .and. numnghbr(2,n) == 2
-   end do  ! ( numnghbr(3,n) > 0 )
+         end if  
+      end if  
+   end do  
    
    !--- get the local coords ---------------------------------------
    
@@ -592,8 +590,8 @@ subroutine define_frames(natom,isymbl, &
       else
          write(6,*) 'EXTRA_PTS: unexpected frtype value: ',frtype(n)
          call mexit(6,1)
-      end if  ! ( frtype(n) == 1 .or. frtype(n) == 3 )
-   end do  !  n = 1,numfr
+      end if  
+   end do  
    
    if ( verbose > 3 )then
       write(6,*) 'frames:'
@@ -953,24 +951,9 @@ subroutine do_orient_frc(crd,frc,framevir,frtype,atcenter,numep, &
       ! movement of u by dy along up -> rotation about w of dy/usiz
       ! since frame rotates as much as u in isolation
       !---------------------------------------------------------------------
-      !         do m = 1,3
-      !          du(m) = -w(m)*dphidv/uvdis + up(m)*dphidw/usiz
-      !          dv(m) = w(m)*dphidu/vudis
-      !          frc(m,j1) = frc(m,j1) - du(m) + force(m)
-      !          frc(m,j3) = frc(m,j3) - dv(m)
-      !          frc(m,j2) = frc(m,j2) + dv(m) + du(m)
-      !         enddo
-      ! get torque contribution to virial
-      !         do m = 1,3
-      !          do l = 1,3
-      !           framevir(l,m) = framevir(l,m) + du(l)*(crd(m,j1)-crd(m,j2))
-      !    .                      + dv(l)*(crd(m,j3)-crd(m,j2))
-      !          enddo
-      !         enddo
-      !       endif
       
       199 continue
-   end do  !  n = 1,numfr
+   end do  
    return
 end subroutine do_orient_frc 
 !---------------------------------------------------------------------
@@ -1542,8 +1525,6 @@ subroutine do_14_cg(charge,crd,frc, &
 #endif
       end do  !  n = 1,numnb14
    else
-!      do n = 1,numnb14
-!         if ( mod(n,numtasks) /= mytaskid)cycle
       do n = mytaskid+1,numnb14,numtasks
          i = nb_14_list(1,n)
          j = nb_14_list(2,n)
@@ -1637,8 +1618,8 @@ subroutine do_14_cg(charge,crd,frc, &
          e14vir(3,2) = e14vir(3,2) - df*dz*dy
          e14vir(3,3) = e14vir(3,3) - df*dz*dz
 #endif
-      end do  !  n = 1,numnb14
-   end if  ! (eedmeth == 5)
+      end do  
+   end if  
    return
 end subroutine do_14_cg 
 !--------------------------------------------------------------
@@ -1727,8 +1708,6 @@ subroutine do_14_dipole(charge,crd,frc,dipole,field, &
          e14vir(i,j) = 0.d0
       end do
    end do
-!   do n = 1,numnb14
-!      if ( mod(n,numtasks) /= mytaskid ) cycle
    do n = mytaskid+1,numnb14,numtasks
       i = nb_14_list(1,n)
       j = nb_14_list(2,n)
@@ -1759,14 +1738,12 @@ subroutine do_14_dipole(charge,crd,frc,dipole,field, &
             lambda5 = one
             lambda7 = one
          else if ( mpoltype == 2 ) then
-! pol2()=sqrt(pol()/dampfactors())
             au3 = r2/rinv/ (pol2(i)*pol2(j))
             exp_au3 = exp(-au3)
             lambda3 = one - exp_au3
             lambda5 = one - (one+au3)*exp_au3
             lambda7 = one - (one + au3 + three/five*au3*au3)*exp_au3
          else if ( mpoltype == 3 ) then
-! pol2()=pol()**sixth/sqrt(dampfactors())
             au = one / (pol2(i)*pol2(j))/rinv
             exp_au = exp(-au)
             a2u2 = au*au
@@ -1776,7 +1753,6 @@ subroutine do_14_dipole(charge,crd,frc,dipole,field, &
             lambda5=lambda3-a3u3/six*exp_au
             lambda7=lambda5-a4u4/six/five*exp_au
          else if ( mpoltype == 4 ) then
-! pol2()=sqrt(dampfactors())*pol()**(1/6)
             v = one / (pol2(i)*pol2(j)) / rinv
             if ( v < one ) then
                v3 = v*v*v
@@ -1848,12 +1824,6 @@ subroutine do_14_dipole(charge,crd,frc,dipole,field, &
       frc(2,i) = frc(2,i) - dfy
       frc(3,i) = frc(3,i) - dfz
 ! M-WJ
-!     dphii_dx = termj*dx + c1*dipole(1,j)
-!     dphii_dy = termj*dy + c1*dipole(2,j)
-!     dphii_dz = termj*dz + c1*dipole(3,j)
-!     dphij_dx = -termi*dx + c1*dipole(1,i)
-!     dphij_dy = -termi*dy + c1*dipole(2,i)
-!     dphij_dz = -termi*dz + c1*dipole(3,i)
       dphii_dx = termj_o*dx + c1*dipole(1,j)
       dphii_dy = termj_o*dy + c1*dipole(2,j)
       dphii_dz = termj_o*dz + c1*dipole(3,j)
@@ -2292,9 +2262,9 @@ subroutine do_14pairs(ip,jp,kp,lp,icp, &
                   end do
                end do
             end if
-         end if  ! ( chngmask == 0 )
-      end if  !  (  (k > 0)    .and.
-   end do  !  n = 1,nphi
+         end if  
+      end if 
+   end do  
    return
 end subroutine do_14pairs
 

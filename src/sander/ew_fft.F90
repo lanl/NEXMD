@@ -506,7 +506,7 @@ subroutine zx_xy_transpose(targ,src,ldx,n3,tmp,tmp1)
 #   ifndef MPI_BUFFER_SIZE
       call mpi_wait(ireq, isnd_stat,ierr)
 #   endif
-   end do  !  jjtask = mytaskid+1, mytaskid+numtasks-1
+   end do  
 
    call trace_exit( 'zx_xy_transpose' )
    return
@@ -957,7 +957,6 @@ subroutine fft3d_zxyrc(isign,n1,n2,n3, scale, &
    !***********************************************************************
    do k = 0,mxzslabs-1
       k0 = k*ntxzslab
-      !           do j = 0, n1-1
       do j = 0, n1x
          jidx=k0 + j*n3*2 +1
 

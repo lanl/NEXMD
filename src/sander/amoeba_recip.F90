@@ -761,9 +761,9 @@ subroutine AM_RECIP_get_recip_Gfunc( prefac1,prefac2,prefac3,  &
         denom = pi*volume*msq
         G(k3,k1,k2) = exp(-fac*msq)* prefac1(k1)* &
                 prefac2(k2)*prefac3(k3)/denom
-      enddo !k1 = k10, nf1+1
-    enddo !k3 = 1,nfft3
-  enddo !k2 = 1, nfft2
+      enddo 
+    enddo 
+  enddo 
 
 end subroutine AM_RECIP_get_recip_Gfunc
 !--------------------------------------------------------------
@@ -788,9 +788,9 @@ subroutine AM_RECIP_G_times_Q(nfft1,nfftdim1,nfft2,nfft3,G,Q)
       do k1 = k10, nf1+1
         Q(1,k3,k1,k2) = G(k3,k1,k2)*Q(1,k3,k1,k2)
         Q(2,k3,k1,k2) = G(k3,k1,k2)*Q(2,k3,k1,k2)
-      enddo !k1 = k10, nf1+1
-    enddo !k3 = 1,nfft3
-  enddo !k2 = 1, nfft2
+      enddo 
+    enddo 
+  enddo 
 
 end subroutine AM_RECIP_G_times_Q
 !--------------------------------------------------------------
@@ -866,9 +866,9 @@ subroutine AM_RECIP_scalar_sum(recip,ewald_coeff, &
         Q1(2,k3,k1,k2) = G(k3,k1,k2)*Q1(2,k3,k1,k2)
         Q2(1,k3,k1,k2) = G(k3,k1,k2)*Q2(1,k3,k1,k2)
         Q2(2,k3,k1,k2) = G(k3,k1,k2)*Q2(2,k3,k1,k2)
-      enddo !k1 = k10, nf1+1
-    enddo !k3 = 1,nfft3
-  enddo !k2 = 1, nfft2
+      enddo 
+    enddo 
+  enddo 
   virial(1,1) = virial(1,1) + 0.5d0*vxx
   virial(1,2) = virial(1,2) + 0.5d0*vxy
   virial(2,1) = virial(2,1) + 0.5d0*vxy

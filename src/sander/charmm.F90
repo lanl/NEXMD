@@ -833,19 +833,6 @@ subroutine charmm_calc_urey_bradley(crd,epl,frc)
     frc(2,k) = frc(2,k) + ya
     frc(3,k) = frc(3,k) + za
 
-!    write(6,*) "n of charmm_nub is :",n
-!    write(6,*) "i is :",i
-!    write(6,*) "k is :",k
-!    write(6,*) "i(x,y,z) is :",crd(1,i),crd(2,i),crd(3,i)
-!    write(6,*) "k(x,y,z) is :",crd(1,k),crd(2,k),crd(3,k)
-!    write(6,*) "charmm_ang_ub(ic)%r0 is :",charmm_ang_ub(n)%r0
-!    write(6,*) "charmm_ang_ub(ic)%kr is :",charmm_ang_ub(n)%kr
-!    write(6,*) "da is :",da
-!    write(6,*) "df is :",df
-!    write(6,*) "_REAL_  :: local_energy_accumulator is :", df * da
-!    write(6,*) "frc({1-3}, i) is :",frc(1,i),frc(2,i),frc(3,i)
-!    write(6,*) "frc({1-3}, k) is :",frc(1,k),frc(2,k),frc(3,k)
-!    write(6,*) ""
   end do
 
   epl = epl + local_energy_accumulator
@@ -1227,8 +1214,6 @@ function cmapGridWrapper(value,resolution)
 
   cmapGridWrapper = modulo(value-1,resolution)+1
 
-  !Debug
-  !write(6,'(a,i8,a,i8)'),"cmapGridWrapper takes",value," returns ",cmapGridWrapper
 end function 
 !------------------------------------------------------------
 
@@ -1283,10 +1268,6 @@ subroutine generate_cubic_spline(n,step_size,y,y2)
     y2(i)=y2(i)*y2(i+1)+tmp(i)
   enddo
 
-  !Debug
-  !do i=1,n
-  !  write(6,'(a,I4,3f15.6)'),"i, y(i),y2(i),tmp(i) ",i,y(i),y2(i),tmp(i)
-  !enddo
 
   deallocate(tmp)
     
@@ -1336,39 +1317,18 @@ subroutine evaluate_cubic_spline(step_size, y, y2, grid_point, dyout)
 
 
   !Work out nearest complete grid point on the CMAP grid from xin
-  !lo =  int( (xin - gridOrigin)/(step_size) ) + 1
 
   lo = grid_point
-  !write(6,'(a,I4)'),"Lo is: ",lo
-
-  !b = ( xin - ( (lo-1)*step_size + gridOrigin)  )/step_size
-  !a = 1-b
-
-  !write(6,'(a,f15.6)'),"a is : ",a
-  !write(6,'(a,f15.6)'),"b is : ",b
 
 
   a = 1.0
   b = 0.0
-  !DEBUG
-
-!  yout =   a*y(lo)                                        &
-!         + b*y(lo+1)                                      & 
-!         + (1/6)*(a*a*a-a)*(step_size*step_size)*y2(lo)   &
-!         + (1/6)*(b*b*b-b)*(step_size*step_size)*y2(lo+1) 
 
 
   dyout =  (y(lo+1)-y(lo))/step_size                    &
          - ((3*a*a-1)/6)*step_size*y2(lo)                 &
          + ((3*b*b-1)/6)*step_size*y2(lo+1)               
 
-  !DEBUG 
-  !write(6,'(a,f15.6)'),"y(lo) is :", y(lo)
-  !write(6,'(a,f15.6)'),"y(lo+1) is :", y(lo+1)
-  !write(6,'(a,f15.6)'),"y2(lo) is :", y2(lo)
-  !write(6,'(a,f15.6)'),"y2(lo+1) is :", y2(lo+1)
-  !write(6,'(a,f15.6)'),"yout is :", yout
-  !write(6,'(a)'),""
 end subroutine evaluate_cubic_spline
 !------------------------------------------------------------
 
@@ -1411,8 +1371,6 @@ subroutine generate_cmap_derivatives
 
       k=1 !interal offset counter for tmp array
       do j=(1-halfRes),(res+halfRes) !-11 --> 36
-        !DEBUG
-        !write(6,'(i4,f15.6)'),j,cmap_types(i)%grid(cmapGridWrapper(j),col)
         tmpy(k) = cmap_types(i)%grid(row,cmapGridWrapper(j,cmap_types(i)%resolution))
         k=k+1
       enddo
@@ -1421,11 +1379,6 @@ subroutine generate_cmap_derivatives
       !horizontal rows in the CMAP table
       call generate_cubic_spline(twoRes, step_size, tmpy, tmpy2)
 
-      !DEBUG
-      !write(6,'(a)'),"generate_cubic_spline() contains:"
-      !do j=1,48
-      !  write(6,'(i4,2f15.6)'),j,tmpy(j),tmpy2(j) !This works
-      !enddo
 
 
       !Calculate %dPhi for using each row 
@@ -1436,8 +1389,6 @@ subroutine generate_cmap_derivatives
         !offset array passed to evaluate_cubic_spline
         call evaluate_cubic_spline(step_size, tmpy, tmpy2, &
                                    j+12, cmap_types(i)%dPhi(row,j))
-        !DEBUG
-        !write(6,'(i4,2f15.6)'),j+12,tmpy(j),cmap_types(i)%dPhi(row,j)
       enddo
     enddo !row
 
@@ -1448,8 +1399,6 @@ subroutine generate_cmap_derivatives
 
       k=1 
       do j=(1-halfRes),(res+halfRes) !-11 --> 36
-        !DEBUG
-        !write(6,'(i4,f15.6)'),j,cmap_types(i)%grid(cmapGridWrapper(j),col)
         tmpy(k) = cmap_types(i)%grid(cmapGridWrapper(j,cmap_types(i)%resolution), col)
         k=k+1
       enddo
@@ -1465,8 +1414,6 @@ subroutine generate_cmap_derivatives
         !offset array passed to evaluate_cubic_spline
         call evaluate_cubic_spline(step_size, tmpy, tmpy2,&
                                    j+12,cmap_types(i)%dPsi(j,col)) 
-        !DEBUG
-        !write(6,'(i4,2f15.6)'),j+12,tmpy(j),cmap_types(i)%dpsi(j,col)
       enddo
     enddo !col
 
@@ -1489,7 +1436,6 @@ subroutine generate_cmap_derivatives
       do j=1,res
         call evaluate_cubic_spline(step_size, tmpy, tmpy2, &
                                    j+12,cmap_types(i)%dPhi_dPsi(j,col))
-        !write(6,'(i4,2f15.6)'),j+12,tmpy(j),cmap_types(i)%dPhi_dPsi(j,col)
       enddo
     enddo
 
@@ -1534,8 +1480,6 @@ subroutine charmm_calc_cmap_from_phi_psi(phi,psi,cmap_type,E,dPhi,dPsi)
 
   !We are currently at the bottom left of the inner 2x2 elements of the
   !stencil, now move to the bottom left hand corner of the 4x4 stencil
-  !x = cmapGridWrapper(x-1)
-  !y = cmapGridWrapper(y-1)
 
 
   !Work out the fraction of the CMAP grid step that the interpolated 
@@ -1618,8 +1562,6 @@ subroutine charmm_calc_cmap_from_phi_psi(phi,psi,cmap_type,E,dPhi,dPsi)
   E_stencil_1D(3) = E_stencil(2,2)
   E_stencil_1D(4) = E_stencil(2,1)
 
-  !DEBUG
-  !write(6,'(f9.6)'),E_stencil_1D
 
   dPhi_stencil_1D(1) = dPhi_stencil(1,1)
   dPhi_stencil_1D(2) = dPhi_stencil(1,2)
@@ -1981,12 +1923,6 @@ subroutine mpi_bcast_charmm_params(master)
 
   !--- END UREY BRADLEY STRUCTURE ---
 
-  !--- CHARMM IMPROPERS STRUCTURE ---
-!  type chm_imp_struct
-!   integer        :: i,j,k,l
-!   _REAL_         :: pk
-!   _REAL_         :: phase
-!  end type chm_imp_struct
   offsets(1) = 0
   oldtypes(1) = MPI_INTEGER
   blockcounts(1) = 4
@@ -2057,60 +1993,11 @@ subroutine mpi_bcast_charmm_params(master)
   do i=1,cmap_type_count
     res = cmap_types(i)%resolution
 
-!--- Begin suggested MPI v2 code ---
-!    type(1) = MPI_INTEGER
-!    type(2) = MPI_INTEGER
-!    type(3) = MPI_INTEGER
-!    type(4) = MPI_DOUBLE_PRECISION
-!    type(5) = MPI_DOUBLE_PRECISION
-!    type(6) = MPI_DOUBLE_PRECISION
-!    type(7) = MPI_DOUBLE_PRECISION
-!
-!    blocklen(1) = 1 !resolution
-!    blocklen(2) = 1 !gridStepSize
-!    blocklen(3) = 1 !gridOrigin
-!    blocklen(4) = res*res
-!    blocklen(5) = res*res
-!    blocklen(6) = res*res
-!    blocklen(7) = res*res
-!
-!The following is the correct (non-deprecated) way to do this in MPI v2.
-!    call MPI_GET_ADDRESS(cmap_types(i)%resolution,                       disp(1), ierr)
-!    call MPI_GET_ADDRESS(cmap_types(i)%gridstepsize,                     disp(2), ierr)
-!    call MPI_GET_ADDRESS(cmap_types(i)%gridorigin,                       disp(3), ierr)
-!    call MPI_GET_ADDRESS(cmap_types(i)%grid,                             disp(4), ierr)
-!    call MPI_GET_ADDRESS(cmap_types(i)%dPhi,                             disp(5), ierr)
-!    call MPI_GET_ADDRESS(cmap_types(i)%dPsi,                             disp(6), ierr)
-!    call MPI_GET_ADDRESS(cmap_types(i)%dPhi_dPsi,                        disp(7), ierr)
-
-!    base = disp(1)
-!    disp(1) = disp(1) - base
-!    disp(2) = disp(2) - base
-!    disp(3) = disp(3) - base
-!    disp(4) = disp(4) - base
-!    disp(5) = disp(5) - base
-!    disp(6) = disp(6) - base
-!    disp(7) = disp(7) - base
-
-!    call MPI_TYPE_CREATE_STRUCT(7, blocklen, disp, type, MPI_chm_cmap_struct, ierr)
-!    call MPI_TYPE_COMMIT(MPI_chm_cmap_struct, ierr)
-!    call mpi_bcast(cmap_types(i), 1, MPI_chm_cmap_struct, 0,commsander, ierr )
-!    call MPI_Type_free(MPI_chm_cmap_struct,ierr)
-
-    !--- End suggested MPI v2 code ---
 
     !Broadcast the CMAP data. Ideally we would do this as a single mpi call using a derived
     !type but there seems to be issues with using mpi_address with structures. mpi_get_address
     !works but is MPI v2 only.
 
-    !Structure to broadcast
-    !   integer :: resolution
-    !   integer :: gridStepSize
-    !   integer :: gridOrigin=-180 !Where the 2D grid starts in degrees
-    !   real(kind=8), pointer, dimension(:,:) :: grid
-    !   real(kind=8), pointer, dimension(:,:) :: dPhi !horizontal
-    !   real(kind=8), pointer, dimension(:,:) :: dPsi !vertical
-    !   real(kind=8), pointer, dimension(:,:) :: dPhi_dPsi !cross
 
     call mpi_bcast(cmap_types(i)%resolution, 1, MPI_INTEGER, 0,commsander, ierr )
     call mpi_bcast(cmap_types(i)%gridstepsize, 1, MPI_INTEGER, 0,commsander, ierr )
@@ -2433,8 +2320,6 @@ subroutine generate_cmap_derivatives
 
       k=1 !interal offset counter for tmp array
       do j=(1-halfRes),(res+halfRes) !-11 --> 36
-        !DEBUG
-        !write(6,'(i4,f15.6)'),j,cmap_types(i)%grid(cmapGridWrapper(j),col)
         tmpy(k) = cmap_types(i)%grid(row,cmapGridWrapper(j,cmap_types(i)%resolution))
         k=k+1
       enddo
@@ -2443,11 +2328,6 @@ subroutine generate_cmap_derivatives
       !horizontal rows in the CMAP table
       call generate_cubic_spline(twoRes, step_size, tmpy, tmpy2)
 
-      !DEBUG
-      !write(6,'(a)'),"generate_cubic_spline() contains:"
-      !do j=1,48
-      !  write(6,'(i4,2f15.6)'),j,tmpy(j),tmpy2(j) !This works
-      !enddo
 
 
       !Calculate %dPhi for using each row 
@@ -2458,8 +2338,6 @@ subroutine generate_cmap_derivatives
         !offset array passed to evaluate_cubic_spline
         call evaluate_cubic_spline(step_size, tmpy, tmpy2, &
                                    j+12, cmap_types(i)%dPhi(row,j))
-        !DEBUG
-        !write(6,'(i4,2f15.6)'),j+12,tmpy(j),cmap_types(i)%dPhi(row,j)
       enddo
     enddo !row
 
@@ -2470,8 +2348,6 @@ subroutine generate_cmap_derivatives
 
       k=1 
       do j=(1-halfRes),(res+halfRes) !-11 --> 36
-        !DEBUG
-        !write(6,'(i4,f15.6)'),j,cmap_types(i)%grid(cmapGridWrapper(j),col)
         tmpy(k) = cmap_types(i)%grid(cmapGridWrapper(j,cmap_types(i)%resolution), col)
         k=k+1
       enddo
@@ -2487,8 +2363,6 @@ subroutine generate_cmap_derivatives
         !offset array passed to evaluate_cubic_spline
         call evaluate_cubic_spline(step_size, tmpy, tmpy2,&
                                    j+12,cmap_types(i)%dPsi(j,col)) 
-        !DEBUG
-        !write(6,'(i4,2f15.6)'),j+12,tmpy(j),cmap_types(i)%dpsi(j,col)
       enddo
     enddo !col
 
@@ -2511,7 +2385,6 @@ subroutine generate_cmap_derivatives
       do j=1,res
         call evaluate_cubic_spline(step_size, tmpy, tmpy2, &
                                    j+12,cmap_types(i)%dPhi_dPsi(j,col))
-        !write(6,'(i4,2f15.6)'),j+12,tmpy(j),cmap_types(i)%dPhi_dPsi(j,col)
       enddo
     enddo
 
@@ -2536,8 +2409,6 @@ function cmapGridWrapper(value,resolution)
 
   cmapGridWrapper = modulo(value-1,resolution)+1
 
-  !Debug
-  !write(6,'(a,i8,a,i8)'),"cmapGridWrapper takes",value," returns ",cmapGridWrapper
 end function 
 !------------------------------------------------------------
 !------------------------------------------------------------
@@ -2591,10 +2462,6 @@ subroutine generate_cubic_spline(n,step_size,y,y2)
     y2(i)=y2(i)*y2(i+1)+tmp(i)
   enddo
 
-  !Debug
-  !do i=1,n
-  !  write(6,'(a,I4,3f15.6)'),"i, y(i),y2(i),tmp(i) ",i,y(i),y2(i),tmp(i)
-  !enddo
 
   deallocate(tmp)
     
@@ -2618,9 +2485,7 @@ subroutine evaluate_cubic_spline(step_size, y, y2, grid_point, dyout)
   use constants, only : zero, half, one, two, three
   implicit none
 
-!  integer, intent(in)                :: n !Number of values in below array
   integer, intent(in)                :: step_size !in degrees
-!  integer, intent(in)                :: gridOrigin !where the grid start 
                                                    !in degrees
   !Since n and step_size are known, there is no need to pass an input
   !array of x to this subroutine and many simplications can be made
@@ -2631,7 +2496,6 @@ subroutine evaluate_cubic_spline(step_size, y, y2, grid_point, dyout)
 !Hack to allow grid points to be passed
   integer, intent(in)                 :: grid_point !WIP
                                              !nearest GRID point
-!  _REAL_, intent(out)                :: yout  !cubuic spline 
                                               !interpolated value
   _REAL_, intent(out)                :: dyout !cubuic spline
                                               !interpolated gradient
@@ -2640,43 +2504,21 @@ subroutine evaluate_cubic_spline(step_size, y, y2, grid_point, dyout)
   _REAL_                             :: a,b!,c,d 
                                         !Cubic spline coefficents
   integer                            :: lo
-!  _REAL_                             :: yout
 
 
   !Work out nearest complete grid point on the CMAP grid from xin
-  !lo =  int( (xin - gridOrigin)/(step_size) ) + 1
 
   lo = grid_point
-  !write(6,'(a,I4)'),"Lo is: ",lo
-
-  !b = ( xin - ( (lo-1)*step_size + gridOrigin)  )/step_size
-  !a = 1-b
-
-  !write(6,'(a,f15.6)'),"a is : ",a
-  !write(6,'(a,f15.6)'),"b is : ",b
 
 
   a = 1.0
   b = 0.0
-  !DEBUG
-
-!  yout =   a*y(lo)                                        &
-!         + b*y(lo+1)                                      & 
-!         + (1/6)*(a*a*a-a)*(step_size*step_size)*y2(lo)   &
-!         + (1/6)*(b*b*b-b)*(step_size*step_size)*y2(lo+1) 
 
 
   dyout =  (y(lo+1)-y(lo))/step_size                    &
          - ((3*a*a-1)/6)*step_size*y2(lo)                 &
          + ((3*b*b-1)/6)*step_size*y2(lo+1)               
 
-  !DEBUG 
-  !write(6,'(a,f15.6)'),"y(lo) is :", y(lo)
-  !write(6,'(a,f15.6)'),"y(lo+1) is :", y(lo+1)
-  !write(6,'(a,f15.6)'),"y2(lo) is :", y2(lo)
-  !write(6,'(a,f15.6)'),"y2(lo+1) is :", y2(lo+1)
-  !write(6,'(a,f15.6)'),"yout is :", yout
-  !write(6,'(a)'),""
 end subroutine evaluate_cubic_spline
 !------------------------------------------------------------
 
@@ -2858,13 +2700,8 @@ subroutine calc_cmap(crd,epl,frc)
 
      !Use chain rule to obtain the energy gradient wrt to coordinate
 
-     !    dE_d(ijkl) = dE_dPhi*dPhi_d(ijkl)
-     !    dE_d(jklm) = dE_dPsi*dPhi_d(jklm)
-
-     !dE_d(ijkl)
      dE_dijkl(1:12) = dE_dPhi*dPhi_dijkl(1:12)
     
-     !dE_d(jklm)
      dE_djklm(1:12) = dE_dPsi*dPsi_djklm(1:12)
 
      !Now, update the forces on the five atoms in this CMAP term; 
@@ -2930,8 +2767,6 @@ subroutine calc_cmap_from_phi_psi(phi,psi,cmap_type,E,dPhi,dPsi)
 
   !We are currently at the bottom left of the inner 2x2 elements of the
   !stencil, now move to the bottom left hand corner of the 4x4 stencil
-  !x = cmapGridWrapper(x-1)
-  !y = cmapGridWrapper(y-1)
 
 
   !Work out the fraction of the CMAP grid step that the interpolated 
@@ -3014,8 +2849,6 @@ subroutine calc_cmap_from_phi_psi(phi,psi,cmap_type,E,dPhi,dPsi)
   E_stencil_1D(3) = E_stencil(2,2)
   E_stencil_1D(4) = E_stencil(2,1)
 
-  !DEBUG
-  !write(6,'(f9.6)'),E_stencil_1D
 
   dPhi_stencil_1D(1) = dPhi_stencil(1,1)
   dPhi_stencil_1D(2) = dPhi_stencil(1,2)
@@ -3164,14 +2997,6 @@ subroutine deallocate_cmap_arrays()
 
   integer :: ier
 
-! deallocate(charmm_cn114,charmm_cn214, stat=ier)
-! REQUIRE(ier==0)
-
-! deallocate(charmm_imp, stat=ier)
-! REQUIRE(ier==0)
-
-! deallocate(charmm_ang_ub, stat=ier)
-! REQUIRE(ier==0)
 
 
   !These two arrays may or may not have been assigned
@@ -3213,10 +3038,6 @@ subroutine mpi_bcast_cmap_params(master)
 !CMAP
 
 !MPI2 specific - not currently used
-!  integer :: MPI_chm_cmap_struct
-!  integer, parameter :: block_count = 7
-!  integer(MPI_ADDRESS_KIND) disp(block_count), base
-!  integer blocklen(block_count), type(block_count)
 
   integer :: res
 !End CMAP
@@ -3225,9 +3046,6 @@ subroutine mpi_bcast_cmap_params(master)
 
   if (.not. cmap_active) return
 
-! if (.not. master) then
-!    call charmm_allocate_arrays()
-! endif 
 
 ! Next we need to broadcast the arrays of structures for UB and impropers.
 
@@ -3283,60 +3101,12 @@ subroutine mpi_bcast_cmap_params(master)
   do i=1,cmap_type_count
     res = cmap_types(i)%resolution
 
-!--- Begin suggested MPI v2 code ---
-!    type(1) = MPI_INTEGER
-!    type(2) = MPI_INTEGER
-!    type(3) = MPI_INTEGER
-!    type(4) = MPI_DOUBLE_PRECISION
-!    type(5) = MPI_DOUBLE_PRECISION
-!    type(6) = MPI_DOUBLE_PRECISION
-!    type(7) = MPI_DOUBLE_PRECISION
-!
-!    blocklen(1) = 1 !resolution
-!    blocklen(2) = 1 !gridStepSize
-!    blocklen(3) = 1 !gridOrigin
-!    blocklen(4) = res*res
-!    blocklen(5) = res*res
-!    blocklen(6) = res*res
-!    blocklen(7) = res*res
-!
-!The following is the correct (non-deprecated) way to do this in MPI v2.
-!    call MPI_GET_ADDRESS(cmap_types(i)%resolution,                       disp(1), ierr)
-!    call MPI_GET_ADDRESS(cmap_types(i)%gridstepsize,                     disp(2), ierr)
-!    call MPI_GET_ADDRESS(cmap_types(i)%gridorigin,                       disp(3), ierr)
-!    call MPI_GET_ADDRESS(cmap_types(i)%grid,                             disp(4), ierr)
-!    call MPI_GET_ADDRESS(cmap_types(i)%dPhi,                             disp(5), ierr)
-!    call MPI_GET_ADDRESS(cmap_types(i)%dPsi,                             disp(6), ierr)
-!    call MPI_GET_ADDRESS(cmap_types(i)%dPhi_dPsi,                        disp(7), ierr)
-
-!    base = disp(1)
-!    disp(1) = disp(1) - base
-!    disp(2) = disp(2) - base
-!    disp(3) = disp(3) - base
-!    disp(4) = disp(4) - base
-!    disp(5) = disp(5) - base
-!    disp(6) = disp(6) - base
-!    disp(7) = disp(7) - base
-
-!    call MPI_TYPE_CREATE_STRUCT(7, blocklen, disp, type, MPI_chm_cmap_struct, ierr)
-!    call MPI_TYPE_COMMIT(MPI_chm_cmap_struct, ierr)
-!    call mpi_bcast(cmap_types(i), 1, MPI_chm_cmap_struct, 0,commsander, ierr )
-!    call MPI_Type_free(MPI_chm_cmap_struct,ierr)
-
-    !--- End suggested MPI v2 code ---
 
     !Broadcast the CMAP data. Ideally we would do this as a single mpi call using a derived
     !type but there seems to be issues with using mpi_address with structures. mpi_get_address
     !works but is MPI v2 only.
 
     !Structure to broadcast
-    !   integer :: resolution
-    !   integer :: gridStepSize
-    !   integer :: gridOrigin=-180 !Where the 2D grid starts in degrees
-    !   real(kind=8), pointer, dimension(:,:) :: grid
-    !   real(kind=8), pointer, dimension(:,:) :: dPhi !horizontal
-    !   real(kind=8), pointer, dimension(:,:) :: dPsi !vertical
-    !   real(kind=8), pointer, dimension(:,:) :: dPhi_dPsi !cross
 
     call mpi_bcast(cmap_types(i)%resolution, 1, MPI_INTEGER, 0,commsander, ierr )
     call mpi_bcast(cmap_types(i)%gridstepsize, 1, MPI_INTEGER, 0,commsander, ierr )

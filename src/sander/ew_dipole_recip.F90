@@ -519,7 +519,7 @@ subroutine grad_sum_dipolerc( &
                d2phi_du3du3 = d2phi_du3du3 + s1 * ft33
             end do
 #ifdef MPI
-         end if  ! ( k >= kbot .and. k <= ktop )
+         end if  
 #endif
       end do  !  ith3 = 1,order
       
@@ -661,10 +661,6 @@ subroutine scalar_sum_dipolerc( &
             !#ifdef MPI
             struc2 = q(1,k3,k1,k2q)*q(1,k3,k1,k2q) + &
                   q(2,k3,k1,k2q)*q(2,k3,k1,k2q)
-            !#else
-            !          struc2 = Q(1,k1,k2,k3)*Q(1,k1,k2,k3) +
-            !     $          Q(2,k1,k2,k3)*Q(2,k1,k2,k3)
-            !#endif
             energy = energy + eterm * struc2
             vir(1,1) = vir(1,1) + &
                   eterm * struc2 * (vterm*mhat1*mhat1 - 1.d0)
@@ -714,16 +710,11 @@ subroutine scalar_sum_dipolerc( &
 
             qr=q(1,k3,k1,k2q)
             qi=q(2,k3,k1,k2q)
-            !#ifdef MPI
             q(1,k3,k1,k2q) = eterm * q(1,k3,k1,k2q)
             q(2,k3,k1,k2q) = eterm * q(2,k3,k1,k2q)
-            !#else
-            !           Q(1,k1,k2,k3) = eterm * Q(1,k1,k2,k3)
-            !           Q(2,k1,k2,k3) = eterm * Q(2,k1,k2,k3)
-            !#endif
-         end do  !  k1 = k10, nf1+1
-      end do  !  k3 = 1,nfft3
-   end do  !  k2q = 1, mxzslabs
+         end do  
+      end do  
+   end do  
 
    eer = 0.5d0 * energy
    do m2 = 1,3

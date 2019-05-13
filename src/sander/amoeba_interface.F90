@@ -215,8 +215,6 @@ subroutine AM_NonBond_eval(numatoms,crd,frc,sander_vir,x,ipairs, &
 
      !add the torque contributions
      call AM_MPOLE_torque_to_force(numatoms,crd,frc,vir_tensor)
-     !call  dump_dipoles(frc,numatoms,40)
-     !if ( numatoms > 0 )stop
   
      if ( amoeba_verbose > 0 )then
      write(6,'(a,3(1x,g16.8))') &
@@ -455,7 +453,6 @@ subroutine AM_NonBond_remove_net_force(numatoms,frc)
   frcx = frcx / numatoms
   frcy = frcy / numatoms
   frcz = frcz / numatoms
-  !write(6,*)'net forces : ',frcx,frcy,frcz
   do n = 1,numatoms
     frc(1,n) = frc(1,n) - frcx
     frc(2,n) = frc(2,n) - frcy

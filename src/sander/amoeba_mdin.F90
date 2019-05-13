@@ -98,14 +98,11 @@ subroutine AMOEBA_read_soft()
      do while (.true.)
      
         read(11,*,end=99) atm_range
-        !write(*,*) atm_range
         pos_dash=scan(atm_range,'-')
-        !write(*,*) "position",pos_dash
         length=len_trim(atm_range)
         if (length > 0) then
            soft_line=soft_line+1
         endif
-        !write(*,*) "length",length
         if(pos_dash.gt.0) then
            temp=atm_range(1:pos_dash-1)
            read(temp,*) soft_atom_range1(soft_line)

@@ -112,7 +112,7 @@ subroutine handle_induced(crd,numatoms,iac,ico,charge, &
 !
              ,cn3,cn4,cn5 &
             )
-   end if  ! ( indmeth < 3 .or. initdip == 1 )
+   end if  
    if ( indmeth == 3 .and. nquench > 0 ) iquench = iquench + 1
    dipole_rms = diprms
    dipiter = iter

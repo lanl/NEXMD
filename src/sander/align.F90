@@ -139,8 +139,6 @@ subroutine align1( natom, x, f, amass )
             2.d0*s13(iset)*csx*csz + &
             2.d0*s23(iset)*csy*csz  )
 
-      !write(6,*) 'details: ', i,j
-      !write(6,*) csx,csy,csz,djcst,dcalc
 
       if( dcalc > dobsu(idip) ) then
          ealigni = dwt(idip)*(dcalc - dobsu(idip))**2

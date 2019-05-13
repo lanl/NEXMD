@@ -328,14 +328,5 @@ end subroutine
 !#else
 
 
-!  iatm3 = 0
-!  do ibead = 1,nbead
-!     jatm3 = 0
-!     do jbead = 1,nbead
-!        force_nmode(iatm3+1:iatm3+3*natomCL)=force_nmode(iatm3+1:iatm3+3*natomCL)+fcart_to_fnmode(ibead,jbead)*f(1:3*natomCL,jbead)
-!        jatm3=jatm3+3*natomCL
-!     end do
-!     iatm3=iatm3+3*natomCL
-!  end do
 
 

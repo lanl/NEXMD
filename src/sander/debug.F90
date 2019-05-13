@@ -690,18 +690,12 @@ subroutine rms_check(natom,xx,ix,ih,ipairs,x,f, &
    call array_copy(scg,cg,natom)
    call array_copy(scn1,cn1,nttyp)
    call array_copy(scn2,cn2,nttyp)
-   !     if ( fix_dip .eq. 1 )then
-   !       call array_copy(sdip,fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1)then
       call array_copy(sind,inddip,3*natom)
    end if
    if ( szerochg == 1 )then
       call zero_array(cg,natom)
    end if
-   !     if ( fix_dip .eq. 1 .and. szerodip .eq. 1 )then
-   !       call zero_array(fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1.and.szerodip == 1)then
       call zero_array(inddip,3*natom)
    end if
@@ -791,9 +785,6 @@ subroutine rms_check(natom,xx,ix,ih,ipairs,x,f, &
    do_dir = sdo_dir
    ! zero the charges
    call zero_array(cg,natom)
-   !     if ( fix_dip .eq. 1 )then
-   !       call zero_array(fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1)then
       call zero_array(inddip,3*natom)
    end if
@@ -801,9 +792,6 @@ subroutine rms_check(natom,xx,ix,ih,ipairs,x,f, &
          virial,ene, qsetup)
    ! restore the charges
    call array_copy(scg,cg,natom)
-   !     if ( fix_dip .eq. 1 )then
-   !       call array_copy(sdip,fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1)then
       call array_copy(sind,inddip,3*natom)
    end if
@@ -827,9 +815,6 @@ subroutine rms_check(natom,xx,ix,ih,ipairs,x,f, &
    if ( szerochg == 1 )then
       call zero_array(cg,natom)
    end if
-   !     if ( fix_dip .eq. 1 .and. szerodip .eq. 1 )then
-   !       call zero_array(fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1.and.szerodip == 1)then
       call zero_array(inddip,3*natom)
    end if
@@ -840,9 +825,6 @@ subroutine rms_check(natom,xx,ix,ih,ipairs,x,f, &
    call array_copy(scn2,cn2,nttyp)
    ! restore the charges
    call array_copy(scg,cg,natom)
-   !     if ( fix_dip .eq. 1 )then
-   !       call array_copy(sdip,fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1)then
       call array_copy(sind,inddip,3*natom)
    end if
@@ -875,9 +857,6 @@ subroutine rms_check(natom,xx,ix,ih,ipairs,x,f, &
    if ( szerochg == 1 )then
       call zero_array(cg,natom)
    end if
-   !     if ( fix_dip .eq. 1 .and. szerodip .eq. 1 )then
-   !       call zero_array(fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1.and.szerodip == 1)then
       call zero_array(inddip,3*natom)
    end if
@@ -885,9 +864,6 @@ subroutine rms_check(natom,xx,ix,ih,ipairs,x,f, &
          virial,ene, qsetup)
    ! restore the charges
    call array_copy(scg,cg,natom)
-   !     if ( fix_dip .eq. 1 )then
-   !       call array_copy(sdip,fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1)then
       call array_copy(sind,inddip,3*natom)
    end if
@@ -920,9 +896,6 @@ subroutine rms_check(natom,xx,ix,ih,ipairs,x,f, &
    if ( szerochg == 1 )then
       call zero_array(cg,natom)
    end if
-   !     if ( fix_dip .eq. 1 .and. szerodip .eq. 1 )then
-   !       call zero_array(fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1.and.szerodip == 1)then
       call zero_array(inddip,3*natom)
    end if
@@ -955,9 +928,6 @@ subroutine rms_check(natom,xx,ix,ih,ipairs,x,f, &
    call restore_flow(sdo_dir,sdo_rec,sdo_adj,sdo_self, &
          sdo_bond,sdo_angle,sdo_ephi,szerochg,szerodip,szerovdw)
    call array_copy(scg,cg,natom)
-   !     if ( fix_dip .eq. 1 )then
-   !       call array_copy(sdip,fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1)then
       call array_copy(sind,inddip,3*natom)
    end if
@@ -966,9 +936,6 @@ subroutine rms_check(natom,xx,ix,ih,ipairs,x,f, &
    if ( szerochg == 1 )then
       call zero_array(cg,natom)
    end if
-   !     if ( fix_dip .eq. 1 .and. szerodip .eq. 1 )then
-   !       call zero_array(fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1.and.szerodip == 1)then
       call zero_array(inddip,3*natom)
    end if
@@ -1124,17 +1091,11 @@ subroutine force_dump(natom,xx,ix,ih,ipairs,x,f, &
          sdo_bond,sdo_angle,sdo_ephi,szerochg,szerodip,szerovdw)
    ! restore orig cg,cn1,cn2
    call array_copy(scg,cg,natom)
-   !     if ( fix_dip .eq. 1 )then
-   !       call array_copy(sdip,fixdip,3*natom)
-   !     endif
    call array_copy(scn1,cn1,nttyp)
    call array_copy(scn2,cn2,nttyp)
    if ( szerochg == 1 )then
       call zero_array(cg,natom)
    end if
-   !     if ( fix_dip .eq. 1 .and. szerodip .eq. 1 )then
-   !       call zero_array(fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1.and.szerodip == 1)then
       call zero_array(inddip,3*natom)
    end if
@@ -1208,9 +1169,6 @@ subroutine force_dump(natom,xx,ix,ih,ipairs,x,f, &
    do_dir = sdo_dir
    ! zero the charges
    call zero_array(cg,natom)
-   !     if ( fix_dip .eq. 1 )then
-   !       call zero_array(fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1)then
       call zero_array(inddip,3*natom)
    end if
@@ -1218,9 +1176,6 @@ subroutine force_dump(natom,xx,ix,ih,ipairs,x,f, &
          virial,ene, qsetup)
    ! restore the charges
    call array_copy(scg,cg,natom)
-   !     if ( fix_dip .eq. 1 )then
-   !       call array_copy(sdip,fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1)then
       call array_copy(sind,inddip,3*natom)
    end if
@@ -1242,9 +1197,6 @@ subroutine force_dump(natom,xx,ix,ih,ipairs,x,f, &
    if ( szerochg == 1 )then
       call zero_array(cg,natom)
    end if
-   !     if ( fix_dip .eq. 1 .and. szerodip .eq. 1 )then
-   !       call zero_array(fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1.and.szerodip == 1)then
       call zero_array(inddip,3*natom)
    end if
@@ -1255,9 +1207,6 @@ subroutine force_dump(natom,xx,ix,ih,ipairs,x,f, &
    call array_copy(scn2,cn2,nttyp)
    ! restore the charges
    call array_copy(scg,cg,natom)
-   !     if ( fix_dip .eq. 1 )then
-   !       call array_copy(sdip,fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1)then
       call array_copy(sind,inddip,3*natom)
    end if
@@ -1287,9 +1236,6 @@ subroutine force_dump(natom,xx,ix,ih,ipairs,x,f, &
    if ( szerochg == 1 )then
       call zero_array(cg,natom)
    end if
-   !     if ( fix_dip .eq. 1 .and. szerodip .eq. 1 )then
-   !       call zero_array(fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1.and.szerodip == 1)then
       call zero_array(inddip,3*natom)
    end if
@@ -1297,9 +1243,6 @@ subroutine force_dump(natom,xx,ix,ih,ipairs,x,f, &
          virial,ene, qsetup)
    ! restore the charges
    call array_copy(scg,cg,natom)
-   !     if ( fix_dip .eq. 1 )then
-   !       call array_copy(sdip,fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1)then
       call array_copy(sind,inddip,3*natom)
    end if
@@ -1329,9 +1272,6 @@ subroutine force_dump(natom,xx,ix,ih,ipairs,x,f, &
    if ( szerochg == 1 )then
       call zero_array(cg,natom)
    end if
-   !     if ( fix_dip .eq. 1 .and. szerodip .eq. 1 )then
-   !       call zero_array(fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1.and.szerodip == 1)then
       call zero_array(inddip,3*natom)
    end if
@@ -1339,9 +1279,6 @@ subroutine force_dump(natom,xx,ix,ih,ipairs,x,f, &
          virial,ene, qsetup)
    ! restore the charges
    call array_copy(scg,cg,natom)
-   !     if ( fix_dip .eq. 1 )then
-   !       call array_copy(sdip,fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1)then
       call array_copy(sind,inddip,3*natom)
    end if
@@ -1372,9 +1309,6 @@ subroutine force_dump(natom,xx,ix,ih,ipairs,x,f, &
    call restore_flow(sdo_dir,sdo_rec,sdo_adj,sdo_self, &
          sdo_bond,sdo_angle,sdo_ephi,szerochg,szerodip,szerovdw)
    call array_copy(scg,cg,natom)
-   !     if ( fix_dip .eq. 1 )then
-   !       call array_copy(sdip,fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1)then
       call array_copy(sind,inddip,3*natom)
    end if
@@ -1383,9 +1317,6 @@ subroutine force_dump(natom,xx,ix,ih,ipairs,x,f, &
    if ( szerochg == 1 )then
       call zero_array(cg,natom)
    end if
-   !     if ( fix_dip .eq. 1 .and. szerodip .eq. 1 )then
-   !       call zero_array(fixdip,3*natom)
-   !     endif
    if (indmeth == 3.and.irstdip == 1.and.szerodip == 1)then
       call zero_array(inddip,3*natom)
    end if

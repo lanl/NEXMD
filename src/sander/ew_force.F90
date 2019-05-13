@@ -69,7 +69,6 @@ subroutine ewald_force(crd,numatoms,iac,ico,charge, &
    integer numatoms,iac(*),ico(*)
    _REAL_ crd(3,*),charge(*),cn1(*),cn2(*),asol(*), &
          bsol(*),eelt,epol,frc(3,*),xr(3,*),virvsene
-!   _REAL_ pol(*)
 ! Modified by WJM, YD
    _REAL_ pol(*), dampfactor(*), pol2(*)
 ! by mjhsieh
@@ -141,11 +140,9 @@ subroutine ewald_force(crd,numatoms,iac,ico,charge, &
    ehb = 0.d0
    eedvir = 0.d0
    evdwr = 0.d0
-   !     if( numextra.gt.0 ) then
    ee14 = 0.d0
    enb14 = 0.d0
    epol14 = 0.d0
-   !     endif
    eeles=0.d0
    rec_vir(1:3,1:3) = 0.d0
    rec_vird(1:3,1:3) = 0.d0
@@ -160,7 +157,6 @@ subroutine ewald_force(crd,numatoms,iac,ico,charge, &
      adj_vir=virexips
    endif
 ! M-WJ
-!   if ( mpoltype == 1 )then
    if ( mpoltype > 0 ) then
 !
       call zero_array(frc,3*numatoms) ! note that ips and ipol are inconsistent
@@ -177,7 +173,6 @@ subroutine ewald_force(crd,numatoms,iac,ico,charge, &
    if( numextra > 0 ) call local_to_global(crd,x,ix)
 #ifdef MPI
 ! M-WJ
-!   if ( induced == 1 ) then
    if ( induced > 0 ) then
 !
       call timer_start(TIME_DISTDIP)
@@ -222,7 +217,6 @@ subroutine ewald_force(crd,numatoms,iac,ico,charge, &
                        mlimit,volume,recip,frc, &
                        ew_coeff,maxexp,commsander_mytaskid,commsander_numtasks)
 ! M-WJ
-!              else if ( mpoltype == 1 )then
               else if ( mpoltype > 0 )then
 !
                  call recip_reg_dipole(numatoms,charge,eer,rec_vir, &
@@ -240,7 +234,6 @@ subroutine ewald_force(crd,numatoms,iac,ico,charge, &
            ! i.e. total efield is the recip efield at this point
          
 ! M-WJ
-!           if ( mpoltype == 1 )then
            if ( mpoltype > 0 ) then
 !
               call dip_field_corr(x(lfield),x(linddip),rec_vir, &
@@ -520,7 +513,6 @@ subroutine ewald_force(crd,numatoms,iac,ico,charge, &
                ee_type,eedmeth)
 
 ! M-WJ
-!      else if ( mpoltype == 1 )then
       else if ( mpoltype > 0 )then
 !
          call nb_adjust_dipole(charge,eea,crd, &
@@ -562,15 +554,12 @@ subroutine ewald_force(crd,numatoms,iac,ico,charge, &
               e14vir,ix,commsander_mytaskid,commsander_numtasks,eedmeth)
       end if
 ! M-WJ
-!   else if ( mpoltype == 1 ) then
    else if ( mpoltype > 0 ) then
 !
       call get_14_dipole(charge,crd,frc, &
             x(linddip),x(lfield), &
             iac,ico,ntypes, &
 ! M-WJ
-!            cn1,cn2, ee14,enb14,epol14,one_scee,one_scnb,e14vir,ix, &
-!            cn1,cn2, pol,dipdamp, ee14,enb14,epol14,one_scee,one_scnb,e14vir,ix, &
 ! Modified by WJM, YD
             cn1,cn2, pol,dampfactor, pol2, &
             ee14,enb14,epol14,one_scee,one_scnb,e14vir,ix, &
@@ -676,7 +665,6 @@ subroutine ewald_force(crd,numatoms,iac,ico,charge, &
    !     Accumulate field; similar to accum force
    
 ! M-WJ
-!   if ( induced == 1 ) call fsum(x(lfield),x(lfrctmp),r_stack(1),r_stack(1))
    if ( induced > 0 ) call fsum(x(lfield),x(lfrctmp),r_stack(1),r_stack(1))
 !
 #endif
@@ -684,7 +672,6 @@ subroutine ewald_force(crd,numatoms,iac,ico,charge, &
    !     ---Now get dipole self energy if induced
    
 ! M-WJ
-!   if ( induced == 1 )then
    if ( induced > 0 )then
 !
       call get_dipinfo(numatoms,pol,x(lfield),x(linddip), &
@@ -722,7 +709,6 @@ subroutine ewald_force(crd,numatoms,iac,ico,charge, &
    !     hence not done in get_dipinfo
    
 ! M-WJ
-!   if ( induced == 1 )then
    if ( induced > 0 )then
 !
       if ( indmeth == 3 )then
@@ -760,7 +746,6 @@ subroutine ewald_force(crd,numatoms,iac,ico,charge, &
 !  |  accumulate evdwr on the master PE.                           | 
 !  +---------------------------------------------------------------+
 
-!   if(ipimd>0) nrg_all(:) = nrg_all(:) + evdwr/ncopy
    if( ( ipimd > 0 ) .and. master ) &
       nrg_all(:) = nrg_all(:) + evdwr/ncopy
 
@@ -907,7 +892,6 @@ subroutine do_pme_recip(mpoltype,numatoms,crd,charge,frc,dipole,   &
 #endif /* LES */
 
 ! M-WJ
-!   else if ( mpoltype == 1 )then
    else if ( mpoltype > 0 )then
 !
       call do_pmesh_dipole_kspace( &
@@ -937,11 +921,7 @@ subroutine putm_back(x,y,n)
    _REAL_, intent(out) :: x(n)
    _REAL_, intent(in) :: y(n)
 
-!   integer :: i
    x(1:n) = y(1:n)
-!   do i=1,n
-!      x(i)=y(i)
-!   end do
    return
 end subroutine putm_back 
 #endif
@@ -994,7 +974,6 @@ subroutine force_info(ees,eer,eed,eea, &
             ;
 
 ! M-WJ
-!      if ( induced == 1 )then
       if ( induced > 0 )then
 !
          write(6, '(5x,a,a)') &
@@ -1059,7 +1038,7 @@ subroutine force_info(ees,eer,eed,eea, &
       write(6,39)subvir(3,1),subvir(3,2),subvir(3,3)
       39 format(5x,'Sub    VIRIAL: ',3(1x,e14.8))
       write(6,*)'--------------------------------------------'
-   end if  ! ( verbose == 3 )
+   end if  
    return
 end subroutine force_info 
 
@@ -1111,14 +1090,12 @@ subroutine get_nonbond_virial(atvir,molvir,subvir, &
 #ifdef LES
          atvir(i,j) = atvir(i,j) + les_vir(i,j)
 #endif
-         ! subvir(i,j) = 0.d0
          molvir(i,j) = atvir(i,j)
       end do
    end do
    do n = 1,numatoms
       do j = 1,3
          do i = 1,3
-            ! subvir(i,j) = subvir(i,j) - frc(i,n)*crd(j,n)
             molvir(i,j) = molvir(i,j) + frc(i,n)*xr(j,n)
          end do
       end do
@@ -1351,7 +1328,6 @@ subroutine nb_adjust(charge,eea,crd, &
          
          !         *r2 accounted for in fsmall calc above
          
-         !         df = cgi*cgk*(ffit)*r2
          df = cgi*cgk*(ffit)
          dfx = delx*df
          dfy = dely*df
@@ -1434,9 +1410,8 @@ subroutine nb_adjust(charge,eea,crd, &
          dfz = delz*df
 #ifdef LES
          
-         !       endif for (x.gt.xbig) above
          
-      end if  ! ( x > xbig )
+      end if 
 #endif
       vxx = vxx - dfx*delx
       vxy = vxy - dfx*dely
@@ -1821,7 +1796,6 @@ subroutine dip_field_corr(efield,dipole,rec_vir,numatoms, &
    
    integer i,j,n
    do n = 1,numatoms
-      !      if ( iproc .eq. mod(n,nproc) )then
       do j = 1,3
          do i = 1,3
             rec_vir(i,j) = rec_vir(i,j) + efield(i,n)*dipole(j,n)
@@ -1845,9 +1819,6 @@ subroutine respa_scale(numatoms,frc,field,nrespa)
       frc(1,n) = nrespa*frc(1,n)
       frc(2,n) = nrespa*frc(2,n)
       frc(3,n) = nrespa*frc(3,n)
-      !       field(1,n) = nrespa*field(1,n)
-      !       field(2,n) = nrespa*field(2,n)
-      !       field(3,n) = nrespa*field(3,n)
    end do
    return
 end subroutine respa_scale 
@@ -1997,10 +1968,6 @@ subroutine nb_adjust_les(charge,ene,crd, &
       !       temp variable for cgi*cgk*(lfac - 1.d0)*r
       
       tmpreal=cgi*cgk*(lfac - 1.d0)*r
-      !if ( ifcr /= 0 ) then 
-      !   call cr_add_dcdr_factor( i, cgk*(lfac-1.0d0)*r )
-      !   call cr_add_dcdr_factor( k, cgi*(lfac-1.0d0)*r )
-      !end if
       
       eeles = eeles + tmpreal
       

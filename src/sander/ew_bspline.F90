@@ -284,16 +284,6 @@ subroutine fill_bspline_2(w,order,array,darray,d2array)
       ! init order 2
       array(2) = w
       array(1) = 1.d0 - w
-      ! in full
-      !   order three deriv
-      !      darray(1) = -array(1)
-      !      darray(2) = array(1) - array(2)
-      !      darray(3) = array(2)
-      !   deriv of deriv
-      !      d2array(1) = -darray(1)
-      !      d2array(2) = darray(1) - darray(2)
-      !      d2array(3) = darray(2) - darray(3)
-      !      d2array(4) = darray(3)
       ! in short
       d2array(1) = array(1)
       d2array(2) = array(2) - 2.d0*array(1)
@@ -542,10 +532,7 @@ subroutine get_tarray(tarray,order,nfft)
    nf = nfft/2
    
    call recur(alpha,order-1)
-   ! for k = 1, m = 0 so term is just 1
    tarray(1) = 1.d0
-   ! t = x^{order} \times  sum_{j=-\infty}^{\infty} (x + \pi j)^{-order}
-   !  where x = pi m / nfft
    !  the above sum is obtained by differentiating cot(x) order-1 times
    do k = 2,nfft
       m = k - 1

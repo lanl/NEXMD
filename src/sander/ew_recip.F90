@@ -445,10 +445,8 @@ subroutine grad_sumrc( &
 #  ifdef CRAY_PVP
 #    define MPI_DOUBLE_PRECISION MPI_REAL8
 #  endif
-   !     _REAL_ Q(nfftdim1*2,nfftdim2,mxyslabs)
    _REAL_ q(*)
 #else
-   !     _REAL_ Q(nfftdim1*2,nfftdim2,nfft3)
    _REAL_ q(*)
    
    ! If MPI only some atoms are touched by the local process. Hence loop is over
@@ -533,7 +531,7 @@ subroutine grad_sumrc( &
                     end do
                  end do
 #ifdef MPI
-              end if  ! ( k >= kbot .and. k <= ktop )
+              end if  
 #endif
            end do  !  ith3 = 1,order
 
@@ -542,8 +540,8 @@ subroutine grad_sumrc( &
                     qmewald%mmpot(nn) = f1*INV_AMBER_ELECTROSTATIC
            enddo
 
-        end if !if (qmmm_struct%atom_mask(n)) then     
-      end do  !  im = 1,nmine
+        end if      
+      end do  
 !  ===============  Below for nornmal grad sum yielding forces ======
       
    else
@@ -624,7 +622,7 @@ subroutine grad_sumrc( &
                   end do
                end do
 #ifdef MPI
-            end if  ! ( k >= kbot .and. k <= ktop )
+            end if
 #endif
          end do  !  ith3 = 1,order
          
@@ -789,9 +787,6 @@ subroutine scalar_sumrc( &
                msq_inv = 1.d0/msqs
                eterms = exp(-fac*msqs)*prefac1(k1s)*prefac2(k2s)* &
                      prefac3(k3s)*piv_inv*msq_inv
-               !              struc2s = Q(1,k3,k1,k2q)*Q(1,k3,k1,k2q) +
-               !    $                 Q(2,k3,k1,k2q)*Q(2,k3,k1,k2q)
-               !              tmp1 = eterms*struc2s
                tmp1 = eterms*struc2
                energy = energy + tmp1
 #ifndef noVIRIAL
@@ -811,9 +806,9 @@ subroutine scalar_sumrc( &
 
             q(1,k3,k1,k2q) = eterm * q(1,k3,k1,k2q)
             q(2,k3,k1,k2q) = eterm * q(2,k3,k1,k2q)
-         end do  !  k1 = k10, nf1+1
-      end do  !  k3 = 1,nfft3
-   end do  !  k2q = 1, mxzslabs
+         end do  
+      end do  
+   end do 
 
    eer = 0.5d0 * energy
 
@@ -1028,9 +1023,9 @@ subroutine scalar_sumrc_orthog( &
 
             q(1,k3,k1,k2q) = eterm * q(1,k3,k1,k2q)
             q(2,k3,k1,k2q) = eterm * q(2,k3,k1,k2q)
-         end do  !  k1 = k10, nf1+1
-      end do  !  k3 = 1,nfft3
-   end do  !  k2q = 1, mxzslabs
+         end do 
+      end do 
+   end do 
 
    eer = 0.5d0 * energy
 

@@ -199,7 +199,6 @@ contains
 !
       BORDER=6
       UNITOUT=6
-!      mapdt=20.455d0*20.455d0*(dt+(exp(-GAMMAMAP*dt)-1.0d0)/GAMMAMAP)/GAMMAMAP
       mapdt=20.455d0*20.455d0*dt/GAMMAMAP
       EKMAP=3.0d0*KB*300.0d0*GAMMAMAP*GAMMAMAP/(20.455d0*20.455d0)
       IF(TEMP>0.0d0)EKMAP=3.0d0*KB*TEMP*GAMMAMAP*GAMMAMAP/(20.455d0*20.455d0)
@@ -406,7 +405,6 @@ contains
                 pos(5)=pos0(5)+(jr-1)*dpsi
                 do kr=1,krz
                   pos(6)=pos0(6)+(kr-1)*dtht
-                  !call dfpmin(pos,6,gtol,iter,enrig,rigeng)
                   do i=1,7
                     p(i,1:6)=pos
                   enddo                  
@@ -533,7 +531,6 @@ contains
         ENDDO
         emrigs(i)%energy=0.0d0
       ENDDO
-      !IF(OUTU>0)WRITE(OUTU,'("EMAP = ",F14.6)')ENEMAP
       return
       end subroutine EMAP_move
 
@@ -567,7 +564,6 @@ contains
       scalt=sqrt(EKMAP*rigobj%tcm/tt)
       DRF=min(1.0d0,scalf)*mapdt/rigobj%mass
       DGT=min(1.0d0,scalt)*mapdt/rigobj%tcm
-      !write(*,*)'scalf,scalt=',scalf,scalt,ff,tt,drf,dgt
       phi=rigobj%eular(1)
       psi=rigobj%eular(2)
       tht=rigobj%eular(3)
@@ -590,7 +586,6 @@ contains
       rigobj%eular(2)=rigobj%eular(2)-TWOPI*ANINT(rigobj%eular(2)/TWOPI)
       rigobj%eular(3)=rigobj%eular(3)-TWOPI*ANINT(rigobj%eular(3)/TWOPI)
       ! Update rotation matrix
-      !write(*,*)'fit',phi,psi,tht,dphi,dpsi,dtht,rigobj%eular,rigobj%mass,rigobj%tcm
       call roteular(rigobj%rot,rigobj%eular(1),rigobj%eular(2),rigobj%eular(3))
       DO I=1,3
         rigobj%TRAN(I)=rigobj%TRAN(I)+rigobj%FORCE(I)*DRF
@@ -795,7 +790,6 @@ contains
         CALL MAPCAST(MAPOBJ,EMAPS(IDEMP),RIGOBJ%TRAN,RIGOBJ%ROT,0.0D0)
         UNIT=99
         OPEN(UNIT,FILE=FNAME,ACCESS='STREAM',STATUS='UNKNOWN')
-!       OPEN(99,FILE=FNAME(1:FLEN),STATUS='NEW')
         IF(INDEX(FNAME,'ccp4')>0.or.INDEX(FNAME,'CCP4')>0 .or. &
            INDEX(FNAME,'map')>0.or.INDEX(FNAME,'MAP')>0)THEN
           CALL WRTCCP4(UNIT,MAPOBJ,OUTU)      
@@ -892,7 +886,6 @@ contains
       CYN=CY+T(2)
       CZN=CZ+T(3)
       MAPN=MAP
-      !if(associated(MAPN%RDATA))deallocate(MAPN%RDATA)
       NDATA=LXN*LYN*LZN
       allocate(MAPN%RDATA(NDATA),stat=alloc_err)
       if(alloc_err /= 0 ) write(6,*)"unable to allocate RDATA"
@@ -1199,7 +1192,6 @@ contains
       WRITE(OUTU,1090)ISPG,NSYMBT,LSKFLG,NNOTE     ! 23,24,25,56
       WRITE(OUTU,1110)SKWMAT                 ! 26-34
       WRITE(OUTU,1120)SKWTRN                 ! 35-37
-!      WRITE(OUTU,1130)EXTRA                  ! 38-52
       WRITE(OUTU,1140)MAPLABLE               ! 53
       WRITE(OUTU,1150)MACHST                 ! 54
       WRITE(OUTU,1160)(I,NOTES(I),I=1,NNOTE)   ! 57-256
@@ -1368,21 +1360,6 @@ contains
       EMAPS(IDEMP)%ALPHA=ALPHA
       EMAPS(IDEMP)%BETA=BETA
       EMAPS(IDEMP)%GAMMA=GAMMA
-!      MAPC=1
-!      MAPR=2
-!C      MAPS=3
-!      ISPG=0
-!      NSYMBT=0
-!      LSKFLG=0
-!      MAPLABLE='MAP '
-!      MACHST='ALL '
-!      NNOTE=3
-!      NOTES(1)="          "
-!     &    //" This map is created with the emap module of charmm "
-!      NOTES(2)="          "
-!     &    //" Report questions to Dr. Xiongwu Wu  "
-!      NOTES(3)="          "
-!     &    //"             Email: wuxw@nhlbi.nih.gov "
       EMAPS(IDEMP)%CX=(MNX+LX/2.0D0)*EMAPS(IDEMP)%DX
       EMAPS(IDEMP)%CY=(MNY+LY/2.0D0)*EMAPS(IDEMP)%DY
       EMAPS(IDEMP)%CZ=(MNZ+LZ/2.0D0)*EMAPS(IDEMP)%DZ
@@ -1403,9 +1380,6 @@ contains
       WRITE(OUTU,1110)SKWMAT                 ! 26-34
       WRITE(OUTU,1120)SKWTRN                 ! 35-37
       WRITE(OUTU,1130)EXTRA                  ! 38-52
-!      WRITE(OUTU,1140)MAPLABLE               ! 53
-!      WRITE(OUTU,1150)MACHST                 ! 54
-!      WRITE(OUTU,1160)(I,NOTES(I),I=1,NNOTE)   ! 57-256
       WRITE(OUTU,1210)NDATA                  ! DATA NUMBER
       WRITE(OUTU,1220)IDEMP                    ! DATA NUMBER
       ENDIF
@@ -1672,15 +1646,6 @@ contains
       EMAPS(IDEMP)%ALPHA=90.0D0
       EMAPS(IDEMP)%BETA=90.0D0
       EMAPS(IDEMP)%GAMMA=90.0D0
-!      MAPC=1
-!      MAPR=2
-!C      MAPS=3
-!      ISPG=0
-!      NSYMBT=0
-!      LSKFLG=0
-!      MAPLABLE='MAP '
-!      MACHST='ALL '
-!      NNOTE=3
       NOTES(1)="          " &
          //" This map is created with the emap module of charmm "
       NOTES(2)="          " &
@@ -1700,13 +1665,6 @@ contains
       WRITE(OUTU,1030)MNX,MNY,MNZ            ! 5,6,7
       WRITE(OUTU,1050)LX*DG,LY*DG,LZ*DG            ! 5,6,7
       WRITE(OUTU,1080)EMAPS(IDEMP)%MIN,EMAPS(IDEMP)%MAX,EMAPS(IDEMP)%AVG,EMAPS(IDEMP)%STD       ! 20,21,22,55
-!      WRITE(OUTU,1090)ISPG,NSYMBT,LSKFLG,NNOTE     ! 23,24,25,56
-!      WRITE(OUTU,1110)SKWMAT                 ! 26-34
-!      WRITE(OUTU,1120)SKWTRN                 ! 35-37
-!      WRITE(OUTU,1130)EXTRA                  ! 38-52
-!      WRITE(OUTU,1140)MAPLABLE               ! 53
-!      WRITE(OUTU,1150)MACHST                 ! 54
-!      WRITE(OUTU,1160)(I,NOTES(I),I=1,NNOTE)   ! 57-256
       WRITE(OUTU,1210)NDATA                  ! DATA NUMBER
       WRITE(OUTU,1220)IDEMP                    ! DATA NUMBER
       ENDIF
@@ -2183,11 +2141,8 @@ subroutine emapforce(natom,enemap,amass,x,f)
         TMASS=TMASS+AMASS(IAT)
       ENDDO
 !  Statistics of map object
-      !CALL EMAPSTAT(IDEMP)
       NDATA=EMAPS(IDEMP)%LX*EMAPS(IDEMP)%LY*EMAPS(IDEMP)%LZ
-      !DELT=(RREMAP(IDEMP)-AREMAP(IDEMP)*AREMAP(IDEMP)/NDATA)/NDATA
       IF(DELT>0.0D0)DELT=SQRT(DELT)
-      !EMAPS(IDEMP)%FCONS=EMGUID/DELT/TMASS
       RETURN
       END SUBROUTINE EMAPGUID
 
@@ -2257,7 +2212,6 @@ subroutine emapforce(natom,enemap,amass,x,f)
       dpos(5)=-dot_product(t,c)
       c=matmul(das,b)
       dpos(6)=-dot_product(t,c)
-      !write(*,*)'fit',rigengd,(pos(i),i=1,6),(dpos(i),i=1,6)
       return
       end function rigengd
 
@@ -2340,18 +2294,14 @@ subroutine emapforce(natom,enemap,amass,x,f)
         return  
       endif  
       if (iter.ge.ITMAX) then
-         !WRITE(6,*) 'ITMAX exceeded in simplex'  
          return
       endif
       iter=iter+2  
-      !ytry = simtry(p,y,psum,mp,np,ndim,funk,ihi,-1.0d0)  
       call amotry(ytry,p,y,psum,mp,np,ndim,funk,ihi,-1.0d0)  
       if (ytry.le.y(ilo)) then  
-        !ytry = simtry(p,y,psum,mp,np,ndim,funk,ihi,2.0d0)  
         call amotry(ytry,p,y,psum,mp,np,ndim,funk,ihi,2.0d0)  
       else if (ytry.ge.y(inhi)) then  
         ysave=y(ihi)  
-        !ytry = simtry(p,y,psum,mp,np,ndim,funk,ihi,0.5d0)  
         call amotry(ytry,p,y,psum,mp,np,ndim,funk,ihi,0.5d0)  
         if (ytry.ge.ysave) then  
           do 16 i=1,ndim+1  

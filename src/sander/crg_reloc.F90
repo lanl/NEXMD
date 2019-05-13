@@ -26,48 +26,20 @@ _REAL_, save :: crcut, crcut2, crskin, crcut_skin, crcut_skin2, &
 character(len=256) :: crin
 ! cr_charge holds the original charge array
 _REAL_, allocatable, dimension(:), save :: cr_charge
-! dimension: cr_cub( 5, cr_max_cub )
-! cr_cub( 1, N ) ==> distance
-! cr_cub( 2:5, N ) ==> coefficients of cubic spline
 _REAL_, allocatable, dimension(:,:), save :: cr_cub
-! dimension: cr_info( 7, cr_max_info )
-! cr_info( 1, N ) ==> First atom,  at1
-! cr_info( 2, N ) ==> Second atom, at2
-! cr_info( 3, N ) ==> Third atom,  at3
-! cr_info( 4, N ) ==> Fourth atom, at4 
-! cr_info( 5, N ) ==> type
-! cr_info( 6, N ) ==> First index of the second dim of cr_cub
-! cr_info( 7, N ) ==> Last index of the second dim of cr_cub
-! cr_info( 8, N ) ==> point to geom
-! cr_info( 9, N ) ==> point to the next cr_info
 integer, allocatable, dimension(:,:), save :: cr_info
-! cr_max_info ==> number of crset sub-sections
-! cr_max_cub ==> sum of the number of the all the data points
 integer, save :: cr_max_cub = 0, cr_max_info = 0
 
-! dimension: ( 2, cr_max_order )
-! cr_order( 1, N ) ==> atom_modified
-! cr_order( 2, N ) ==> poin to the first cr_info
 integer, allocatable, dimension(:,:), save :: cr_order
 integer, save :: cr_max_order
 ! true if charge is updated
 ! size: cr_max_order
 logical, allocatable, dimension(:), save :: cr_upcharge
 
-! dimension(cr_max_info_i,3)
-! cr_info_i(N,1) = i
-! cr_info_i(N,2) = the first index of cr_info_j 
-! cr_info_i(N,3) = the last index of cr_info_j
 integer, allocatable, dimension(:,:), save :: cr_info_i
 integer, save :: cr_max_info_i
-! dimension(cr_max_info_j,3)
-! cr_info_j(N,1) = j
-! cr_info_j(N,2) = the first index of cr_info_ptr
-! cr_info_j(N,3) = the last index of cr_info_ptr
 integer, allocatable, dimension(:,:), save :: cr_info_j
 integer, save :: cr_max_info_j
-! dimension(cr_max_info_ptr)
-! cr_info_ptr(N) = index of cr_info (2nd dim)
 integer, allocatable, dimension(:), save :: cr_info_ptr
 integer, save :: cr_max_info_ptr
 
@@ -78,27 +50,16 @@ integer, allocatable, dimension(:,:), save :: cr_info3_j
 integer, allocatable, dimension(:,:), save :: cr_info3_k
 integer, allocatable, dimension(:), save :: cr_info3_ptr
 
-! cr_dcdr_tbl: hash table of the index i
-! cr_dcdr_tbl(natom)
-! dimension(cr_max_dcdr_i, 3)
-! cr_dcdr_i(N,1) => the first index of cr_dcdr_j
-! cr_dcdr_i(N,2) => the last index of cr_dcdr_j
-! first index of dcdr
-! stores x,y, and z components of dc_i/dr_j
 integer, allocatable, dimension(:), save :: cr_dcdr_tbl
 integer, allocatable, dimension(:,:), save :: cr_dcdr_i
 integer, save :: cr_max_dcdr_i
-! dimension(cr_max_dcdr_j)
 integer, allocatable, dimension(:), save :: cr_dcdr_j
 integer, save :: cr_max_dcdr_j
-! dimension(cr_max_dcdr_j,3)
 _REAL_, allocatable, dimension(:,:), save :: cr_dcdr
 
-! dimension(4,cr_max_geom);
 ! holds distance and delr of atom pairs
 _REAL_, allocatable, dimension(:,:), save :: cr_geom
 integer, save :: cr_max_geom
-! dimension(12,cr_max_geom3);
 ! holds distance and delr of atom pairs
 _REAL_, allocatable, dimension(:,:), save :: cr_geom3
 integer, save :: cr_max_geom3
@@ -106,19 +67,15 @@ integer, save :: cr_max_geom3
 logical, save :: cr_update_pair
 _REAL_, allocatable, dimension(:), save :: cr_pair_distance
 logical, allocatable, dimension(:), save :: cr_pair_eval
-! dimension(3,cr_max_info_j)
 integer, allocatable, dimension(:,:), save :: cr_tranunit
 
 logical, save :: cr_update_tb
-! dimension(3,cr_max_info3_k)
 _REAL_, allocatable, dimension(:,:), save :: cr_tb_distance
 logical, allocatable, dimension(:), save :: cr_tb_eval
-! dimension(9,cr_max_info3_k)
 integer, allocatable, dimension(:,:), save :: cr_tb_tranunit
 
 _REAL_, allocatable, dimension(:,:), save :: cr_cect
 
-! dimension(cr_max_dcdr_i)
 _REAL_, allocatable, dimension(:), save :: cr_dcdr_fac
 
 contains
@@ -161,9 +118,6 @@ subroutine cr_read_input( natom )
    _REAL_, dimension(2) :: cect
 
    ! namelist cr_data
-   ! r = list of distance between at1 and at2
-   !  (in STRICTLY increasing order)
-   ! c = corresponding charges
    ! maximum size of r and c is CR_MAX_NPTS
    _REAL_, dimension(CR_MAX_NPTS) :: r, c
 
@@ -387,10 +341,6 @@ subroutine cr_reallocate_info( at1, at2, at3, at4, cur_type, cur_cubi, &
    _REAL_, allocatable, dimension(:,:) :: cect2
    integer :: i, ierror
 
-!   if ( cur_cubi == 0 ) then
-!      write(6,'(x,a)') 'CRGRELOC: charge function should be set first'
-!      call mexit(6,1)
-!   end if
 
    cect(1:2) = cect(1:2) * INV_AMBER_ELECTROSTATIC
    cect(2) = cect(2) * INV_AMBER_ELECTROSTATIC
@@ -687,27 +637,6 @@ subroutine cr_prepare_info3( natom )
       end do
    end do
             
-! following lines are for debugging only
-!   write(6,*) 'cr_info3_i'
-!   do i=1,cr_max_info3_i
-!      write(6,*) i, ':',  cr_info3_i(i,1:3)
-!   end do
-!   write(6,*) 'cr_info3_j'
-!   do i=1,cr_max_info3_j
-!      write(6,*) i, ':', cr_info3_j(i,1:3)
-!   end do
-!   write(6,*) 'cr_info3_k'
-!   do i=1,cr_max_info3_k
-!      write(6,*) i, ':', cr_info3_k(i,1:3)
-!   end do
-!   write(6,*) 'cr_info3_ptr'
-!   do i=1,cr_max_info3_ptr
-!      write(6,*) i, ':', cr_info3_ptr(i)
-!   end do
-!   write(6,*) 'cr_info'
-!   do i=1,cr_max_info
-!      write(6,*) i, ':', cr_info(1:8,i)
-!   end do
 end subroutine cr_prepare_info3
 !===============================================================================
 
@@ -810,23 +739,6 @@ subroutine cr_prepare_info( natom )
       end if
    end do
 
-! following lines are for debugging only
-!   write(6,*) 'cr_info_i'
-!   do i=1,cr_max_info_i
-!      write(6,*) i, ':',  cr_info_i(i,1:3)
-!   end do
-!   write(6,*) 'cr_info_j'
-!   do i=1,cr_max_info_j
-!      write(6,*) i, ':', cr_info_j(i,1:3)
-!   end do
-!   write(6,*) 'cr_info_ptr'
-!   do i=1,cr_max_info_ptr
-!      write(6,*) i, ':', cr_info_ptr(i)
-!   end do
-!   write(6,*) 'cr_info'
-!   do i=1,cr_max_info
-!      write(6,*) i, ':', cr_info(1:8,i)
-!   end do
 end subroutine cr_prepare_info
 !===============================================================================
 
@@ -1164,19 +1076,6 @@ subroutine cr_prepare_dcdr( natom, foundi )
    end if
 
 ! following lines are for debugging only
-!   do i=1,natom
-!      j = cr_dcdr_tbl(i)
-!      if ( j == 0 ) cycle  
-!      write(6,*) i, ':', j
-!   end do
-!   write(6,*) 'cr_dcdr_i'
-!   do i=1,cr_max_dcdr_i
-!      write(6,*) i, ':', cr_dcdr_i(i,1:2)
-!   end do
-!   write(6,*) 'cr_dcdr_j'
-!   do i=1,cr_max_dcdr_j
-!      write(6,*) i, ':', cr_dcdr_j(i)
-!   end do
 end subroutine cr_prepare_dcdr
 !===============================================================================
 
@@ -1339,7 +1238,6 @@ subroutine cr_calc_charge3( geom3, geom3_mask )
    _REAL_ :: d1, d2, d3, d1inv, d2inv
    _REAL_ :: delr1(3), delr2(3), delr3(3)
    _REAL_ :: angle, cos_angle, sin_angle, sin_inv, dfda, prod
-!   _REAL_ :: r10sum(10), rsum
    _REAL_ :: co1, co2, co3
    
 #ifdef MPI
@@ -1355,8 +1253,6 @@ subroutine cr_calc_charge3( geom3, geom3_mask )
       d2 = geom3(6,gi)
       d3 = geom3(10,gi)
       if (      d1 == 0.0 .or. d1 >= crcut &
-!           .or. d2 == 0.0 .or. d2 >= crcut &
-!           .or. d3 == 0.0 .or. d3 >= crcut &
          ) &
       then
          geom3_mask(gi) = .false.
@@ -1366,7 +1262,6 @@ subroutine cr_calc_charge3( geom3, geom3_mask )
       if ( mod(jobcount,numtasks) .ne. mytaskid ) then
          jobcount = jobcount + 1
          geom3_mask(gi) = .true.
-!         geom3(1:10,gi) = 0.0
          cycle
       else
          jobcount = jobcount + 1
@@ -1400,21 +1295,6 @@ subroutine cr_calc_charge3( geom3, geom3_mask )
          call mexit(6,1)
       end if
 
-      ! cos(a) = ( r1**2 + r2**2 - r3**2 ) / ( 2r1*r2 )
-      ! r1 = sqrt( (x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2 )
-      ! r2 = sqrt( (x3-x2)**2 + (y3-y2)**2 + (z3-z2)**2 )
-      ! r3 = sqrt( (x3-x1)**2 + (y3-y1)**2 + (z3-z1)**2 )
-      !
-      ! df/dx1 = df/da * da/d(cos(a)) * d(cos(a))/dx1
-      !
-      ! df/da = dfda
-      ! da/d(cos(a)) = -1.0/sin(a)
-      ! d(cos(a))/dx1 =   ( 1/r2 - cos(a)/r1 ) * dr1/dx1
-      !                 + ( 1/r1 - cos(a)/r2 ) * dr2/dx1
-      !                 - r3/r1/r2 * dr3/dx1
-      !               =   ( 1/r2 - cos(a)/r1 )/r1 * -(x2-x1)
-      !                 + ( 1/r1 - cos(a)/r2 )/r2 * 0
-      !                 - 1/r1/r2 * -(x3-x1)
 
       sin_angle = sin(angle)
       if ( sin_angle == 0.0 ) then
@@ -1612,34 +1492,15 @@ subroutine cr_reassign_charge( crd, force, ect, charge, natom )
    cr_dcdr_fac = 0.0
 
    ! cr_fill_geom will fill geom with
-   ! geom(1,N) : distance (zero distance means undefined)
-   ! geom(2,N) : delx
-   ! geom(3,N) : dely
-   ! geom(4,N) : delz
    call cr_fill_geom( crd, geom, natom ) 
 
    ! cr_calc_charge will fill geom with
-   ! geom(1,N) : new_charge
-   ! geom(2,N) : d(new_charge)/dx
-   ! geom(3,N) : d(new_charge)/dy
-   ! geom(4,N) : d(new_charge)/dz
    call cr_calc_charge( geom, geom_mask )
 
    ! cr_fill_geom3 will fill geom3 with
-   ! geom3(1,N)     : cos_angle  
-   ! geom3(2,N)     : distance (i-j)
-   ! geom3(3:5,N)   : delr ( i --> j )
-   ! geom3(6,N)     : distance (i-j)
-   ! geom3(7:9,N)   : delr ( j --> k )
-   ! geom3(10,N)    : distance (i-j)
-   ! geom3(11:13,N) : delr ( i --> k )
    call cr_fill_geom3( crd, geom3, natom )
 
    ! cr_calc_charge3 will fill geom3 with
-   ! geom3(1,N)    : new charge
-   ! geom3(2:4,N)  : d(new_charge)/dr1
-   ! geom3(5:7,N)  : d(new_charge)/dr2
-   ! geom3(8:10,N) : d(new_charge)/dr3
    call cr_calc_charge3( geom3, geom3_mask )
 
    call cr_update_charge( ect, force, &
@@ -1852,31 +1713,22 @@ subroutine cr_combine_charge( charge, dcdr, new_c, new_dcdr, cr_type, &
 
    select case ( cr_type )
       case (1) ! summation
-         ! c = old_c + f
-         ! dc/dr = old_dc/dr + df/dr
          charge = charge + new_c
          do j = j_beg, j_end
             dcdr(j,1:3) = dcdr(j,1:3) + new_dcdr(j,1:3)
          end do
       case (2) ! subtraction
-         ! c = old_c - f
-         ! dc/dr = old_dc/dr - df/dr
          charge = charge - new_c
          do j = j_beg, j_end
             dcdr(j,1:3) = dcdr(j,1:3) - new_dcdr(j,1:3)
          end do
       case (3) ! multiplication
-         ! c = old_c * f
-         ! dc/dr = old_dc/dr * f + old_c * df/dr 
          old_c = charge
          charge = old_c * new_c
          do j = j_beg, j_end
             dcdr(j,1:3) = dcdr(j,1:3) * new_c + old_c * new_dcdr(j,1:3)
          end do
       case (4) ! division
-         ! c = old_c / f
-         ! dc/dr = old_dc/dr / f - old_c * df/dr / f^2
-         !       = ( old_dc/dr - old_c * df/dr / f ) / f
          ncinv = 1.0 / new_c
          old_c = charge
          charge = old_c * ncinv
@@ -1915,8 +1767,6 @@ subroutine cr_update_angle_charge( charge, dcdr, new_c, new_dcdr1, new_dcdr2, &
          new_dcdr1 = new_dcdr1 * AMBER_ELECTROSTATIC
          new_dcdr2 = new_dcdr2 * AMBER_ELECTROSTATIC
          new_dcdr3 = new_dcdr3 * AMBER_ELECTROSTATIC
-         ! c = old_c + f
-         ! dc/dr = old_dc/dr + df/dr
          charge = charge + new_c
          call cr_get_dcdr_index_j( ind_i, a1, ind1 )
          call cr_get_dcdr_index_j( ind_i, a2, ind2 )
@@ -1934,8 +1784,6 @@ subroutine cr_update_angle_charge( charge, dcdr, new_c, new_dcdr1, new_dcdr2, &
          new_dcdr1 = new_dcdr1 * AMBER_ELECTROSTATIC
          new_dcdr2 = new_dcdr2 * AMBER_ELECTROSTATIC
          new_dcdr3 = new_dcdr3 * AMBER_ELECTROSTATIC
-         ! c = old_c - f
-         ! dc/dr = old_dc/dr - df/dr
          charge = charge - new_c
          call cr_get_dcdr_index_j( ind_i, a1, ind1 )
          call cr_get_dcdr_index_j( ind_i, a2, ind2 )
@@ -1949,8 +1797,6 @@ subroutine cr_update_angle_charge( charge, dcdr, new_c, new_dcdr1, new_dcdr2, &
          force(1:3,a2) = force(1:3,a2) - new_dcdr2(1:3) * tmp
          force(1:3,a3) = force(1:3,a3) - new_dcdr3(1:3) * tmp
       case (3) ! multiplication
-         ! c = old_c * f
-         ! dc/dr = old_dc/dr * f + old_c * df/dr 
          old_c = charge
          charge = old_c * new_c
          call cr_get_dcdr_index_j( ind_i, a1, ind1 )
@@ -1973,9 +1819,6 @@ subroutine cr_update_angle_charge( charge, dcdr, new_c, new_dcdr1, new_dcdr2, &
          force(1:3,a2) = force(1:3,a2) - dedr2(1:3)
          force(1:3,a3) = force(1:3,a3) - dedr3(1:3)
       case (4) ! division
-         ! c = old_c / f
-         ! dc/dr = old_dc/dr / f - old_c * df/dr / f^2
-         !       = ( old_dc/dr - old_c * df/dr / f ) / f
          ncinv = 1.0 / new_c
          old_c = charge
          charge = old_c * ncinv
@@ -2052,8 +1895,6 @@ subroutine cr_update_distance_charge( charge, dcdr, new_c, new_dcdr, a1, a2, &
       case (1) ! summation
          new_c = new_c * AMBER_ELECTROSTATIC
          new_dcdr = new_dcdr * AMBER_ELECTROSTATIC
-         ! c = old_c + f
-         ! dc/dr = old_dc/dr + df/dr
          charge = charge + new_c
          ! get index (of cr_dcdr_j) for atom a1
          call cr_get_dcdr_index_j( ind_i, a1, ind1 )
@@ -2062,8 +1903,6 @@ subroutine cr_update_distance_charge( charge, dcdr, new_c, new_dcdr, a1, a2, &
          ! update dcdr for dq/dr1 and dq/dr2
          dcdr(ind1,1:3) = dcdr(ind1,1:3) - new_dcdr(1:3) ! dq3/dr1
          dcdr(ind2,1:3) = dcdr(ind2,1:3) + new_dcdr(1:3) ! dq3/dr2
-         ! E = cect(1) * f + cect(2) * f**2
-         ! dE/dr = ( cect(1) + 2 * cect(2) * f ) * df/dr
          prod(1:3) = new_dcdr(1:3) * ( cect(1) + 2.0 * cect(2) * new_c )
          ect = ect + new_c * ( cect(1) + new_c * cect(2) )
          force(1:3,a1) = force(1:3,a1) + prod(1:3) ! add -dE/dr1
@@ -2071,33 +1910,24 @@ subroutine cr_update_distance_charge( charge, dcdr, new_c, new_dcdr, a1, a2, &
       case (2) ! subtraction
          new_c = new_c * AMBER_ELECTROSTATIC
          new_dcdr = new_dcdr * AMBER_ELECTROSTATIC
-         ! c = old_c - f
-         ! dc/dr = old_dc/dr - df/dr
          charge = charge - new_c
          call cr_get_dcdr_index_j( ind_i, a1, ind1 )
          call cr_get_dcdr_index_j( ind_i, a2, ind2 )
          dcdr(ind1,1:3) = dcdr(ind1,1:3) + new_dcdr(1:3)
          dcdr(ind2,1:3) = dcdr(ind2,1:3) - new_dcdr(1:3)
-         ! E = cect(1) * ( -f ) + cect(2) * ( -f )**2
-         ! dE/dr = ( - cect(1) + 2 * cect(2) * f ) * df/dr
          prod(1:3) = new_dcdr(1:3) * ( - cect(1) + 2.0 * cect(2) * new_c )
          ect = ect - new_c * ( cect(1) - new_c * cect(2) )
          force(1:3,a1) = force(1:3,a1) + prod(1:3)
          force(1:3,a2) = force(1:3,a2) - prod(1:3)
       case (3) ! multiplication
-         ! c = old_c * f
          old_c = charge
          charge = old_c * new_c
          prod(1:3) = old_c * new_dcdr(1:3)
          call cr_get_dcdr_index_j( ind_i, a1, ind1 )
          call cr_get_dcdr_index_j( ind_i, a2, ind2 )
-         ! E = cect(1) * ( delta_q ) + cect(2) * ( delta_q )**2
-         ! dE/dr =   ( cect(1) + 2.0 * cect(2) * ( delta_q ) ) 
-         !         * ( old_dc/dr * ( f - 1 ) + old_c * df/dr )
          tmp = new_c - 1.0
          dedr1(1:3) = dcdr(ind1,1:3) * tmp - prod(1:3)
          dedr2(1:3) = dcdr(ind2,1:3) * tmp + prod(1:3)
-         ! dc/dr = old_dc/dr * f + old_c * df/dr 
          dcdr(ind1,1:3) = dedr1(1:3) + dcdr(ind1,1:3)
          dcdr(ind2,1:3) = dedr2(1:3) + dcdr(ind2,1:3)
          tmp = charge - old_c
@@ -2108,21 +1938,15 @@ subroutine cr_update_distance_charge( charge, dcdr, new_c, new_dcdr, a1, a2, &
          force(1:3,a1) = force(1:3,a1) - dedr1(1:3)
          force(1:3,a2) = force(1:3,a2) - dedr2(1:3)
       case (4) ! division
-         ! c = old_c / f
          ncinv = 1.0 / new_c
          old_c = charge
          charge = old_c * ncinv
          call cr_get_dcdr_index_j( ind_i, a1, ind1 )
          call cr_get_dcdr_index_j( ind_i, a2, ind2 )
-         ! E = cect(1) * ( delta_q ) + cect(2) * ( delta_q )**2
-         ! dE/dr =   ( cect(1) + 2.0 * cect(2) * ( delta_q ) ) 
-         !         * ( old_dc/dr * ( 1/f - 1 ) - old_c * df/dr / f**2 )
          prod(1:3) = charge * ncinv * new_dcdr(1:3)
          tmp = ncinv - 1.0
          dedr1(1:3) = dcdr(ind1,1:3) * tmp + prod(1:3)
          dedr2(1:3) = dcdr(ind2,1:3) * tmp - prod(1:3)
-         ! dc/dr = old_dc/dr / f - old_c * df/dr / f^2
-         !       = ( old_dc/dr - old_c * df/dr / f ) / f
          dcdr(ind1,1:3) = dedr1(1:3) + dcdr(ind1,1:3)
          dcdr(ind2,1:3) = dedr2(1:3) + dcdr(ind2,1:3)
          tmp = tmp * old_c
@@ -2137,9 +1961,6 @@ subroutine cr_update_distance_charge( charge, dcdr, new_c, new_dcdr, a1, a2, &
          new_dcdr = new_dcdr * AMBER_ELECTROSTATIC
          tmp = new_c - charge
          charge = new_c
-         ! E = cect(1) * ( delta_q ) + cect(2) * ( delta_q )**2
-         ! dE/dr =   ( cect(1) + 2.0 * cect(2) * ( delta_q ) )
-         !         * ( df/dr - old_dc/dr )
          ect = ect + tmp * ( cect(1) + tmp * cect(2) )
          tmp = cect(1) + 2.0 * cect(2) * tmp
          call cr_get_dcdr_index_j( ind_i, a1, ind1 )
@@ -2148,7 +1969,6 @@ subroutine cr_update_distance_charge( charge, dcdr, new_c, new_dcdr, a1, a2, &
                          - tmp * ( -new_dcdr(1:3) - dcdr(ind1,1:3) )
          force(1:3,a2) =   force(1:3,a2) &
                          - tmp * (  new_dcdr(1:3) - dcdr(ind2,1:3) )
-         ! dc/dr = df/dr
          dcdr(ind1,1:3) = -new_dcdr(1:3)
          dcdr(ind2,1:3) = new_dcdr(1:3)
       case default
@@ -2227,7 +2047,6 @@ subroutine cr_fill_geom3_noupdate( crd, geom3, natom, half_box_size2 )
 
 #ifdef MPI
    jobcount = 1
-!   up_mask = .false.
 #endif
 
    do ai = 1,cr_max_info3_i
@@ -2293,15 +2112,9 @@ subroutine cr_fill_geom3_noupdate( crd, geom3, natom, half_box_size2 )
                   delz2 )
                dist2 = sqrt(delr22)
                cr_tb_distance(2,ak) = dist2
-!               if ( abs( cr_tb_distance(2,ak) - dist2 ) > half_crskin ) then
-!                  cr_update_tb = .true.
-!               else
 #ifdef MPI
                up_mask(ak) = .true.
 #endif
-!               end if
-!            else if ( abs( cr_tb_distance(2,ak) - dist2 ) > half_crskin ) then
-!               cr_update_tb = .true.
             end if
             if ( abs( cr_tb_distance(3,ak) - dist3 ) > crskin ) then
                call cr_measure_min_distance( crd(1:3,i), crd(1:3,k), &
@@ -2309,15 +2122,9 @@ subroutine cr_fill_geom3_noupdate( crd, geom3, natom, half_box_size2 )
                   delz3 )
                dist3 = sqrt(delr32)
                cr_tb_distance(3,ak) = dist3
-!               if ( abs( cr_tb_distance(3,ak) - dist3 ) > half_crskin ) then
-!                  cr_update_tb = .true.
-!               else
 #ifdef MPI
                up_mask(ak) = .true.
 #endif
-!               end if
-!            else if ( abs( cr_tb_distance(3,ak) - dist3 ) > half_crskin ) then
-!               cr_update_tb = .true.
             end if
 
             call cr_calc_angle( dist1, dist2, dist3, cos_angle )
@@ -2518,9 +2325,6 @@ subroutine cr_fill_geom3_update( crd, geom3, natom, half_box_size2 )
 
    ! initialize
    geom3 = 0.0
-!   cr_tb_eval = .false.
-!   cr_tb_tranunit = 0
-!   cr_tb_distance = 0.0
 
    ! update three-body list
    do ai = 1,cr_max_info3_i
@@ -2626,9 +2430,6 @@ subroutine cr_fill_geom_update( crd, geom, natom, half_box_size2 )
 
    ! initialize
    geom = 0.0
-!   cr_pair_eval = .false.
-!   cr_tranunit = 0
-!   cr_pair_distance = 0.0
 
    ! update pair list
    do ai = 1,cr_max_info_i

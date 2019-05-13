@@ -209,11 +209,11 @@ subroutine do_recip_reg(numatoms,charge,eer,vir, &
                   force(2,n) = force(2,n) + term*mhat2
                   force(3,n) = force(3,n) + term*mhat3
                end do
-            end if  ! ( msq < maxexp2 )
-         end do  !  m3 = -mlimit(3),mlimit(3)
+            end if 
+         end do  
          999 continue
-      end do  !  m2 = -mlimit(2),mlimit(2)
-   end do  !  m1 = 0,mlimit(1)
+      end do  
+   end do 
    call timer_stop(TIME_EWRECSUM)
    eer = 0.5d0 * ene
    do m2 = 1,3
@@ -443,11 +443,11 @@ subroutine do_recip_reg_dipole(numatoms,charge,eer,vir, &
                   force(2,n) = force(2,n) + eterm*twopi*mhat2*term2i
                   force(3,n) = force(3,n) + eterm*twopi*mhat3*term2i
                end do
-            end if  ! ( msq < maxexp2 )
-         end do  !  m3 = -mlimit(3),mlimit(3)
+            end if 
+         end do 
          999 continue
-      end do  !  m2 = -mlimit(2),mlimit(2)
-   end do  !  m1 = 0,mlimit(1)
+      end do
+   end do  
    call timer_stop(TIME_EWRECSUM)
    eer = 0.5d0 * ene
    do m2 = 1,3

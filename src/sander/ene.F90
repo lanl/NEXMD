@@ -192,12 +192,6 @@ subroutine bond(nbin,ib,jb,icb,x,xx,ix,f,eb)
 #endif /* LES */
 
 !! Amber harmonic bond interaction for comparison with morsify ''''''''''''''''''''''
-!     if( jn == 1 ) then                                                    ! DEBUG ;
-!        write(6,'(A)') '|'                                                 ! DEBUG ;
-!        write(6,'(A)') '| ^^^ Amber harmonic energy ///////////////////'   ! DEBUG ;
-!        write(6,'(A)') '|'                                                 ! DEBUG ;
-!     endif                                                                 ! DEBUG ;
-!     write(6,'(A, I8,F14.8)') '| NRG_BND =  ', jn, eaw(jn)                 ! DEBUG ;
 !! Amber harmonic bond interaction for comparison with morsify ''''''''''''''''''''''
 
          dfw(jn) = (df+df)/rij0
@@ -229,15 +223,6 @@ subroutine bond(nbin,ib,jb,icb,x,xx,ix,f,eb)
          bnd_vir(3,3)=bnd_vir(3,3)+za*zij(jn)
 
 !! Amber harmonic bond interaction for comparison with morsify ''''''''''''''''''''''
-!     if( jn == 1 ) then                                                    ! DEBUG ;
-!        write(6,'(A)') '|'                                                 ! DEBUG ;
-!        write(6,'(A)') '| ^^^ Amber harmonic force ////////////////////'   ! DEBUG ;
-!        write(6,'(A)') '|'                                                 ! DEBUG ;
-!     endif                                                                 ! DEBUG ;
-!     write(6,'(A,2I8,F14.8)') '| FX = ', i3+1, j3+1, xa                    ! DEBUG ;
-!     write(6,'(A,2I8,F14.8)') '| FY = ', i3+2, j3+2, ya                    ! DEBUG ;
-!     write(6,'(A,2I8,F14.8)') '| FZ = ', i3+3, j3+3, za                    ! DEBUG ;
-!     write(6,'(A)') '|'                                                    ! DEBUG ;
 !! Amber harmonic bond interaction for comparison with morsify ''''''''''''''''''''''
 
       end do
@@ -976,9 +961,6 @@ subroutine ephi(nphiin,ip,jp,kp,lp,icp,cg,iac,x,xx,ix,f,dvdl, &
                  call decpair(4,ii,jj,sphi(jn))
               else if(idecomp == 2) then
                  call decpair(2,ii,jj,sphi(jn))
-                 !             else if(idecomp.eq.3) then
-                 !               --- not considered since
-                 !                     no pairwise decomp for internal energies
               else if(idecomp == 4) then
                  call decpair(-2,ii,jj,sphi(jn))
               end if
@@ -990,9 +972,6 @@ subroutine ephi(nphiin,ip,jp,kp,lp,icp,cg,iac,x,xx,ix,f,dvdl, &
               call decpair(4,ii,jj,sphi(jn))
            else if(idecomp == 2) then
               call decpair(2,ii,jj,sphi(jn))
-              !             else if(idecomp.eq.3) then
-              !               --- not considered since
-              !                     no pairwise decomp for internal energies
            else if(idecomp == 4) then
               call decpair(-2,ii,jj,sphi(jn))
            end if
@@ -1021,9 +1000,6 @@ subroutine ephi(nphiin,ip,jp,kp,lp,icp,cg,iac,x,xx,ix,f,dvdl, &
                  call decpair(4,ii,jj,cphi(jn))
               else if(idecomp == 2) then
                  call decpair(3,ii,jj,cphi(jn))
-                 !             else if(idecomp.eq.3) then
-                 !               --- not considered since
-                 !                     no pairwise decomp for internal energies
               else if(idecomp == 4) then
                  call decpair(-3,ii,jj,cphi(jn))
               end if
@@ -1033,9 +1009,6 @@ subroutine ephi(nphiin,ip,jp,kp,lp,icp,cg,iac,x,xx,ix,f,dvdl, &
               call decpair(4,ii,jj,cphi(jn))
            else if(idecomp == 2) then
               call decpair(3,ii,jj,cphi(jn))
-              !             else if(idecomp.eq.3) then
-              !               --- not considered since
-              !                     no pairwise decomp for internal energies
            else if(idecomp == 4) then
               call decpair(-3,ii,jj,cphi(jn))
            end if
@@ -1679,12 +1652,6 @@ subroutine ephi_ene_amd(nphiin,ip,jp,kp,lp,icp,x,ep)
    parameter (numtasks=1,mytaskid=0)
 #endif
 !**** check if I need it 
-!#if defined(LES)
-!#  include "les.h"
-!#  include "memory.h"
-!#else
-!   _REAL_ lfac
-!#endif
 
 #  include "ew_frc.h"
 #  include "box.h"

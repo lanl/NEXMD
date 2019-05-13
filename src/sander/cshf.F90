@@ -308,7 +308,6 @@ subroutine cshf(natom,x,f)
                const(i)=constca
             end if
          end if
-         !          if (nh_calc)const(i)=constNH
 #endif
          
          !   update the llist if proton of new residue
@@ -324,8 +323,6 @@ subroutine cshf(natom,x,f)
             llist(nrescur,ncount)=no(jres)
          end if
          do jres=nter+1,cter-1
-            !             if(.not.nh_calc.and.jres.eq.nrescur) go to 35
-            !             if(nh_calc.and.jres.eq.nrescur-1) go to 35
             if(jres == nrescur) cycle
             ncount=ncount+1
             llist(nrescur,ncount)=nnit(jres)
@@ -616,9 +613,6 @@ subroutine cshf(natom,x,f)
 #ifndef DNA_SHIFT
       if (i == 1) then
          do jres=nter,cter-1
-            !         if (nh_calc) then
-            !           if (jres.eq.nrescur) goto 30
-            !         end if
             inc=nc(jres)
             ino=no(jres)
             innit=nnit(jres)
@@ -934,7 +928,6 @@ subroutine elstat(ip,nrescur,x,nnnxloc,charge,gesum,d, &
       rch(i) = sqrt(rch2(i))
       rhx(i) = sqrt(rhx2(i))
       gesum = gesum + (charge(jatom)*dot(i))/(rhx2(i)*rch(i)*rhx(i))
-      !      write(6,'(4i5,2f10.3)')i,jatom,ip,nnnxloc,charge(jatom),dot(i)
    end do
    
    !  Calculate derivatives

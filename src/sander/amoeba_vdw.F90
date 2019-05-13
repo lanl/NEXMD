@@ -122,7 +122,6 @@ function AM_VDW_read_parm(nf)
     write(6,*)'No VDW parameters present!'
     call mexit(6,1)
   endif
-  !write(6,*)'num_vdw_atom_types = ',num_vdw_atom_types
   allocate(vdw_epsilon(num_vdw_atom_types,num_vdw_atom_types),stat=ier)
   REQUIRE(ier==0)
   allocate(vdw_radius(num_vdw_atom_types,num_vdw_atom_types),stat=ier)
@@ -363,7 +362,6 @@ subroutine AM_VDW_ADJUST_ene_frc(crd,num_adjust_list,adjust_list,vdw_weight, &
          dfx = term*delx
          dfy = term*dely
          dfz = term*delz
-         ! recall ddelx_dxi = -1
          frc(1,i) = frc(1,i) + (one-wi)*dfx
          frc(2,i) = frc(2,i) + (one-wi)*dfy
          frc(3,i) = frc(3,i) + (one-wi)*dfz
@@ -466,11 +464,6 @@ subroutine AM_VDW_DIRECT_ene_frc_i(i,ipairs,numtot,xk,yk,zk, &
          dt2drho = -seven*t2 * (rho6 / (rho7 + vdw_buf_gamma))
          drhodr = one / rad
          do i_range = 1,soft_line
-!         if ((i.ge.soft_atom_range1(i_range).and.   &
-!                  i.le.soft_atom_range2(i_range)  ) &
-!             .xor. &
-!             (j.ge.soft_atom_range1(i_range).and.   &
-!                  j.le.soft_atom_range2(i_range)) )then
           if (       (i.ge.soft_atom_range1(i_range).and. &
                       i.le.soft_atom_range2(i_range)     )&
                .and.                                      &
@@ -510,7 +503,6 @@ subroutine AM_VDW_DIRECT_ene_frc_i(i,ipairs,numtot,xk,yk,zk, &
          dfx = term*delx
          dfy = term*dely
          dfz = term*delz
-         ! recall ddelx_dxi = -1
          frc(1,i) = frc(1,i) + (one-wi)*dfx
          frc(2,i) = frc(2,i) + (one-wi)*dfy
          frc(3,i) = frc(3,i) + (one-wi)*dfz

@@ -168,7 +168,6 @@ function AM_INDUCED_readparm(nf,num_atoms,mass)
     call mexit(6,1)
   endif
 
-  !write(6,*)'numpolar = ',numpolar
   dim1 = 1
 
   call AMOEBA_read_real_list_data('AMOEBA_POLARIZABILITY_',nf, &
@@ -283,9 +282,6 @@ subroutine AM_INDUCED_eval(numatoms,crd,x,ipairs,diprms,dipiter)
   dipiter = iter
   diprms = rms
 
-  !call  dump_dipoles(ind_dip_d,numatoms,40)
-  !call  dump_dipoles(ind_dip_p,numatoms,41)
-  !if ( numatoms > 0 )stop
 end subroutine AM_INDUCED_eval
 !----------------------------------------------------------
 
@@ -308,7 +304,6 @@ subroutine cg_init(numatoms)
    integer :: ierr
 
 #ifdef MPI
-!   call mpi_bcast(dipole_scf_use_cg,1,MPI_INTEGER,0,commsander,ierr)
 #endif /* MPI */
 
    if (dipole_scf_use_cg.eq.0) &

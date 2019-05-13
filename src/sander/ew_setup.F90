@@ -207,10 +207,6 @@ subroutine init_coulomb_switch(cutoffnb,dxdr,eed_cub,eed_lin, &
          derr = abs(d_switch_dx - ad_switch_dx) / &
                (abs(d_switch_dx)+small)
          
-         !         write(6,'(2i4,5e15.8)')
-         !    .      i,j,x,switch,aswitch,err
-         !         write(6,'(8x,5e15.8)')
-         !    .      x,d_switch_dx,ad_switch_dx,derr
          
          if ( err > maxerr )then
             maxerr = err
@@ -2039,10 +2035,6 @@ subroutine vdw_correct_setup(natom,iac,ntypes,nvdwclas)
       nvdwclas(j) = nvdwclas(j) + 1
    end do
    
-   !     write(6,*)'num of vdw types = ',ntypes
-   !     do n = 1,ntypes
-   !       write(6,*)'num atoms of type ',n,' = ',nvdwclas(n)
-   !     enddo
    
    return
 end subroutine vdw_correct_setup 

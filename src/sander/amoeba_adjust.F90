@@ -89,7 +89,6 @@ function AM_ADJUST_readparm(nf)
     do_flag = ibclr(do_flag,VALID_BIT)
     return
   endif
-  !write(6,*)'num_adjust_list = ',num_adjust_list
   !allocate
   allocate(adjust_list(3,num_adjust_list),stat=ier)
   REQUIRE(ier==0)
@@ -258,10 +257,6 @@ subroutine AM_ADJUST_calc_permfield(crd,num_adjust_list,adjust_list, &
         Rn_1(Ind_100) = delx*Rn(Ind_000)
         Rn_1(Ind_010) = dely*Rn(Ind_000)
         Rn_1(Ind_001) = delz*Rn(Ind_000)
-        !Rn_2(Ind_000) = D(n-2) no need for this
-        !Rn_2(Ind_100) = delx*Rn_1(Ind_000) ditto
-        !Rn_2(Ind_010) = dely*Rn_1(Ind_000) ditto
-        !Rn_2(Ind_001) = delz*Rn_1(Ind_000) ditto
         Rn_2(Ind_200) = Rn_1(Ind_000) + delx*Rn_1(Ind_100)
         Rn_2(Ind_020) = Rn_1(Ind_000) + dely*Rn_1(Ind_010)
         Rn_2(Ind_002) = Rn_1(Ind_000) + delz*Rn_1(Ind_001)
@@ -1177,13 +1172,6 @@ subroutine AM_ADJUST_calc_ene_frc(crd,num_adjust_list,adjust_list, &
         Rn_4(Ind_112) = delx*Rn_3(Ind_012)
         if ( is_polarizable(i) )then
            ! induced direct dipoles at i interact with permanent at j
-           !phi(Ind_000)  NOT NEEDED
-           !phi(Ind_000)= &
-                   !Rn_4(Ind_000)*gmj(Ind_000)+Rn_4(Ind_100)*gmj(Ind_100)+ &
-                   !Rn_4(Ind_010)*gmj(Ind_010)+Rn_4(Ind_001)*gmj(Ind_001)+ &
-                   !Rn_4(Ind_200)*gmj(Ind_200)+Rn_4(Ind_020)*gmj(Ind_020)+ &
-                   !Rn_4(Ind_002)*gmj(Ind_002)+Rn_4(Ind_110)*gmj(Ind_110)+ &
-                   !Rn_4(Ind_101)*gmj(Ind_101)+Rn_4(Ind_011)*gmj(Ind_011)
            phi(Ind_100)= &
                  -(Rn_4(Ind_100)*gmj(Ind_000)+Rn_4(Ind_200)*gmj(Ind_100)+ &
                    Rn_4(Ind_110)*gmj(Ind_010)+Rn_4(Ind_101)*gmj(Ind_001)+ &
@@ -1400,7 +1388,6 @@ subroutine AM_ADJUST_calc_ene_frc(crd,num_adjust_list,adjust_list, &
         Rn_3(Ind_102) = delx*Rn_2(Ind_002)
         Rn_3(Ind_012) = dely*Rn_2(Ind_002)
         Rn_3(Ind_111) = delx*Rn_2(Ind_011)
-        !Rn_4(Ind_000) = C(n-4) NOT NEEDED
         Rn_4(Ind_100) = delx*Rn_3(Ind_000)
         Rn_4(Ind_010) = dely*Rn_3(Ind_000)
         Rn_4(Ind_001) = delz*Rn_3(Ind_000)
@@ -1437,13 +1424,6 @@ subroutine AM_ADJUST_calc_ene_frc(crd,num_adjust_list,adjust_list, &
         Rn_4(Ind_112) = delx*Rn_3(Ind_012)
         if ( is_polarizable(i) )then
            ! induced direct dipoles at i interact with permanent at j
-           !phi(Ind_000)  NOT NEEDED
-           !phi(Ind_000)= &
-                   !Rn_4(Ind_000)*gmj(Ind_000)+Rn_4(Ind_100)*gmj(Ind_100)+ &
-                   !Rn_4(Ind_010)*gmj(Ind_010)+Rn_4(Ind_001)*gmj(Ind_001)+ &
-                   !Rn_4(Ind_200)*gmj(Ind_200)+Rn_4(Ind_020)*gmj(Ind_020)+ &
-                   !Rn_4(Ind_002)*gmj(Ind_002)+Rn_4(Ind_110)*gmj(Ind_110)+ &
-                   !Rn_4(Ind_101)*gmj(Ind_101)+Rn_4(Ind_011)*gmj(Ind_011)
            phi(Ind_100)= &
                  -(Rn_4(Ind_100)*gmj(Ind_000)+Rn_4(Ind_200)*gmj(Ind_100)+ &
                    Rn_4(Ind_110)*gmj(Ind_010)+Rn_4(Ind_101)*gmj(Ind_001)+ &
@@ -1631,7 +1611,6 @@ subroutine AM_ADJUST_calc_ene_frc(crd,num_adjust_list,adjust_list, &
            Rn_2(Ind_110) = delx*Rn_1(Ind_010)
            Rn_2(Ind_101) = delx*Rn_1(Ind_001)
            Rn_2(Ind_011) = dely*Rn_1(Ind_001)
-           !Rn_3(Ind_000) = C(n-3) NOT NEEDED
            Rn_3(Ind_100) = delx*Rn_2(Ind_000)
            Rn_3(Ind_010) = dely*Rn_2(Ind_000)
            Rn_3(Ind_001) = delz*Rn_2(Ind_000)
