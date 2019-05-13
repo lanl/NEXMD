@@ -22,7 +22,6 @@ subroutine deriv(sim,state) ! , xyz_in)
     _REAL_::charges2(sim%cosmo%nps),acharges2(sim%cosmo%numat),density2(sim%cosmo%lm61)
     _REAL_ :: Escf_right,Escf_left,E_ES_right,E_ES_left,h
     simpoint=>sim
-!    write(6,*)'Calculating GS Derivatives'
     !Collect coordinates in vector
     do i=1,simpoint%qmmm%nquant_nlink
         do j = 1,3
@@ -62,8 +61,6 @@ subroutine deriv(sim,state) ! , xyz_in)
             elseif(simpoint%cosmo%potential_type.eq.2) then
                 call rcnfldgrad(simpoint%qparams,simpoint%qnml,simpoint%cosmo,simpoint%qm2,simpoint%qmmm,dxyz1_test, &
                                 simpoint%qm2%den_matrix,simpoint%qm2%norbs)
-              !write(6,*)'dxyz1=',dxyz1_test; dxyz1_test=0.d0
-              !call rcnfldgrad2(simpoint%qparams,simpoint%qnml,simpoint%cosmo,simpoint%qm2,simpoint%qmmm,dxyz1_test,simpoint%qm2%den_matrix,simpoint%qm2%den_matrix,simpoint%dav%nb,.true.)
             endif
             dxyz1=dxyz1+dxyz1_test
         endif
@@ -76,7 +73,6 @@ subroutine deriv(sim,state) ! , xyz_in)
 
         if (ihop>0) then
             !CALCULATE EXCITED STATE DERIVATIVES
-            !Omega^x=Tr(F^x rhoTZ)+Tr(V^x(xi) xi^+)
 
             !TERM 1: Tr(F^x rhoTZ)
 
@@ -255,8 +251,6 @@ subroutine deriv(sim,state) ! , xyz_in)
         E_ES_left=0; E_ES_right=0;
         !Loop over the number of coordinates
         do i=1,simpoint%qmmm%nquant_nlink*3
-            !write(6,*)'den_c',simpoint%qm2%den_matrix
-            !write(6,*)'fock_c',simpoint%qm2%fock_matrix
             !Modify the coordinates and calculate energies
 
             xyz(i)=xyz(i)+h !left
@@ -308,14 +302,12 @@ subroutine deriv(sim,state) ! , xyz_in)
     if(simpoint%qmpi%commqmmm_master .AND. simpoint%qnml%verbosity > 3) then
         !If verbosity level is greater than 3 we also print the force array on the
         !QM atoms
-        !write (6,'("QMMM:")')
         write (6,'("QMMM: Forces on QM atoms ground state calculation (eV/A)")')
         write (6,'("QMMM: state=",2i3)') ihop, simpoint%dav%struct_opt_state
         write (6,'("QMMM: Atm ",i6,": ",3f20.14)') (j,-dxyz_gs(1+3*(j-1)), &
             -dxyz_gs(2+3*(j-1)), &
             -dxyz_gs(3+3*(j-1)), j=1,simpoint%qmmm%nquant_nlink)
         if(ihop>0) then
-            !write (6,'("QMMM:")')
             write (6,'("QMMM: Forces on QM atoms excited state calculation (eV/A)")')
             write (6,'("QMMM: state=",2i3)') ihop, simpoint%dav%struct_opt_state
             write (6,'("QMMM: Atm ",i6,": ",3f20.14)') (j,-dxyz(1+3*(j-1)),&

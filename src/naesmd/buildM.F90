@@ -99,7 +99,6 @@ subroutine Lxi_testing(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct, qm2_struct,q
                     call commutator(qm2ds%eta,qm2ds%xi,qm2ds%Nb,tmp,.false.)
                     call VxiM_end(qm2_struct,qm2ds%eta,tmp)
                 elseif(solvent_model.eq.10) then!10: NO GS Solvent test
-                    !call addnuc(cosmo_c_struct,tmp(1,1));
                     tmp=0.d0; tmp2=0.d0;
                     call rcnfld_fock(qm2_params,qmmm_nml,cosmo_c_struct, qm2_struct,qmmm_struct, &
                                      tmp,qm2_struct%den_matrix,qm2ds%Nb)
@@ -174,7 +173,6 @@ subroutine Lxi_testing(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct, qm2_struct,q
                 fcon=cosmo_c_struct%fepsi*a0*ev !scaling factor
                 call packing(qm2ds%nb,xi,p,'s') !Note that the factor of two for diagonal elements which happens in this subroutine is corrected for by cosmo_c_struct%gden
                 ! FIRST CALCULATE QDENEL FROM DENSITY MATRIX
-                ! cosmo_c_struct%gden is -2 for diagonal and -1 for nondiagonal
                 do i=1,cosmo_c_struct%lm61
                     density(i)=cosmo_c_struct%gden(i)*p(cosmo_c_struct%ipiden(i))
                 end do

@@ -175,43 +175,8 @@ SUBROUTINE temperature(i,naesmd_struct)
 
     call temper(naesmd_struct)
 
-    ! naesmd_struct%tempf is the target temperature at the specific heating step
-    ! naesmd_struct%temp0 is the final target temperature
-    ! naesmd_struct%tempi is the instantaneus temperature
 
-    if(naesmd_struct%ensemble.eq.'temper') then
-        if(naesmd_struct%prep.eq.'heat') then
-            if(i.eq.1) then
-                naesmd_struct%iconttemperature=1
-                naesmd_struct%tempf=naesmd_struct%tempi
-            endif
-            if(naesmd_struct%iconttemperature.le.naesmd_struct%istepheat) then
-                naesmd_struct%iconttemperature=naesmd_struct%iconttemperature+1
-                if (naesmd_struct%iconttemperature.eq.naesmd_struct%istepheat) then
-                    naesmd_struct%iconttemperature=1
-                    naesmd_struct%tempf=naesmd_struct%tempf+1
-                    if(naesmd_struct%tempf.gt.naesmd_struct%temp0) naesmd_struct%tempf=naesmd_struct%temp0
-                endif
-            endif
-        else
-            naesmd_struct%tempf=naesmd_struct%temp0
-        endif
-
-        if(naesmd_struct%prep.eq.'heat') then
-            SCLTMP = DSQRT(1.0D0+naesmd_struct%dtmdqt*CONVT/naesmd_struct%TAO* &
-                (naesmd_struct%TEMPf/naesmd_struct%TEMPI-1.0D0))
-        else
-            SCLTMP = DSQRT(1.0D0+naesmd_struct%dtmdqt*CONVT/naesmd_struct%TAO* &
-                (naesmd_struct%TEMP0/naesmd_struct%TEMPI-1.0D0))
-        endif
-        do j=1,naesmd_struct%natom
-            naesmd_struct%vx(j)=scltmp*naesmd_struct%vx(j)
-            naesmd_struct%vy(j)=scltmp*naesmd_struct%vy(j)
-            naesmd_struct%vz(j)=scltmp*naesmd_struct%vz(j)
-        enddo
-    else
         if(naesmd_struct%ensemble.eq.'langev') naesmd_struct%tempf=naesmd_struct%temp0
-    endif
 
  
     RETURN

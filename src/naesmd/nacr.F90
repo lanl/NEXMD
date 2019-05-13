@@ -31,8 +31,6 @@ subroutine nacR_analytic(qm2_params,qmmm_nml,qmmm_mpi,qm2_rij_eqns,qm2_struct,qm
     parameter (fPi = 3.1415926535898d0)
     parameter (fbar = 0.05d0)  ! maximum dE in numerical derivative, eV.
     integer Na
-    !       _REAL_ xx(qmmm_struct%nquant_nlink),yy(qmmm_struct%nquant_nlink),zz(qmmm_struct%nquant_nlink)
-    !       _REAL_ xx1(qmmm_struct%nquant_nlink),yy1(qmmm_struct%nquant_nlink),zz1(qmmm_struct%nquant_nlink)
     _REAL_ xyz(3,qmmm_struct%nquant_nlink),dxyz1(3,qmmm_struct%nquant_nlink)
     if (qmmm_nml%verbosity.gt.4) write(6,*)'nacR_analytic called'
 
@@ -52,21 +50,6 @@ subroutine nacR_analytic(qm2_params,qmmm_nml,qmmm_mpi,qm2_rij_eqns,qm2_struct,qm
     Mx = qm2ds%Mx
     Mx_M = Mx
 
-    ! This will need to be put outside of this routine because cmdqt is important for NAD calcs
-    !       do j=1,npot
-    !               f= ddot(nbasis,cmdqt(1,j),1,v0(1,kx(j)),1)
-    !               if (f.lt.0.0d0) then
-    !                       do i=1,nbasis
-    !                               cmdqt(i,j)=-v0(i,kx(j))
-    !                       end do
-    !               else
-    !                       do i=1,nbasis
-    !                               cmdqt(i,j)=v0(i,kx(j))
-    !                       enddo
-    !               end if
-    !       end do
-    ! But, it's here now to test this function
-    ! Note, Davidson must be run prior to this for these assignments
 
     if (qmmm_struct%qm_mm_first_call) then
         write(6,*)  'sqm_energy() must be run once before executing this procedure!'
@@ -74,25 +57,6 @@ subroutine nacR_analytic(qm2_params,qmmm_nml,qmmm_mpi,qm2_rij_eqns,qm2_struct,qm
         call mexit(6,1)
     end if
 
-    !       do j=1,qm2ds%Mx
-    !               f= ddot(M4_M,qm2ds%cmdqt(1,j),1,qm2ds%v0(1,qm2ds%kx(j)),1)
-    !               if (f.lt.0.0d0) then
-    !                       do i=1,M4_M
-    !                               qm2ds%cmdqt(i,j) = -qm2ds%v0(i,qm2ds%kx(j))
-    !                       end do
-    !               else
-    !                       do i=1,M4_M
-    !                               qm2ds%cmdqt(i,j) = qm2ds%v0(i,qm2ds%kx(j))
-    !                       enddo
-    !               end if
-    !       end do
-
-     !KGB commented 2 lines out
-     !ihop = 2  ! initial state
-     !icheck = 1 ! final state
-   
-    ! Form transition density martix between state ihop and icheck
-    !  xi_ih_ic = (I-2rho)(xi_ih xi_ic + xi_ic xi_ih)
     qm2ds%nacr_scratch=0
     call getmodef(M2_M,Mx_M,Np,Nh,ihop,qm2ds%cmdqt,qm2ds%nacr_scratch)
     call getmodef(M2_M,Mx_M,Np,Nh,icheck,qm2ds%cmdqt,qm2ds%eta_scratch)
@@ -123,12 +87,6 @@ subroutine nacR_analytic(qm2_params,qmmm_nml,qmmm_mpi,qm2_rij_eqns,qm2_struct,qm
         end do
     end if
 
-    !write(6,*)  'dij'
-    !do i = 1,Na*3
-       !write(6,*)  qm2ds%dij(i)
-    !end do
-    !flush(6)
-    !STOP
 	    write(6,*) "no"
 
     return

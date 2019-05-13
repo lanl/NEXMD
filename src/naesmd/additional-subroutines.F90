@@ -10,7 +10,6 @@ contains
     integer function readstring(file,card,flen)
         integer       file, flen
         character*200 card
-        !if(file.gt.200)STOP 'ERROR: file number too large'
         read(file,'(a)',err=100,end=100)card
         flen=199
         do while(card(flen:flen).eq.' ')
@@ -104,10 +103,8 @@ contains
             ! use for vibration***************************
             write (filename, "(A4,I4.4,A4)") "xyz_", sim%id, ".out"
             sim%outfile_18=99*10000+sim%id 
-            !open(sim%outfile_18,file=trim(filename),status=file_status,access=file_access)
             write (filename, "(A6,I4.4,A4)") "veloc_", sim%id, ".out"
             sim%outfile_19=80*10000+sim%id 
-            !open(sim%outfile_19,file=trim(filename),status=file_status,access=file_access)
             !*****************************************
             !
 
@@ -166,7 +163,6 @@ contains
 !BTN: removed file coeff-n-before.out. grep this line to undo
                 write (filename, "(A15,I4.4,A4)") "coeff-n-before_", sim%id, ".out"
                 sim%outfile_9=105*10000+sim%id 
-!                open(sim%outfile_9,file=trim(filename),status=file_status,access=file_access)
             endif
         endif
 
@@ -181,10 +177,8 @@ contains
             endif
                 write (filename, "(A3,I4.4,A4)") "fy_", sim%id, ".out"
                 sim%outfile_13=84*10000+sim%id 
-            !    open(sim%outfile_13,file=trim(filename),status=file_status,access=file_access)
                 write (filename, "(A3,I4.4,A4)") "fz_", sim%id, ".out"
                 sim%outfile_14=83*10000+sim%id 
-             !   open(sim%outfile_14,file=trim(filename),status=file_status,access=file_access)
                 write (filename, "(A12,I4.4,A4)") "cross-steps_", sim%id, ".out"
                 sim%outfile_15=101*10000+sim%id 
                 open(sim%outfile_15,file=trim(filename),status=file_status,access=file_access)
@@ -295,10 +289,6 @@ contains
         if(lprint.ge.0) then
             !
             ! use for vibration***************************
-            !          OPEN(99, FILE= 'xyz.out', status=file_status,
-            !     $access=file_access)
-            !        OPEN(80, FILE= 'veloc.out', status=file_status,
-            !     $access=file_access)
             !*****************************************
             !
 
@@ -334,9 +324,6 @@ contains
             if (imdtype.gt.0.)  &
                 OPEN(89, FILE= 'transition-densities.out', &
                 status=file_status, access=file_access)
-            !          if (imdtype.gt.0.)
-            !     $ OPEN(77, FILE= 'transition-densities-tot.out',
-            !     $ status=file_status, access=file_access)
             if (imdtype.gt.0.and.ibo.ne.1) OPEN(29, FILE= 'nacr.out',   &
                 status=file_status, access=file_access)
             if (imdtype.gt.0.and.ibo.ne.1) OPEN(93, FILE= 'nact.out',   &
@@ -344,9 +331,6 @@ contains
             if (imdtype.gt.0.and.ibo.ne.1) OPEN(95, FILE= 'coeff-n.out', &
                 status=file_status, access=file_access)
 !BTN: removed file coeff-n-before.out. grep this line to undo
-!            if (imdtype.gt.0.and.ibo.ne.1)  &
-!                OPEN(105, FILE= 'coeff-n-before.out', &
-!                status=file_status, access=file_access)
         endif
 
         if(lprint.ge.2) then
@@ -354,10 +338,6 @@ contains
                 status=file_status, access=file_access)
             if (imdtype.gt.0..and.ibo.ne.1) OPEN(100,FILE='order.out', &
                 status=file_status, access=file_access)
-!            OPEN(84, FILE= 'fy.out', status=file_status, &
-!                access=file_access)
-!            OPEN(83, FILE= 'fz.out', status=file_status, &
-!                access=file_access)
             OPEN(101, FILE= 'cross-steps.out', status=file_status, &
                 access=file_access)
         endif

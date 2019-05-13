@@ -121,18 +121,6 @@ contains
         call rescaleveloc(sim%naesmd%rx,sim%naesmd%ry,sim%naesmd%rz,&
 		sim%naesmd%vx,sim%naesmd%vy,sim%naesmd%vz,sim%naesmd%massmdqt,sim%naesmd%natom)
 
-! fix atoms
-        if(sim%naesmd%fix.ne.0) then
-          do i=1,sim%naesmd%fix
-             sim%naesmd%rx(sim%naesmd%ifxd(i))=sim%naesmd%rxold(sim%naesmd%ifxd(i))
-             sim%naesmd%ry(sim%naesmd%ifxd(i))=sim%naesmd%ryold(sim%naesmd%ifxd(i))
-             sim%naesmd%rz(sim%naesmd%ifxd(i))=sim%naesmd%rzold(sim%naesmd%ifxd(i))
-             sim%naesmd%vx(sim%naesmd%ifxd(i))=0.0d0
-             sim%naesmd%vy(sim%naesmd%ifxd(i))=0.0d0
-             sim%naesmd%vz(sim%naesmd%ifxd(i))=0.0d0
-          enddo
-        endif
-! fix atoms
         !
         !  kinetic energy calculation
         !
@@ -213,18 +201,6 @@ contains
                 sim%naesmd%vz(i)=sim%naesmd%vz(i)+sim%naesmd%az(i)*dt_2
             end if
         end do
-! fix atoms
-        if(sim%naesmd%fix.ne.0) then
-          do i=1,sim%naesmd%fix
-             sim%naesmd%rx(sim%naesmd%ifxd(i))=sim%naesmd%rxold(sim%naesmd%ifxd(i))
-             sim%naesmd%ry(sim%naesmd%ifxd(i))=sim%naesmd%ryold(sim%naesmd%ifxd(i))
-             sim%naesmd%rz(sim%naesmd%ifxd(i))=sim%naesmd%rzold(sim%naesmd%ifxd(i))
-             sim%naesmd%vx(sim%naesmd%ifxd(i))=0.0d0
-             sim%naesmd%vy(sim%naesmd%ifxd(i))=0.0d0
-             sim%naesmd%vz(sim%naesmd%ifxd(i))=0.0d0
-          enddo
-        endif
-! fix atoms
 
         call flush(130)
         call flush(131)
@@ -277,11 +253,6 @@ contains
                 sim%naesmd%vy(i)=sim%naesmd%vy(i)+0.5d0*sim%naesmd%ay(i)*sim%naesmd%vfric(i)+sim%naesmd%vrand(2,i)
                 sim%naesmd%vz(i)=sim%naesmd%vz(i)+0.5d0*sim%naesmd%az(i)*sim%naesmd%vfric(i)+sim%naesmd%vrand(3,i)
 
-            !            if(i.eq.47.or.i.eq.73) then
-            !              sim%naesmd%vx(i)=0.0d0
-            !              sim%naesmd%vy(i)=0.0d0
-            !              sim%naesmd%vz(i)=0.0d0
-            !            endif
             end if
 
             if(sim%naesmd%ensemble.eq.'energy'.or.sim%naesmd%ensemble.eq.'temper') then
@@ -296,15 +267,6 @@ contains
         call rescaleveloc(sim%naesmd%rx,sim%naesmd%ry,sim%naesmd%rz, &
 		sim%naesmd%vx,sim%naesmd%vy,sim%naesmd%vz,sim%naesmd%massmdqt,sim%naesmd%natom)
 
-! fix atoms
-        if(sim%naesmd%fix.ne.0) then
-          do i=1,sim%naesmd%fix
-             sim%naesmd%vx(i)=0.0d0
-             sim%naesmd%vy(i)=0.0d0
-             sim%naesmd%vz(i)=0.0d0
-          enddo
-        endif
-! fix atoms
 
         call flush(133)
         !

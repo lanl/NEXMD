@@ -43,9 +43,7 @@ contains
          _REAL_ :: dcart1_xpm
         !Passed in
          type(qmmm_struct_type), intent(in) :: qmmm_struct
-        !_REAL_, intent(inout) :: dxyzqm(3,qmmm_struct%nquant_nlink)
         _REAL_, intent(in) :: xyz_in_p(3,qmmm_struct%nquant_nlink), xyz_in_m(3,qmmm_struct%nquant_nlink) !, xyz_in(3,qmmm_struct%nquant_nlink)
-        !_REAL_, pointer    :: xyz_in(:,:)
         ! CML Just in case we don't update coords in qmmm_struct 7/13/12
         _REAL_, intent(in) :: ex_dm(qm2ds%Nb*(qm2ds%Nb+1)/2) ! CML 7/13/12
         !Local
@@ -80,7 +78,6 @@ contains
         dcart1_xpm = 0.d0
         
 
-           !xyz_in => qmmm_struct%qm_coords
 
         if (qmmm_nml%qmqm_exc_analyt) then !We do analytical derivatives
             ! CML as of right now, fully analytical derivatives for the excited
@@ -136,24 +133,13 @@ contains
                         end do
                     end do
 
-!                    DENER=qm2_helect1(iil-iif+jjl-jjf+1,ptzsum,qm2_struct%fock_matrix_dm(qm2_params%pascal_tri1(ii-1)+jj,:))   ! CML 7/13/12 BTN 08/10/2017
-!                    AA=DENER*2.d0
-!                    
-!                    DENER=qm2_helect1(iil-iif+jjl-jjf+1,ptzsum,qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:))   ! CML 7/13/12 BTN 08/10/2017
-!                    EE=DENER*2.d0
-!                             
-!                    DERIV=(EE-AA)*EV_TO_KCAL
                     DENER=qm2_helect1(iil-iif+jjl-jjf+1,ptzsum,qm2_struct%fock_matrix_dp(qm2_params%pascal_tri1(ii-1)+jj,:))   ! CML 7/13/12 BTN 08/10/2017
                     
                     DERIV=DENER*2.0*EV_TO_KCAL
 
                     
-                    !write(6,*) "Deriv is"
-                    !write(6,*) DERIV
                     
                     dcart1_xpm = dcart1_xpm + DERIV
-                  !dxyzqm(K,II)=dxyzqm(K,II)-DERIV
-                  !dxyzqm(K,JJ)=dxyzqm(K,JJ)+DERIV
 
                 end do
             end do
@@ -195,7 +181,6 @@ contains
         integer, intent(in) :: iqm, jqm, natqmi, natqmj, qmitype, qmjtype
         integer, intent(in) :: iif, iil, jjf, jjl
         _REAL_, intent(out) :: F(:)
-        !_REAL_, intent(out), dimension(:), pointer :: F
 
         ! Local
         integer :: n_atomic_orbi, n_atomic_orbj
@@ -322,16 +307,10 @@ contains
         F(1:linear)=H(1:linear)
            
         ! 2-center 2-electron contribution to the Fock matrix      
-        !write(6,*)'W',shape(W)
-        !write(6,*)'F',shape(F)
-        !write(6,*)'P',shape(P)
-        !write(6,*)'n',n_atomic_orbj,n_atomic_orbi,firstIndexAO_J,firstIndexAO_i
         call W2Fock_atompair(W, F, P, n_atomic_orbj, n_atomic_orbi,  &
             firstIndexAO_j, firstIndexAO_i, qmmm_struct%W2Fock_atompair_initialized, qmmm_struct%w_index)
-        !write(6,*)'here2.1'
         call W2Fock_atompair(W, F, P, n_atomic_orbi, n_atomic_orbj,  &
             firstIndexAO_i, firstIndexAO_j, qmmm_struct%W2Fock_atompair_initialized, qmmm_struct%w_index)
-        !write(6,*)'here2.2' 
         
 
 

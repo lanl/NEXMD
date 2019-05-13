@@ -82,12 +82,6 @@ contains
             call flush(sim%outfile_4)
             call flush(sim%outfile_5)
         endif
-        ! use for vibrations**************************************
-        !      write(sim%outfile_18,779) sim%naesmd%tfemto,(sim%naesmd%atomtype(k),
-        !     $sim%naesmd%rx(k)*convl,sim%naesmd%ry(k)*convl,sim%naesmd%rz(k)*convl,k=1,sim%naesmd%natom)
-        !      write(sim%outfile_19,779) sim%naesmd%tfemto,(sim%naesmd%atomtype(k),
-        !     $sim%naesmd%vx(k)*convl/convt,sim%naesmd%vy(k)*convl/convt,sim%naesmd%vz(k)*convl/convt,k=1,sim%naesmd%natom)
-        !***********************************************************
 
         !Old Force writing code
         if(lprint.ge.3) then
@@ -97,9 +91,6 @@ contains
                 write(sim%outfile_12,999) sim%naesmd%atomtype(k),sim%deriv_forces(1+3*(k-1)) &
                     ,sim%deriv_forces(2+3*(k-1)),sim%deriv_forces(3+3*(k-1))
             end do
-        !    write(sim%outfile_12,889) sim%naesmd%tfemto,(sim%deriv_forces(1+3*(j-1)),j=1,sim%naesmd%natom)
-        !    write(sim%outfile_13,889) sim%naesmd%tfemto,(sim%deriv_forces(2+3*(j-1)),j=1,sim%naesmd%natom)
-        !    write(sim%outfile_14,889) sim%naesmd%tfemto,(sim%deriv_forces(3+3*(j-1)),j=1,sim%naesmd%natom)
             ! Check the position of the center of mass
             xcm=0.0d0
             ycm=0.0d0
@@ -124,29 +115,8 @@ contains
             call flush(sim%outfile_5)
             ! in order to print the initial transition density of all states
             ! Unopened file
-            !do k=1,sim%excN
-            !    write(77,889) sim%naesmd%tfemto,(sim%dav%v2(sim%dav%Nb*(j-1)+j,k),j=1,sim%dav%Nb)
-            !    call flush(77)
-            !end do
         end if
 
-        ! write the atomic positions to trajectory file
-!        card='coordinates.out'
-!        OPEN(201,FILE=card,action='write',STATUS='replace')
-!        
-!        write (201,449) 'FINAL HEAT OF FORMATION =   ', (sim%naesmd%kin+sim%naesmd%vgs)*feVmdqt, &
-!            '  time = ',sim%naesmd%tfemto
-!        write(201,557) '$COORD'
-!        do i=1,sim%naesmd%txtinicoord
-!            write(201,555) sim%naesmd%txtinput(i)
-!        end do
-!
-!        do i=1,sim%naesmd%natom
-!            write(201,999) sim%naesmd%atomtype(i),sim%naesmd%rx(i)*convl &
-!                ,sim%naesmd%ry(i)*convl,sim%naesmd%rz(i)*convl
-!        end do
-!
-!        write(201,556) '$ENDCOORD'
         
         !Determine file status based on job sim%naesmd%state
         if(sim%naesmd%tfemto.eq.0.d0) then
@@ -237,30 +207,20 @@ contains
 
         call flush(sim%outfile_1)
 
-        !111   FORMAT(A2,14x,3(1x,F16.12,1x,I1))
 222     FORMAT(A2,3(1x,F12.6))
 223     FORMAT(3(1x,F16.10))
-        !333   format(a5,I3,1X,a80)
 440     format(a17)
 441     format(a20)
 442     format(a32)
 443     format(a41)
-        !444   format(a80)
 445     format(a29)
 449     format(a28,F18.10,a9,F18.10)
 889     FORMAT(10000(1X,F18.10))
-        !887   FORMAT(F18.10,10000(1X,I1))
 999     FORMAT(I3,1X,1000(1X,F18.10))
-        !998   FORMAT(I4)
 99      FORMAT(I5)
-        !777   FORMAT(A7,I4,2X,A2,2X,A5,I4,4X,3(1X,F7.3))
-        !778   format(1000000(f10.6,1x))
-        !779   format(F18.10,10000(1X,I3,3(1X,F18.10)))
 555     format(a90)
 556     format(a9)
 557     format(a6)
-        !558   format(a7)
-        !88    format(a1)
 600     format(a7,a4)
 302     format(A3,3f16.10)
 
@@ -357,12 +317,6 @@ contains
         write(sim%outfile_2,889) sim%naesmd%tfemto,sim%naesmd%tempi,sim%naesmd%tempf
         call flush(sim%outfile_2)
         !
-        ! use for vibrations*****************************
-        !      write(sim%outfile_18,779) sim%naesmd%tfemto,(sim%naesmd%atomtype(k),
-        !     $sim%naesmd%rx(k)*convl,sim%naesmd%ry(k)*convl,sim%naesmd%rz(k)*convl,k=1,sim%naesmd%natom)
-        !      write(sim%outfile_19,779) sim%naesmd%tfemto,(sim%naesmd%atomtype(k),
-        !     $sim%naesmd%vx(k)*convl/convt,sim%naesmd%vy(k)*convl/convt,sim%naesmd%vz(k)*convl/convt,k=1,sim%naesmd%natom)
-        !******************************************************
         !
         if(lprint.ge.3) then
             write (sim%outfile_12,449) 'FINAL HEAT OF FORMATION =   ', (sim%naesmd%kin+sim%naesmd%vgs)*feVmdqt, &
@@ -371,13 +325,6 @@ contains
                 write(sim%outfile_12,999) sim%naesmd%atomtype(k),sim%deriv_forces(1+3*(k-1)) &
                     ,sim%deriv_forces(2+3*(k-1)),sim%deriv_forces(3+3*(k-1))
             end do
-!            write(sim%outfile_12,889) sim%naesmd%tfemto,(sim%deriv_forces(1+3*(j-1)),j=1,sim%naesmd%natom)
-!            write(sim%outfile_13,889) sim%naesmd%tfemto,(sim%deriv_forces(2+3*(j-1)),j=1,sim%naesmd%natom)
-!            write(sim%outfile_14,889) sim%naesmd%tfemto,(sim%deriv_forces(3+3*(j-1)),j=1,sim%naesmd%natom)
-
-            !No file name
-            !write(125,889) sim%naesmd%tfemto,(sim%naesmd%ax(j),j=1,sim%naesmd%natom)
-            !write(126,889) sim%naesmd%tfemto,(sim%naesmd%ax(j),j=1,sim%naesmd%natom)
             ! Check the position of the center of mass
             xcm=0.0d0
             ycm=0.0d0
@@ -400,9 +347,6 @@ contains
 
         if(sim%naesmd%state.eq.'exct'.and.lprint.ge.2) then
             write(sim%outfile_11,688) sim%naesmd%tfemto,(sim%naesmd%iorden(j),j=1,sim%excN),cross
-            !120 not opened
-            !write(120,688) sim%naesmd%tfemto,(cross(j),j=1,sim%excN)
-            !call flush(120)
             call flush(sim%outfile_11)
         end if
 
@@ -417,19 +361,6 @@ contains
             sim%naesmd%icont=1
             sim%naesmd%icontpdb=sim%naesmd%icontpdb+1
             
-!            write (201,449) 'FINAL HEAT OF FORMATION =   ', (sim%naesmd%kin+sim%naesmd%vgs)*feVmdqt, &
-!                '  time = ',sim%naesmd%tfemto
-!            write(201,557) '$COORD'
-!            do k=1,sim%naesmd%txtinicoord
-!                write(201,555) sim%naesmd%txtinput(k)
-!            end do
-!    
-!            do k=1,sim%naesmd%natom
-!                write(201,999) sim%naesmd%atomtype(k),sim%naesmd%rx(k)*convl &
-!                    ,sim%naesmd%ry(k)*convl,sim%naesmd%rz(k)*convl
-!            end do
-!    
-!            write(201,556) '$ENDCOORD' 
             
             write (sim%outfile_20,449) 'FINAL HEAT OF FORMATION =   ', (sim%naesmd%kin+sim%naesmd%vgs)*feVmdqt, &
                 '  time = ',sim%naesmd%tfemto
@@ -539,54 +470,24 @@ contains
             end if
         endif
         call flush(sim%outfile_1)
-        !111   FORMAT(A2,14x,3(1x,F16.12,1x,I1))
 222     FORMAT(A2,3(1x,F12.6))
 223     FORMAT(3(1x,F16.10))
-        !333   format(a5,I3,1X,a80)
 440     format(a17)
 441     format(a20)
 442     format(a32)
 443     format(a41)
-        !444   format(a80)
 445     format(a29)
 889     FORMAT(10000(1X,F18.10))
-        !887   FORMAT(F18.10,10000(1X,I1))
 999     FORMAT(I3,1X,1000(1X,F18.10))
-        !998   FORMAT(I4)
 99      FORMAT(I5)
-        !777   FORMAT(A7,I4,2X,A2,2X,A5,I4,4X,3(1X,F7.3))
-        !778   format(1000000(f10.6,1x))
-        !779   format(F18.10,10000(1X,I3,3(1X,F18.10)))
 555     format(a90)
 556     format(a9)
 557     format(a6)
-        !558   format(a7)
-        !88    format(a1)
 302     format(A3,3f16.10)
-        !333   format(a5,I3,1X,a80)
-        !440   format(a17)
-        !441   format(a20)
-        !442   format(a32)
-        !443   format(a41)
-        !444   format(a80)
-        !445   format(a29)
 449     format(a28,F18.10,a9,F18.10)
 450     format(a8,I10)
 688     FORMAT(F18.10,10000(1X,I4))
-        !889   FORMAT(20000(1X,F18.10))
 888     FORMAT(30000(1X,F18.10))
-        !887   FORMAT(F18.10,10000(1X,I1))
-        !999   FORMAT(I3,1X,1000(1X,F18.10))
-        !998   FORMAT(I4)
-        !99    FORMAT(I5)
-        !777   FORMAT(A7,I4,2X,A2,2X,A5,I4,4X,3(1X,F7.3))
-        !778   format(1000000(f10.6,1x))
-        !779   format(F18.10,10000(1X,I3,3(1X,F18.10)))
-        !555   format(a90)
-        !556   format(a9)
-        !557   format(a6)
-        !558   format(a7)
-        !88    format(a1)
 600     format(a7,a4)
 
         return

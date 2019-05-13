@@ -51,7 +51,6 @@ subroutine calc_excsolven(cosmo_c_struct, qm2ds, qmmm_struct,energy)
 
     !Calculate dot product, scale to eV
     energy=ddot(qm2ds%Nb**2,qm2ds%v2(1,qmmm_struct%state_of_interest),1,tmp,1)
-        !write(6,*)energy,qm2ds%xi(1),qm2ds%v2(1,qmmm_struct%state_of_interest)
 end subroutine
 
 !This subroutine calculates the solvent energy Tr(PV_S(T_k))
@@ -210,7 +209,6 @@ subroutine calc_cosmo_2(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct, 
                 f0=f1
             end if
         end do
-        !i=qmmm_struct%state_of_interest !for switching back at the end
         qmmm_struct%state_of_interest=soi_temp
         lastxi=qm2ds%v0(:,qmmm_struct%state_of_interest) !Store old transition densities
 
@@ -234,31 +232,22 @@ subroutine calc_cosmo_2(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct, 
 
         e0_k_1 = e0_k !Save last transition energy
         e0_k = qm2ds%e0(qmmm_struct%state_of_interest)
-        !xi_abs_dif_sum=sum(abs(qm2ds%xi)-abs(xi_1))
 
         write(6,111)k, e0_k ,e0_k-e0_0,abs(e0_k-e0_k_1), e0_k_1-e0_k ,cosmo_c_struct%cosmo_scf_ftol
         if  (abs( e0_k - e0_k_1 )< cosmo_c_struct%cosmo_scf_ftol) exit;        !Check for convergence
-        !if  (abs( xi_abs_dif_sum )< cosmo_c_struct%cosmo_scf_ftol) exit; !Check for convergence
         if  (k==cosmo_c_struct%cosmo_scf_maxcyc) then
             write(6,*) '***SOLVENT SCF REACHED MAXIMUM ITERATIONS WITHOUT CONVERGENCE***'
             stop
         endif
     end do
         
-    !qmmm_struct%qm_mm_first_call = .true.
     if(qm2ds%verbosity.eq.0) qm2ds%verbosity=verbosity_save
     call calc_excsolven(cosmo_c_struct,qm2ds,qmmm_struct,energy)
     if(qm2ds%verbosity>0) then
         write(6,*)
         write(6,*)'Final Results of Equilibrium Vertical Excitation Solvent Calculation '
         write(6,"('  ES nonlinear term energy=',e20.10,' eV')") energy
-        !write(6,*)' i,   e0(i),    ferr(i),      ftol0'
         write(6,*)'-------------------------------------------------'
-            !do k=1,qm2ds%Mx
-            !        write(6,112) k,' +++',qm2ds%e0(k),qm2ds%ferr(k),qm2ds%ftol0
-            !end do
-            !write(6,*)'-------------------------------------------------'
-            !write(6,*)
     end if
 111 format (i3,' ',g24.16,5('        ',e10.3))
 112 format (i3,a,g24.16,2(' ',e8.2))
@@ -271,8 +260,6 @@ end subroutine
 subroutine calc_cosmo_4(sim_target)
     use qm2_davidson_module
     use communism
-    !use cosmo_C, only : sim%cosmo%v_solvent_difdens, sim%cosmo%rhotzpacked_k,sim%cosmo%cosmo_scf_ftol,sim%cosmo%cosmo_scf_maxcyc,sim%cosmo%doZ,sim%cosmo%potential_type, &
-    !    sim%cosmo%linmixparam,sim%cosmo%xi_k,sim%cosmo%v_solvent_difdens,sim%cosmo%solvent_model
     use constants, only : ZERO,AU_TO_EV
 
     implicit none
@@ -425,7 +412,6 @@ subroutine calc_cosmo_4(sim_target)
 
 
     !Printing out found eigenvalues, error and tolerance with solvent
-    !qmmm_struct%qm_mm_first_call = .true.
     if(sim%dav%verbosity.eq.0) then
         sim%dav%verbosity=verbosity_save2 !hack
         sim%qnml%verbosity=verbosity_save2

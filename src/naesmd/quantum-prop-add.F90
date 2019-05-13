@@ -72,7 +72,6 @@ contains
                 ascpr(i,j)=-1*ascpr(i,j)
             enddo
         end do
-        !write(6,*)'sim%naesmd%iorden:',sim%naesmd%iorden
         
         !Translate to old APC min-cost algorithm routine in F77
         !Requires static matrix sizes
@@ -81,7 +80,6 @@ contains
         sim%naesmd%iorden=iordenapc(1:sim%excN)
 
         do i=1,sim%excN
-            !write(6,*)'i,sim%naesmd%iorden(i),sim%naesmd%ihop,sim%naesmd%scpr(i,sim%naesmd%iorden(i))',i,sim%naesmd%iorden(i),sim%naesmd%ihop,sim%naesmd%scpr(i,sim%naesmd%iorden(i))
             if(sim%naesmd%iorden(i).ne.i) then
                 if(i.lt.sim%naesmd%iorden(i).or.i.eq.sim%naesmd%ihop) then
                     if(dabs(sim%naesmd%scpr(i,sim%naesmd%iorden(i))).lt.0.9d0) then
@@ -235,17 +233,6 @@ contains
         end if
         write(6,*)'sim%naesmd%iordenhop:',sim%naesmd%iordenhop
         write(6,*)'sizevmdqtmiddle',shape(sim%naesmd%vmdqtmiddle)
-! option 1: check trivial unavoided crossingfor all the states
-! Note: Currently broken due to sim%naesmd%iordenhop initialized as 0
-!        do j=1,sim%excN
-!            if(sim%naesmd%lowvalue(j).gt.dabs(sim%naesmd%vmdqtmiddle(j)- &
-!                sim%naesmd%vmdqtmiddle(sim%naesmd%iordenhop(j)))) then
-!
-!                sim%naesmd%lowvalue(j)=dabs(sim%naesmd%vmdqtmiddle(j)- &
-!                    sim%naesmd%vmdqtmiddle(sim%naesmd%iordenhop(j)))
-!                sim%naesmd%lowvaluestep(j)=iimdqt
-!            end if
-!        end do
 ! option 2: check trivial unavoided crossingfor for the current sim%naesmd%state
         if(sim%naesmd%lowvalue(sim%naesmd%ihop).gt.dabs(sim%naesmd%vmdqtmiddle(sim%naesmd%ihop)- &
                 sim%naesmd%vmdqtmiddle(sim%naesmd%iordenhop(sim%naesmd%ihop)))) then
@@ -564,8 +551,6 @@ contains
                             ntotcoher=ntotcoher+sim%naesmd%yg(j)**2
                         end do
 !BTN: removed file coeff-n-before.out. grep this line to undo
-!                        write(105,999) sim%naesmd%ihop,sim%naesmd%tfemto,(sim%naesmd%yg(j)**2,j=1,sim%excN), &
-!                            ntotcoher
                         call flush(105)
                     end if
                 end if

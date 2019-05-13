@@ -94,20 +94,11 @@ contains
                 sim%time_deriv_took=sim%time_deriv_took+t_finish-t_start
                 call do_sqm_davidson_update(sim,vmdqt=sim%naesmd%vmdqtnew,vgs=sim%naesmd%vgs)
 
-!                if(sim%naesmd%decorhop.eq.1) then
-!                    do j=1,sim%excN
-!                        yg(j)=0.0d0
-!                        yg(j+sim%excN)=rranf1(sim%naesmd%iseedmdqt)
-!                    end do
-!                    yg(sim%naesmd%ihop)=1.d0
-!                end if
 
 !Added for patch JAKB
                if(sim%naesmd%decorhop.ne.0) then
                   do j=1,sim%excN
                      yg(j)=0.0d0
-!                     call random(sim%naesmd%iseedmdqt,iseedhop)
-!                     yg(j+sim%excN)=iseedhop
                      yg(j+sim%excN)=rranf1(sim%naesmd%iseedmdqt)
                   enddo
                   yg(sim%naesmd%ihop)=1.0d0
@@ -266,7 +257,6 @@ contains
 ! end added after Kirill
 ! end added for patch JAKB
 
-!                sim%naesmd%conthop=1
 !            end if
 
         endif
@@ -447,23 +437,6 @@ contains
      return
  end subroutine
 
-subroutine decoherence_E0_and_C(sim)
-        type(simulation_t),pointer::sim
-            
-            if(sim%constcoherE0.ne.0.d0.and.sim%constcoherC.ne.0.d0) then
-                if(sim%naesmd%conthop.ne.1.and.sim%naesmd%conthop2.ne.1) then
-                    !BTN: I have not had time to investigate this fully, but the simulation object gets garbled when passed to coherence. 
-                    !My guess is that one of the variables passed (though it does not appear to be sim) is not defined identically correctly inside coherence.
-                    !For now, just exit.
-                    write(6,*) 'Your choices for decoher_e0 and decoher_c &
-                        are not currently available'
-                    stop
-                    call coherence(sim,sim%rk_comm, sim%Na, sim%rk_comm%tend,sim%rk_comm%tmax, &
-                                   sim%rk_comm%rk_tol, &
-                         sim%rk_comm%thresholds,sim%naesmd%yg,sim%constcoherE0,sim%constcoherC,sim%cohertype)
-                end if
-            end if
-end subroutine
 
 subroutine indexx(n,arr,indx)
 ! ************************************************************************

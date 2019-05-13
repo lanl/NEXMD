@@ -229,7 +229,6 @@ subroutine nexmd_sim(sim)
             !--------------------------------------------------------------------
 
             !call check_ntotcoher(sim) 
-             call decoherence_E0_and_C(sim)!currently this is not available 
         !--------------------------------------------------------------------
         else
             !BOMD-propagate======================================================================================
@@ -351,7 +350,6 @@ end subroutine
             integer decoher_type,dotrivial
             _REAL_ deltared
             integer iredpot,nstates
-            integer ifixed
             namelist /moldyn/ natoms,bo_dynamics_flag,exc_state_init, &
                 n_exc_states_propagate,out_count_init,time_init, &
                 rk_tolerance,time_step,n_class_steps,n_quant_steps, &
@@ -361,7 +359,7 @@ end subroutine
                 heating_steps_per_degree,out_data_steps,out_coords_steps, &
                 therm_friction,rnd_seed,out_data_cube,verbosity,moldyn_deriv_flag, &
                 quant_step_reduction_factor,decoher_e0,decoher_c,decoher_type,dotrivial,&
-                iredpot,nstates,deltared,ifixed
+                iredpot,nstates,deltared
         !dtnact is the incremental time to be used at nact calculation
         sim%naesmd%dtnact=0.002d0
 
@@ -480,7 +478,6 @@ end subroutine
         iredpot=0 !don't reduce the number of potentials during dynamics
         nstates=2 !do 2 states higher by default for iredpot
         deltared=1 !do 1 eV higher in energy for iredpot
-        ifixed=0 ! do not use fixed atoms
  
         if(sim%Nsim.eq.1) then
               open (inputfdes,file='input.ceon',status='old')
@@ -502,13 +499,6 @@ end subroutine
             stop
         endif
 
-        if(ifixed.ne.0) then
-          open(617,file='fixed_atoms')
-          do i=1,ifixed
-             read(617,*) sim%naesmd%ifxd(i) 
-          enddo
-          close(617)
-        endif
         
         sim%naesmd%iredpot=iredpot
         sim%naesmd%nstates=nstates 
@@ -516,17 +506,39 @@ end subroutine
         sim%rk_comm%rk_tol=rk_tolerance 
         sim%dotrivial=dotrivial
         !Input checks for features under development
-        if(decoher_type>2) then
-            write(6,*) "decoher_type under development. Do not use."
-            stop
-        endif
+        call int_legal_range('moldyn: (decoher_type ) ', decoher_type,0,2) 
+        call int_legal_range('moldyn: (trivial crossing ) ', dotrivial,0,1)
+        call float_legal_range('moldyn: (quant_step_reduction_factor ) ',quant_step_reduction_factor,0.0d0,1.0d1)
+        call float_legal_range('moldyn: (therm_friction ) ',therm_friction,0.0d0,1.0d6)
+        call float_legal_range('moldyn: (therm_temperature ) ',therm_temperature,0.0d0,1.0d7)
+        call int_legal_range('moldyn: (therm_type ) ', therm_type,0,2)
+        call int_legal_range('moldyn: (number of atoms ) ', natoms,0,999999999)
+        call int_legal_range('moldyn: (bo_dynamics_flag ) ', bo_dynamics_flag,0,1)
+
+        call int_legal_range('moldyn: (exc_state_init ) ', exc_state_init,0,999999999)
+        call int_legal_range('moldyn: (n_exc_states_propagate ) ', bo_dynamics_flag,0,999999999)
+
+        call float_legal_range('moldyn: (initial time ) ',time_init,0.0d0,1.0d21)
+        call float_legal_range('moldyn: (time step ) ',time_step,0.0d-6,1.0d21)
+
+        call int_legal_range('moldyn: (classical steps ) ', n_class_steps,0,999999999)
+        call int_legal_range('moldyn: (quantum steps ) ', n_quant_steps,0,999999999)
+
+        call int_legal_range('moldyn: (moldyn_deriv_flag ) ', moldyn_deriv_flag,0,2)
+
+        call float_legal_range('moldyn: (Displacement for numerical derivatives) ',num_deriv_step,0.0d-16,1.0d0)
+        call float_legal_range('moldyn: (Tolerance for the Runge-Kutta propagator) ',time_step,0.0d-16,1.0d0)
+
+        call int_legal_range('moldyn: (verbosity ) ', exc_state_init,0,3)
+
+        call int_legal_range('moldyn: (Number of steps to write data  ) ', out_data_steps,0,999999999)
+        call int_legal_range('moldyn: (Number of steps to write the restart file ) ', out_coords_steps,0,999999999)
+        call int_legal_range('moldyn: (view files to generate cubes ) ', out_data_cube,0,1)
+
+
         
-        if(therm_type==2) then
-            write(6,*) "Berendsen thermostat under development. Do not use."
-            stop
-        endif
         
-        if(heating>0) then
+        if(heating.NE.0) then
             write(6,*) "heating under development. Do not use."
         endif
         !End input checks
@@ -567,7 +579,6 @@ end subroutine
         sim%naesmd%tfemto=time_init
 
         sim%naesmd%dtmdqt=time_step
-       ! h=sim%naesmd%dtmdqt
         sim%naesmd%dtmdqt=sim%naesmd%dtmdqt/convtf
 
         sim%naesmd%nstep=n_class_steps
@@ -585,16 +596,10 @@ end subroutine
         therm_type=therm_type
         if(therm_type==0) sim%naesmd%ensemble ='energy'
         if(therm_type==1) sim%naesmd%ensemble ='langev'
-        if(therm_type==2) sim%naesmd%ensemble ='temper'
-        sim%naesmd%fix = ifixed 
 
         sim%naesmd%tao=berendsen_relax_const
 
-        if(heating==1) then
-            sim%naesmd%prep='heat'
-        else
             sim%naesmd%prep='equi'
-        end if
 
         sim%naesmd%istepheat=heating_steps_per_degree
         sim%naesmd%nstepw=out_data_steps
@@ -633,37 +638,27 @@ end subroutine
 
         if(sim%naesmd%ensemble.eq.'langev') then
             write(6,*)'MD using Langevin '
-            !write(6,*)'with friction coefficient [1/ps]=',friction*1.0D3
 
         else
-            if(sim%naesmd%ensemble.eq.'temper') then
-                write(6,*)'MD using Berendsen thermostat'
-                write(6,*)'with bath relaxation constant [ps]=',sim%naesmd%tao
-            else
                 write(6,*)'MD at constant energy'
-            end if
         end if
 
         write(6,*)'Starting time, fs        ',sim%naesmd%tfemto
         write(6,*)'Time step, fs                      ',sim%naesmd%dtmdqt*convtf
         write(6,*)'Number of classical steps (CS) ',sim%naesmd%nstep
         write(6,*)'Quantum steps/per CS         ',sim%naesmd%nquantumreal
-        !        write(6,*)        'Vibr. modes to consider      ',   symm
         write(6,*)'Displacement for deriv. [A]   ',sim%qmmm%numder_step
 
         if(therm_type.eq.0) then
             write(6,*)'Newtonian dynamics,           therm_type=',therm_type
         else if(therm_type.eq.1) then
             write(6,*)'Langevin thermostat dynamics, therm_type=',therm_type
-        else if(therm_type.eq.2) then
-            write(6,*)'Temperature thermostat,       therm_type=',therm_type
         end if
 
         write(6,*)'Temperature, K               ',sim%naesmd%temp0
         write(6,*)'Bath relaxation constant     ',sim%naesmd%tao
 
         if(sim%naesmd%prep.eq.'equi') write(6,*)'Equilibrated dynamics'
-        if(sim%naesmd%prep.eq.'heat') write(6,*)'Heating dynamics from T=0'
 
         write(6,*)'Number of steps per degree K  ',sim%naesmd%istepheat
         write(6,*)'Number of steps to write data ',sim%naesmd%nstepw
@@ -720,7 +715,6 @@ end subroutine
             read(txt,*,err=29) sim%md%atoms(Na),sim%md%r0(3*Na-2),sim%md%r0(3*Na-1),sim%md%r0(3*Na)
             sim%md%atmass(Na)=2*sim%md%atoms(Na)
             sim%naesmd%atomtype(Na)=sim%md%atoms(Na)
-            !         if(sim%naesmd%atomtype(Na).eq.1) sim%naesmd%massmdqt(Na)=1.0079d0*convm
             if(sim%naesmd%atomtype(Na).eq.1) sim%naesmd%massmdqt(Na)=1.00d0*convm
             if(sim%naesmd%atomtype(Na).eq.1) sim%naesmd%atomtype2(Na)='H '
             if(sim%naesmd%atomtype(Na).eq.2) sim%naesmd%massmdqt(Na)=4.0026d0*convm
@@ -921,16 +915,6 @@ end subroutine
 100     format(I5,'     ',3F12.6)
 
 
-!        if(sim%naesmd%tfemto.eq.0.d0) then
-!            open (9,file='coords.xyz')
-!            write (9,*) Na
-!            write (9,*) 'Input Geometry'
-!
-!            do j = 1,Na
-!                write(9,302) ELEMNT(sim%md%atoms(j)),xx(j),yy(j),zz(j)
-!            end do
-!            close (9)
-!        end if
         sim%coords(1:3*Na)=sim%md%r0(1:3*Na)
         allocate(sim%deriv_forces(3*Na))
 

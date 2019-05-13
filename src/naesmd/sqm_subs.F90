@@ -41,7 +41,7 @@ subroutine sqm_energy(qmewald, qmmm_opnq, qm2_rij_eqns,qmmm_mpi,qm_gb, qmmm_scra
     use constants,only:EV_TO_KCAL,KCAL_TO_EV,zero,one,alpb_alpha
     use qm2_davidson_module
     use cosmo_C,only:cosmo_C_structure !,cosmo_c_struct%EF,cosmo_c_struct%nps,cosmo_c_struct%tri_2D,cosmo_c_struct%potential_type,cosmo_c_struct%solvent_model,cosmo_c_struct%onsagE;
-    use xlbomd_module,only:init_xlbomd, xlbomd_structure
+    use xlbomd_module,only: xlbomd_structure
     use qmmm_struct_module, only : qmmm_struct_type
     use qmmm_nml_module   , only : qmmm_nml_type
     use qm2_params_module , only : qm2_params_type
@@ -132,8 +132,6 @@ subroutine sqm_energy(qmewald, qmmm_opnq, qm2_rij_eqns,qmmm_mpi,qm_gb, qmmm_scra
 
         if(qmmm_mpi%commqmmm_master) then
 
-            ! call qm_print_dyn_mem(qm2_params,qmmm_nml,qmewald, qm_gb, qmmm_mpi, qmmm_scratch, qm2_rij_eqns, &
-	    !                       qm2_struct,qmmm_struct,natom,qmmm_struct%qm_mm_pairs)
             call qm_print_coords(qmmm_nml,qmmm_struct,0,.true.)
 
             !Finally print the result header that was skipped in sander.
@@ -142,7 +140,6 @@ subroutine sqm_energy(qmewald, qmmm_opnq, qm2_rij_eqns,qmmm_mpi,qm_gb, qmmm_scra
 
         if(qm2ds%Mx>0) then
             call allocate_davidson(qmmm_scratch,qmmm_nml,qm2_struct, qm2ds, qmmm_struct) ! Davidson allocation
-            if(qm2ds%dav_guess.gt.1) call init_xlbomd(xlbomd_struct,qm2ds%Nb**2*qm2ds%Mx)
         endif
 
         !cosmo_c_struct%ceps-Dielectric Permittivity from COSMO module
@@ -196,7 +193,6 @@ subroutine sqm_energy(qmewald, qmmm_opnq, qm2_rij_eqns,qmmm_mpi,qm_gb, qmmm_scra
         write (6,'("QMMM: Mulliken Charges")')
         call qm2_print_charges(qmmm_nml,qmmm_mpi, qmmm_struct, 0,1,qmmm_nml%dftb_chg,qmmm_struct%nquant_nlink, &
             scf_mchg,qmmm_struct%iqm_atomic_numbers)
-        !write (6,'("QMMM: End of Mulliken Charges calculation")')
         write(6,*)
     end if
 
@@ -370,7 +366,6 @@ subroutine getsqmx(natom,x,atnam,atnum,ncharge,excharge,chgnam,chgatnum)
             if (line(1:80) == "#EXCHARGES") then
                 mdin_external_charge = .true.
                 ihead = ihead + 1
-               !write(0,*) 'Header "#EXCHARGES" found'
             else if (line(1:80) == "#END") then
                 iend = iend + 1
             else
@@ -394,13 +389,6 @@ subroutine getsqmx(natom,x,atnam,atnum,ncharge,excharge,chgnam,chgatnum)
     ! CML The procedure underneath runs the search until we find the terminating string (' /')
     ! CML is found or the end of the file is found.
 
-    !---------ORIGINAL SQM-------------
-    !   do i=1,20
-    !      read(5,'(a)') line
-    !      if( line(1:2) == " /" ) go to 11
-    !   end do
-    !   write(0,*) 'Error in finding end of qmmm namelist'
-    !   call mexit(6,1)
 
     !---------MODIFIED BY CML----------
     do
@@ -433,7 +421,6 @@ subroutine getsqmx(natom,x,atnam,atnum,ncharge,excharge,chgnam,chgatnum)
     end do
 
 12  natom = ia
-    !write(0,*) 'finish reading QM atoms, natom =', natom
 
     ! reading external charges
     if (mdin_external_charge) then
@@ -961,7 +948,6 @@ subroutine sqm_read_and_alloc(qmmm_nml, qmmm_scratch, qmmm_div, qmmm_opnq, qmmm_
         call sander_bomb('read_qmmm_namelist','External interface is not supported in SQM.', &
             '(qm_theory = ''EXTERN'')')
     end if
-    !write(6,*)"ncharge_in",ncharge_in
     if (ncharge_in > 0) then ! we have external charge
 
         if (maxcyc > 0) then
@@ -988,13 +974,6 @@ subroutine sqm_read_and_alloc(qmmm_nml, qmmm_scratch, qmmm_div, qmmm_opnq, qmmm_
             iqmatoms(i) = i
         end do
     end if
-    !natom = natom_in
-    !qmmm_struct%nquant = natom
-    !qmmm_struct%nlink  = 0
-    !qmmm_struct%nquant_nlink = natom
-    !do i=1,natom
-    !   iqmatoms(i) = i
-    !end do
     ! Test to see if QM atom selection is legal.
     call validate_qm_atoms(iqmatoms,qmmm_struct%nquant,natom)
 
@@ -1013,6 +992,14 @@ subroutine sqm_read_and_alloc(qmmm_nml, qmmm_scratch, qmmm_div, qmmm_opnq, qmmm_
 
     end if
     ! --- End Variable QM water region ---
+    call float_legal_range('QMMM: (Force Criterion for Geometry Optimization) ', grms_tol,0.0D0,1.0D0)
+    call int_legal_range('QMMM: (Print results every ntpr cycles ) ', ntpr,0,99999999)
+    call float_legal_range('QMMM: (Acceptance tol.(|emin-eold|)) ', ftol0,1.0D-16,1.0D0)
+    call int_legal_range('QMMM: (Solvent Model ) ', solvent_model,0,3)
+    call int_legal_range('QMMM: (Potential Type) ', potential_type,1,2)
+    call float_legal_range('QMMM: (Onsager Radius) ', onsager_radius,1.0D0, 1.0D9)
+    call float_legal_range('QMMM: (Linear mixing parameter for vertical excitation) ', linmixparam, 0.0D0,1.0D3)
+    call float_legal_range('QMMM: (Vertical excitation or state-specific SCF tolerance) ', cosmo_scf_ftol,1.0D-16,1.0D0)
 
     call float_legal_range('QMMM: (QM-MM Cutoff) ', qmcut,0.0D0,1.0D30)
     call int_legal_range('QMMM: (variable solvent VSOLV) ', vsolv,0,3)
@@ -1020,7 +1007,6 @@ subroutine sqm_read_and_alloc(qmmm_nml, qmmm_scratch, qmmm_div, qmmm_opnq, qmmm_
     call int_legal_range('QMMM: (QM-QM Derivatives,Depricated in NAESMD) ', qmqmdx,1,2)
     call int_legal_range('QMMM: (Excited State Derivatives,Depricated in NAESMD) ', qmqmdx_exc,1,2) ! CML 7/10/12
     call int_legal_range('QMMM: (Verbosity) ', verbosity,0,5)
-    !call int_legal_range('QMMM: (Max SCF Iterations) ', itrmax,1,10000000) ! kav-test
     call int_legal_range('QMMM: (Max SCF Iterations) ', itrmax,-10000000,10000000)
     call int_legal_range('QMMM: (Shake on QM atoms) ', qmshake,0,1)
     call int_legal_range('QMMM: (Density Matrix Convergence) ', tight_p_conv,0,1)
@@ -1080,7 +1066,7 @@ subroutine sqm_read_and_alloc(qmmm_nml, qmmm_scratch, qmmm_div, qmmm_opnq, qmmm_
     call int_legal_range(  'QMMM: (QM-MM State to Optimize) ',struct_opt_state,0,excN)
     call int_legal_range('QMMM: (QM-MM Excited State Method) ',exst_method,1,2)
     call int_legal_range('QMMM: (QM-MM use (1) or not (0) Davidson guess or (2) for XL-BOXMD) ', &
-        dav_guess,0,3)
+        dav_guess,0,1)
     call int_legal_range('QMMM: (QM-MM use -10-500 for max cycles of Davidson, negative for fixed number) ', dav_maxcyc,-10,500)
 
     ! Checking COSMO parameters
@@ -1354,7 +1340,6 @@ subroutine sqm_read_and_alloc(qmmm_nml, qmmm_scratch, qmmm_div, qmmm_opnq, qmmm_
         qmmm_struct%qm_xcrd = 0.0D0
         j=0
         do i=1,qmmm_struct%qm_mm_pairs
-            !write(0,*) "MM charge ", i
             qmmm_struct%qm_xcrd(1,i) = excharge(j+1)
             qmmm_struct%qm_xcrd(2,i) = excharge(j+2)
             qmmm_struct%qm_xcrd(3,i) = excharge(j+3)
@@ -1394,7 +1379,7 @@ subroutine sqm_read_and_alloc(qmmm_nml, qmmm_scratch, qmmm_div, qmmm_opnq, qmmm_
    qmmm_omp%diag_threads = qmmm_omp_max_threads
    qmmm_omp%pdiag_threads = qmmm_omp_max_threads
 #endif
-    qmmm_nml%density_predict = density_predict
+    qmmm_nml%density_predict = 0
     qmmm_nml%fock_predict = fock_predict
     qmmm_nml%fockp_d1 = fockp_d1
     qmmm_nml%fockp_d2 = fockp_d2

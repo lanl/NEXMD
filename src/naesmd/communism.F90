@@ -676,11 +676,6 @@ contains
                             write(6,100) sim_pass%qmmm%iqm_atomic_numbers(i),x(3*(i-1)+1),x(3*(i-1)+2),x(3*(i-1)+3)
                         end do
           
-                        if ( sim_pass%qnml%printbondorders ) then
-                            write(6,*) ''
-                            write(6,*) 'Bond Orders'
-                            call qm2_print_bondorders(sim_pass%qparams,sim_pass%qm2,sim_pass%qmmm)
-                        end if
                     endif
                 case ( CALCENRG, CALCGRAD, CALCBOTH )
                     ! Normal Amber control of NB list updates.

@@ -15,11 +15,6 @@ module nacT_analytic_module
       _REAL_,allocatable::Rm(:,:) ! coordinates at - step 
    end type xstep_t
    
-   !type xstep_t_pointer
-   !   _REAL_,allocatable::R(:,:)
-   !   _REAL_,all::Rp(:,:)
-   !   _REAL_,pointer::Rm(:,:)
-   !end type xstep_t_pointer
 
    contains
 !
@@ -61,9 +56,6 @@ module nacT_analytic_module
    _REAL_,intent(in)::xxp(sim%Na),yyp(sim%Na),zzp(sim%Na)
    _REAL_,intent(in)::xxm(sim%Na),yym(sim%Na),zzm(sim%Na)
 
-   !allocate(xs%Rp(3,sim%Na))
-   !allocate(xs%Rm(3,sim%Na))
-   !allocate(xs%R(3,sim%Na))
 
    xs%R(1,:)=xx(:)
    xs%R(2,:)=yy(:)
@@ -77,9 +69,6 @@ module nacT_analytic_module
    xs%Rm(2,:)=yym(:)
    xs%Rm(3,:)=zzm(:)
 
-   !deallocate(xs%Rp)
-   !deallocate(xs%Rm)
-   !deallocate(xs%R)
 
    return
    end subroutine
@@ -112,9 +101,6 @@ module nacT_analytic_module
    r(2)%p=>yyy
    r(3)%p=>zzz
 
-   !allocate(xs%Rp(3,sim%Na))
-   !allocate(xs%Rm(3,sim%Na))
-   !allocate(xs%R(3,sim%Na))
 
    do j=1,sim%naesmd%natom
       if(sim%naesmd%ensemble.eq.'energy'.or.sim%naesmd%ensemble.eq.'temper') then
@@ -143,9 +129,6 @@ module nacT_analytic_module
    xs%R(2,:)=yyy(:)
    xs%R(3,:)=zzz(:)
 
-   !deallocate(xs%Rp)
-   !deallocate(xs%Rm)
-   !deallocate(xs%R)
 
    return
    end subroutine
@@ -363,7 +346,6 @@ module nacT_analytic_module
        end do
    end do
    
-   !sim%qm2%fock_matrix_dp=sim%qm2%fock_matrix_dp-sim%qm2%fock_matrix_dm
    
    !BTN End here
 

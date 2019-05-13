@@ -160,10 +160,6 @@ subroutine outDavidson(qm2_params,qmmm_nml,qm2_struct,qm2ds,qmmm_struct)
             call printNM_mo(qm2ds,qm2ds%normmodesmo_unit)
             close(qm2ds%normmodesmo_unit)
             if (qmmm_nml%printtd.gt.2) then
-                !open(76,file='2eri.out')
-                !write(6,*) 'Printing 2e Repulsion integrals to file'
-                !call print2eri()
-                !close(76)
                 open(qm2ds%normmodescf_unit,file=trim(qm2ds%normalmodescf))
                 write(6,*) 'Printing Charges for Normal Modes to file'
                 call printCfitNM(qm2_params,qm2ds,qmmm_struct,qm2ds%normmodescf_unit)

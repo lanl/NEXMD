@@ -383,7 +383,6 @@ SUBROUTINE DIVPRK (IDO, NEQ, FCN, X, XEND, TOL, PARAM, Y)
        END IF
 20 CONTINUE
    IF (N1RTY(0) .NE. 0) GO TO 9000
-   !                                  Initial WK(*,10) = YMAX(*)
    DO 30  I=1, NEQ
        WK(I,10) = DABS(Y(I))
 30 CONTINUE

@@ -941,11 +941,6 @@ interface
       type(naesmd_structure), intent(inout) :: struct 
    end subroutine
    
-   !function f(t,y)
-   !   _REAL_, intent(in) :: t                                 !indep!
-   !   _REAL_, dimension(:), intent(in) :: y                   !dep!
-   !   _REAL_, dimension(size(y,1)) :: f                       !dep!
-   !end function f
 end interface
 !
 character(len=*), parameter :: srname="RANGE_INTEGRATE"
@@ -1184,11 +1179,6 @@ interface
       type(naesmd_structure), intent(inout) :: struct 
    end subroutine
    
-   !function f(t,y)
-   !   _REAL_, intent(in) :: t                                 !indep!
-   !   _REAL_, dimension(:), intent(in) :: y                   !dep!
-   !   _REAL_, dimension(size(y,1)) :: f                       !dep!
-   !end function f
 end interface
 !
 character(len=*), parameter :: srname="STEP_INTEGRATE"
@@ -1585,11 +1575,6 @@ interface
        type(naesmd_structure), intent(inout) :: struct 
    end subroutine
    
-   !function f(t,y)
-   !   _REAL_, intent(in) :: t                                 !indep!
-   !   _REAL_, dimension(:), intent(in) :: y                   !dep!
-   !   _REAL_, dimension(size(y,1)) :: f                       !dep!
-   !end function f
 end interface
 !
 _REAL_ :: hmin, hsec                                          !indep!
@@ -1734,11 +1719,6 @@ interface
        type(naesmd_structure), intent(inout) :: struct 
    end subroutine
    
-   !function f(t,y)
-   !   _REAL_, intent(in) :: t                                 !indep!
-   !   _REAL_, dimension(:), intent(in) :: y                   !dep!
-   !   _REAL_, dimension(size(y,1)) :: f                       !dep!
-   !end function f
 end interface
 !
 _REAL_ :: tstg                                                !indep!
@@ -1984,11 +1964,6 @@ interface
        type(naesmd_structure), intent(inout) :: struct 
    end subroutine
    
-   !function f(t,y)
-   !   _REAL_, intent(in) :: t                                 !indep!
-   !   _REAL_, dimension(:), intent(in) :: y                   !dep!
-   !   _REAL_, dimension(size(y,1)) :: f                       !dep!
-   !end function f
 end interface
 !
 logical :: maybe_stiff, lots_of_fails
@@ -2249,11 +2224,6 @@ interface
        type(naesmd_structure), intent(inout) :: struct 
    end subroutine
    
-   !function f(t,y)
-   !   _REAL_, intent(in) :: t                                 !indep!
-   !   _REAL_, dimension(:), intent(in) :: y                   !dep!
-   !   _REAL_, dimension(size(y,1)) :: f                       !dep!
-   !end function f
 end interface
 !
 _REAL_ :: temp1
@@ -2264,7 +2234,6 @@ _REAL_ :: temp1
 temp1 = scale/sqrt(vdotv)
 comm%vtemp = y + temp1*v
 !
-!approx_jacobian = f(comm%t,comm%vtemp)
 call  f(comm%t,comm%vtemp,approx_jacobian,struct)
 comm%f_count = comm%f_count + 1
 !
@@ -2431,7 +2400,6 @@ body: do
 !
    if (present(total_f_calls)) then
       total_f_calls = comm%full_f_count + comm%f_count
-!      if (comm%erason) total_f_calls = total_f_calls + comm%ge_f_count
    end if
    if (present(step_cost)) step_cost = comm%cost
    if (present(num_succ_steps)) num_succ_steps = comm%step_count
@@ -2671,11 +2639,6 @@ interface
        type(naesmd_structure), intent(inout) :: struct 
    end subroutine
    
-   !function f(t,y)
-   !   _REAL_, intent(in) :: t                                 !indep!
-   !   _REAL_, dimension(:), intent(in) :: y                   !dep!
-   !   _REAL_, dimension(size(y,1)) :: f                       !dep!
-   !end function f
 end interface
 !
 character(len=*),parameter :: srname="INTERPOLATE"
@@ -2812,11 +2775,6 @@ interface
        type(naesmd_structure), intent(inout) :: struct 
    end subroutine
    
-   !function f(t,y)
-   !   _REAL_, intent(in) :: t                                 !indep!
-   !   _REAL_, dimension(:), intent(in) :: y                   !dep!
-   !   _REAL_, dimension(size(y,1)) :: f                       !dep!
-   !end function f
 end interface
 !
 _REAL_, dimension(:,:), pointer :: r                          !real!
@@ -2942,11 +2900,6 @@ interface
        type(naesmd_structure), intent(inout) :: struct 
    end subroutine
    
-   !function f(t,y)
-   !   _REAL_, intent(in) :: t                                 !indep!
-   !   _REAL_, dimension(:), intent(in) :: y                   !dep!
-   !   _REAL_, dimension(size(y,1)) :: f                       !dep!
-   !end function f
 end interface
 !
 _REAL_, dimension(:,:), pointer :: stages                     !dep!
@@ -2991,13 +2944,10 @@ do i = 9, 11
    select case(i)
       case(9)
           call f(t_old+c(i)*h_old,ytemp,stages(:,7),struct)
-!         stages(:,7) = f(t_old+c(i)*h_old,ytemp)
       case(10)
           call f(t_old+c(i)*h_old,ytemp,xstage,struct)
-!         xstage = f(t_old+c(i)*h_old,ytemp)
       case(11)
           call f(t_old+c(i)*h_old,ytemp,stages(:,1),struct)
-!         stages(:,1) = f(t_old+c(i)*h_old,ytemp)
    end select
    comm%f_count = comm%f_count + 1
 end do
