@@ -148,8 +148,6 @@ static void *my_malloc(void *(*malloc_method) (size_t), const char *s,
 		return NULL;
 	}
 	memset(poi, 0, nmemb * size);        /* clear memory */
-	/* printf("\n Allocated %10d bytes at %p for %s\n",(int)(nmemb*size),poi,s+10);
-	 fflush(stdout); */
 	return poi;
 }
 
@@ -158,8 +156,6 @@ static void my_free(void *poi)
 {
 	if (poi != NULL)
 		free(poi);
-	/* printf("\n Deallocated                   %p\n",poi);
-	 fflush(stdout); */
 }
 
 
@@ -171,7 +167,6 @@ hessvec_central(int *ndim, double *vec_in, double *vec_out, double *xyz,
                 double *grad, int *return_flag, int *label)
 /*
  Central Difference:
- H(xyz)*v = ( grad(xyz+tiny_step*v) - grad(xyz-tiny_step*v) ) / (2*tiny_step)
  */
 {
 	static int i, n;
@@ -283,7 +278,6 @@ hessvec_forward(int *ndim, double *vec_in, double *vec_out, double *xyz,
                 double *grad, int *return_flag, int *label)
 /*
  Forward Difference:
- H(xyz)*v = ( grad(xyz+tiny_step*v) - grad(xyz) ) / tiny_step
  
  !!! Make sure that on entry grad[] is up-to-date wrt xyz[],
  because it is not calculated here. !!!
@@ -2120,7 +2114,7 @@ L00:
 			     i++) {
 				grms += SQR(grad[i]);
 				ggold += SQR(g_old[i]);
-				/*            ggnew += SQR(grad[i]);                       Fletcher-Reeves */
+				/*                                 Fletcher-Reeves */
 				ggnew += (grad[i] - g_old[i]) * grad[i];    /* Polak-Ribiere   */
 			}
 			grms = sqrt(grms / ndim);
