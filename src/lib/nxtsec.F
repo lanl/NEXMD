@@ -204,7 +204,6 @@ c
       fmt = fmtold
       rewind(iunit)
       first = .false.
-      ! write (6,*) "setting initprmtop to F"
       initprmtop=.false.
 
       RETURN

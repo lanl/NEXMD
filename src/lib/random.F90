@@ -216,9 +216,7 @@ subroutine gauss_gen(st,am,sd,v)
    _REAL_, intent (in) :: am, sd
    _REAL_, intent (out) :: v
    double precision :: uni, zeta(2), tmp1, tmp2
-   !double precision, save :: veven
    integer :: i
-   !logical :: odd = .true.
    
    if ( .not. st%set ) then
       write(6,'(a)') 'amrand not initd'
@@ -233,15 +231,6 @@ subroutine gauss_gen(st,am,sd,v)
    !  code commented out here is maintained in case someone wants to
    !  re-examine this issue later.
 
-!  if( .not. odd ) then
-!#ifdef DPREC
-!    v = veven
-!#else
-!    v = real(veven)
-!#endif
-!    odd = .true.
-!    return
-!  end if
 
    ! get two random numbers, even on (-1,1):
 
@@ -268,8 +257,6 @@ subroutine gauss_gen(st,am,sd,v)
 #else
    v =        real(zeta(1)*tmp2 + am)
 #endif
-!  veven =    zeta(2)*tmp2 + am
-!  odd = .false.
 
    return
 end subroutine gauss_gen
