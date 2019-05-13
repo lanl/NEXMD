@@ -14,6 +14,14 @@ OBJDIR = obj
 SRCDIR = src
 MODDIR = mod
 LIB = lib 
+TD = tests
+SP = singlepoint
+BD = bodynamics
+GEO = geomopt
+BEN = benzene
+NITRO = nitromethane
+
+
 
 SQMINC = -I$(MODDIR)/$(SQMDIR)/
 AMOEBAINC = -I$(MODDIR)/$(AMOEBADIR)/
@@ -131,7 +139,6 @@ OBJSQM = \
 	$(OBJDIR)/$(SQMDIR)/davidson.o \
 	$(OBJDIR)/$(SQMDIR)/liouville.o \
 	$(OBJDIR)/$(SQMDIR)/timing.o \
-	$(OBJDIR)/$(SQMDIR)/qm2_print_bondorders.o \
 	$(OBJDIR)/$(SQMDIR)/printNM.o \
         $(OBJDIR)/$(SQMDIR)/polarizab0ab_new.o
 OBJNAESMD = \
@@ -149,7 +156,7 @@ OBJNAESMD = \
         $(OBJDIR)/$(NAESMDDIR)/nacr.o \
 	$(OBJDIR)/$(NAESMDDIR)/nacT_analytic.o \
 	$(OBJDIR)/$(NAESMDDIR)/fewest-switches.o \
-	$(OBJDIR)/$(NAESMDDIR)/coherence.o \
+        $(OBJDIR)/$(NAESMDDIR)/coherence.o \
 	$(OBJDIR)/$(NAESMDDIR)/cadiab.o \
 	$(OBJDIR)/$(NAESMDDIR)/quantum-prop-add.o \
 	$(OBJDIR)/$(NAESMDDIR)/writeoutput.o \
@@ -414,11 +421,119 @@ performance_ic: FFLAG= -O3 -g -I${MKLROOT}/include
 performance_ic: CFLAG= -O3 -g -I${MKLROOT}/include -DMKL_LP64
 performance_ic: nexmd.exe
 
+LINK =  $(LINALG)
+
+test: test.c
+	$(CC) -o test.out test.c
+	cp $(TD)/$(GEO)/test1/$(NITRO)/input.ceon input.ceon
+	cp $(TD)/$(GEO)/test1/$(NITRO)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(GEO)/test1/$(NITRO)
+	cp $(TD)/$(GEO)/test1/$(BEN)/input.ceon input.ceon
+	cp $(TD)/$(GEO)/test1/$(BEN)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(GEO)/test1/$(BEN)
+	cp $(TD)/$(GEO)/test2/$(NITRO)/input.ceon input.ceon
+	cp $(TD)/$(GEO)/test2/$(NITRO)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(GEO)/test2/$(NITRO)
+	cp $(TD)/$(GEO)/test2/$(BEN)/input.ceon input.ceon
+	cp $(TD)/$(GEO)/test2/$(BEN)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(GEO)/test2/$(BEN)
+	cp $(TD)/$(GEO)/test3/$(NITRO)/input.ceon input.ceon
+	cp $(TD)/$(GEO)/test3/$(NITRO)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(GEO)/test3/$(NITRO)
+	cp $(TD)/$(GEO)/test3/$(BEN)/input.ceon input.ceon
+	cp $(TD)/$(GEO)/test3/$(BEN)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(GEO)/test3/$(BEN)
+	cp $(TD)/$(SP)/test4/$(NITRO)/input.ceon input.ceon
+	cp $(TD)/$(SP)/test4/$(NITRO)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(SP)/test4/$(NITRO)
+	cp $(TD)/$(SP)/test4/$(BEN)/input.ceon input.ceon
+	cp $(TD)/$(SP)/test4/$(BEN)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(SP)/test4/$(BEN)
+	cp $(TD)/$(SP)/test12/$(NITRO)/input.ceon input.ceon
+	cp $(TD)/$(SP)/test12/$(NITRO)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(SP)/test12/$(NITRO)
+	cp $(TD)/$(SP)/test12/$(BEN)/input.ceon input.ceon
+	cp $(TD)/$(SP)/test12/$(BEN)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(SP)/test12/$(BEN)
+	cp $(TD)/$(BD)/test11/$(NITRO)/input.ceon input.ceon
+	cp $(TD)/$(BD)/test11/$(NITRO)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(BD)/test11/$(NITRO)
+	cp $(TD)/$(BD)/test11/$(BEN)/input.ceon input.ceon
+	cp $(TD)/$(BD)/test11/$(BEN)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(BD)/test11/$(BEN)
+	cp $(TD)/$(BD)/test10/$(NITRO)/input.ceon input.ceon
+	cp $(TD)/$(BD)/test10/$(NITRO)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(BD)/test10/$(NITRO)
+	cp $(TD)/$(BD)/test10/$(BEN)/input.ceon input.ceon
+	cp $(TD)/$(BD)/test10/$(BEN)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(BD)/test10/$(BEN)
+	cp $(TD)/$(BD)/test9/$(NITRO)/input.ceon input.ceon
+	cp $(TD)/$(BD)/test9/$(NITRO)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(BD)/test9/$(NITRO)
+	cp $(TD)/$(BD)/test9/$(BEN)/input.ceon input.ceon
+	cp $(TD)/$(BD)/test9/$(BEN)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(BD)/test9/$(BEN)
+	cp $(TD)/$(BD)/test8/$(NITRO)/input.ceon input.ceon
+	cp $(TD)/$(BD)/test8/$(NITRO)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(BD)/test8/$(NITRO)
+	cp $(TD)/$(BD)/test8/$(BEN)/input.ceon input.ceon
+	cp $(TD)/$(BD)/test8/$(BEN)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(BD)/test8/$(BEN)
+	cp $(TD)/$(BD)/test7/$(NITRO)/input.ceon input.ceon
+	cp $(TD)/$(BD)/test7/$(NITRO)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(BD)/test7/$(NITRO)
+	cp $(TD)/$(BD)/test7/$(BEN)/input.ceon input.ceon
+	cp $(TD)/$(BD)/test7/$(BEN)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(BD)/test7/$(BEN)
+	cp $(TD)/$(BD)/test6/$(NITRO)/input.ceon input.ceon
+	cp $(TD)/$(BD)/test6/$(NITRO)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(BD)/test6/$(NITRO)
+	cp $(TD)/$(BD)/test6/$(BEN)/input.ceon input.ceon
+	cp $(TD)/$(BD)/test6/$(BEN)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(BD)/test6/$(BEN)
+	cp $(TD)/$(BD)/test5/$(NITRO)/input.ceon input.ceon
+	cp $(TD)/$(BD)/test5/$(NITRO)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(BD)/test5/$(NITRO)
+	cp $(TD)/$(BD)/test5/$(BEN)/input.ceon input.ceon
+	cp $(TD)/$(BD)/test5/$(BEN)/output output
+	./nexmd.exe > testoutput
+	./test.out $(TD)/$(BD)/test5/$(BEN)
+	rm -r *.out
+	rm -r output
+	rm -r testoutput
+	rm -r *xyz
+
+
+
+
 
 LINK =  $(LINALG)
 
 nexmd.exe: $(OBJSQM) $(OBJLIB) $(OBJNAESMD) $(OBJSFF)
-	$(FC) $(LDFLAGS) -o nexmd.exe $(OBJNAESMD) $(OBJSQM) $(OBJLIB) $(OBJSFF) -L$(LIB) $(LINK) 
+	$(FC) $(LDFLAGS) -o nexmd.exe $(OBJNAESMD) $(OBJSQM) $(OBJLIB) $(OBJSFF) -L/Users/cosadmin/nexmd-Develop/src/$(LIB) $(LINK) 
 		
 clean :
 	rm -f ob*/*.o obj/*/*.o  mod/*.mod *.mod mod/*/*.mod rm lib/*.a
