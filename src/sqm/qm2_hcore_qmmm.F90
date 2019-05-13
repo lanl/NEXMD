@@ -57,7 +57,6 @@ subroutine  qm2_hcore_qmmm(qm2_params,qmmm_nml,qmmm_mpi, qm2_rij_eqns, qm2_struc
 
 !     Loop over REAL QM atoms. - no need to worry about link atoms here
       loop_count=0
-!      do i=1,qmmm_struct%nquant_nlink
       do i=qmmm_mpi%nquant_nlink_start,qmmm_mpi%nquant_nlink_end
 !
 !       Definitions:
@@ -219,7 +218,6 @@ SUBROUTINE qm2_rotate_qmmm_light(qm2_params, qmmm_nml, qm2_rij_eqns, qm2_struct,
 #include "qm2_array_locations.h"
 
     !PM3/MM* - MODIFIED QM-MM INTERFACE
-    !if ((qmmm_nml%qmmm_int == 3 .or. qmmm_nml%qmmm_int == 4) .and. qmmm_nml%qmtheory%PM3) then  ! PM3/MM*
     if (qmmm_struct%PM3MMX_INTERFACE) then
 
       qmitype = qmmm_struct%qm_atom_type(iqm)
@@ -234,7 +232,6 @@ SUBROUTINE qm2_rotate_qmmm_light(qm2_params, qmmm_nml, qm2_rij_eqns, qm2_struct,
          sf1 = qm2_params%scale_factor1_pm3mmx(2,qmitype)
          sf2 = qm2_params%scale_factor2_pm3mmx(2,qmitype)
       end if
-      ! rho_pm3mmx in qmmm_int==3 is always zero
       rho_pm3mmx = qm2_params%rho_pm3mmx(qmitype)
 
       X1 = xyz_qm(1) - xyz_mm(1)
@@ -244,7 +241,6 @@ SUBROUTINE qm2_rotate_qmmm_light(qm2_params, qmmm_nml, qm2_rij_eqns, qm2_struct,
       RR2=RIJ2*A2_TO_BOHRS2
       oneRIJ=1.0d0/sqrt(RIJ2)
       RIJ =RIJ2*oneRIJ
-      !oneBDDi1=qm2_params%multip_2c_elec_params(3,iqm)**2
       oneBDDi1=(qm2_params%multip_2c_elec_params(3,iqm)+rho_pm3mmx)**2
       RI = AU_TO_EV/sqrt(RR2+oneBDDi1)
       E1B=-xyz_mm(4)*RI
@@ -387,14 +383,12 @@ SUBROUTINE qm2_rotate_qmmm_heavy(qm2_params,qmmm_nml, qm2_rij_eqns, qm2_struct, 
 #include "qm2_array_locations.h"
 
 ! qtw - PM3/MM* - MODIFIED QM-MM INTERFACE
-    !if ((qmmm_nml%qmmm_int == 3 .or. qmmm_nml%qmmm_int == 4) .AND. qmmm_nml%qmtheory%PM3) then  ! PM3/MM*
     if (qmmm_struct%PM3MMX_INTERFACE) then
 
       qmitype = qmmm_struct%qm_atom_type(iqm)
 
       sf1 = qm2_params%scale_factor1_pm3mmx(1,qmitype)
       sf2 = qm2_params%scale_factor2_pm3mmx(1,qmitype)
-      ! rho_pm3mmx in qmmm_int==3 is always zero
       rho_pm3mmx = qm2_params%rho_pm3mmx(qmitype)
 
       RIJ2=X1*X1+X2*X2+X3*X3
@@ -402,13 +396,10 @@ SUBROUTINE qm2_rotate_qmmm_heavy(qm2_params,qmmm_nml, qm2_rij_eqns, qm2_struct, 
       oneRIJ=1.0d0/sqrt(RIJ2)
       RIJ =RIJ2*oneRIJ
       RR = RIJ*A_TO_BOHRS
-      !oneBDDi1=qm2_params%multip_2c_elec_params(3,iqm)**2
       oneBDDi1=(qm2_params%multip_2c_elec_params(3,iqm)+rho_pm3mmx)**2
       RI(1) = AU_TO_EV/sqrt(RR2+oneBDDi1)
       qmi_DD=qm2_params%multip_2c_elec_params(1,iqm)
       qmi_QQ=2.0d0*qm2_params%multip_2c_elec_params(2,iqm)
-      !oneBDDi2=qm2_params%multip_2c_elec_params(4,iqm)**2
-      !oneBDDi3=qm2_params%multip_2c_elec_params(5,iqm)**2
       oneBDDi2=(qm2_params%multip_2c_elec_params(4,iqm)+rho_pm3mmx)**2
       oneBDDi3=(qm2_params%multip_2c_elec_params(5,iqm)+rho_pm3mmx)**2
       RI(2)= HALF_AU_TO_EV*(1.0d0/SQRT((RR+qmi_DD)**2+oneBDDi2) - 1.0d0/SQRT((RR-qmi_DD)**2+oneBDDi2))
@@ -583,7 +574,6 @@ subroutine qm2_hcore_add_switched(qm2_params,qmmm_mpi, H, switched_mmpot)
    integer :: i, ia, ib, i1, i2, k
 
    ! add the switched_mmpot to the diagonal elements of the H matrix
-   !do i = 1, qmmm_struct%nquant_nlink
    do i=qmmm_mpi%nquant_nlink_start,qmmm_mpi%nquant_nlink_end
       ia = qm2_params%orb_loc(1,i)
       ib = qm2_params%orb_loc(2,i)

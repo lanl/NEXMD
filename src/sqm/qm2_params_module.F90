@@ -371,7 +371,6 @@ contains
     end if
 
     ! PM3/MM*
-    ! if (qmmm_nml%qmmm_int == 3 .or. qmmm_nml%qmmm_int == 4) then
     if (PM3MMX_INTERFACE) then
        !should really be based on atom types.
        allocate (self%scale_factor1_pm3mmx(2,qm_ntypes), stat=ier )
@@ -489,7 +488,6 @@ contains
        end if
 
        ! PM3/MM* 
-       !if (qmmm_nml%qmmm_int == 3 .or. qmmm_nml%qmmm_int == 4) then
        if (PM3MMX_INTERFACE) then
           deallocate ( self%scale_factor1_pm3mmx, stat = ier)
           REQUIRE(ier == 0)

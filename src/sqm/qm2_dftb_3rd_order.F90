@@ -68,7 +68,6 @@ subroutine qm2_dftb_read_3rd_order(qmmm_nml, qmmm_struct, qm_natoms,qm_ntypes,iz
       dftb_3rd_order_file = TRIM(qmmm_nml%dftb_3rd_order)
       ! Read namelist from external file
       ! (Not implemented yet)
-      ! dftb_3rd_order_file = qmmm_nml%dftb_3rd_order_file
    endif
    write(6,*)
    write(6,'("QMMM: 3rd Order SCC-DFTB")')
@@ -89,7 +88,6 @@ subroutine qm2_dftb_read_3rd_order(qmmm_nml, qmmm_struct, qm_natoms,qm_ntypes,iz
    ! If we got here, the file exists. Now we check for 
    ! the existence of the 'dftb_3rd_order' namelist
 
-!   WRITE(6,*)"qm2_dftb_3rd_order:",dftb_3rd_order_unit,dftb_3rd_order_str%file_unit 
 
    ! gfortran bombs on /Run.ala8_PA without this with
    ! At line 202 of file _qm2_dftb_3rd_order.f

@@ -12,8 +12,6 @@ subroutine selfs(i,j,r2,iovpar,em,ne)
    _REAL_ :: parm(13)
    integer :: id
    integer, external :: iovpar  
-!   dimension parm(13),em(ne,1)
-  ! external iovpar
 
    id=iovpar(i,j,r2,parm)
    em(1,1)=parm(13)

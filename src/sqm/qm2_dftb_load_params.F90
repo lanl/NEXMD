@@ -62,7 +62,6 @@ if (qmmm_mpi%commqmmm_master) then
    MAX_BRD_ITER = qmmm_nml%dftb_maxiter
    IMATSZ       = qmmm_nml%dftb_maxiter
    NNDIM  = qmmm_struct%nquant_nlink
-   !MDIM   = 400! 9 * NNDIM
    MDIM   = LDIM * NNDIM
    MAXSIZ = MDIM
 
@@ -79,7 +78,6 @@ if (qmmm_mpi%commqmmm_master) then
    call getenv('AMBERHOME',skroot)
    skroot = TRIM(skroot) // '/dat/slko/'
 
-   ! izp (atom types)
    izp_str%izp(1:NNDIM)=0
 
    ! S-K files
@@ -254,7 +252,6 @@ if (qmmm_mpi%commqmmm_master) then
    mol%qmat(1:qmmm_struct%nquant_nlink) = mcharge%qzero( izp_str%izp(1:qmmm_struct%nquant_nlink) )
 
    ! Mulliken Charges
-   !   WRITE(22,*)"DBG PRT qm2_dftb_load_params",qmmm_struct%nquant_nlink,ASSOCIATED(qm2_struct%scf_mchg)
    IF ( .NOT. ASSOCIATED( qm2_struct%scf_mchg ) ) THEN
       WRITE(6,'(A)')"sqm/qm2_dftb_load_params: scf_mchg is not associated"
       WRITE(6,'(A)')"Cannot currently use DFTB"
@@ -913,19 +910,11 @@ character(LEN=2) function lowercase_atom(atom)
   character(LEN=1) :: lowercase_char, char_uc, char_lc
   integer i
 
-  !write(6,*) " Converting to lowercase. LEN=", len(atom)
-  !write(6,*) " atom      = ", atom
-
-  !write(6,*) " atom(1:1) = ", "'",atom(1:1),"'"
-  
-  !write(6,*) " atom(2:2) = ", "'",atom(2:2),"'"
   lowercase_atom=''
   do i=1, len(atom)
     char_uc = atom(i:i)
     char_lc = lowercase_char(char_uc)
-    !write(6,*) " --> Lowercase: ", "'",char_lc,"'"
     lowercase_atom = TRIM(lowercase_atom) // char_lc
-    !write(6,*) "'",lowercase_atom,"'"
   end do
   return
 
@@ -940,7 +929,6 @@ character(len=1) function lowercase_char(char)
   character (LEN=1), intent (in) :: char
 
   !! Locals
-  !write(6,*) "Routine lowercase char :: CHAR = ", "'",char,"'"
   lowercase_char = char
   if (char == 'A') lowercase_char = 'a'
   if (char == 'B') lowercase_char = 'b'
@@ -968,7 +956,6 @@ character(len=1) function lowercase_char(char)
   if (char == 'X') lowercase_char = 'x'
   if (char == 'Y') lowercase_char = 'y'
   if (char == 'Z') lowercase_char = 'z'
-  !write(6,*) "Lowecase char = ", "'",lowercase_char,"'"
   return
 end function lowercase_char
 

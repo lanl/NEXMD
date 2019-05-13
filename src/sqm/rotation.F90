@@ -266,7 +266,6 @@ SUBROUTINE Rotate2Center2Electron(W,LIMIJ,LImkl,rotationMatrix)
 !SET  IROTV = 2  VECTORIZED CODE WITH SMALL LOOPS.                      
 !SET  IROTV = 3  STRAIGHT MATRIX MULTIPLICATIONS WITH MANY ZERO VALUES. 
       PARAMETER (IROTV=1) 
-!RAY  PARAMETER (IROTV=3)                                               
       PARAMETER (LIMY=45) 
       PARAMETER (LIMV=45) 
       PARAMETER (VSMALL=1.0D-10) 

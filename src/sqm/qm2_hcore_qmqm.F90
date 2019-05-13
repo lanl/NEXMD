@@ -29,7 +29,6 @@ subroutine qm2_hcore_qmqm(qm2_params,qmmm_nml, qmmm_mpi, qm2_rij_eqns, cosmo_c_s
       use qmmm_module, only : qm2_structure, qm2_rij_eqns_structure, &
                               qmmm_mpi_structure, OVERLAP_CUTOFF      
       use Rotation, only : GetRotationMatrix, Rotate2Center2Electron, RotateCore
-!DEBUG      use utilitiesModule, only : Print
       use qmmm_struct_module, only : qmmm_struct_type
       use qm2_params_module,  only : qm2_params_type
       use qmmm_nml_module   , only : qmmm_nml_type

@@ -40,10 +40,3 @@ SUBROUTINE EWEVGE (NA,NB,N,A,B,EW,IEV,IER)
    RETURN
 end SUBROUTINE EWEVGE
 
-    ! ** To use DSYGVD (divide-and-conquer) **
-    !DIMENSION  A(NA,N),B(NB,N),EW(N),H(N),AUX(3*NA)
-    !integer :: IWORK(5*N+3)
-    !integer :: LWORK, LIWORK
-
-    !LWORK = 1 + 6*N + 2*N*N
-    !CALL DSYGVD(IEV,'V','L',N,A,NA,B,NB,EW,AUX,LWORK,IWORK,5*N+3,IER)

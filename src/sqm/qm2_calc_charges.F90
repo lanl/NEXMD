@@ -33,8 +33,6 @@ subroutine qm2_calc_mulliken(qm2_params,qm2_struct,iqm,mul_chg,density_matrix)
       orb_end=qm2_params%orb_loc(2,iqm)
 
       do loop_count=orb_beg,orb_end
-        !tri = qm2_params%pascal_tri2(loop_count)
-        !density_sum = density_sum + qm2_struct%den_matrix(tri)
 	density_sum = density_sum + density_matrix(loop_count,loop_count)
       end do
 

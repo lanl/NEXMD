@@ -23,7 +23,7 @@ subroutine qm2_energy(qm2_params,qmmm_nml,qmewald,qm2_rij_eqns, qm_gb, qmmm_mpi,
    use dh_correction_module, only : dh_correction
    use constants, only : EV_TO_KCAL, zero
    use cosmo_C, only : cosmo_C_structure !cosmo_c_struct%solvent_model, cosmo_c_struct%potential_type
-   use xlbomd_module, only : predictdens_xlbomd, xlbomd_structure
+   use xlbomd_module, only : xlbomd_structure
    use qmmm_struct_module, only : qmmm_struct_type
    use qm2_davidson_module, only : qm2_davidson_structure_type
    use qm2_params_module,  only : qm2_params_type
@@ -263,25 +263,6 @@ subroutine qm2_energy(qm2_params,qmmm_nml,qmewald,qm2_rij_eqns, qm_gb, qmmm_mpi,
 
       call timer_stop_start(TIME_QMMMENERGYHCORE,TIME_QMMMENERGYSCF)
 
-      !==========================================================
-      !   Setup Density Matrix Prediction Prior to Calling SCF
-      !==========================================================
-      if (qmmm_nml%density_predict == 1) then !Use simple time-reversible MD algorithm
-        !call timer_start(TIME_QMMMENERGYSCFDENPRED)
-        if (qmmm_struct%num_qmmm_calls.gt.1) then
-        call qm2_density_predict(qmmm_struct%num_qmmm_calls,qm2_struct%matsize, &
-                                 qm2_struct%den_matrix,qm2_struct%md_den_mat_guess1, &
-                                 qm2_struct%md_den_mat_guess2 )
-        endif
-        !call timer_stop(TIME_QMMMENERGYSCFDENPRED)
-      elseif (qmmm_nml%density_predict == 2) then !Use full XL-BOMD algorithm
-	call timer_start(TIME_QMMMENERGYSCFDENPRED)
-	call predictdens_xlbomd(xlbomd_struct, qmmm_struct%num_qmmm_calls,qm2_struct%den_matrix)
-        call timer_stop(TIME_QMMMENERGYSCFDENPRED)
-      end if
-      !=============================================================
-      !   End Setup Density Matrix Prediction Prior to Calling SCF
-      !=============================================================
 
       !========================================================
       !   Setup Fock Matrix Prediction Prior to Calling SCF
@@ -348,50 +329,8 @@ subroutine qm2_energy(qm2_params,qmmm_nml,qmewald,qm2_rij_eqns, qm_gb, qmmm_mpi,
          endif
       end if
       call timer_stop(TIME_QMMMENERGYSCF)
-      if (qmmm_nml%peptide_corr) then  !Apply MM correction to peptide linkages
-         !Not available for DFTB
-         if (qmmm_nml%qmtheory%PM3 .OR. qmmm_nml%qmtheory%PDDGPM3 .OR. qmmm_nml%qmtheory%PM3CARB1 &
-             .OR. qmmm_nml%qmtheory%PM3ZNB .OR. qmmm_nml%qmtheory%PDDGPM3_08) then
-            htype = 7.1853D0
-         elseif (qmmm_nml%qmtheory%AM1 .OR. qmmm_nml%qmtheory%RM1) then
-            htype = 3.3191D0 !Note for RM1 this may or may not be any good since they make no mention of
-                             !it in the underlying manuscript.
-         else !Assume MNDO
-            htype = 6.1737D0
-         end if
-         !Parallel
-         do I=qmmm_mpi%mytaskid+1,qm2_struct%n_peptide_links,qmmm_mpi%numthreads !1,n_peptide_links
-            CALL qm2_dihed(qmmm_struct%qm_coords,qm2_struct%peptide_links(1,I),qm2_struct%peptide_links(2,I), &
-                  qm2_struct%peptide_links(3,I),qm2_struct%peptide_links(4,I),ANGLE)
-            escf=escf+HTYPE*SIN(ANGLE)**2
-         end do
-      end if
    end if
    RETURN
 end subroutine qm2_energy
 
-subroutine qm2_density_predict(num_qmmm_calls,matsize,den_matrix,md_den_mat_guess1,md_den_mat_guess2)
-   implicit none
-   !Passed in
-   integer, intent(in) :: num_qmmm_calls, matsize
-   _REAL_, intent(inout) :: den_matrix(matsize), md_den_mat_guess1(matsize), md_den_mat_guess2(matsize)
-   if (num_qmmm_calls == 2) then
-     !this is the second call to qm_mm. In this case we need to store the converged density matrix
-     !from step 1 as guess2.
-     md_den_mat_guess2(1:matsize) = den_matrix(1:matsize)
-   else
-     !this is the third step so den_matrix currently contains the converged matrix from step 2
-     !so we want to save this in guess1. From this point on we will not visit this section of
-     !code again since we start using the guesses rather than the converged matricies.
-     !We use Niklasson et al Time-reversible MD prediction algorithm.
-     if (num_qmmm_calls == 3) then
-        md_den_mat_guess1(1:matsize) = den_matrix(1:matsize)
-     end if
-     !PGuess(t) = 2PConv(t-dt) - PGuess(t-2dt)
-     den_matrix(1:matsize) = 2.0d0 * den_matrix(1:matsize) - md_den_mat_guess2(1:matsize)
-     md_den_mat_guess2(1:matsize) = md_den_mat_guess1(1:matsize)
-     md_den_mat_guess1(1:matsize) = den_matrix(1:matsize)
-   end if
-   return
-end subroutine qm2_density_predict
 

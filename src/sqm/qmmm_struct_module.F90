@@ -409,7 +409,6 @@ contains
        end if
     end if
 
-    !if (qmmm_int==3 .or. qmmm_int==4) then
     if (self%PM3MMX_INTERFACE) then
        ! needed for PM3/MM*
        if ( associated ( self%qm_mm_pair_atom_numbers ) ) then

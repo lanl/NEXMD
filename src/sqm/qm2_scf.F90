@@ -132,35 +132,6 @@ subroutine qm2_scf(qmmm_opnq, qm2_params, qmewald, qmmm_nml, qm_gb, qmmm_mpi, qm
 
     integer lapack_info
 
-    !Initialisation on first call
-    if(qmmm_nml%density_predict.gt.0) then
-        if(qmmm_struct%qm2_scf_first_call) then
-            ! for fixed number of iterations the very first call has to be regular one
-            ! with high accuracy
-            if(qmmm_nml%itrmax<0) then
-                qm2_params%itrmax_local=qmmm_nml%itrmax
-                qmmm_nml%itrmax=1000 ! default value
-            end if
-            !Find precision limits of this machine
-            call qm2_smallest_number(small,qm2_params%smallsum)
-            ! qm2_params%smallsum should be the smallest number for which 1.0D0 + qm2_params%smallsum /= 1.0D0
-            ! or 1.0D-17 - whichever is larger.
-            ! We will increase it in order to allow for roundoff in our calculations.
-            ! we use max here to avoid problems which occur when qm2_params%smallsum is actually too small.
-            qm2_params%smallsum = max(10.0D0 * sqrt(qm2_params%smallsum),1.4000D-7)
-            !      qm2_params%smallsum = 10.0D0 * sqrt(qm2_params%smallsum)
-            qm2_params%abstol = 2.0d0 * dlamch('S') !tolerance for dspevr
-            qmmm_struct%qm2_scf_first_call=.false.
-        elseif((qmmm_nml%density_predict==2).and.(qmmm_struct%num_qmmm_calls.lt.(xlbomd_struct%K+2))) then
-            !Do nothing until all Phi are full for XL-BOMD
-            write(6,*) 'Filling Phi_',qmmm_struct%num_qmmm_calls+1,'with fully converged result'
-        else
-            if(qm2_params%itrmax_local<0) then
-                ! restoring fixed-number-of-iterations itrmax
-                qmmm_nml%itrmax=qm2_params%itrmax_local
-            end if
-        end if
-    end if
     !Initialisation on every call
     converged = .false.
     first_iteration = .true.
@@ -245,13 +216,6 @@ subroutine qm2_scf(qmmm_opnq, qm2_params, qmewald, qmmm_nml, qm_gb, qmmm_mpi, qm
             & cosmo_c_struct,qm2_struct,qm2ds, qmmm_struct, &
             & SIZE(fock_matrix), fock_matrix, hmatrix, den_matrix, &
             & SIZE(W), W, SIZE(scf_mchg), scf_mchg, density_diff )
-        !q=0
-        !do o=1,qm2_struct%norb
-        !  do p=1,o
-        !    write(6,'(40e18.9)',advance="no") fock_matrix(o)
-        !  enddo
-        !  write(6,*)" "
-        !enddo
 
         call timer_start(TIME_QMMMENERGYSCFELEC)
         scf_energy = qmmm_struct%elec_eng*EV_TO_KCAL
@@ -360,11 +324,6 @@ subroutine qm2_scf(qmmm_opnq, qm2_params, qmewald, qmmm_nml, qm_gb, qmmm_mpi, qm
                 ! Further minimization of the pseudo_diag energy does not cause the error matrix to vanish any further.
                 ! DIIS tries to nullify the error matrix; therefore, if we reach this point
                 ! and still have some diis tokens, then start doing full diagonalizations.
-                !           if (doing_pseudo_diag .AND. errval < 5.d-5 .AND. remaining_diis_tokens() > 2 ) then
-                !              doing_pseudo_diag=.false.
-                !              allow_pseudo_diag=.false.
-                !              pseudo_converged=.true.
-                !           end if
            
 
                 ! Is the error matrix converged? Set to true if we don't check for the error matrix
@@ -385,9 +344,6 @@ subroutine qm2_scf(qmmm_opnq, qm2_params, qmewald, qmmm_nml, qm_gb, qmmm_mpi, qm
                     else
                         ! pseudo diag may have converged, but the error matrix may not be small enough.
                         converged = errmat_is_converged !.OR. abs(energy_diff) < 0.01d0 * qmmm_nml%scfconv
-                    !                 IF ( converged ) THEN
-                    !                    exit do_scf  !Break out of the SCF loop since we have converged.
-                    !                 END IF
                     end if
                 end if
             end if !scf_iteration>2
@@ -532,7 +488,6 @@ subroutine qm2_densit(qm2_params, eigen_vecs,norbs,ndubl, den_matrix,matsize)
     ! Passed in
     type(qm2_params_type),intent(inout) :: qm2_params
     integer, intent(in) :: norbs, ndubl, matsize
-    !      integer, intent(inout) :: nsingl
     _REAL_, intent(in) :: eigen_vecs(norbs,norbs)
     _REAL_, intent(out) :: den_matrix(matsize)
 
@@ -540,15 +495,9 @@ subroutine qm2_densit(qm2_params, eigen_vecs,norbs,ndubl, den_matrix,matsize)
     integer unoc_start,i,j,k,l
     _REAL_ eigen_veci
 
-    !      integer :: sing_oc_start
-    !      !NSINGL=MAX(NDUBL,NSINGL)
-    !      unoc_start=NSINGL+1
 
     unoc_start = ndubl + 1
 
-    !if (ndubl == nsingl) then
-    !Currently only spin=1 is allowed.
-    !All  M.O.s doubly occupied.
 
 #ifdef OPENMP_DEN
     !$OMP PARALLEL &
@@ -578,7 +527,6 @@ subroutine qm2_densit(qm2_params, eigen_vecs,norbs,ndubl, den_matrix,matsize)
                 L=L+1
                 den_matrix(L)=den_matrix(L)-2.0d0*eigen_veci*eigen_vecs(j,k)
             end do
-          !if (k==unoc_start) den_matrix(L)=2.0d0+den_matrix(L)
         end do
 #ifdef OPENMP_DEN
     !$OMP END DO
@@ -594,14 +542,6 @@ subroutine qm2_densit(qm2_params, eigen_vecs,norbs,ndubl, den_matrix,matsize)
         den_matrix(L)=2.0d0+den_matrix(L)
     end do
 
-! The following is for debugging only?
-!    ! test the trace value  
-!    eigen_veci=0.D0   
-!    do i=1,norbs
-!      L=qm2_params%pascal_tri2(i)
-!      eigen_veci = eigen_veci +den_matrix(L)
-!    end do   
-!    ! eigen_veci should be the total number of electrons now  
     
 end subroutine qm2_densit
 
@@ -766,7 +706,6 @@ subroutine qm2_cnvg(qm2_params,den_matrix, old_den_matrix, old2_density,norbs, s
         J=0
         do I=1,norbs
             J=J+I
-            !J=qm2_params%pascal_tri2(i)
             !  1.0d-20 is in case any occupancy is exactly zero
             old_den_matrix_element=max(old_den_matrix(J)*SUM3+1.D-20, 0.0d0)
                                                                                
@@ -828,7 +767,6 @@ subroutine qm2_cnvg_simple(qm2_params,den_matrix,old_den_matrix,old2_density,nor
         old_den_matrix_element=old_den_matrix(K)
         density_diff=max(ABS(den_matrix(K)-old_den_matrix(K)),density_diff)
 
-       !old_den_matrix(K)=den_matrix(K)
     end do
 
     ! simple two-point mixing
@@ -921,8 +859,6 @@ subroutine qm2_mat_diag(qm2_params,a,n,m,v,e,w1,w2,w3,w4,w5)
                     ssum=ssum+a(j+irank)*w2(j)
                 end do
                 ip1=i+1
-                !              jrank=ishft(i*(i+3),-1)
-                !              jrank=i*(i+3)/2
                 jrank=qm2_params%pascal_tri2(i)+i
                 do j=ip1,n
                     ssum=ssum+a(jrank)*w2(j)
@@ -953,11 +889,8 @@ subroutine qm2_mat_diag(qm2_params,a,n,m,v,e,w1,w2,w3,w4,w5)
         end if !if (abs(h) < eps3)
     end do
 
-    !w2(nm1)=a( ishft((nm1*(nm1+1)),-1) )
     w2(nm1)=a( qm2_params%pascal_tri2(nm1) )
-    !w2(n)=a( ishft((n*(n+1)),-1) )
     w2(n)=a( qm2_params%pascal_tri2(n))
-    !w1(nm1)=a( nm1+ishft((n*(n-1)),-1) )
     w1(nm1)=a( nm1+qm2_params%pascal_tri1(n) )
     w1(n)=zero
     gersch=abs(w2(1))+abs(w1(1))
@@ -1335,8 +1268,6 @@ subroutine qm2_pseudo_diag(qmmm_mpi, qm2_struct,matrix,vectors,noccupied,eigen,n
     call vdsqrt(veccount, vectmp2, vectmp2)
     vectmp2(1:veccount) = -sign(vectmp2(1:veccount),vectmp1(1:veccount)) !beta = -sign(sqrt(1.0d0-E),c)
     call vdsqrt(veccount, vectmp3, vectmp3) !alpha = sqrt(E)
-    !vectmp2 = beta
-    !vectmp3 = alpha
 #endif
 
     !-------------------------------------------------------------------
@@ -1722,12 +1653,6 @@ SUBROUTINE qm2_diag(qm2_params,qmmm_mpi,qmmm_scratch, qmmm_nml,  qm2_struct, n, 
     end if !pseudo diag.
   !End of step 1
         
-!    do o=1,qm2_struct%norbs
-!      do p=1,qm2_struct%norbs
-!        write(6,'(40e18.9)',advance="no") qm2_struct%eigen_vectors(o,p)
-!      enddo
-!      write(6,*) "  "
-!    enddo
 
 END SUBROUTINE qm2_diag
 
@@ -2016,23 +1941,12 @@ SUBROUTINE qm2_densmat(qm2_params, qmmm_mpi,qmmm_nml,qm2_struct, scf_iteration,n
     !OPENMP PARALLEL
     call qm2_densit(qm2_params, qm2_struct%eigen_vectors,qm2_struct%norbs,qm2_struct%nclosed,den_matrix,qm2_struct%matsize)
 
-    !     density_diff = 0.d0
     !OPENMP PARALLEL
 
-    !if(qmmm_nml%itrmax>0) then ! standard sqm mixing
     call qm2_cnvg(qm2_params,den_matrix, qm2_struct%old_den_matrix, &
         qm2_struct%old2_density,qm2_struct%norbs,scf_iteration,density_diff)
-    !else
-    !   print*,'Simple mixing'
-    !   call qm2_cnvg_simple(qm2_params,den_matrix, qm2_struct%old_den_matrix, &
-    !      qm2_struct%old2_density,qm2_struct%norbs,scf_iteration,density_diff)
-    !end if
 
     !==============
-    ! prevent cnvg
-    !     if ( scf_iterator_value(qmmm_nml) > 50 ) then
-    !        call qm2_densit(qm2_struct%eigen_vectors,qm2_struct%norbs,qm2_struct%nclosed,den_matrix,qm2_struct%matsize)
-    !     end if
     !===============
 
     call timer_stop(TIME_QMMMENERGYSCFDEN)
@@ -2061,9 +1975,7 @@ SUBROUTINE pack_diis(qmmm_mpi,qmmm_nml,qm2_struct,npf,pf,pp)
     USE qmmm_module, ONLY : qm2_structure,qmmm_mpi_structure
     use qmmm_nml_module   , only : qmmm_nml_type
 
-    !  use qm2_iterator_mod, only : scf_iterator_value
     use qm2_iterator_mod, only : diis_iterator_value
-    !  use qm2_iterator_mod, only : remaining_diis_tokens
 
     IMPLICIT NONE
     type(qmmm_mpi_structure), intent(inout) :: qmmm_mpi
@@ -2079,8 +1991,6 @@ SUBROUTINE pack_diis(qmmm_mpi,qmmm_nml,qm2_struct,npf,pf,pp)
     integer :: idiis
     integer :: i,j,k
 
-    !  integer :: diis_iterator_value
-    !  _REAL_ :: max_fp,max_pf,max_err
 
     nf    = qm2_struct%norbs
     idiis = diis_iterator_value(qmmm_nml)
@@ -2114,24 +2024,14 @@ SUBROUTINE pack_diis(qmmm_mpi,qmmm_nml,qm2_struct,npf,pf,pp)
 
     f = MATMUL(f,p)
 
-    !  max_fp = 0.d0
-    !  max_pf = 0.d0
-    !  max_err = 0.d0
     k=0
     DO j=1,nf
         DO i=1,nf
             k=k+1
             qm2_struct%diis_errmat(k,idiis) = f(i,j) - f(j,i)
-           !        IF ( ABS( f(i,j) - f(j,i) ) > max_err ) THEN
-           !           max_err = ABS( f(i,j) - f(j,i) )
-           !           max_fp = f(i,j)
-           !           max_pf = f(j,i)
-           !        END IF
-           !        WRITE(6,'(G15.7,2I4)')ABS(f(i,j) - f(j,i)),k,SIZE(qm2_struct%diis_errmat,1)
         END DO
     END DO
 
-    !  WRITE(6,'(A,100E25.15)')"max_*=",max_err,max_fp,max_pf
 
     qm2_struct%diis_fock(:,idiis) = pf
 
@@ -2146,9 +2046,7 @@ FUNCTION current_scf_errval(qmmm_nml, qm2_struct) RESULT(err)
   
     USE qmmm_module, ONLY : qm2_structure
     USE constants, ONLY : AU_TO_EV
-    !  use qm2_iterator_mod, only : scf_iterator_value
     use qm2_iterator_mod, only : diis_iterator_value
-    !  use qm2_iterator_mod, only : remaining_diis_tokens
     use qmmm_nml_module   , only : qmmm_nml_type
 
     IMPLICIT NONE
@@ -2159,7 +2057,6 @@ FUNCTION current_scf_errval(qmmm_nml, qm2_struct) RESULT(err)
 
     integer :: i,idiis
 
-    !  integer :: diis_iterator_value
 
     idiis = diis_iterator_value(qmmm_nml)
 
@@ -2247,7 +2144,6 @@ SUBROUTINE diis_extrap(qmmm_nml, qm2_struct, npf,pf,extrap_flag)
         DO i=1,j
             qm2_struct%diis_mat(i+1,j+1) = DOT_PRODUCT( qm2_struct%diis_errmat(:,i), qm2_struct%diis_errmat(:,j) )
             qm2_struct%diis_mat(j+1,i+1) = qm2_struct%diis_mat(i+1,j+1)
-        !        IF ( i == j ) qm2_struct%diis_mat(j+1,i+1) = qm2_struct%diis_mat(j+1,i+1) + 0.1d0
         END DO
     END DO
 
@@ -2270,7 +2166,6 @@ SUBROUTINE diis_extrap(qmmm_nml, qm2_struct, npf,pf,extrap_flag)
         ! DO A SIMPLE 50/50 MIXING
         !
 
-        !     WRITE(6,'(A,100G13.4)')"NOTE: DIIS extrapolation error:",W(2:)
 
         i = diis_iterator_prev_value(qmmm_nml)
         pf = 0.5d0 * ( qm2_struct%diis_fock(:,diis_idx) + qm2_struct%diis_fock(:,i) )
@@ -2279,12 +2174,10 @@ SUBROUTINE diis_extrap(qmmm_nml, qm2_struct, npf,pf,extrap_flag)
 
     ELSE
 
-        !     WRITE(6,'(A,100G13.4)')"DIIS extrapolating with:",SUM(W(2:n+1)),W(2:n+1)
 
         pf = 0.d0
         DO i=1,n
             pf = pf + w(i+1) * qm2_struct%diis_fock(:,i)
-        !        WRITE(6,'(A,I5,100E14.5)')"i,",i,w(i+1),qm2_struct%diis_fock(1:3,i)
         END DO
 
         extrap_flag = "D"
@@ -2296,94 +2189,6 @@ END SUBROUTINE diis_extrap
 
 
 
-
-
-
-
-
-! SUBROUTINE SvdInvert_SymMat(n,a,ainv,thresh)
-
-!   IMPLICIT NONE
-
-!   INTEGER,INTENT(IN) :: n
-!   _REAL_,INTENT(IN) :: a(n,n)
-!   _REAL_,INTENT(OUT) :: ainv(n,n)
-!   _REAL_,INTENT(IN) :: thresh
-! !  _REAL_,INTENT(IN),OPTIONAL :: THRESH
-! !  INTEGER,INTENT(OUT),OPTIONAL :: ERR
-  
-!   _REAL_ :: my_thresh
-!   INTEGER :: my_err
-
-
-!   CHARACTER(LEN=1) :: JOBZ
-!   _REAL_ :: S(n)
-!   _REAL_ :: U(n,n)
-!   _REAL_ :: VT(n,n)
-!   _REAL_ :: twork
-!   _REAL_,ALLOCATABLE :: WORK(:)
-!   INTEGER :: LWORK
-!   INTEGER :: IWORK(8*n)
-  
-!   INTEGER :: i,j
-
-!   my_err = 0
-!   !  my_thresh = 1.d-10
-!   !  IF ( PRESENT(THRESH) ) my_thresh = THRESH
-!   my_thresh = thresh
-
-!   ainv = a
-!   JOBZ = "A"
-!   LWORK = -1
-!   CALL DGESDD(JOBZ,n,n,ainv,n,S,U,n,VT,n,twork,LWORK,IWORK,my_err)
-
-!   LWORK = NINT(twork)
-!   ALLOCATE( WORK(LWORK) )
-!   WORK = 0.d0
-
-!   CALL DGESDD(JOBZ,n,n,ainv,n,S,U,n,VT,n,WORK,LWORK,IWORK,my_err)
-
-!   !  IF ( PRESENT(ERR) ) THEN
-!   !     ERR = my_err
-!   !     IF ( my_err /= 0 ) RETURN
-!   !  ELSE
-!   IF ( my_err /= 0 ) THEN
-!      IF ( my_err < 0 ) THEN
-!         WRITE(6,'(A)')"Svd_SymmMat_Invert: Arg ",-my_err," is illegal"
-!         WRITE(6,'(A)')"This is a programming error."
-!         STOP
-!      ELSE IF ( my_err > 0 ) THEN
-!         WRITE(6,'(A)')"Svd_SymmMat_Invert: DBDSDC did not converge"
-!         WRITE(6,'(A)')"Total failure.  Not sure what to do"
-!         STOP
-!      END IF
-!   END IF
-!   !  END IF
-
-!   DO i=1,n
-!      IF ( ABS(S(i)) <= my_thresh ) THEN
-!         S(i) = 0.d0
-!      ELSE
-!         S(i) = 1.d0 / S(i)
-!      END IF
-!   END DO
-
-!   ! VT = MATMUL( S , VT )
-!   DO j=1,n
-!      DO i=1,n
-!         VT(i,j) = S(i) * VT(i,j)
-!      END DO
-!   END DO
-!   ! Ainv = MATMUL( U , VT )
-!   CALL DGEMM( "N","N",N,N,N, 1.d0,  U,N,  VT,N,  0.d0,  ainv,N )
-
-!   IF ( ALLOCATED(WORK) ) DEALLOCATE(WORK)
-
-! END SUBROUTINE SvdInvert_SymMat
-
-
-
-
 SUBROUTINE SvdInvert_SymMat(n,a,ainv,thresh) ! THRESH,ERR
     
     IMPLICIT NONE
@@ -2392,8 +2197,6 @@ SUBROUTINE SvdInvert_SymMat(n,a,ainv,thresh) ! THRESH,ERR
     _REAL_,INTENT(IN) :: a(n,n)
     _REAL_,INTENT(OUT) :: ainv(n,n)
     _REAL_,INTENT(IN) :: thresh
-    !  _REAL_,INTENT(IN),OPTIONAL :: THRESH
-    !  INTEGER,INTENT(OUT),OPTIONAL :: ERR
 
     _REAL_ :: my_thresh
     INTEGER :: my_err
@@ -2409,8 +2212,6 @@ SUBROUTINE SvdInvert_SymMat(n,a,ainv,thresh) ! THRESH,ERR
     INTEGER :: i,j
 
     my_err = 0
-    !  my_thresh = 1.d-10
-    !  IF ( PRESENT(THRESH) ) my_thresh = THRESH
     my_thresh = thresh
 
     ainv = a
@@ -2423,10 +2224,6 @@ SUBROUTINE SvdInvert_SymMat(n,a,ainv,thresh) ! THRESH,ERR
   
     CALL DGESVD("A","A",n,n, ainv,n, S,U,n, VT,n, WORK,LWORK,my_err)
   
-    !  IF ( PRESENT(ERR) ) THEN
-    !     ERR = my_err
-    !     IF ( my_err /= 0 ) RETURN
-    !  ELSE
     IF ( my_err /= 0 ) THEN
         IF ( my_err < 0 ) THEN
             WRITE(6,'(A)')"Svd_SymmMat_Invert: Arg ",-my_err," is illegal"
@@ -2438,7 +2235,6 @@ SUBROUTINE SvdInvert_SymMat(n,a,ainv,thresh) ! THRESH,ERR
             STOP
         END IF
     END IF
-    !  END IF
   
     DO i=1,n
         IF ( ABS(S(i)) <= my_thresh ) THEN
@@ -2448,13 +2244,11 @@ SUBROUTINE SvdInvert_SymMat(n,a,ainv,thresh) ! THRESH,ERR
         END IF
     END DO
   
-    ! VT = MATMUL( S , VT )
     DO j=1,n
         DO i=1,n
             VT(i,j) = S(i) * VT(i,j)
         END DO
     END DO
-    ! Ainv = MATMUL( U , VT )
     CALL DGEMM( "N","N",N,N,N, 1.d0,  U,N,  VT,N,  0.d0,  ainv,N )
   
 END SUBROUTINE SvdInvert_SymMat

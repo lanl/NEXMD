@@ -180,10 +180,8 @@ contains
                write(6,'(''QMMM: dspevd required INTEGER scratch = '',i12,'' INTEGERS.'')') &
                     qmmm_scratch%lapack_dc_int_scr_aloc
             end if
-!             qmmm_scratch%lapack_dc_real_scr_aloc=1+6*qm2_struct%norbs+(qm2_struct%norbs*qm2_struct%norbs)
             allocate (qmmm_scratch%lapack_dc_real_scr(qmmm_scratch%lapack_dc_real_scr_aloc),stat=ier)
             REQUIRE(ier==0)
-!            qmmm_scratch%lapack_dc_int_scr_aloc=3+5*qm2_struct%norbs
             allocate (qmmm_scratch%lapack_dc_int_scr(qmmm_scratch%lapack_dc_int_scr_aloc), stat=ier)
             REQUIRE(ier==0)
          else
@@ -290,9 +288,6 @@ contains
              allocate (qmmm_scratch%mat_diag_workspace(qm2_struct%norbs,1),stat=ier)
              REQUIRE(ier==0)
              write(6,'(''| QMMM: Using dsyevr routine (diag_routine=7).'')')
-!            if (verbosity >= 2) then
-!              write(6,'(''QMMM: Calling dsyevr to query required scratch array sizes.'')')
-!            end if
 
 ! RCW 2008/01/22 - weird segfaults in qm2_hcore_qmqm when we call dsyevr to calculate the memory requirements
 !                  so for the moment we will just use the default amounts.
@@ -308,12 +303,6 @@ contains
             !The dimension of the array IWORK.  LIWORK >= max(1,10*N).
             qmmm_scratch%lapack_dc_int_scr_aloc = 10*qm2_struct%norbs
 
-!            abstol = 2.0d0 * dlamch('S')
-!            call dsyevr('V','A','U',qm2_struct%norbs,qmmm_scratch%pdiag_scr_norbs_norbs,qm2_struct%norbs, &
-!                 0.0d0, 0.0d0, 0, 0, abstol, int_dummy, qmmm_scratch%mat_diag_workspace(1,1), &
-!                 qm2_struct%eigen_vectors, qm2_struct%norbs, qmmm_scratch%lapack_dc_int_scr_aloc, &
-!                 aloc_real_scr, -1, qmmm_scratch%lapack_dc_int_scr_aloc, -1, ier)
-!            qmmm_scratch%lapack_dc_real_scr_aloc = int(aloc_real_scr)
 
             !for dsyevr we pad lapack_dc_int_scr with 2*norbs to allow use in ISUPPZ.
             qmmm_scratch%lapack_dc_int_scr_aloc = qmmm_scratch%lapack_dc_int_scr_aloc+2*qm2_struct%norbs
@@ -328,7 +317,6 @@ contains
             allocate (qmmm_scratch%lapack_dc_int_scr(qmmm_scratch%lapack_dc_int_scr_aloc),stat=ier)
             REQUIRE(ier==0)
             if (.not. allow_pseudo_diag) then
-              !qmmm_scratch%pdiag_scr_norbs_norbs will not have been allocated so make sure
               !we allocate it.
               allocate(qmmm_scratch%pdiag_scr_norbs_norbs(qm2_struct%norbs,qm2_struct%norbs),stat=ier)
               REQUIRE(ier==0)

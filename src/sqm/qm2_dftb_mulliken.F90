@@ -65,37 +65,6 @@ subroutine mulliken(qmmm_nml, qmmm_mpi, qm2_struct,qmmm_struct, nquant_nlink,NDI
          qzero( izp(1:qmmm_struct%nquant_nlink) ) &
          - qmat(1:qmmm_struct%nquant_nlink)
 
-!! ===========================================================
-!!               EVERYTHING BELOW THIS POINT 
-!!                IS NOT USED IN AMBER (yet)
-!! ===========================================================
-!!   ! Total molecular charge
-!!   do j = 1,nquant_nlink
-!!      qtot = qtot+qmat(j)
-!!   end do
-!!
-!!   ! ===============
-!!   ! Electric dipole
-!!   ! ===============
-!!
-!!   ! Dipole vector components
-!!   do i = 1,3
-!!      dipol(i) = 0.0d0
-!!
-!!      do j = 1,nquant_nlink
-!!         izpj = izp(j)
-!!         qhelp = qzero(izpj) - qmat(j)
-!!         dipol(i) = dipol(i) + qhelp*qm_coords(i,j)*A_TO_BOHRS
-!!      end do
-!!      dipol(i) = dipol(i)*2.541765d0 !to Debye?
-!!   end do
-!!
-!!   ! Norm of dipole vector
-!!   dipabs = 0.0d0
-!!   do i = 1,3
-!!      dipabs = dipabs + dipol(i)**2
-!!   end do
-!!   dipabs = sqrt(dipabs)
 
 end subroutine mulliken
 
@@ -275,8 +244,6 @@ end subroutine qm2_dftb_mull_pop
 
 subroutine qm2_dftb_dens_matrix(adim, ndim)
 !! Builds density matrix into ks_struct%density
-   !ks_struct%density(i,j) = ks_struct%density(i,j) 
-   !                       + ks_struct%occ(k) * ks_struct%a(i,k) * ks_struct%a(j,k)
 
    use qm2_dftb_module, only: ks_struct
 

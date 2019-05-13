@@ -310,13 +310,6 @@ subroutine qm2_setup_orb_exp(qm2_params,qmmm_struct)
 
 !Deallocate the original 2 parameter arrays here as they are no longer needed from this point on.
 !  commented by Taisung Lee: they will be needed for analytic calculations of slater overlap
-!
-!     deallocate (qm2_params%s_orb_exp_by_type, stat = ier)
-!     REQUIRE(ier == 0)
-!     deallocate (qm2_params%p_orb_exp_by_type, stat = ier)
-!     REQUIRE(ier == 0)
-!     deallocate (qm2_params%d_orb_exp_by_type, stat = ier)
-!     REQUIRE(ier == 0)
      
 !Now, lets pre-compute a lot of orbital interaction solutions to save time later.
 !Allocate the memory required
@@ -433,7 +426,6 @@ subroutine qm2_setup_orb_exp(qm2_params,qmmm_struct)
                                                  *atom_orb_cc_s_x_d
 
 
-             !SQRT((two*SQRT(APB)*AMB)**3)*atom_orb_cc_p_x_p
              atom_orb_pp_eqn=sqrt((2.0D0*sqrt(atom_orb_zz_p_x_p) &
                                                  *atom_orb_zz_one_p_a_p)**3) &
                                                  *atom_orb_cc_p_x_p

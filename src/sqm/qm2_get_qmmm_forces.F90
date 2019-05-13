@@ -81,7 +81,6 @@ subroutine qm2_get_qmmm_forces(qm2_rij_eqns, qm2_params, qmmm_nml, qmmm_mpi,qmmm
 
       loop_count=0
 
-      !do jj=1,qmmm_struct%nquant_nlink
       do jj=qmmm_mpi%nquant_nlink_start,qmmm_mpi%nquant_nlink_end
          jf=qm2_params%orb_loc(1,jj)
          jl=qm2_params%orb_loc(2,jj)
@@ -283,20 +282,6 @@ subroutine qm2_get_qmmm_forces(qm2_rij_eqns, qm2_params, qmmm_nml, qmmm_mpi,qmmm
               ! electronic part; use finite difference to calculate the derivatives
               ! the OPNQ subroutines will not work properly for very small difference
               ! hence the step is multiplied by changeScale
-!              do k=1,3
-!                qmmm_struct%qm_coords(k,jj)=qmmm_struct%qm_coords(k,jj)+halfChange*changeScale
-!                call Opnq_fock_atom_pair(jj, j, opnq_pair, fock_opnq_pair)
-!                AA=total_density*fock_opnq_pair*.5d0
-!                   
-!                qmmm_struct%qm_coords(k,jj)=qmmm_struct%qm_coords(k,jj)-change*changeScale
-!                call Opnq_fock_atom_pair(jj, j, opnq_pair, fock_opnq_pair)
-!                EE=total_density*fock_opnq_pair*.5d0
-! 
-!                qmmm_struct%qm_coords(k,jj)=qmmm_struct%qm_coords(k,jj)+halfChange*changeScale
-!                pair_force(k)=(AA-EE)*EV_TO_KCAL*onechange/changeScale
-!              end do  !k
-              
-              ! opnq 
               pair_force=0.d0
               call Opnq_fock_atom_pair(qmmm_opnq, qm2_params,qm2_struct,qmmm_struct,jj, &
 			j, opnq_pair, fock_opnq_pair, temp(1), temp(2), temp(3))
@@ -380,9 +365,7 @@ subroutine qm2_deriv_qmmm_light(qm2_params,qmmm_nml,qm2_rij_eqns, qm2_struct, qm
 !           Note: This could technically be done at the same time we do the
 !                 energy in hcore_qmmm.
 
-    !if ((qmmm_nml%qmmm_int == 3 .or. qmmm_nml%qmmm_int == 4) .and. qmmm_nml%qmtheory%PM3) then  ! PM3/MM*
     if (qmmm_struct%PM3MMX_INTERFACE) then
-      ! PM3/MM* MODIFIED QM-MM INTERFACE
 
       qmitype = qmmm_struct%qm_atom_type(iqm)
 
@@ -394,13 +377,11 @@ subroutine qm2_deriv_qmmm_light(qm2_params,qmmm_nml,qm2_rij_eqns, qm2_struct, qm
          sf1 = qm2_params%scale_factor1_pm3mmx(2,qmitype)
          sf2 = qm2_params%scale_factor2_pm3mmx(2,qmitype)
       end if
-      ! rho_pm3mmx in qmmm_int==3 is always zero
       rho_pm3mmx = qm2_params%rho_pm3mmx(qmitype)
 
       r2 = vec_qm_mm1*vec_qm_mm1+vec_qm_mm2*vec_qm_mm2+vec_qm_mm3*vec_qm_mm3
       RR2=r2*A2_TO_BOHRS2 !Conversion to bohrs^2
       oneRIJ=one/sqrt(r2) !1/sqrt is faster than doing sqrt.
-!      RIJ=one/oneRIJ
       RIJ=R2*oneRIJ
       SQRTAEE=one/sqrt(RR2+(qm2_params%multip_2c_elec_params(3,iqm)+rho_pm3mmx)**2)
 
@@ -648,12 +629,10 @@ subroutine qm2_deriv_qmmm_heavy(qm2_params,qmmm_nml,qm2_rij_eqns,qm2_struct, &
       vec_qm_mm3=xyz_qm(3) - xyz_mm(3)
       mm_charge = xyz_mm(4)
 #include "qm2_array_locations.h"
-      !if ((qmmm_nml%qmmm_int == 3 .or. qmmm_nml%qmmm_int == 4) .and. qmmm_nml%qmtheory%PM3) then  ! PM3/MM*
       if (qmmm_struct%PM3MMX_INTERFACE) then
         ! PM3/MM* - MODIFIED QM-MM INTERFACE
 
         qmitype = qmmm_struct%qm_atom_type(iqm)
-        ! rho_pm3mmx in qmmm_int==3 is always zero
         rho_pm3mmx = qm2_params%rho_pm3mmx(qmitype)
 
         r2 = vec_qm_mm1*vec_qm_mm1+vec_qm_mm2*vec_qm_mm2+vec_qm_mm3*vec_qm_mm3
@@ -962,9 +941,7 @@ subroutine qm2_deriv_qmmm_heavy(qm2_params,qmmm_nml,qm2_rij_eqns,qm2_struct, &
 !           Note: This could technically be done at the same time we do the
 !                 energy in hcore_qmmm.
 
-    !if ((qmmm_nml%qmmm_int == 3 .or. qmmm_nml%qmmm_int == 4) .and. qmmm_nml%qmtheory%PM3) then  ! PM3/MM*
     if (qmmm_struct%PM3MMX_INTERFACE) then
-      ! PM3/MM* - MODIFIED QM-MM INTERFACE
 
       qmitype = qmmm_struct%qm_atom_type(iqm)
 

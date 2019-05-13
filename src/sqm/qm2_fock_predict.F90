@@ -67,9 +67,6 @@ subroutine qm2_fock_store(qm2_struct,matsize, fock_matrix, hmatrix)
 !represents a serial bottleneck.
 
    !Step 1 move all current stored matrices down the chain.
-!   qm2_struct%fock_mat_final4(1:matsize) = qm2_struct%fock_mat_final3(1:matsize)
-!   qm2_struct%fock_mat_final3(1:matsize) = qm2_struct%fock_mat_final2(1:matsize)
-!   qm2_struct%fock_mat_final2(1:matsize) = qm2_struct%fock_mat_final1(1:matsize)
 
 !RCW: Just rotate pointers for speed.
    pointer_temp => qm2_struct%fock_mat_final4

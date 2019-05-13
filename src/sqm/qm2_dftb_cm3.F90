@@ -79,69 +79,31 @@ subroutine qm2_dftb_cm3(qmmm_nml,qmmm_mpi,qmmm_struct, scf_mchg,scf_cm3)
    ! Calculates the density matrix (DFTB doesn't by default)
    call qm2_dftb_dens_matrix(adim, ndim)
 
-! write(6,*) "DENSITY MATRIX"
-!write(6,*) density
-!write(6,*)
-!write(6,*) "OVERLAP MATRIX"
-!write(6,*) overl
 !! -------------------------------------------------------------
 !! ---  Build Mayer bond order matrix, B: (the CM3 B-Matrix) ---
 !! -------------------------------------------------------------
    do i = 1, qmmm_struct%nquant_nlink      ! (k)
       lambda_begin = ind(i)+1
       lambda_end   = ind(i+1)
-!write(6,*) "i = ", i,"     lambda begin:",lambda_begin,"       end:",lambda_end
       do j = 1, qmmm_struct%nquant_nlink
          omega_begin = ind(j)+1
          omega_end   = ind(j+1)
          temp_b = 0.0d0
-!write(6,*) "j = ", j,"      omega begin:", omega_begin,"       end:", omega_end
          do lambda = lambda_begin, lambda_end
             do omega = omega_begin, omega_end
                PS1 = 0.0d0
                PS2 = 0.0d0
-!write(6,*) "   l begin: ",1, "   l end: ", NDIM
                do l = 1, NDIM
                   PS1 = PS1 + Density(omega ,l) * Overl(lambda,l)
                   PS2 = PS2 + Density(lambda,l) * Overl(omega ,l)
                end do
                temp_b = temp_b +  PS1 * PS2
-!write(6,*) "TEMP_B = ", temp_b
             end do ! omega
          end do ! lambda
          cm3%b(i,j) = temp_b
       end do ! j
    end do ! i
 
-!!! Print Mayer bond order matrix
-!
-!      n_blocks_to_print  = int(qmmm_struct%nquant_nlink / 5)
-!      n_extra_columns = qmmm_struct%nquant_nlink - (5 * n_blocks_to_print)
-!
-!      ! Trace of Mayer BO matrix. Significance??
-!      tr = 0.0d0
-!      do i=1,qmmm_struct%nquant_nlink
-!         tr = tr + cm3%b(i,i)
-!         write(6,*)cm3%b(i,i),tr
-!      end do
-!      write(6,*) "TRACE of Mayer BO matrix= ", tr
-!
-!      begin = 1
-!      do i = 1, n_blocks_to_print
-!         write(6,*)
-!         write(6,'(7X,5(3X,I3,"(",A2,")"))') (l,mol%atyp(izp(l)),l=begin,begin+4)
-!         do j = 1, qmmm_struct%nquant_nlink
-!            write(6,'(I3,"(",A2,")",5(F10.5))')j,mol%atyp(izp(j)),(cm3%b(l,j),l=begin,begin+4)
-!         end do
-!         begin = begin + 5
-!      end do
-!
-!      write(6,*)
-!      write(6,'(7X,5(3X,I3,"(",A2,")"))') (l,mol%atyp(izp(l)),l=begin,begin+n_extra_columns-1)
-!      do j = 1, qmmm_struct%nquant_nlink
-!         write(6,'(I3,"(",A2,")",5(F10.5))')j,mol%atyp(izp(j)),(cm3%b(l,j),l=begin,begin+n_extra_columns-1)
-!      end do
-!
 
 
 
@@ -161,23 +123,6 @@ subroutine qm2_dftb_cm3(qmmm_nml,qmmm_mpi,qmmm_struct, scf_mchg,scf_cm3)
    end do
 
 
-!      write(6,*) " CM3: T-MATRIX"
-!
-!      begin = 1
-!      do i = 1, n_blocks_to_print
-!         write(6,*)
-!         write(6,'(7X,5(3X,I3,"(",A2,")"))') (l,mol%atyp(izp(l)),l=begin,begin+4)
-!         do j = 1, qmmm_struct%nquant_nlink
-!            write(6,'(I3,"(",A2,")",5(F10.5))')j,mol%atyp(izp(j)),(cm3%t(l,j),l=begin,begin+4)
-!         end do
-!         begin = begin + 5
-!      end do
-!
-!      write(6,*)
-!      write(6,'(7X,5(3X,I3,"(",A2,")"))') (l,mol%atyp(izp(l)),l=begin,begin+n_extra_columns-1)
-!      do j = 1, qmmm_struct%nquant_nlink
-!         write(6,'(I3,"(",A2,")",5(F10.5))')j,mol%atyp(izp(j)),(cm3%t(l,j),l=begin,begin+n_extra_columns-1)
-!      end do
 
 !! ----------------------------------
 !! ---  Calculate the CM3 charges ---
@@ -191,7 +136,6 @@ subroutine qm2_dftb_cm3(qmmm_nml,qmmm_mpi,qmmm_struct, scf_mchg,scf_cm3)
       end do
    end do
 
-!write(6,*) " Here: Done calculating CM3 charges..."
 
    ! DEBUG: WRITE OUTPUT
    if (qmmm_nml%verbosity > 3 .and. qmmm_mpi%commqmmm_master) then
@@ -205,10 +149,6 @@ subroutine qm2_dftb_cm3(qmmm_nml,qmmm_mpi,qmmm_struct, scf_mchg,scf_cm3)
    end if
 
 
-   ! Update scf_mchg to contain the CM3 charges
-   ! do j = 1, qmmm_struct%nquant_nlink
-   !    scf_mchg(j) = cm3%qcm3(j)
-   ! end do
    do j = 1, qmmm_struct%nquant_nlink
       scf_cm3(j) = cm3%qcm3(j)
    end do

@@ -71,10 +71,6 @@ subroutine dispersionread(qmmm_nml, qmmm_struct, nn,ntype,izp,disp_file)
       end do
       close(16)
 
-!!      return
-!!
-!!      write(6,*) "Did not return!!! why?"
-!!   end if
 
    else
       do i = 1, nn

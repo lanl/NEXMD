@@ -105,7 +105,6 @@ subroutine qm2_dftb_ewald_corr(nquant_nlink, corr, mmpot, scf_mchg) !qmat)
    _REAL_ , intent(out) :: corr   ! Correction in Hartree / Bohrs (a.u.)
    _REAL_ , intent(in)  :: mmpot(nquant_nlink)
    _REAL_ , intent(in)  :: scf_mchg(nquant_nlink) 
-!   _REAL_ , intent(in)  :: qmat(*) 
 
    !Local
    _REAL_ :: etemp

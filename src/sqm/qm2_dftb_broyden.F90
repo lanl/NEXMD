@@ -150,8 +150,6 @@ subroutine broyden(niter,natoms,qmold,qmat)
       !*********** calculation of coefficient matrices *************
       !***********    and the sum for corrections      *************
 
-      ! recall: a(i,j)    is a symmetric matrix
-      !         beta(i,j) is the inverse of [ w0**2 i + a ]
 
       lastit = lastit + 1
       lastm1 = lastit - 1
@@ -252,7 +250,6 @@ subroutine broyden(niter,natoms,qmold,qmat)
       lastit  = 1
       ilastit = lastit
 
-      ! F(i) = qmold(i) - qmat(i)
       f(1:natoms)=qmat(1:natoms)-qmold(1:natoms)
 
       ! Store F(i) into unit31(i,1)

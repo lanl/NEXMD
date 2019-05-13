@@ -203,7 +203,6 @@
    ! Maximum dimension of Krylov expansion in davidson
    qm2ds%nd=5*qm2ds%Mx ! empirical factor of 5
    ! apparently this is not enough
-   !qm2ds%nd=500 ! kav: testing
    
    ! Pointer to ground state Hartree-Fock eigenenergies, (1:Nb)
    qm2ds%ehf=>qmmm_scratch%mat_diag_workspace(1:qm2_struct%norbs,1)

@@ -78,7 +78,6 @@ contains
                     j=qm2_params%natomic_orbs(jj)
                     starting=qmmm_struct%w_position(ii,jj)
                     size_ij=( i*(i+1)*j*(j+1) ) /4
-                    !write(*,*) "starting ", starting,size_ij,i,j,k,l
                     call W2Fock_atompair(W(starting:starting+size_ij-1), F, ptot, &
                         i, j, k, l, qmmm_struct%W2Fock_atompair_initialized,qmmm_struct%w_index)
                 end if
@@ -218,7 +217,6 @@ contains
         _REAL_::temp1, temp2, tt1(81), tt2(81), wlocal(9,9,9,9)
         logical::toCalc(81)
 
-        !write(*,*) "norbs_a = ",norbs_a,"norbs_b = ", norbs_b,"na_starting = ", na_starting,"nb_starting = ", nb_starting
         if (.not. initialized) then
     
             w_index=-1
@@ -253,7 +251,6 @@ contains
             jj=ii*(ii-1)/2+na_starting-1
             do j=1, i
                 location=jj+j
-                !write(*,*)"Fa i = ",i,"j = " ,j,"location =",location;
                 index_Fa(i, j)=location
                 index_Fa(j, i)=location
             end do !nb
@@ -263,7 +260,6 @@ contains
             jj=ii*(ii-1)/2+nb_starting-1
             do l=1, k
                 location=jj+l
-                !write(*,*)"Fb k = ",k,"l = " ,l,"location =",location;
                 index_Fb(k, l)=location
                 index_Fb(l, k)=location
             end do !nb
@@ -288,10 +284,8 @@ contains
             do j=1, b2
                 location=jj+b1+j-1
                 if (k==0) then
-                    !write(*,*)"Fab k=0  i = ",i,"j = " ,j,"location =",location;
                     index_Fab(i, j)=location
                 else
-                    !write(*,*)"Fab k=1  j = ",j,"i = " ,i,"location =",location;
                     index_Fab(j, i)=location
                 end if
             end do !nb
@@ -323,8 +317,6 @@ contains
                         do l=1, k
                             temp1=temp1+tt1(ii)* &
                                 W(w_index(i,j,k,l,na,nb))
-                            !write(*,*)"w_index_(",i,",",j,",",k,",",l,") = ", w_index(i,j,k,l,na,nb)
-                            !write(*,*) "W_(",w_index(i,j,k,l,na,nb),")=", W(w_index(i,j,k,l,na,nb))
                             ii=ii+1
                         end do
                     end do
@@ -334,15 +326,10 @@ contains
                         do l=1, k
                             temp1=temp1+tt1(ii)* &
                                 W(w_index(k,l,i,j,nb,na));
-                            !write(*,*)"_w_index(",k,",",l,",",i,",",j,") = ", w_index(k,l,i,j,na,nb);
-                            !write(*,*) "_W(",w_index(k,l,i,j,na,nb),")=", W(w_index(k,l,i,j,na,nb));
                             ii=ii+1;
                         end do
                     end do
                 end if  !na_starting.lt.nb_starting
-                !write(*,*)"F(",i,",",j,") = ", F(index_Fa(i,j))
-                !write(*,*)"D(",i,",",j,") =	", D(index_Fa(i,j))
-                !write(*,*)"G(",i,",",j,") = ", temp1;
                 F(index_Fa(i,j))=F(index_Fa(i,j))+temp1
             end do
         end do
@@ -350,7 +337,6 @@ contains
         ! for the exchange part, only calculates when na_starting.gt.nb_starting
         ! to avoid double counting
         if (na_starting.gt.nb_starting) then
-            !write(*,*)"na_starting = ", na_starting,"nb_starting = ", nb_starting
             ii=1
             do l=1, norbs_b
                 do j=1, norbs_a
@@ -370,13 +356,9 @@ contains
                     ii=1
                     do l=1, norbs_b
                         do j=1, norbs_a
-                            !if (toCalc(ii)) then
                             temp1=temp1+tt1(ii)* &
                                 W(w_index(i,j,k,l,na,nb))
-                            !write(*,*)"Fab w_index(",i,",",j,",",k,",",l,") = ", w_index(i,j,k,l,na,nb);
-                            !write(*,*) "W(",w_index(i,j,k,l,na,nb),")=", W(w_index(i,j,k,l,na,nb));
                             ii=ii+1
-                            !end if
                         end do
                     end do
                     F(index_Fab(i,k))=F(index_Fab(i,k))-temp1*half

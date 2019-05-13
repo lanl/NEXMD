@@ -69,9 +69,6 @@ subroutine qm2_print_energy(qmmm_scratch, cosmo_c_struct,qm2_struct, verbosity, 
         if  ( qmtheory%DFTB ) then
            write (6,'("QMMM:         Repulsive energy = ",f18.8," eV (",f18.8," KCal/mol)")') &
                 qmmm_struct%enuclr_qmqm,qmmm_struct%enuclr_qmqm*EV_TO_KCAL
-           !! write (6,'("QMMM:        Careful: Dispersion Energy Already Included.")')
-           !! write (6,'("QMMM:        Dispersion Energy = ",f18.8," eV (",f18.8," KCal/mol)")') &
-           !!           dftb_edisp*AU_TO_KCAL
            total_energy = qmmm_struct%elec_eng + qmmm_struct%enuclr_qmqm
         else
            write (6,'("QMMM: QM core - QM core energy = ",f18.8," eV (",f18.8," KCal/mol)")') &

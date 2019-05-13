@@ -121,23 +121,11 @@ subroutine qm2_print_info(qmmm_nml, qm2_struct, qmmm_struct)
   ! ---------------------------------------------
   ! Print the reference for the PM3/MM* interface
   ! ---------------------------------------------
-  !if (qmmm_nml%qmmm_int == 3 .AND. qmmm_nml%qmtheory%PM3) then
   if (qmmm_struct%PM3MMX_INTERFACE) then
      write (6,'(/,"| QMMM: *** PM3/MM* (WITH MODIFIED QM-MM INTERFACE) APPLIED ***")')
      write (6,'("| QMMM: Ref: Q.T.WANG and R.A.BRYCE, JCTC, 5, 2206, (2009)")') 
   end if
 
-  ! ---------------------------------
-  ! Information on peptide correction
-  ! ---------------------------------
-  if (qmmm_nml%peptide_corr) then
-     write (6,'(''QMMM: MOLECULAR MECHANICS CORRECTION APPLIED TO PEPTIDE LINKAGES'')')
-     write (6,'(''QMMM: '',i5,'' PEPTIDE LINKAGES HAVE BEEN FOUND:'')') qm2_struct%n_peptide_links
-     do i = 1, qm2_struct%n_peptide_links
-        write(6,'(''QMMM:    '',i4,'' - '',i4,'' - '',i4,'' - '',i4)') qm2_struct%peptide_links(1,i), &
-             qm2_struct%peptide_links(2,i), qm2_struct%peptide_links(3,i), qm2_struct%peptide_links(4,i)
-     end do
-  end if
 
 #ifdef SQM
   ! ---------------------------------------
@@ -385,10 +373,6 @@ subroutine qm_print_dyn_mem(qm2_params,qmmm_nml,qmewald, qm_gb, qmmm_mpi, qmmm_s
 
   element_memory = (size(qm2_struct%old_den_matrix)+size(qm2_struct%old2_density))* &
                    bytes_per_real
-  if (qmmm_nml%density_predict == 1) then
-    element_memory = element_memory + (( size(qm2_struct%md_den_mat_guess1) + &
-                                        size(qm2_struct%md_den_mat_guess2) ) * bytes_per_real)
-  end if
   write(6,'("| QMMM:          Density Matrix Copies : ",i12," bytes")') element_memory
   total_memory = total_memory + element_memory
 
@@ -494,7 +478,6 @@ subroutine qm_print_dyn_mem(qm2_params,qmmm_nml,qmewald, qm_gb, qmmm_mpi, qmmm_s
   if (qmmm_nml%qmtheory%DFTB) then
     element_memory = 0
   else 
-    !qmmm_scratch%mat_diag_workspace
     element_memory=size(qmmm_scratch%mat_diag_workspace)*bytes_per_real
   end if
 

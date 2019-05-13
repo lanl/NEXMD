@@ -1844,6 +1844,5 @@
      &              +XM(6) * CLM36                                      
       ENDIF 
   380 END DO 
-!     WRITE(6,'('' CORE:'',/(2X,10F12.5))') CORE                        
       RETURN 
       END subroutine qm2_repp_d                                          

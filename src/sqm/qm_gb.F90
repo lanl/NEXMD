@@ -65,7 +65,6 @@ subroutine qmgb_calc_qmqm_onefij(qm_gb, qmmm_mpi,nquant_nlink, qmqm_onefij, iqma
   integer i, j, loop_count, inner_loop_count, qmi, qmj
 
   loop_count = 0
-!  do i=1, nquant_nlink
   do i = qmmm_mpi%nquant_nlink_start, qmmm_mpi%nquant_nlink_end
     xqm = qm_coords(1,i)
     yqm = qm_coords(2,i)
@@ -157,7 +156,6 @@ subroutine qmgb_calc_mm_pot(qm_gb, qmmm_mpi, qmmm_nml, &
 
   diel_fac = qm_gb%intdieli - qm_gb%extdieli !Recalculated in inner loop if saltcon_on
 
-!  do i = 1, nquant_nlink
   do i = qmmm_mpi%nquant_nlink_start, qmmm_mpi%nquant_nlink_end
     xqm = qm_coords(1,i)
     yqm = qm_coords(2,i)
@@ -255,7 +253,6 @@ subroutine qmgb_calc_qm_pot(qm_gb, qmmm_mpi, gb_qmpot,qmqm_onefij, scf_mchg )
 !between cpus as the calculation of fij values.
   loop_count = 0 
   if ( qm_gb%saltcon_on ) then
-!    do i = 1, nquant_nlink
     do i = qmmm_mpi%nquant_nlink_start, qmmm_mpi%nquant_nlink_end !1 to nquant_nlink
       temp_pot = 0.0d0
       inner_loop_end = qm_gb%qmqm_gb_list(1,i)+1
@@ -269,7 +266,6 @@ subroutine qmgb_calc_qm_pot(qm_gb, qmmm_mpi, gb_qmpot,qmqm_onefij, scf_mchg )
     end do !i=1, nquant
   else
     diel_fac = qm_gb%intdieli - qm_gb%extdieli
-!    do i = 1, nquant_nlink
     do i = qmmm_mpi%nquant_nlink_start, qmmm_mpi%nquant_nlink_end
       temp_pot = 0.0d0
       inner_loop_end = qm_gb%qmqm_gb_list(1,i)+1

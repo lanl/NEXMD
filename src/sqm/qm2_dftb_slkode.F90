@@ -124,7 +124,6 @@ subroutine slkode(dist,i,j,em,LDIM,iovpar)
 
 
 
-  ! r2 = x^2 + y^2 + z^2
   r2=0.0
   do l=1,3
      x(l)=dist(l)

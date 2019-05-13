@@ -38,7 +38,6 @@ subroutine externalshift(qmmm_mpi, qmmm_struct,qm_coords,izp,shiftE)
    _REAL_  :: gamma
 
    do j=1,qmmm_struct%nquant_nlink ! loop through real qm atoms
-!   do j=qmmm_mpi%nquant_nlink_start, qmmm_mpi%nquant_nlink_end
       shiftE(j) = 0.0d0
       do k=1,qmmm_struct%qm_mm_pairs ! loop through external charges
          dif(1:3) = (qm_coords(1:3,j) - qmmm_struct%qm_xcrd(1:3,k))*A_TO_BOHRS

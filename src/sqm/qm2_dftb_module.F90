@@ -70,7 +70,6 @@ module qm2_dftb_module
    !         dispersionread       (qm2_dftb_dispersionread.f)
    !
    type dispertmp_structure
-      !_REAL_ :: C6(NNDIM,NNDIM),Rvdw(NNDIM,NNDIM)
       _REAL_, dimension(:,:), pointer :: C6,Rvdw
       _REAL_ :: A,B,C,r0,rv
    end type dispertmp_structure
@@ -86,7 +85,6 @@ module qm2_dftb_module
       _REAL_, dimension(:)  , pointer :: Ni0 ! Ni0(MAXTYP)
       _REAL_, dimension(:,:), pointer :: h1  ! h1(MAXTYP,4)
       _REAL_, dimension(:,:), pointer :: h2  ! h2(MAXTYP,4)
-      !!character(len=2), dimension(:), pointer :: atyp ! (MAXTYP) !! Moved to 'mol'
 
       _REAL_  :: scale
       logical :: read_DISP_DOT_INP
@@ -124,19 +122,6 @@ module qm2_dftb_module
    !         dylcao                (qm2_dftb_dylcao.f)
    !         qm2_dftb_load_params  (qm2_dftb_load_params.f)
    !
-   !type ctrl_structure
-   !   _REAL_ :: fmax
-   !   _REAL_ :: scftol
-   !   _REAL_ :: deltat
-   !   _REAL_ :: tatom
-   !   _REAL_ :: telec
-   !   _REAL_ :: wvscale
-   !   integer :: maxcyc
-   !   integer :: mode
-   !   logical :: chrr
-   !   logical :: scfhelp
-   !end type ctrl_structure
-   !type (ctrl_structure) ctrl
 
    ! common /mol/ x,qmat,nn,ntype,atyp,atnames
    ! Used by:
@@ -144,9 +129,7 @@ module qm2_dftb_module
    !         qm2_dftb_load_params (qm2_dftb_load_params.f)
    !         qm2_dftb_main        (qm2_dftb_main.f)
    !
-   ! 'nn' --> qmmm_struct%nquant_nlink
    type mol_structure
-      !_REAL_ :: qmat(nndim)
       _REAL_, dimension(:), pointer :: qmat
       character(len=2), dimension(:), pointer :: atyp ! (MAXTYP)
    end type mol_structure
@@ -162,11 +145,6 @@ module qm2_dftb_module
    !  FUNCTION skhpar          (qm2_dftb_skpar.f)
    !
    type sktab_structure
-      !_REAL_  :: sr(MAXTYP,MAXTYP)                ! Step widht
-      !integer :: dimens(MAXTYP,MAXTYP)            ! Number of distances stored in SK file
-      !_REAL_  :: skself(3,MAXTYP)                 ! d, p and s (self) energies.
-      !_REAL_  :: skhtab(10,MAXTAB,MAXTYP,MAXTYP)  ! Parameters for H
-      !_REAL_  :: skstab(10,MAXTAB,MAXTYP,MAXTYP)  ! Parameters for S
 
       character(len=1024), dimension(:,:), pointer :: skfiles ! (MAXTYP,MAXTYP)
       character(len=2 ), dimension(:)  , pointer :: latyp   ! (MAXTYP)
@@ -189,11 +167,6 @@ module qm2_dftb_module
    !         FUNCTION repen   (qm2_dftb_repulsiv.f)
    !         FUNCTION grdrep  (qm2_dftb_repulsiv.f)
    type spltab_structure
-      !integer :: numint(MAXTYP,MAXTYP)         ! Number of splines (intervals)
-      !_REAL_  :: cutoff(MAXTYP,MAXTYP)         ! Spline cutoff
-      !_REAL_  :: efkt(3,MAXTYP,MAXTYP)         ! Short-distance exponential parameters
-      !_REAL_  :: xr(2,MAXINT,MAXTYP,MAXTYP)    ! Spline intervals (1=begin, 2=end)
-      !_REAL_  :: coeff(6,MAXINT,MAXTYP,MAXTYP) ! Spline coefficients
 
       integer, dimension(:,:)    , pointer :: numint      ! Number of splines (intervals)
       _REAL_ , dimension(:,:)    , pointer :: cutoff      ! Spline cutoff
@@ -223,7 +196,6 @@ module qm2_dftb_module
    !         FUNCTION skpar         (qm2_dftb_skpar.f)
    !         slkmatrices            (qm2_dftb_slkode.f)
    !         slkode                 (qm2_dftb_slkode.f)
-   !integer :: lmax(MAXTYP)          !! lmax(mol%ntype): Max # of orbitals for type "ntype"
    integer, dimension(:), pointer :: lmax    !! lmax(qmmm_struct%qm_ntypes): Max # of orbitals for type "ntype"
 
    ! common /machine/ dacc           Machine precision*4.0d0
@@ -245,8 +217,6 @@ module qm2_dftb_module
    !         gettab                  (qm2_dftb_gettab.f)
    !
    type mcharge_structure
-      !_REAL_ :: qzero(MAXTYP)
-      !_REAL_ :: uhubb(MAXTYP)
 
       _REAL_, dimension(:), pointer :: qzero
       _REAL_, dimension(:), pointer :: uhubb
@@ -275,25 +245,6 @@ module qm2_dftb_module
    ! These arrays are used in the solution of the 
    ! Kohn-Sham equations for DFTB
    type ks_dftb_structure
-!!      integer :: ind(NNDIM+1)            ! Indices in the H and S matrices
-!!      _REAL_ :: hgrad(3,NNDIM)           ! receipient for the gradients from each part.
-!!      _REAL_ :: au(LDIM,LDIM)            ! H data from SK matrices
-!!      _REAL_ :: bu(LDIM,LDIM)            ! S data from SK matrices
-!!      _REAL_ :: a(MDIM,MDIM)             ! Upper triangle of H (for eigenvector solver)
-!!      _REAL_ :: b(MDIM,MDIM)             ! Upper triangle of S (for eigenvector solver)
-!!      _REAL_ :: gammamat(NNDIM,NNDIM)    ! Scratch space (?) for gammamatrix (in hamilshift)
-!!      _REAL_ :: derivx(NNDIM,NNDIM)      ! SCRATCH SPACE Used only in gammagrad call
-!!      _REAL_ :: derivy(NNDIM,NNDIM)      ! SCRATCH SPACE Used only in gammagrad call
-!!      _REAL_ :: derivz(NNDIM,NNDIM)      ! SCRATCH SPACE Used only in gammagrad call
-!!      _REAL_ :: h(34*MDIM)               ! Scratch space for the eigenvalue solver
-!!      _REAL_ :: ev(MDIM)                 ! Orbital energies (eigenvalues)
-!!      _REAL_ :: occ(MDIM)                ! Occupation numbers
-!!      _REAL_ :: qmulli(MDIM)             ! Electron population per atomic orbital
-!!      _REAL_ :: qmold(NNDIM)             ! Old mulliken charges (for SCC)
-!!      _REAL_ :: hamil(MDIM,MDIM)         ! hamiltonian matrix
-!!      _REAL_ :: overl(MDIM,MDIM)         ! Overlap matrix
-!!      _REAL_ :: shift(NNDIM)             ! Energy shift due to SCC (gamma)
-!!      _REAL_ :: shiftE(NNDIM)            ! Energy shift due to external charges
 
 
       integer, dimension(:)  , pointer :: ind      ! (NNDIM+1)     => Indices in the H and S matrices

@@ -2,9 +2,6 @@
    integer tms(4), get_time
 	real*4 etime,etime1,tarry(2)
 
-!        call times(tms)           ! Linux setting
-!        get_time=tms(1)+tms(2)    ! Linux setting
-!        get_time= mclock()	   ! SGI IRIX setting
         get_time=100*etime(tarry) ! DEC Alpha setting
 
         return

@@ -908,44 +908,6 @@ subroutine dftb_conv_failure(qmmm_nml, qmmm_mpi, qm2_struct, qmmm_struct, string
 end subroutine dftb_conv_failure
 
 
-!!!=========================================
-!!! Currently, this subroutine is not used.
-!!! But I kept it here for the future.
-!!!=========================================
-!subroutine outeigenvectors(lumo,qm_coords,nn)
-!!
-!   use qm2_dftb_module, only: MDIM,LDIM,NDIM,disper, lmax, dacc, mcharge, &
-!         izp_str, ks_struct, fermi_str
-!   use qmmm_module, only : qmmm_nml, qmmm_mpi, qmmm_struct
-!!
-!   implicit none
-!   _REAL_  :: qm_coords(3,nn)
-!   integer :: i,j,k,l,nn,lumo,norbs
-!   character :: filename*10,tmpstr*3
-!
-!!   Do k=1,mdim
-!!    If (k.lt.10) write(tmpstr,'(I1)')k
-!!    If (k.lt.100) write(tmpstr,'(I2)')k
-!!    If (k.lt.1000) write(tmpstr,'(I3)')k
-!!    filename='CUBE.DAT'//tmpstr
-!   open (1,file='CUBE.DAT',status='unknown')
-!   rewind 1
-!   write(1,*)nn
-!   Do l=1,nn
-!       write(1,'(I3,3f15.10)') &
-!       qmmm_struct%iqm_atomic_numbers(l), &
-!       qm_coords(1,l),qm_coords(2,l),qm_coords(3,l)
-!   End do
-!   norbs=ks_struct%ind(nn+1)
-!   write(1,*)norbs
-!      do i=1,norbs
-!         write(1,'(f15.10)') ks_struct%a(i,6)
-!      end do
-!   write(1,*)
-!   endfile 1
-!   close (1)
-
-!end subroutine outeigenvectors
 
 
 

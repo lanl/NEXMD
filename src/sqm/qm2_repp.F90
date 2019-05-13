@@ -83,10 +83,6 @@ subroutine qm2_repp(qmmm_nml, qm2_params, qmmm_struct, IQM, JQM,R,RR2,RI, core, 
          ARG(4) = XXX*XXX + AQE
          ARG(5) = rr2 + AQE
          ARG(6) = ARG(5) + QA*QA
-         ! do I = 1,6
-            !Ross Walker - Inverted this for speed
-            ! SQR(I) = 1.0D0/SQRT(ARG(I))
-         ! end do
          call vdinvsqrt( 6, arg, sqr )
          RI(2) = HALF_AU_TO_EV*SQR(1) - HALF_AU_TO_EV*SQR(2)
          RI(3) = RI(1) + FOURTH_AU_TO_EV*SQR(3) + FOURTH_AU_TO_EV*SQR(4) - HALF_AU_TO_EV*SQR(5)
@@ -116,10 +112,6 @@ subroutine qm2_repp(qmmm_nml, qm2_params, qmmm_struct, IQM, JQM,R,RR2,RI, core, 
          ARG(4) = XXX*XXX + AEQ
          ARG(5) = rr2 + AEQ
          ARG(6) = ARG(5) + QB*QB
-         ! do I = 1,6
-            !Ross Walker - Inverted this for speed
-            ! SQR(I) = 1.0D0/SQRT(ARG(I))
-         ! end do
          call vdinvsqrt( 6, arg, sqr )
          RI(5) = HALF_AU_TO_EV*SQR(1) - HALF_AU_TO_EV*SQR(2)
          RI(11) = RI(1) + FOURTH_AU_TO_EV*SQR(3) + FOURTH_AU_TO_EV*SQR(4) &
@@ -292,10 +284,6 @@ subroutine qm2_repp(qmmm_nml, qm2_params, qmmm_struct, IQM, JQM,R,RR2,RI, core, 
          ZZZ = ZZZ*ZZZ
          ARG(70) = ZZZ + XXX + AQQ
          ARG(71) = ZZZ + YYY + AQQ
-         ! do I = 1,71
-            !Ross Walker - Inverted this for speed
-            ! SQR(I) = 1.0d0/SQRT(ARG(I))
-         ! end do
          call vdinvsqrt( 71, arg, sqr )
          DZE = -HALF_AU_TO_EV*SQR(1) + HALF_AU_TO_EV*SQR(2)
          QZZE = FOURTH_AU_TO_EV*SQR(3) + FOURTH_AU_TO_EV*SQR(4) - HALF_AU_TO_EV*SQR(5)

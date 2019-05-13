@@ -41,23 +41,13 @@ program sqm
 
    character(len=strlen) :: string
 
-!   interface
-!      subroutine qm2_calc_dipole(coord,mass,ipres,lbres,nres)
-!        integer, optional, intent(in) :: nres, ipres(*)
-!        _REAL_, optional, intent(inout) :: mass(*)
-!        _REAL_, intent(inout) :: coord(*)
-!        character(len=4), optional, intent(in) :: lbres(*)
-!      end subroutine qm2_calc_dipole
-!   end interface
 
 
    ! ==== Initialise first_call flags for QMMM ====
    qmmm_struct%qm_mm_first_call = .true.
    qmmm_struct%fock_first_call = .true.
    qmmm_struct%fock2_2atm_first_call = .true.
-   ! qmmm_struct%qm2_deriv_qm_analyt_first_call = .true.
    qmmm_struct%qm2_allocate_e_repul_first_call = .true.
-   ! qmmm_struct%qm2_rotate_qmqm_first_call = .true.
    qmmm_struct%qm2_calc_rij_eqns_first_call = .true.
    qmmm_struct%qm2_scf_first_call = .true.
    qmmm_struct%zero_link_charges_first_call = .true.
@@ -141,13 +131,6 @@ program sqm
                  escf, born_radii, one_born_radii, &
                  intdiel, extdiel, Arad, qm2_struct%scf_mchg )
 
-		! CML TESTING
-!		call deriv(qm2ds%dxyz, qmmm_struct%qm_coords)
-!		print *, 'Force gradient'
-!		print *, qm2ds%dxyz(1:3*natom)
-!		flush(6)
-!		STOP
-		! END CML TESTING
    else
       ! ---------------------
       ! Geometry optimization
@@ -197,11 +180,6 @@ program sqm
    
    write(6,*) 'Final Structure'
    call qm_print_coords(qmmm_nml,0,.true.)
-   if ( qmmm_nml%printbondorders ) then
-      write(6,*) ''
-      write(6,*) 'Bond Orders'
-      call qm2_print_bondorders(qm2_params,qm2_struct,qmmm_struct)
-   end if
 
    if (qmmm_nml%verbosity > 3) then
       ! Calculate and print also forces in final step
@@ -289,14 +267,6 @@ subroutine sqm_energy(qm2ds,qmmm_struct,natom,coords,escf, &
    _REAL_ :: forcemod(3)
    integer :: lnk_no, mm_no
 
-  ! interface
-  !   subroutine qm2_calc_dipole(coord,mass,ipres,lbres,nres)
-  !   integer, optional, intent(in) :: nres, ipres(*)
-  !   _REAL_, optional, intent(inout) :: mass(*)
-  !   _REAL_, intent(inout) :: coord(*)
-  !   character(len=4), optional, intent(in) :: lbres(*)
-  !   end subroutine qm2_calc_dipole
-  ! end interface
 
 !=============================================================================
 !                   START OF QMMM SETUP: allocate list memory
@@ -305,7 +275,6 @@ subroutine sqm_energy(qm2ds,qmmm_struct,natom,coords,escf, &
 !  If this is the first call to the routine, do some initial allocation
 
 !  that has not been done elsewhere.
-!write(6,*)'in sqm_energy'
    if(qmmm_struct%qm_mm_first_call) then
 
       allocate(qmmm_struct%qm_coords(3,qmmm_struct%nquant_nlink),stat=ier)
@@ -330,9 +299,7 @@ subroutine sqm_energy(qm2ds,qmmm_struct,natom,coords,escf, &
       end if
    end if ! ---- first call endif ----------
 
-   ! call qm_extract_coords(coords)
    i3 = 0
-   !do i=1,natom
    do i=1,qmmm_struct%nquant_nlink
       qmmm_struct%qm_coords(1,i) = coords(i3+1)
       qmmm_struct%qm_coords(2,i) = coords(i3+2)
@@ -354,8 +321,6 @@ subroutine sqm_energy(qm2ds,qmmm_struct,natom,coords,escf, &
              !the STO-6G orbital expansions.
 
        if (qmmm_mpi%commqmmm_master) then
-          ! call qm_print_dyn_mem(qm2_params,qmmm_nml,qmewald, qm_gb, qmmm_mpi, qmmm_scratch,qm2_rij_eqns, &
-          !                       qm2_struct,qmmm_struct,natom,qmmm_struct%qm_mm_pairs)
           call qm_print_coords(qmmm_nml,0,.true.)
           !Finally print the result header that was skipped in sander.
           write(6,'(/80(1H-)/''  RESULTS'',/80(1H-)/)')
@@ -574,7 +539,6 @@ subroutine getsqmx(natom,x,atnam,atnum,ncharge,excharge,chgnam,chgatnum)
          if (line(1:80) == "#EXCHARGES") then
             mdin_external_charge = .true.
             ihead = ihead + 1
-            !write(0,*) 'Header "#EXCHARGES" found'
          else if (line(1:80) == "#END") then
             iend = iend + 1
          else
@@ -598,13 +562,6 @@ subroutine getsqmx(natom,x,atnam,atnum,ncharge,excharge,chgnam,chgatnum)
 ! CML The procedure underneath runs the search until we find the terminating string (' /')
 ! CML is found or the end of the file is found.
 
-!---------ORIGINAL SQM-------------
-!   do i=1,20
-!      read(5,'(a)') line
-!      if( line(1:2) == " /" ) go to 11
-!   end do
-!   write(0,*) 'Error in finding end of qmmm namelist'
-!   call mexit(6,1)
 
 !---------MODIFIED BY CML----------
    do
@@ -637,7 +594,6 @@ subroutine getsqmx(natom,x,atnam,atnum,ncharge,excharge,chgnam,chgatnum)
    end do
 
    12 natom = ia
-   !write(0,*) 'finish reading QM atoms, natom =', natom
 
    ! reading external charges
    if (mdin_external_charge) then

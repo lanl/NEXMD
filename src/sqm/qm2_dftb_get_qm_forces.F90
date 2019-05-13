@@ -117,7 +117,6 @@ subroutine dftb_gammagrad(qm2_struct, nquant_nlink,qm_coords,atomtype,uhubb,gmgr
             tmpderiv(2) = 0.0d0
             tmpderiv(3) = 0.0d0
          else
-            ! shortrange1(rrmuind - ri)  = -shortrange1(ri - rrmuind)
             tmpderiv(1) = -ks_struct%derivx(k,i)
             tmpderiv(2) = -ks_struct%derivy(k,i)
             tmpderiv(3) = -ks_struct%derivz(k,i)
@@ -170,10 +169,6 @@ subroutine dftb_gammamatrix_deriv(nquant_nlink,DIM,qm_coords,atomtype,u,gammamat
       do j=1,(i-1)
          r(1:3)=(qm_coords(1:3,j)-qm_coords(1:3,i))*A_TO_BOHRS
 
-         ! Lower matrix gammamat1x  contains (phi1+shortrange1)(ri-rj)x
-         ! Lower matrix gammamat1y  contains (phi1+shortrange1)(ri-rj)y
-         ! Lower matrix gammamat1z  contains (phi1+shortrange1)(ri-rj)z
-         ! !!! NOTE THAT gamma1(ri - rj) = -gamma1(rj - ri) !!!i
 
          norm = sqrt(r(1)**2 + r(2)**2 + r(3)**2)
          call GAM121(norm,u(atomtype(j)),u(atomtype(i)),gdrv)

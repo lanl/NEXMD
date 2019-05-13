@@ -39,11 +39,6 @@ module qm2_pm6_hof_module
 #endif
 
   ! Data type collecting information on PM6 HOF corrections (Moved into qmmm_struct)
-!  type corInfoType
-!     logical :: inUse  ! correction in use ?
-!     integer :: natom  ! correction for how many atoms ?
-!     _REAL_  :: energy ! correction to HOF
-!  end type corInfoType
 
   integer, parameter :: strlen = 80
 
@@ -380,7 +375,6 @@ contains
           if ( jatnum(2) == 1) numHydrogen = numHydrogen + 1
           if ( jatnum(3) == 1) numHydrogen = numHydrogen + 1
           if ( numHydrogen < 2) then
-             ! call nsp2AtomCorrectionGrad(coord, iat, jat(1), jat(2), jat(3), dxyz)
              call nsp2AtomCorrectionGradNum(coord, iat, jat(1), jat(2), jat(3), dxyz)
           end if
        end if
@@ -548,7 +542,6 @@ contains
              tot = four*asin(one) - (cosa + cosb + cosc)
              ener(istep) = -half*exp(-ten*tot)
 
-             !write(6,*) 'atom=',iat, '  coord=',ixyz, '  step=',istep, '  fac=',fac, 'ener=',ener(istep)
 
              ! restore geometry
              xyz(ixyz,iat) = backup
@@ -563,11 +556,6 @@ contains
     ! get n/e gradient from ijk/abc gradient
     grad(1:3,1) = - (grad(1:3,2) + grad(1:3,3) + grad(1:3,4))
 
-    ! write(6,'(a)') ' *** Nsp2 MM GRADIENT CORRECTION ***'
-    ! write(6,'(i3,3f20.16)') n, grad(1:3,1)
-    ! write(6,'(i3,3f20.16)') i, grad(1:3,2)
-    ! write(6,'(i3,3f20.16)') j, grad(1:3,3)
-    ! write(6,'(i3,3f20.16)') k, grad(1:3,4)
 
     ! add gradient to gradient vector dxyz
     dxyz(1:3,n) = dxyz(1:3,n) + grad(1:3,1)

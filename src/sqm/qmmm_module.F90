@@ -44,10 +44,6 @@ module qmmm_module
   ! do not use these in new subroutines but rather pass them to
   ! subroutines/functions via explicit interfaces
   ! these live here (in this module) only for historic reasons
-  !public :: qmmm_nml, qmmm_mpi
-  !public :: qmmm_scratch, qmmm_div, qmmm_vsolv, qmmm_opnq
-  !public :: qm2_rij_eqns, qm2_params
-  !public :: qmewald, qm_gb
 
   ! functions and subroutines
   public :: validate_qm_atoms
@@ -357,19 +353,8 @@ module qmmm_module
   ! but need to be global for historic reasons - too much work to disentangle sander
   ! do *not* use these as globals in new subroutines!
   
-  !type(qmmm_nml_type)          :: qmmm_nml
-  !type(qm2_params_type)        :: qm2_params
-  !type(qm2_rij_eqns_structure) :: qm2_rij_eqns
-  !type(qm_ewald_structure)     :: qmewald
-  !type(qm_gb_structure)        :: qm_gb
-  !type(qmmm_mpi_structure)     :: qmmm_mpi
 #ifdef OPENMP
-  !type(qmmm_openmp_structure)  :: qmmm_omp
 #endif
-  !type(qmmm_scratch_structure) :: qmmm_scratch
-  !type(qmmm_vsolv_type)        :: qmmm_vsolv
-  !type(qmmm_div_structure)     :: qmmm_div
-  !type(qmmm_opnq_structure)    :: qmmm_opnq
   
 contains
   
@@ -784,13 +769,6 @@ contains
 
 
 
-       if (qmmm_nml%density_predict == 1) then
-          !We are using Niklasson et al density matrix prediction algorithm.
-          deallocate ( qm2_struct%md_den_mat_guess1, stat = ier )
-          REQUIRE(ier == 0)
-          deallocate ( qm2_struct%md_den_mat_guess2, stat = ier )
-          REQUIRE(ier == 0)
-       end if
 
        if (qmmm_nml%fock_predict == 1) then
           !We are using Pulay et al matrix prediction algorithm.

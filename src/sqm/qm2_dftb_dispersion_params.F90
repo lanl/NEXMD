@@ -28,14 +28,6 @@ subroutine dispersion_params(qmmm_struct, nn,izp)
   open(15,file='DISP.CHEK')
   rewind(15)
 
-!!$  write(6,*) " dispersion_params "
-!!$  do i = 1, ntype
-!!$       write(6,*) "Read:"
-!!$       write(6,*) "Atom: ", atyp(i)
-!!$       write(6,'(2X,"h1  =",4f7.3)') (h1(i,j),j=1,4)
-!!$       write(6,'(2X,"h2  =",4f7.3)') (h2(i,j),j=1,4)
-!!$       write(6,'(2X,"Ni0 =",f7.3)')  Ni0(i)
-!!$    end do
 
 ! parameters as in Elstner et al., JCP 2000
     dispertmp%A=7
@@ -64,12 +56,6 @@ subroutine dispersion_params(qmmm_struct, nn,izp)
           dispfile%hh1(i)=dispfile%h1(izp(i),dispfile%nei(i))
           dispfile%hh2(i)=dispfile%h2(izp(i),dispfile%nei(i))
           dispfile%Ni(i) =dispfile%Ni0(izp(i))
-!!$        write(6,*)
-!!$        write(6,'("  Atom ",i3," (",a,") was determined as having ",i2," neighbors.")') i, atyp(izp(i)),  dispfile%nei(i)-1
-!!$        write(6,'("     The parameters to be used will be:")')
-!!$        write(6,'("     Polarizability = ",f7.3)')dispfile%hh1(i)
-!!$        write(6,'("     R_0            = ",f7.3)')dispfile%hh2(i)
-!!$        write(6,'("     Effective Slater-Kirkwood electron number = ",f7.3)') dispfile%Ni(i) 
           write(15,'(3F12.6)')  dispfile%hh1(i),dispfile%hh2(i),dispfile%Ni(i)
        end do
     endif
@@ -80,7 +66,6 @@ subroutine dispersion_params(qmmm_struct, nn,izp)
           ! The calculation must stop!!
           write(6,'(10X,"*******************************************")')
           write(6,'(10X," WARNING: a parameter is 0.0 for atom ",i3)')i
-          !           write(6,'(10X,"          Atom: ",a3)') atyp(izp(i))
           write(6,'(10X,"          IZP = ",i3)') izp(i)
           write(6,'(10X,"          nei = ",i3," (",i2," neighbors.)")') dispfile%nei(i), dispfile%nei(i)-1
           write(6,'(10X,"          hh1 = ",f6.2)') dispfile%hh1(i)
@@ -127,5 +112,4 @@ subroutine dispersion_params(qmmm_struct, nn,izp)
     enddo
 
     close(15)
-! write(*,*) 'end reading disper'
 end subroutine dispersion_params

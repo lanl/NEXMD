@@ -58,12 +58,6 @@ subroutine qm2_get_qm_forces(qm2_rij_eqns, qmmm_mpi, qmmm_nml, qm2_params, qm2_s
       _REAL_ htype, fqmii(3)
       integer natom
       
-!#define change 1.D-4
-!#define halfChange 5.D-5
-!!one/change = 10000
-!#define onechange 10000
-!#define delAdj 1.0D-8
-!#define TWOONEdelAdj 50000000
 
    if (qmmm_nml%qmqm_analyt) then !We do analytical derivatives
    !RCW: Note: there is a lot of repeated code in the two options below
@@ -82,7 +76,6 @@ subroutine qm2_get_qm_forces(qm2_rij_eqns, qmmm_mpi, qmmm_nml, qm2_params, qm2_s
 !   GET FIRST ATOM INFO                                                             
          iif=qm2_params%orb_loc(1,II)                                                          
          iil=qm2_params%orb_loc(2,II) 
-!             n_atomic_orbi = iil - iif + 1
          n_atomic_orbi = qm2_params%natomic_orbs(ii)
          natqmi=qmmm_struct%iqm_atomic_numbers(II)               
          corei=qm2_params%core_chg(ii)
@@ -100,7 +93,6 @@ subroutine qm2_get_qm_forces(qm2_rij_eqns, qmmm_mpi, qmmm_nml, qm2_params, qm2_s
 !   GET SECOND ATOM INFO                                 
            jjf=qm2_params%orb_loc(1,JJ)                                                       
            jjl=qm2_params%orb_loc(2,JJ)                                                        
-!           n_atomic_orbj = jjl - jjf + 1
            n_atomic_orbj = qm2_params%natomic_orbs(jj)
            natqmj=qmmm_struct%iqm_atomic_numbers(JJ)                                                      
            corej=qm2_params%core_chg(jj)
@@ -288,39 +280,6 @@ subroutine qm2_get_qm_forces(qm2_rij_eqns, qmmm_mpi, qmmm_nml, qm2_params, qm2_s
       endif
    end if
 
-   if(qmmm_nml%peptide_corr) then
-!  NOW ADD IN MOLECULAR-MECHANICS CORRECTION TO THE H-N-C=O TORSION            
-     if (qmmm_nml%qmtheory%PM3 .OR. qmmm_nml%qmtheory%PDDGPM3 .OR. qmmm_nml%qmtheory%PM3CARB1 &
-         .OR. qmmm_nml%qmtheory%PM3ZNB .OR. qmmm_nml%qmtheory%PDDGPM3_08) then
-       htype = 7.1853D0                                                      
-     elseif (qmmm_nml%qmtheory%AM1 .OR. qmmm_nml%qmtheory%RM1) then
-       htype = 3.3191D0                                                      
-     else !Assume MNDO
-       htype = 6.1737D0                                                      
-     end if
-!Parallel
-     do I=qmmm_mpi%mytaskid+1,qm2_struct%n_peptide_links,qmmm_mpi%numthreads !1,n_peptide_links
-       do J=1,4                                    
-         do K=1,3                                
-           qmmm_struct%qm_coords(K,qm2_struct%peptide_links(J,I))= &
-                          qmmm_struct%qm_coords(K,qm2_struct%peptide_links(J,I))-delAdj
-           call qm2_dihed(qmmm_struct%qm_coords,qm2_struct%peptide_links(1,I), &
-                          qm2_struct%peptide_links(2,I),qm2_struct%peptide_links(3,I), &
-                          qm2_struct%peptide_links(4,I),ANGLE)
-           REFH=HTYPE*SIN(ANGLE)**2         
-           qmmm_struct%qm_coords(K,qm2_struct%peptide_links(J,I))= &
-                          qmmm_struct%qm_coords(K,qm2_struct%peptide_links(J,I))+delAdj*2.D0
-           call qm2_dihed(qmmm_struct%qm_coords,qm2_struct%peptide_links(1,I),qm2_struct%peptide_links(2,I), &
-                          qm2_struct%peptide_links(3,I),qm2_struct%peptide_links(4,I),ANGLE)
-           qmmm_struct%qm_coords(K,qm2_struct%peptide_links(J,I))= &
-                          qmmm_struct%qm_coords(K,qm2_struct%peptide_links(J,I))-delAdj
-           HEAT=HTYPE*SIN(ANGLE)**2         
-           SUM=(REFH-HEAT)*TWOONEdelAdj
-           dxyzqm(K,qm2_struct%peptide_links(J,I))=dxyzqm(K,qm2_struct%peptide_links(J,I))-SUM 
-         end do
-       end do                                   
-     end do                                    
-   end if                                           
 
 end subroutine qm2_get_qm_forces
 
@@ -533,12 +492,6 @@ subroutine qm2_deriv_qm_analyt(qmmm_nml, qm2_rij_eqns, qm2_params, &
              DSPX(3)=DSPX(3)+ABN*vec_qm_qm13
 !   (PY-z/S) TERM
              DSPY(3)=DSPY(3)+ABN*vec_qm_qm23
-!   (PY-x/S) TERM
-             !DSPY(1)=DSPY(1)-ABN*vec_qm_qm12 DSPY(1)=DSPX(2)
-!   (PZ-x/S) TERM
-             !DSPZ(1)=DSPZ(1)-ABN*vec_qm_qm13 DSPZ(1)=DSPX(3)
-!   (PZ-y/S) TERM
-             !DSPZ(2)=DSPZ(2)-ABN*vec_qm_qm23 DSPZ(2)=DSPY(3)
            end if !(ADBR2<EXPONENTIAL_CUTOFF)
          end do
        end do
@@ -583,12 +536,6 @@ subroutine qm2_deriv_qm_analyt(qmmm_nml, qm2_rij_eqns, qm2_params, &
              DSPX(3)=DSPX(3)-ABN*vec_qm_qm13
 !   (PY-z/S) TERM
              DSPY(3)=DSPY(3)-ABN*vec_qm_qm23
-!   (PY-x/S) TERM
-             !DSPY(1)=DSPY(1)-ABN*vec_qm_qm12 DSPY(1)=DSPX(2)
-!   (PZ-x/S) TERM
-             !DSPZ(1)=DSPZ(1)-ABN*vec_qm_qm13 DSPZ(1)=DSPX(3)
-!   (PZ-y/S) TERM
-             !DSPZ(2)=DSPZ(2)-ABN*vec_qm_qm23 DSPZ(2)=DSPY(3)
            end if !(ADBR2<EXPONENTIAL_CUTOFF)
          end do
        end do
@@ -633,28 +580,12 @@ subroutine qm2_deriv_qm_analyt(qmmm_nml, qm2_rij_eqns, qm2_params, &
               DPXPX(2)=DPXPX(2)+ABN*vec_qm_qm2
 !    (PX / PX) - z
               DPXPX(3)=DPXPX(3)+ABN*vec_qm_qm3
-!    (PX / PY) - x
-              !DPXPY(1)=DPXPY(1)+ABN*vec_qm_qm2 PXPY(1)=PXPX(2)
-!    (PX / PZ) - x
-              !DPXPZ(1)=DPXPZ(1)+ABN*vec_qm_qm3 PXPZ(1)=PXPX(3)
-!    (PY / PX) - x
-              !DPYPX(1)=DPYPX(1)+ABN*vec_qm_qm2 PXPY=PYPX
-!    (PZ / PX) - x
-              !DPZPX(1)=DPZPX(1)+ABN*vec_qm_qm3 PXPZ=PZPX
 
               ABN=(pp_eqn_xxy1(i,j) + pp_eqn_xxy2(i,j) * vec2_qm_qm2)*ADBR2
 !    (PY / PY) - x
               DPYPY(1)=DPYPY(1)+ABN*vec_qm_qm1
 !    (PY / PY) - z
               DPYPY(3)=DPYPY(3)+ABN*vec_qm_qm3
-!    (PX / PY) - y
-!              DPXPY(2)=DPXPY(2)+ABN*vec_qm_qm1 PXPY(2)=PYPX(2)=PYPY(1)
-!    (PY / PZ) - y
-!              DPYPZ(2)=DPYPZ(2)+ABN*vec_qm_qm3 PYPZ(2)=PZPY(2)=PYPY(3)
-!    (PY / PX) - y
-              !DPYPX(2)=DPYPX(2)+ABN*vec_qm_qm1 PXPY=PYPX
-!    (PZ / PY) - y
-              !DPZPY(2)=DPZPY(2)+ABN*vec_qm_qm3 PYPZ=PZPY
 
               ABN=(pp_eqn_xxy1(i,j) + pp_eqn_xxy2(i,j) * vec2_qm_qm3)*ADBR2
 !    (PZ / PZ) - x
@@ -662,28 +593,9 @@ subroutine qm2_deriv_qm_analyt(qmmm_nml, qm2_rij_eqns, qm2_params, &
 !    (PZ / PZ) - y
               DPZPZ(2)=DPZPZ(2)+ABN*vec_qm_qm2
 !    (PX / PZ) - z
-!              DPXPZ(3)=DPXPZ(3)+ABN*vec_qm_qm1 PXPZ(3)=PZPX(3)=PZPZ(1)
-!    (PY / PZ) - z
-!              DPYPZ(3)=DPYPZ(3)+ABN*vec_qm_qm2 PYPZ(3)=PZPY(3)=PZPZ(2)
-!    (PZ / PY) - z
-              !DPZPY(3)=DPZPY(3)+ABN*vec_qm_qm2 PYPZ=PZPY
-!    (PZ / PX) - z
-              !DPZPX(3)=DPZPX(3)+ABN*vec_qm_qm1 PXPZ=PZPX
 
               ABN=pp_eqn_xxy2(i,j) * ADBR2*vec_qm_qm123
               DPCROSS=DPCROSS+ABN
-!    (PX / PY) - z
-              !DPXPY(3)=DPXPY(3)+ABN !PXPY(3)=PYPX(3)=DPCROSS
-!    (PX / PZ) - y
-              !DPXPZ(2)=DPXPZ(2)+ABN !PXPZ(2)=PZPX(2)=DPCROSS
-!    (PY / PZ) - x
-              !DPYPZ(1)=DPYPZ(1)+ABN !PYPZ(1)=PZPY(1)=DPCROSS
-!    (PZ / PY) - x
-              !DPZPY(1)=DPZPY(1)+ABN PYPZ=PZPY
-!    (PY / PX) - z
-              !DPYPX(3)=DPYPX(3)+ABN PXPY=PYPX
-!    (PZ / PX) - y
-              !DPZPX(2)=DPZPX(2)+ABN PXPZ=PZPX
            end if !ADBR2>EXPONENTIAL_CUTOFF
          end do
        end do
@@ -1032,10 +944,6 @@ subroutine qm2_deriv_qm_analyt(qmmm_nml, qm2_rij_eqns, qm2_params, &
         YTDY(2)=YTDY(2)*sign(one,TX(1))
         ZTDY(2)=ZTDY(2)*sign(one,TX(1))
 
-! Don't need to zero these again as they were zeroed above
-!       XTDY(3)=0.0D0
-!       YTDY(3)=0.0D0
-!       ZTDY(3)=0.0D0
 
 !Note: Ross Walker and Mike Crowley, we could factor out TZ3I here or we could
 !pre-compute -TX(3)*TZ3I etc etc. But for the moment we will leave it as is since

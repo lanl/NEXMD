@@ -87,7 +87,6 @@ subroutine read_cm3(qmmm_nml, natoms,ntype,izp,cm3_file)
                   cm3%d(i,j) = temp_cm3_d
                   cm3%c(i,j) = temp_cm3_c
                else if ( TRIM(atom1) == TRIM(atypj) .and. TRIM(atom2) == TRIM(atypi) ) then
-                  !c|d(j,i) = -c|d(i,j)
                   found = .true.
                   cm3%d(i,j) = -temp_cm3_d
                   cm3%c(i,j) = -temp_cm3_c

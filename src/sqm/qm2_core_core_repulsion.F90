@@ -63,11 +63,6 @@ subroutine qm2_core_core_repulsion(qmmm_nml, qm2_params, qmmm_struct, iat, jat, 
   _REAL_, parameter :: sioexp = 2.9d0
   _REAL_ :: alpab, xab
 
-  !DEBUG write (6,'(a)') '.. entered qm2_core_core_repulsion'
-  !DEBUG write (6,'(2a)') 'QMTheory = ', String(qmmm_nml%qmtheory)
-  !DEBUG write (6,'(a,i6)') 'iat=', iat
-  !DEBUG write (6,'(a,i6)') 'jat=', jat
-  !DEBUG write (6,'(a,f12.8)') '(sAsA|sBsB)=', giijj
 
   iatyp  = qmmm_struct%qm_atom_type(iat) 
   jatyp  = qmmm_struct%qm_atom_type(jat) 
@@ -106,10 +101,6 @@ subroutine qm2_core_core_repulsion(qmmm_nml, qm2_params, qmmm_struct, iat, jat, 
      upc = ten_to_minus8 * upc**12
 
      enuc = enuc + upc
-     !DEBUG write (6,'(a)') 'adding correction for unpolarizable core'
-     !DEBUG write(6,'(a,i3)') ' iatnum= ', iatnum
-     !DEBUG write(6,'(a,i3)') ' jatnum= ', jatnum
-     !DEBUG write (6,'(a,f12.8)') ' enuc  = ', enuc
      
      ! -------------------------------------------------------------------
      ! PM6 scaling factor
@@ -123,29 +114,22 @@ subroutine qm2_core_core_repulsion(qmmm_nml, qm2_params, qmmm_struct, iat, jat, 
         ! Note: Stewart does not mention CH as special case
         !       in the paper, but his code treats CH like NH and OH
         ! ---------------------------------------------------------
-        !DEBUG write (6,'(a)') 'switching on CH/NH/OH scaling factor'
         tmp = alpab * rij * rij
      else
         ! -------------------------------------------------
         ! General case, equation (6)
         ! -------------------------------------------------
-        !DEBUG write (6,'(a)') 'using default scaling factor'
         tmp = alpab * ( rij + threemin4 * (rij**6) )
      end if
      ! ATTENTION: MOPAC2007 has this multiplied by a factor of two (see mndod.f90)
      ! This factor of two is necessary to match the MOPAC2009 PM6 results
      ! However, this factor of two is not documented in the PM6 paper!
      scale = one + two * xab * exp(-tmp)
-     !DEBUG write (6,'(a,f12.8)') ' rij   = ', rij
-     !DEBUG write (6,'(a,f12.8)') ' alpab = ',alpab
-     !DEBUG write (6,'(a,f12.8)') ' xab   = ',xab
-     !DEBUG write (6,'(a,f12.8)') ' scale = ', scale
 
      if ( (iatnum == 6) .and. (jatnum == 6) ) then
         ! -------------------------------------------
         ! CC scaling factor correction, equation (10)
         ! -------------------------------------------
-        !DEBUG write (6,'(a)') 'switching on CC scaling factor correction'
         tmp = ccexp * rij
         tmp = exp(-tmp)
         scale = scale + ccfac * tmp
@@ -153,7 +137,6 @@ subroutine qm2_core_core_repulsion(qmmm_nml, qm2_params, qmmm_struct, iat, jat, 
         ! --------------------------------------------
         ! SiO scaling factor correction, equation (11)
         ! --------------------------------------------
-        !DEBUG write (6,'(a)') 'switching on SiO scaling factor correction'
         tmp = (rij - sioexp)**2
         tmp = exp(-tmp)
         scale = scale - siofac * tmp
@@ -164,7 +147,6 @@ subroutine qm2_core_core_repulsion(qmmm_nml, qm2_params, qmmm_struct, iat, jat, 
      ! -------------------
      ! MNDO scaling factor
      ! -------------------
-     !DEBUG write (6,'(a)') 'MNDO scaling factor'
      alpi = exp( -qm2_params%cc_exp_params(iat) * rij )
      if (iatyp == jatyp) then
         alpj = alpi
@@ -174,7 +156,6 @@ subroutine qm2_core_core_repulsion(qmmm_nml, qm2_params, qmmm_struct, iat, jat, 
      scale = one + alpi + alpj
      ! account for NH and OH atom pairs
      if ( (ijmin == 1) .and. ( (ijmax == 7) .or. (ijmax == 8) ) ) then
-        !DEBUG write (6,'(a)') 'switching on NH/OH scaling factor correction'
         if (iatnum == 1) then
            scale = scale + (rij - 1.0D0) * alpj
         else
@@ -189,39 +170,26 @@ subroutine qm2_core_core_repulsion(qmmm_nml, qm2_params, qmmm_struct, iat, jat, 
   ccij = qm2_params%core_chg(iat) * qm2_params%core_chg(jat)
   tmp = ccij * giijj
   enuc = enuc + tmp * scale
-  !DEBUG write (6,'(a,f12.8)') ' cciat = ', qm2_params%core_chg(iat)
-  !DEBUG write (6,'(a,f12.8)') ' ccjat = ', qm2_params%core_chg(jat)
-  !DEBUG write (6,'(a,f12.8)') ' giijj = ', giijj
-  !DEBUG write (6,'(a,f12.8)') ' mterm = ', tmp
-  !DEBUG write (6,'(a,f12.8)') ' enuc  = ', enuc
 
   ! -----------------------------------------------
   ! AM1, PM3, PM6 and PM3-MAIS Gaussian corrections
   ! -----------------------------------------------
   if (qmmm_struct%AM1_OR_PM3 .or. qmmm_nml%qmtheory%PM6) then
-     !DEBUG write (6,'(a)') 'AM1/PM3/PM6: Gaussian corrections'
      anam1 = zero
      do i = 1, qm2_params%num_fn(iatyp)
         tmp = rij - qm2_params%FN3(i,iatyp)
         tmp = qm2_params%FN2(i,iatyp)*tmp*tmp
-        !DEBUG write (6,'(a,f12.8)') ' FN3   = ', qm2_params%FN3(i,iatyp)
-        !DEBUG write (6,'(a,f12.8)') ' FN2   = ', qm2_params%FN2(i,iatyp)
         if (tmp < EXPONENTIAL_CUTOFF) then ! Skip doing the exponential if it is essentially zero
-           !DEBUG write (6,'(a,f12.8)') ' FN1   = ', qm2_params%FN1(i,iatyp)
            anam1 = anam1 + qm2_params%FN1(i,iatyp)*exp(-tmp)
         end if
      end do
      if (iatyp == jatyp) then
-        !DEBUG write (6,'(a)') ' iatyp = jatyp' 
         anam1 = anam1 + anam1
      else
         do i = 1, qm2_params%num_fn(jatyp)
            tmp = rij - qm2_params%FN3(i,jatyp)
            tmp = qm2_params%FN2(i,jatyp)*tmp*tmp
-           !DEBUG write (6,'(a,f12.8)') ' FN3   = ', qm2_params%FN3(i,jatyp)
-           !DEBUG write (6,'(a,f12.8)') ' FN2   = ', qm2_params%FN2(i,jatyp)
            if (tmp < EXPONENTIAL_CUTOFF) then ! Skip doing the exponential if it is essentially zero
-              !DEBUG write (6,'(a,f12.8)') ' FN1   = ', qm2_params%FN1(i,jatyp)
               anam1 = anam1 + qm2_params%FN1(i,jatyp)*exp(-tmp)
            end if
         end do
@@ -234,8 +202,6 @@ subroutine qm2_core_core_repulsion(qmmm_nml, qm2_params, qmmm_struct, iat, jat, 
      end if
      
      enuc = enuc + anam1
-     !DEBUG write (6,'(a,f12.8)') ' anam1 = ', anam1
-     !DEBUG write (6,'(a,f12.8)') ' enuc  = ', enuc
   else if (qmmm_nml%qmtheory%PM3MAIS) then
      anam1 = zero
      do i = 1, 3
@@ -252,7 +218,6 @@ subroutine qm2_core_core_repulsion(qmmm_nml, qm2_params, qmmm_struct, iat, jat, 
   ! PDDG correction
   ! ---------------
   if (qmmm_struct%PDDG_IN_USE) then
-     !DEBUG write (6,'(a)') 'PDDG correction in use'
      pddg_exp1 = exp( -ten * ( rij - qm2_params%pddge1(iat) - qm2_params%pddge1(jat) )**2 )
      pddg_exp2 = exp( -ten * ( rij - qm2_params%pddge1(iat) - qm2_params%pddge2(jat) )**2 )
      pddg_exp3 = exp( -ten * ( rij - qm2_params%pddge2(iat) - qm2_params%pddge1(jat) )**2 )

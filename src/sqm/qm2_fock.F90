@@ -45,9 +45,6 @@ subroutine qm2_fock1(qmmm_mpi,qm2_params,qmmm_struct, F, PTOT)
          GP2IIGPPII=GP2II-0.5d0*GPPII
          GPPIIGP2II=1.5d0*GPPII-GP2II
 
-!         IB=qm2_params%orb_loc(2,II)
-!         PTPOP=PTOT(qm2_params%pascal_tri2(IB)) + &
-!          PTOT(qm2_params%pascal_tri2(IB-1))+PTOT(qm2_params%pascal_tri2(IB-2))
 !
 !        The above code assumes that p-orbitals are the last orbitals--which
 !        is certanily not true for d-orbitals
@@ -60,7 +57,6 @@ subroutine qm2_fock1(qmmm_mpi,qm2_params,qmmm_struct, F, PTOT)
           PTOT(qm2_params%pascal_tri2(IB+1))+PTOT(qm2_params%pascal_tri2(IB+2))          
          
          F(KA)=F(KA)+PTOTKA*GSSII+PTPOP*GSPIIHSPII
-         !  F(S,S)
          IPLUS=IA+1
          L=KA
          do J=IB,IB+2
@@ -68,14 +64,10 @@ subroutine qm2_fock1(qmmm_mpi,qm2_params,qmmm_struct, F, PTOT)
             L=L+J
             PTOTL=PTOT(L)
             PTPOPTL=PTPOP-PTOTL
-            !  F(P,P)
             F(L)=F(L)+GSPIIHSPIIPTK + PTOTL*GPPII + PTPOPTL*GP2IIGPPII
-            !  F(S,P)
             F(M)=F(M)+0.5d0*PTOT(M)*HSPIIGSPII
          end do
                                                                            
-         !  F(P,P*)
-         !IMINUS=IB-1
          do J=IB,IB+2
             ICC=J+1
             do L=ICC,IB+2
@@ -781,9 +773,6 @@ subroutine qm2_fock1_skew(qm2_params,qmmm_mpi,qmmm_struct, F, PTOT)
       PTOTKA=PTOT(KA)
 
       if (qm2_params%natomic_orbs(ii)==1) then  ! Hydrogen 
-         ! F(S,S)
-         ! no contribution for antisymmetric 
-         !F(KA)=F(KA)+PTOTKA*GSSII
       else
          ! P Orbitals
          GSPII=qm2_params%onec2elec_params(2,II)
@@ -800,8 +789,6 @@ subroutine qm2_fock1_skew(qm2_params,qmmm_mpi,qmmm_struct, F, PTOT)
          PTPOP=PTOT(qm2_params%pascal_tri2(IB)) &
           +PTOT(qm2_params%pascal_tri2(IB-1))+PTOT(qm2_params%pascal_tri2(IB-2))
 
-         !  F(S,S) - no contribution for the antisymmetric ptot
-         !F(KA)=F(KA)+PTOTKA*GSSII+PTPOP*GSPIIHSPII
 
          IPLUS=IA+1
          L=KA
@@ -811,21 +798,15 @@ subroutine qm2_fock1_skew(qm2_params,qmmm_mpi,qmmm_struct, F, PTOT)
             PTOTL=PTOT(L)
             PTPOPTL=PTPOP-PTOTL
 
-            !  F(P,P) - no contribution for the antisymmetric ptot
-            !F(L)=F(L)+GSPIIHSPIIPTK + PTOTL*GPPII + PTPOPTL*GP2IIGPPII
 
-            !  F(S,P) - modified for antisymmetric ptot
-            !F(M)=F(M)+0.5d0*PTOT(M)*HSPIIGSPII ! what it was
             F(M)=F(M)+0.5d0*PTOT(M)*(2.0d0*HSPII-GSPII) ! for antisymmetric
          end do
                                                                            
-         !  F(P,P*) ! modified for antisymmetric ptot
          IMINUS=IB-1
          do J=IPLUS,IMINUS
             ICC=J+1
             do L=ICC,IB
                M=qm2_params%pascal_tri1(L)+J
-               !F(M)=F(M)+PTOT(M)*GPPIIGP2II ! what it was
                F(M)=F(M)+PTOT(M)*(0.5*GPPII-0.6*GP2II) ! for antisymmetric 
             end do
          end do                              

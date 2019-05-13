@@ -143,7 +143,6 @@ subroutine qmmm_adjust_q(adjust_q, natom, nquant, nquant_nlink, nlink, charge, i
   !If this is a pure QM calculation then there is nothing to do here.
   if (nquant == natom) return
 
-  !q_correction = Sum(QM+MML) - QM_Charge
 
   q_correction_sum = zero
 

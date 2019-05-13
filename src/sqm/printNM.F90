@@ -33,8 +33,6 @@
    implicit none
    type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    integer i,n,m,filenumber
-   !real temp1(qm2ds%Nh)
-   !character(len=20) FMT
    write(filenumber,*)'Molecular orbital basis'
    write(filenumber,*) 'Nocc:',qm2ds%Np,'Nvirt:',qm2ds%Nh
    do i=1,qm2ds%Mx
@@ -92,7 +90,6 @@ subroutine printCfitNM(qm2_params,qm2ds,qmmm_struct,filenumber)
          if ( qm2_params%natomic_orbs(i) > 5 ) return
       end do
 1000 format (F15.10,2X,F15.10,2X,F15.10,2X,E17.10,2X,A2,2X,A2,2X,A2,1X,I4)
-!1000  format (I10,F10.8,F10.8,F10.8,E4,A,A)
 
 BohrtoA=0.529177249! A/Bohr
 
@@ -138,14 +135,8 @@ BohrtoA=0.529177249! A/Bohr
           ! approximation. This captures all interatomic basis function pairs
 
           do norb1 = 1 , norbs_atom
-             !write(87,'(3(f10.5))') coords0!!Test
              do norb2 = 1 , norbs_atom
                charge=qm2ds%xi_scratch((orb_beg+norb1-2)*qm2ds%Nb+orb_beg+norb2-1)! coef from dens which
-               !if (norb1==norb2) then
-               !dipd=dipd+coords0*charge/0.53
-               !write(87,*) coords0*charge,dipd
-               !endif
-               !!tcharge=tcharge+charge
 
                !There are four cases of multipolar moments
                ! 1.) ss = monopole
@@ -168,7 +159,6 @@ BohrtoA=0.529177249! A/Bohr
                if (norb1 == 1 .AND. norb2 == 1) then
                coords=coords0 !xyz of M chg
                dipd=dipd-charge*coords/BohrtoA
-               !write(6,"(2(f15.10))") coords(1),charge
                write(filenumber,1000) coords,charge,'M',orbt(norb1),orbt(norb2),nquant
                trace=trace+charge
                            
@@ -178,14 +168,12 @@ BohrtoA=0.529177249! A/Bohr
                coords=coords0 !central coordinates
                if (norb2==1) then
                dipod(norb1-1,1)=dipod(norb1-1,1)-charge*D1/BohrtoA
-               !write(6,"(2(f15.10))") D1,charge
                coords(norb1-1)=coords0(norb1-1)+D1 !xyz of first charge of dipole +
                write(filenumber,1000)coords,charge*0.5,'D',orbt(norb1),orbt(norb2),nquant
                coords(norb1-1)=coords0(norb1-1)-D1 !xyz of second dip charge -
                write(filenumber,1000)coords,charge*(-0.5),'D',orbt(norb1),orbt(norb2),nquant
                elseif (norb1==1) then
                dipod(norb2-1,2)=dipod(norb2-1,2)-charge*D1/BohrtoA
-               !write(6,"(2(f15.10))") D1,charge
                coords(norb2-1)=coords0(norb2-1)+D1 !xyz of first charge of dipole +
                write(filenumber,1000) coords,charge*0.5,'D',orbt(norb1),orbt(norb2),nquant
                coords(norb2-1)=coords0(norb2-1)-D1 !xyz of second dip charge -
@@ -196,7 +184,6 @@ BohrtoA=0.529177249! A/Bohr
                elseif (norb1 > 1 .AND. norb2 > 1 .AND. norb1 == norb2) then
                coords=coords0 !xyz of M and first LQ chg
                dipd=dipd-charge*coords/BohrtoA
-               !write(6,"(2(f15.10))") coords(1),charge
                write(filenumber,1000) coords,charge , 'M',orbt(norb1),orbt(norb2),nquant
                write(filenumber,1000) coords,charge*(-0.5),'LQ',orbt(norb1),orbt(norb2),nquant
                coords(norb1-1)=coords0(norb1-1)+2*D2 !xyz of second LQ chg +
@@ -227,11 +214,6 @@ BohrtoA=0.529177249! A/Bohr
           enddo !over orbitals
 
         enddo !over atoms
-        !write(6,*) 'Trace of density matrix is ',trace
-        !write(6,*) 'Transition dipole diagonal is (a.u.) ',sqrt(2.0)*dipd,2*sum(dipd**2)
-        !write(6,*) 'Transition dipole off diagonal is (a.u.) ',sqrt(2.0)*sum(dipod,2),2*sum(sum(dipod,2)**2)
-        !write(6,*) 'Total transition dipole is (a.u.)',&
-        !                            sqrt(2.0)*(dipd+sum(dipod,2)),2*sum((dipd+sum(dipod,2))**2)
     enddo !over nms
 flush(filenumber)
 return
@@ -257,7 +239,6 @@ end subroutine
    type(qm2_structure),intent(inout) :: qm2_struct
    type(qm2_davidson_structure_type), intent(inout) :: qm2ds
    integer i,j,fn1,fn2,fn3
-   !character(len=20) FMT
    open (fn1,file='modes.b',form='unformatted')
    open (fn2,file='ee.b')
    do j=1,qm2ds%Mx

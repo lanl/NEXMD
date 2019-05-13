@@ -37,7 +37,7 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
         qmmm_mpi_structure, qmmm_scratch_structure, qmmm_opnq_structure
     use MNDOChargeSeparation, only : GetDDAndPho
     use qm2_diagonalizer_module, only : qm2_diagonalizer_setup
-    use xlbomd_module, only : init_xlbomd, xlbomd_structure                                
+    use xlbomd_module, only : xlbomd_structure                                
     use qmmm_struct_module, only : qmmm_struct_type
     use qm2_params_module,  only : qm2_params_type
     use qmmm_nml_module   , only : qmmm_nml_type
@@ -124,10 +124,6 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
     end do !i=1,qmmm_struct%nquant_nlink
     !Work out how many 2 electron integrals there will be
 
-    !! old code
-    !!ns_atoms=qmmm_struct%nquant_nlink-nsp_atoms
-    !!qm2_struct%n2el=50*nsp_atoms*(nsp_atoms-1)+10*nsp_atoms*ns_atoms+ &
-    !!                ishft((ns_atoms*(ns_atoms-1)),-1)
       
     !! TL_Work
     qm2_struct%n2el= max(ns_atoms*(ns_atoms-1)/2,0) &
@@ -221,16 +217,6 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
     allocate ( qm2_struct%old2_density(qm2_struct%norbs), stat=ier )
     REQUIRE ( ier == 0 ) !Used by qm2_cnvg as workspace.
 
-    if (qmmm_nml%density_predict == 1) then
-        !We are using Niklasson et al. density matrix prediction.
-        allocate ( qm2_struct%md_den_mat_guess1(qm2_struct%matsize), stat=ier )
-        REQUIRE ( ier == 0 )
-        allocate ( qm2_struct%md_den_mat_guess2(qm2_struct%matsize), stat=ier )
-        REQUIRE ( ier == 0 )
-    elseif (qmmm_nml%density_predict == 2) then
-        !We are using XL-BOMD
-        call init_xlbomd(xlbomd_struct,qm2_struct%matsize)
-    end if
 
     if (qmmm_nml%fock_predict == 1) then
         !We are using Pulay et al. Fock matrix prediction.
@@ -253,9 +239,6 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
     allocate ( qm2_struct%fock_matrix_dp(qmmm_struct%nquant_nlink*(qmmm_struct%nquant_nlink-1)/2, &
         MaxValenceOrbitals*(MaxValenceOrbitals*2+1)), stat=ier )
     REQUIRE ( ier == 0 )
-    !allocate ( qm2_struct%fock_matrix_dm(qmmm_struct%nquant_nlink*(qmmm_struct%nquant_nlink-1)/2, &
-    !    MaxValenceOrbitals*(MaxValenceOrbitals*2+1)), stat=ier )
-    !REQUIRE ( ier == 0 )
 
     !+TJG 01/26/2010
     allocate ( qm2_struct%diis_fock(qm2_struct%matsize,qmmm_nml%ndiis_matrices), stat=ier )
@@ -323,23 +306,6 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
         end do
     end do
 
-    if ( qmmm_nml%density_predict == 1) then
-        !We are using Pguess(t) = 2Pconv(t-1) - Pguess(t-2)
-        !in this case for an initial start we set
-        !den_matrix = 0.5 initial guess
-        !md_den_mat_guess1 = initial guess
-        !md_den_mat_guess2 = 0.0d0
-        ! then
-        ! on step 1 we get: den_matrix = 2.0d0 * den_matrix - md_den_mat_guess2 (0,0d0)
-        !                              = initial guess
-        ! on step 2 we get: md_den_mat_guess2 = md_den_mat_guess1 = initial_guess
-        ! den_matrix = 2.0d0 * den_matrix - md_den_mat_guess2 (initial_guess)
-
-        qm2_struct%md_den_mat_guess2(1:qm2_struct%matsize) = 0.0d0
-        qm2_struct%md_den_mat_guess1(1:qm2_struct%matsize) = 0.0d0
-        qm2_struct%den_matrix(1:qm2_struct%matsize) = qm2_struct%den_matrix(1:qm2_struct%matsize) * 0.5d0
-
-    end if
       
     !!            qxd_s, qxd_z0, qxd_zq, qxd_d0, qxd_dq, qxd_q0, qxd_qq, qxd_neff
     !----------------------------------------
@@ -404,12 +370,6 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
                 + gpp_mndo(iqm_atomic)*gppc + gp2_mndo(iqm_atomic)*gp2c &
                 + hsp_mndo(iqm_atomic)*hspc
 
-            !2) multip_2c_elec_params(1-5,i) (DD,QQ,AM,AD,AQ)
-            !   DD = (( (4.0d0*s_orb_exp*p_orb_exp)**(nsshell+0.5d0) ) * (2.0d0*nsshell + 1)) &
-            !       / (( (s_orb_exp + p_orb_exp)**(2.0d0*nsshell + 2.0d0) ) * sqrt(3.0d0))
-            !
-            !   QQ = sqrt((4.0d0*nsshell**2+6.0d0*nsshell+2.0d0)/20.0d0)/p_orb_exp
-            !   AM = GSS/AU_TO_EV
             if (p_orb_exp_mndo(iqm_atomic) .ne. 0.0d0 .or. &
                 s_orb_exp_mndo(iqm_atomic) .ne. 0.0d0) then
                 exponent_temp1 = nsshell(iqm_atomic)+0.5d0
@@ -555,12 +515,6 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
 
 
 
-            !2) multip_2c_elec_params(1-5,i) (DD,QQ,AM,AD,AQ)
-            !   DD = (( (4.0d0*s_orb_exp*p_orb_exp)**(nsshell+0.5d0) ) * (2.0d0*nsshell + 1)) &
-            !       / (( (s_orb_exp + p_orb_exp)**(2.0d0*nsshell + 2.0d0) ) * sqrt(3.0d0))
-            !
-            !   QQ = sqrt((4.0d0*nsshell**2+6.0d0*nsshell+2.0d0)/20.0d0)/p_orb_exp
-            !   AM = GSS/AU_TO_EV
             if(p_orb_exp_MNDOD(iqm_atomic) .ne. 0.0d0 .or. &
                 s_orb_exp_MNDOD(iqm_atomic) .ne. 0.0d0) then
 
@@ -725,12 +679,6 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
                 + gpp_am1(iqm_atomic)*gppc + gp2_am1(iqm_atomic)*gp2c &
                 + hsp_am1(iqm_atomic)*hspc
 
-            !2) multip_2c_elec_params(1-5,i) (DD,QQ,AM,AD,AQ)
-            !   DD = (( (4.0d0*s_orb_exp*p_orb_exp)**(nsshell+0.5d0) ) * (2.0d0*nsshell + 1)) &
-            !       / (( (s_orb_exp + p_orb_exp)**(2.0d0*nsshell + 2.0d0) ) * sqrt(3.0d0))
-            !
-            !   QQ = sqrt((4.0d0*nsshell**2+6.0d0*nsshell+2.0d0)/20.0d0)/p_orb_exp
-            !   AM = GSS/AU_TO_EV
             if (p_orb_exp_am1(iqm_atomic) .ne. 0.0d0 .or. &
                 s_orb_exp_am1(iqm_atomic) .ne. 0.0d0) then
 
@@ -892,12 +840,6 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
 
 
 
-            !2) multip_2c_elec_params(1-5,i) (DD,QQ,AM,AD,AQ)
-            !   DD = (( (4.0d0*s_orb_exp*p_orb_exp)**(nsshell+0.5d0) ) * (2.0d0*nsshell + 1)) &
-            !       / (( (s_orb_exp + p_orb_exp)**(2.0d0*nsshell + 2.0d0) ) * sqrt(3.0d0))
-            !
-            !   QQ = sqrt((4.0d0*nsshell**2+6.0d0*nsshell+2.0d0)/20.0d0)/p_orb_exp
-            !   AM = GSS/AU_TO_EV
             if (p_orb_exp_AM1D(iqm_atomic) .ne. 0.0d0 .or. &
                 s_orb_exp_AM1D(iqm_atomic) .ne. 0.0d0) then
                 exponent_temp1 = nsshell(iqm_atomic)+0.5d0
@@ -1066,12 +1008,6 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
                 + gpp_pm3(iqm_atomic)*gppc + gp2_pm3(iqm_atomic)*gp2c &
                 + hsp_pm3(iqm_atomic)*hspc
 
-            !2) multip_2c_elec_params(1-5,i) (DD,QQ,AM,AD,AQ)
-            !   DD = (( (4.0d0*s_orb_exp*p_orb_exp)**(nsshell+0.5d0) ) * (2.0d0*nsshell + 1)) &
-            !       / (( (s_orb_exp + p_orb_exp)**(2.0d0*nsshell + 2.0d0) ) * sqrt(3.0d0))
-            !
-            !   QQ = sqrt((4.0d0*nsshell**2+6.0d0*nsshell+2.0d0)/20.0d0)/p_orb_exp
-            !   AM = GSS/AU_TO_EV
             if (p_orb_exp_pm3(iqm_atomic) .ne. 0.0d0 .or. &
                 s_orb_exp_pm3(iqm_atomic) .ne. 0.0d0) then
                 exponent_temp1 = nsshell(iqm_atomic)+0.5d0
@@ -1327,12 +1263,6 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
                 elec_eng = EISOL_pm6(iqm_atomic)
             end if
 
-            !2) multip_2c_elec_params(1-5,i) (DD,QQ,AM,AD,AQ)
-            !   DD = (( (4.0d0*s_orb_exp*p_orb_exp)**(nsshell+0.5d0) ) * (2.0d0*nsshell + 1)) &
-            !       / (( (s_orb_exp + p_orb_exp)**(2.0d0*nsshell + 2.0d0) ) * sqrt(3.0d0))
-            !
-            !   QQ = sqrt((4.0d0*nsshell**2+6.0d0*nsshell+2.0d0)/20.0d0)/p_orb_exp
-            !   AM = GSS/AU_TO_EV
             if (p_orb_exp_pm6(iqm_atomic) .ne. 0.0d0 .or. &
                 s_orb_exp_pm6(iqm_atomic) .ne. 0.0d0) then
                 exponent_temp1 = nsshell(iqm_atomic)+0.5d0
@@ -1519,12 +1449,6 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
             ! and so we have to have it explicitly defined in the parameter file and
             ! cannot just calculate it.
 
-            !2) multip_2c_elec_params(1-5,i) (DD,QQ,AM,AD,AQ)
-            !   DD = (( (4.0d0*s_orb_exp*p_orb_exp)**(nsshell+0.5d0) ) * (2.0d0*nsshell + 1)) &
-            !       / (( (s_orb_exp + p_orb_exp)**(2.0d0*nsshell + 2.0d0) ) * sqrt(3.0d0))
-            !
-            !   QQ = sqrt((4.0d0*nsshell**2+6.0d0*nsshell+2.0d0)/20.0d0)/p_orb_exp
-            !   AM = GSS/AU_TO_EV
             if (p_orb_exp_pddgpm3(iqm_atomic) .ne. 0.0d0 .or. &
                 s_orb_exp_pddgpm3(iqm_atomic) .ne. 0.0d0) then
                 exponent_temp1 = nsshell(iqm_atomic)+0.5d0
@@ -1569,8 +1493,6 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
                 !end AD
                 !AQ
                 hpp = 0.5D0*(gpp_pddgpm3(iqm_atomic)-gp2_pddgpm3(iqm_atomic))
-                !            hpp = max(0.1d0,hpp) - It seems that PM3/PDDG does not have this maximum
-                !                                   adding it changes Cl results.
                 dd1_temp = (16.0d0*hpp &
                     /(AU_TO_EV*48.0d0*qm2_params%multip_2c_elec_params(2,i)**4))**(1.0d0/5.0d0)
                 dd2_temp = dd1_temp + 0.04d0
@@ -1678,12 +1600,6 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
             ! and so we have to have it explicitly defined in the parameter file and
             ! cannot just calculate it.
 
-            !2) multip_2c_elec_params(1-5,i) (DD,QQ,AM,AD,AQ)
-            !   DD = (( (4.0d0*s_orb_exp*p_orb_exp)**(nsshell+0.5d0) ) * (2.0d0*nsshell + 1)) &
-            !       / (( (s_orb_exp + p_orb_exp)**(2.0d0*nsshell + 2.0d0) ) * sqrt(3.0d0))
-            !
-            !   QQ = sqrt((4.0d0*nsshell**2+6.0d0*nsshell+2.0d0)/20.0d0)/p_orb_exp
-            !   AM = GSS/AU_TO_EV
             if (p_orb_exp_pddgpm3_08(iqm_atomic) .ne. 0.0d0 .or. &
                 s_orb_exp_pddgpm3_08(iqm_atomic) .ne. 0.0d0) then
                 exponent_temp1 = nsshell(iqm_atomic)+0.5d0
@@ -1728,8 +1644,6 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
                 !end AD
                 !AQ
                 hpp = 0.5D0*(gpp_pddgpm3_08(iqm_atomic)-gp2_pddgpm3_08(iqm_atomic))
-                !            hpp = max(0.1d0,hpp) - It seems that PM3/PDDG does not have this maximum
-                !                                   adding it changes Cl results.
                 dd1_temp = (16.0d0*hpp &
                     /(AU_TO_EV*48.0d0*qm2_params%multip_2c_elec_params(2,i)**4))**(1.0d0/5.0d0)
                 dd2_temp = dd1_temp + 0.04d0
@@ -1838,12 +1752,6 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
             ! and so we have to have it explicitly defined in the parameter file and
             ! cannot just calculate it.
 
-            !2) multip_2c_elec_params(1-5,i) (DD,QQ,AM,AD,AQ)
-            !   DD = (( (4.0d0*s_orb_exp*p_orb_exp)**(nsshell+0.5d0) ) * (2.0d0*nsshell + 1)) &
-            !       / (( (s_orb_exp + p_orb_exp)**(2.0d0*nsshell + 2.0d0) ) * sqrt(3.0d0))
-            !
-            !   QQ = sqrt((4.0d0*nsshell**2+6.0d0*nsshell+2.0d0)/20.0d0)/p_orb_exp
-            !   AM = GSS/AU_TO_EV
             if (p_orb_exp_pddgmndo(iqm_atomic) .ne. 0.0d0 .or. &
                 s_orb_exp_pddgmndo(iqm_atomic) .ne. 0.0d0) then
                 exponent_temp1 = nsshell(iqm_atomic)+0.5d0
@@ -1888,7 +1796,6 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
                 !end AD
                 !AQ
                 hpp = 0.5D0*(gpp_pddgmndo(iqm_atomic)-gp2_pddgmndo(iqm_atomic))
-                !            hpp = max(0.1d0,hpp) - It seems that like PM3/PDDG, MNDO/PDDG does not have this maximum.
                 dd1_temp = (16.0d0*hpp &
                     /(AU_TO_EV*48.0d0*qm2_params%multip_2c_elec_params(2,i)**4))**(1.0d0/5.0d0)
                 dd2_temp = dd1_temp + 0.04d0
@@ -1988,9 +1895,6 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
             ! derived from other parameters.
             !----------------------------------------
 
-            !1) Electronic Energy (EISOL)
-            !   elec_eng = USS*IOS + UPP*IOP + UDD*IOD + GSS*GSSC + GPP*GPPC + GSP*GSPC + GP2*GP2C
-            !            + HSP*HSPC
             iostmp = ios(iqm_atomic)
             ioptmp = iop(iqm_atomic)
             gssc = dble(max(iostmp-1,0))
@@ -2004,12 +1908,6 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
                 + gpp_rm1(iqm_atomic)*gppc + gp2_rm1(iqm_atomic)*gp2c &
                 + hsp_rm1(iqm_atomic)*hspc
 
-            !2) multip_2c_elec_params(1-5,i) (DD,QQ,AM,AD,AQ)
-            !   DD = (( (4.0d0*s_orb_exp*p_orb_exp)**(nsshell+0.5d0) ) * (2.0d0*nsshell + 1)) &
-            !       / (( (s_orb_exp + p_orb_exp)**(2.0d0*nsshell + 2.0d0) ) * sqrt(3.0d0))
-            !
-            !   QQ = sqrt((4.0d0*nsshell**2+6.0d0*nsshell+2.0d0)/20.0d0)/p_orb_exp
-            !   AM = GSS/AU_TO_EV
             if (p_orb_exp_rm1(iqm_atomic) .ne. 0.0d0 .or. &
                 s_orb_exp_rm1(iqm_atomic) .ne. 0.0d0) then
                 exponent_temp1 = nsshell(iqm_atomic)+0.5d0
@@ -2143,9 +2041,6 @@ if (.not. qmmm_nml%qmtheory%DFTB) then
     ! Now see if user wants an MM peptide torsion correction
     ! ------------------------------------------------------
     qm2_struct%n_peptide_links = 0
-    if (qmmm_nml%peptide_corr) then
-        call qm2_identify_peptide_links(qm2_struct,qmmm_struct, qm2_struct%n_peptide_links,qmmm_struct%qm_coords)
-    end if
 
     ! Finally setup the STO-6G orbital expansions and allocate the memory required.
     ! Setup the STO-6G orbital expansions and pre-calculate as many overlaps by type
@@ -2221,50 +2116,6 @@ end if
 qmmm_mpi%two_e_offset = 0
 #endif
 
-!#ifdef MPI
-!     !NOT CURRENTLY USED
-!     !Now we know the number of orbitals divide them up between cpus.
-!     !allocate the memory for the jrange array
-!
-!     allocate(qmmm_mpi%norb_jrange(2,qm2_struct%norbs),stat=ier)
-!     REQUIRE(ier==0)
-!     loop_extent = qm2_struct%norbs*(qm2_struct%norbs-1)/2
-!     mpi_division = (loop_extent+(qmmm_mpi%numthreads-1))/qmmm_mpi%numthreads
-!     loop_extent_end = min(mpi_division*(qmmm_mpi%mytaskid+1),loop_extent)
-!     loop_extent_begin = mpi_division*qmmm_mpi%mytaskid+1
-!!loop_extent_begin = (istart-1)(istart-2)/2 + jstart
-!!loop_extent_end = (iend-1)(iend-2)/2 + jend
-!!s = 1+sqrt(1+8x)/2
-!!i = int(s) - ROUNDED UP
-!     qmmm_mpi%norb_istart = ceiling((1.0d0+sqrt(1.0d0+8.0d0*dble(loop_extent_begin)))/2.0d0)
-!     qmmm_mpi%norb_iend   = ceiling((1.0d0+sqrt(1.0d0+8.0d0*dble(loop_extent_end)))/2.d0)
-!     qmmm_mpi%norb_loop_extent_begin = loop_extent_begin
-!     qmmm_mpi%norb_loop_extent_end = loop_extent_end
-!
-!!Now we need to work out what range of j values we do for each i we will be doing.
-!!What value of j would, when coupled with our istart give us loop_extent_begin?
-!! j = loop_extent_begin -((-i-1)(i-2)/2)
-!
-!     jstart = loop_extent_begin - ((qmmm_mpi%norb_istart-1)*(qmmm_mpi%norb_istart-2)/2)
-!     jend   = loop_extent_end - ((qmmm_mpi%norb_iend-1)*(qmmm_mpi%norb_iend-2)/2)
-!
-!     do i = qmmm_mpi%norb_istart, qmmm_mpi%norb_iend
-!
-!       if (i == qmmm_mpi%norb_istart) then
-!         qmmm_mpi%norb_jrange(1,i) = jstart
-!       else
-!         qmmm_mpi%norb_jrange(1,i) = 1
-!       end if
-!
-!       if (i == qmmm_mpi%norb_iend) then
-!         qmmm_mpi%norb_jrange(2,i) = jend
-!       else
-!         qmmm_mpi%norb_jrange(2,i) = i-1
-!       end if
-!
-!      end do
-!
-!#endif
 
 ! ------------------------------------------------
 ! Choose diagonalizer and allocate required memory

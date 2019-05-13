@@ -44,7 +44,6 @@ subroutine qm2_dftb_get_qmmm_forces(qmmm_mpi,qm2_struct, qmmm_struct, dxyzcl,dxy
    _REAL_  :: qmx, qmy, qmz, scf_mchgi
   integer :: i
 
-!  do i = 1,qmmm_struct%nquant_nlink
   do i = qmmm_mpi%nquant_nlink_start,qmmm_mpi%nquant_nlink_end
      scf_mchgi = qm2_struct%scf_mchg(i)*AU_TO_KCAL*BOHRS_TO_A !Unit conversion
      qmx = qmmm_struct%qm_coords(1,i)
@@ -80,19 +79,6 @@ subroutine qm2_dftb_get_qmmm_forces(qmmm_mpi,qm2_struct, qmmm_struct, dxyzcl,dxy
      dxyzqm(3,i) = dxyzqm(3,i) - sum(vectmp3(1:qmmm_struct%qm_mm_pairs))
   end do 
     
-!Original Scalar code 
-!     do j = 1,qmmm_struct%qm_mm_pairs
-!        vec(1:3) = qmx(1:3) - qmmm_struct%qm_xcrd(1:3,j)
-!        r2 = vec(1)*vec(1)+vec(2)*vec(2)+vec(3)*vec(3)
-!        gammar = 1.0d0/sqrt(r2) !1/r
-!        gammar = gammar*gammar*gammar !Gamma = Gamma^3
-!        qdiff = qmmm_struct%qm_xcrd(4,j)*scf_mchgi*gammar
-!        dgr(1:3) = vec(1:3)*qdiff*AU_TO_KCAL*BOHRS_TO_A
-!        dxyzmm(1:3,j) = dxyzmm(1:3,j) + dgr(1:3)
-!        qmsum(1:3) = qmsum(1:3) + dgr(1:3)
-!     enddo
-!     qmmm_struct%dxyzqm(1:3,i) = qmmm_struct%dxyzqm(1:3,i) - qmsum(1:3)
-!  enddo
 
   return 
   

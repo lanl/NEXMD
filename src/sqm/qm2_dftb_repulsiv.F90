@@ -198,8 +198,6 @@ _REAL_ function dftb_grdrep(r,izpj,izpk)
 
    if(r < spltab%xr(1,1,izpj,izpk))then
       ! If r < the smallest interval, use an exponential repulsion
-      ! E(r)     =  C3 + exp(-C1.r+C2)
-      ! dE(r)/dr = -C1 . exp(-C1.r+C2)
       grdr= -spltab%efkt(1,izpj,izpk) * exp(-spltab%efkt(1,izpj,izpk) * r + spltab%efkt(2,izpj,izpk ))
    else
       ! if r > the maximum interval (cutoff) gr=0

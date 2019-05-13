@@ -39,12 +39,10 @@ contains
     character(len=80) :: buffer
     type(ParameterEntry), allocatable, dimension(:) :: tempEntries
     integer :: fsize                    ! to estimate file size
-    ! integer*4 tempbuf(13), fstatus    ! this requires non-standard Fortran extensions
     
     logical, intent(inout) :: ParameterFileExisting
     
     ParameterFileExisting=.false.
-    !open(unit=readUnit,file=fileName,readonly, iostat=ios) ! gFortran doesn't allow "readonly".
     open(unit=readUnit,file=fileName,iostat=ios)
 
     if (ios==0) then

@@ -88,7 +88,6 @@ subroutine qm2_calc_dipole(qmmm_nml,qm2_params,qm2_struct, qm2ds, qmmm_struct, c
 
          ! Getting the mulliken charge 
          iqm_charge=qm2_struct%scf_mchg(nquant)
-	 !iqm_charge=qm2_params%core_chg(nquant) !FOR TESTING PURPUSES ONLY, COUNTING CORES CHARGES
          do i=1,3
             qmdipole(i)=qmdipole(i)+coord((nquant-1)*3+i)*iqm_charge*sc_const*1.0d-10
          end do
@@ -102,54 +101,6 @@ subroutine qm2_calc_dipole(qmmm_nml,qm2_params,qm2_struct, qm2ds, qmmm_struct, c
       write(6,'(" ","          ","       X    ","    Y    ","    Z    "," TOTAL  ")')
       write(6,'(" "," QM DIPOLE (Debye)",4F9.3)') &
             qmdipole(1), qmdipole(2), qmdipole(3), totaldipol
-      !write(6,*) &
-      !      qmdipole(1), qmdipole(2), qmdipole(3), totaldipol
-
-! 	  ! CML TEST
- 		!write(6,*) 'sc_const', sc_const
- 		!write(6,*) 'c2_const', c2_const
- 		!write(6,*) 'AU_TO_DEBYE', CODATA08_AU_TO_DEBYE
-! 		call unpacking(qm2ds%Nb,qm2_struct%den_matrix,qm2ds%eta_scratch_2,'s')
-! 		qm2ds%eta_scratch_2 = qm2ds%eta_scratch_2 * 2.d0
-! 		call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%eta_scratch_2,qm2ds%eta_scratch,qm2ds%xi_scratch)
-! 		call get_dipole_matrix(qmmm_struct%qm_coords, dip)
-! 		dip = dip * (light_speed * charge_on_elec) * 1.d11   ! 4.80... D / 1 eA
-! 		call unpacking(qm2ds%Nb,dip(1,:),qm2ds%xi_scratch_2,'s')
-! 		call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%xi_scratch_2,qm2ds%xi_scratch,qm2ds%eta_scratch_2)
-! 		densisp = 0.d0
-! 		do i = 1,qm2ds%Nb
-! 			do j = 1,qm2ds%Nb
-! 				densisp = densisp + 2.d0*qm2ds%eta_scratch((i-1)*qm2ds%Nb+j)*qm2ds%xi_scratch((j-1)*qm2ds%Nb+i)
-! 			end do
-! 		end do
-! 
-! 		write(6,*) 'X dipole', densisp
-! 		flush(6)
-! 		qmdipole(1) = densisp
-! 		densisp = 0.d0
-! 		call unpacking(qm2ds%Nb,dip(2,:),qm2ds%xi_scratch_2,'s')
-! 		call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%xi_scratch_2,qm2ds%xi_scratch,qm2ds%eta_scratch_2)
-! 		do i = 1,qm2ds%Nb
-! 			do j = 1,qm2ds%Nb
-! 				densisp = densisp + 2.d0*qm2ds%eta_scratch((i-1)*qm2ds%Nb+j)*qm2ds%xi_scratch((j-1)*qm2ds%Nb+i)
-! 			end do
-! 		end do
-! 
-! 		write(6,*) 'Y dipole', densisp
-! 		flush(6)
-! 		qmdipole(2) = densisp
-! 		densisp = 0.d0
-! 		call unpacking(qm2ds%Nb,dip(3,:),qm2ds%xi_scratch_2,'s')
-! 		call mo2sitef(qm2ds%Nb,qm2ds%vhf,qm2ds%xi_scratch_2,qm2ds%xi_scratch,qm2ds%eta_scratch_2)
-! 		do i = 1,qm2ds%Nb
-! 			do j = 1,qm2ds%Nb
-! 				densisp = densisp + 2.d0*qm2ds%eta_scratch((i-1)*qm2ds%Nb+j)*qm2ds%xi_scratch((j-1)*qm2ds%Nb+i)
-! 			end do
-! 		end do
-! 
-! 		write(6,*) 'Z dipole', densisp
-! 		flush(6)
-! 		qmdipole(3) = densisp
       return
 end subroutine qm2_calc_dipole
 

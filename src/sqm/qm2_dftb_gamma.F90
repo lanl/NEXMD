@@ -33,7 +33,6 @@ subroutine gam12(r,uhub1,uhub2,gval)
   ! Hubbard parameter for H is 0.4195 from hh.spl (SK file)
   
   uhubh= 0.4195007d0
-  !uhubh= 0.4195d0
   fhbond = 1.0d0
 
 
@@ -53,7 +52,6 @@ subroutine gam12(r,uhub1,uhub2,gval)
 
   gval= 0.0
 
-  ! a1 = \tau_1 = 16/5 U_1 = 3.2 U_1
   a1= 3.2*uhub1
   a2= 3.2*uhub2
 
@@ -134,28 +132,14 @@ subroutine gam121(r,uhub1,uhub2,gdrv)
   _REAL_ :: fhbond,uhubh,cut1,cut2,rcuth,cutab(5,5)
   _REAL_ :: dhbond
   _REAL_ :: kl1,kl2,kl3,kkk
-  ! open(111,file='switch')
-  ! read(111,*)  kl1
-  ! close(111)
   kl1=4.0
   uhubh = 0.4195007d0
-  !uhubh = 0.4195d0
   fhbond = 1.0
   dhbond=0.0
   if((uhub1 == uhubh) .OR. (uhub2 == uhubh)) then
-     ! if((uhub1.eq.uhubh).and.(uhub2.ne.uhubh)) then
      fhbond= exp(-(((uhub1+uhub2)/2)**kl1)*r**2)
      dhbond= -2*fhbond*(((uhub1+uhub2)/2)**kl1)/r
   endif
-  ! if(uhub2.eq.uhubh) then
-  ! if((uhub2.eq.uhubh).and.(uhub1.ne.uhubh)) then
-  ! fhbond= exp(-(((uhub1+uhub2)/2)**kl1)*r**2)
-  ! dhbond= -2*fhbond*(((uhub1+uhub2)/2)**kl1)/r
-  ! endif
-  ! end neu hbond
-  ! gamma  besteht aus einem 1/r Term, und etwas,
-  ! was fuer r=0 gegen Hubbard geht:
-  ! multipliziere einfach den zweiten Term mit fhbond!
 
   gdrv= 0.0
   a1= 3.2*uhub1
