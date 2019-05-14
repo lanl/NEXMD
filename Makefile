@@ -156,7 +156,6 @@ OBJNAESMD = \
         $(OBJDIR)/$(NAESMDDIR)/nacr.o \
 	$(OBJDIR)/$(NAESMDDIR)/nacT_analytic.o \
 	$(OBJDIR)/$(NAESMDDIR)/fewest-switches.o \
-        $(OBJDIR)/$(NAESMDDIR)/coherence.o \
 	$(OBJDIR)/$(NAESMDDIR)/cadiab.o \
 	$(OBJDIR)/$(NAESMDDIR)/quantum-prop-add.o \
 	$(OBJDIR)/$(NAESMDDIR)/writeoutput.o \
