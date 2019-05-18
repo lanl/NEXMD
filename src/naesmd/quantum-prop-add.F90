@@ -76,7 +76,7 @@ contains
         !Translate to old APC min-cost algorithm routine in F77
         !Requires static matrix sizes
         iordenapc(1:sim%excN)=sim%naesmd%iorden
-        call apc(sim%naesmd%apc_common,sim%excN,ascpr,sim%naesmd%iorden,z)
+        call apc(sim%naesmd%apc_common,sim%excN,ascpr,iordenapc,z)
         sim%naesmd%iorden=iordenapc(1:sim%excN)
 
         do i=1,sim%excN
