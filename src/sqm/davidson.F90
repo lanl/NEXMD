@@ -315,6 +315,7 @@
    _REAL_ ray1(nd,nd),ray2(nd,nd),ray1a(nd,nd)
    _REAL_ ray(nd,nd),raye(nd),raye1(nd)
    _REAL_ rayv(nd,nd),rayvL(nd,nd),rayvR(nd,nd)
+   _REAL_, allocatable :: dtmp(:)
    !_REAL_ f11;
 
    if (lprint.gt.4) write(6,*)' Entering davidson0'
@@ -605,8 +606,9 @@
 
 
    write(6,*)'info00',info 
- 
-   call dsyev ('v','u',nd1,rayvR,nd,raye,xi,qm2ds%Nrpa,info) 
+
+   allocate(dtmp(4*nd1))
+   call dsyev ('v','u',nd1,rayvR,nd,raye,dtmp,4*nd1,info) 
         !Eigenvalues of ray1 in raye and eigenvectors in rayvR
    write(6,*)'info000',info
    write(6,*)'info Nrpa,nd,nd1',qm2ds%Nrpa,nd,nd1
@@ -637,6 +639,7 @@
    do j=1,nd1
       raye(j) = Sign(Sqrt(Abs(raye(j))),raye(j))
    enddo
+   deallocate(dtmp)
 
 ! Solve for Right EigenVector  rayvR = |X+Y>=ray1a*rayv
    call dgemm('N','N',nd1,nd1,nd1,f1,ray1a,nd,rayv,nd,f0,rayvR,nd)
