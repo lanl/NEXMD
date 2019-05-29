@@ -64,7 +64,7 @@
    !***** Dynamics Parameters
    time_init=0.0, ! Initial time, fs [0.0]
    time_step=0.1, ! Time step, fs [0.1]
-   n_class_steps=3000, ! Number of classical steps [1]
+   n_class_steps=1000, ! Number of classical steps [1]
    n_quant_steps=4, ! Number of quantum steps for each classical step [4]
    moldyn_deriv_flag=1, ! (0) None, (1) Analytical, or (2) Numerical [1]
    num_deriv_step=1.0d-3, ! Displacement for numerical derivatives, A [1.0d-3]
