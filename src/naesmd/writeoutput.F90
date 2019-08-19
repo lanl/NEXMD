@@ -14,6 +14,7 @@ contains
         use naesmd_constants
         use naesmd_module
         use communism
+        use constants
         implicit none
 
         type(simulation_t) sim
@@ -75,7 +76,8 @@ contains
             end if
 
             if(lprint.ge.3.and.ibo.ne.1) then
-                write(sim%outfile_16,889) sim%naesmd%tfemto,(dsin(yg(j+sim%excN)),j=1,sim%excN)
+                !write(sim%outfile_16,889) sim%naesmd%tfemto,(dsin(yg(j+sim%excN)),j=1,sim%excN)
+                 write(sim%outfile_16,889) sim%naesmd%tfemto,(dmod(yg(j+sim%excN),TWOPI),j=1,sim%excN)
                 call flush(sim%outfile_16)
             end if
 

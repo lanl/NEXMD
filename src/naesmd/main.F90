@@ -508,7 +508,7 @@ end subroutine
         !Input checks for features under development
         call int_legal_range('moldyn: (decoher_type ) ', decoher_type,0,2) 
         call int_legal_range('moldyn: (trivial crossing ) ', dotrivial,0,1)
-        call float_legal_range('moldyn: (quant_step_reduction_factor ) ',quant_step_reduction_factor,0.0d0,1.0d1)
+        call float_legal_range('moldyn: (quant_step_reduction_factor ) ',quant_step_reduction_factor,0.0d-16,1.0d1)
         call float_legal_range('moldyn: (therm_friction ) ',therm_friction,0.0d0,1.0d6)
         call float_legal_range('moldyn: (therm_temperature ) ',therm_temperature,0.0d0,1.0d7)
         call int_legal_range('moldyn: (therm_type ) ', therm_type,0,2)
@@ -516,7 +516,7 @@ end subroutine
         call int_legal_range('moldyn: (bo_dynamics_flag ) ', bo_dynamics_flag,0,1)
 
         call int_legal_range('moldyn: (exc_state_init ) ', exc_state_init,0,999999999)
-        call int_legal_range('moldyn: (n_exc_states_propagate ) ', bo_dynamics_flag,0,999999999)
+        call int_legal_range('moldyn: (n_exc_states_propagate ) ', n_exc_states_propagate,0,999999999)
 
         call float_legal_range('moldyn: (initial time ) ',time_init,0.0d0,1.0d21)
         call float_legal_range('moldyn: (time step ) ',time_step,0.0d-6,1.0d21)
@@ -527,9 +527,9 @@ end subroutine
         call int_legal_range('moldyn: (moldyn_deriv_flag ) ', moldyn_deriv_flag,0,2)
 
         call float_legal_range('moldyn: (Displacement for numerical derivatives) ',num_deriv_step,0.0d-16,1.0d0)
-        call float_legal_range('moldyn: (Tolerance for the Runge-Kutta propagator) ',time_step,0.0d-16,1.0d0)
+        call float_legal_range('moldyn: (Tolerance for the Runge-Kutta propagator) ',rk_tolerance,0.0d-16,1.0d0)
 
-        call int_legal_range('moldyn: (verbosity ) ', exc_state_init,0,3)
+        call int_legal_range('moldyn: (verbosity ) ', verbosity,0,3)
 
         call int_legal_range('moldyn: (Number of steps to write data  ) ', out_data_steps,0,999999999)
         call int_legal_range('moldyn: (Number of steps to write the restart file ) ', out_coords_steps,0,999999999)
@@ -825,7 +825,7 @@ end subroutine
             read(txt,*,err=29) sim%naesmd%yg(i),sim%naesmd%yg(i+sim%excN)
 
             sim%naesmd%yg(i)=dsqrt(sim%naesmd%yg(i))
-            sim%naesmd%yg(i+sim%excN)=dasin(sim%naesmd%yg(i+sim%excN))
+            !sim%naesmd%yg(i+sim%excN)=dasin(sim%naesmd%yg(i+sim%excN))
 
             i=i+1
             if(i.gt.sim%excN) exit ! too many coefficients - leaving the loop
