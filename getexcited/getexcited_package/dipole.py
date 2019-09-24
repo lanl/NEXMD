@@ -50,6 +50,8 @@ import glob
 import subprocess
 import shlex
 import fileinput
+import math
+from shutil import copyfile
 
 cwd = os.getcwd()
 
@@ -132,6 +134,14 @@ def dipole(pathtopack,header,dipole_type):
     if typeq == 1: ## all dipoles
         tcoll = (header.n_class_steps - 1)*header.time_step
 
+
+
+    x = (round(tcoll/(header.time_step*header.out_data_steps*header.out_coords_steps),0) - round(tcoll,3)/ round((header.time_step*header.out_data_steps*header.out_coords_steps),3))
+    while(x  >=  header.time_step*0.1 or x <= - header.time_step*0.1):
+        tcoll = tcoll - header.time_step
+        x = (round(tcoll/(header.time_step*header.out_data_steps*header.out_coords_steps),0) - round(tcoll,3)/ round((header.time_step*header.out_data_steps*header.out_coords_steps),3))
+
+
     ## Determine direction of dipole ##
     dotq = input('Find the angle between the dipole and a user-defined vector on the molecule?\nAnswer yes [1] or no [0]: ')
     if dotq not in [1,0]:
@@ -142,7 +152,7 @@ def dipole(pathtopack,header,dipole_type):
             print 'Number of atoms set under natoms is less than two.\nPlease check header (for ensemble) or input.ceon (for single trajectory).'
             sys.exit()
         else:
-            lines = [0,1]
+            lines = [0,0]
     if dotq == 1:
         lines = input('Input an array of the form [atom1, atom2], where atom# = line number of atom (0 is the first line).\nThese two atoms will be used to construct a vector: ')
         if isinstance(lines, list) == False:
@@ -167,36 +177,24 @@ def dipole(pathtopack,header,dipole_type):
             print 'All elements of input array must be unique.\nUser inputted [%s, %s], which is not allowed.' % (lines[0], lines[1])
             sys.exit()
 
+
     ## Number of classical time-steps ##
     tscol = 0
-    while tscol*header.time_step*header.out_data_steps <= tcoll:
+    while round(tscol*header.time_step*header.out_data_steps,3) <= round(tcoll,3):
         tscol += 1
-    ccoll = 0
-    
-    ## Number of time-steps for coordinates ##
-    num = 0
-    while ccoll <= tcoll:
-        ccoll += header.time_step*header.out_data_steps*header.out_coords_steps
-        num += 1
-    
-    ## Number of dipoles ##
-    edipoles = ccoll
 
     ## Number of lines to grep ##
     nlines_grep = [1, header.n_exc_states_propagate, header.n_exc_states_propagate][dipole_type]
-
     ## Collection time array ##
-    times = np.linspace(header.time_init, ccoll - header.time_step*header.out_data_steps*header.out_coords_steps, num)
-
+    x = round(tcoll/(header.time_step)/(header.out_coords_steps*header.out_data_steps)+1,1)
+    times = np.linspace(header.time_init, tcoll, x)
+    maxDipole = 0
     ## Grep dipole moments and states from ensembles ##
     if dynq == 0: ## ensemble
         print 'Checking dipole moments and states.  Please wait ...'
         ## Checks to make sure scripts are available ##
         if not os.path.exists('%s/getexcited_package/collectdipline.sh' % (pathtopack)):
             print 'The script, collectdipline.sh, must be in the getexcited_package.'
-            sys.exit()
-        if not os.path.exists('%s/getexcited_package/collectdipole.sh' % (pathtopack)):
-            print 'The script, collectdipole.sh, must be in the getexcited_package.'
             sys.exit()
         ## Generation of error file ##
         error = open('%s/dipole_collection_ensemble.err' % (cwd),'w')
@@ -232,24 +230,106 @@ def dipole(pathtopack,header,dipole_type):
                 ## data = [line number of classical step, classical step] ##
                 data = np.genfromtxt('%s/%s/%04d/dipline.out' % (cwd,NEXMD,dir))
                 tdipoles = len(data)
-                ## Check to ensure dipole calculation ##
-                if np.array_equal(np.around(data[1:edipoles:1,1]*header.time_step, decimals = 3), times[1:edipoles:1]) == False:
-                    print >> error, 'There is an inconsistency in time-step in %s%04d/dipline.out.' % (NEXMD,dir)
-                    errflag = 1
-                    continue
                 ## Delete previous dipole file if exists ##
                 if os.path.exists('%s/%s/%04d/%s.out' % (cwd,NEXMD,dir,file_name)):
                     os.remove('%s/%s/%04d/%s.out' % (cwd,NEXMD,dir,file_name))
                 ## Grep dipoles from standard output ##
-                subprocess.call(shlex.split('sh %s/getexcited_package/collectdipole.sh %d %d' % (pathtopack, dipole_type, nlines_grep + 2)))
+                output = open ('%s/%s/%04d/md.out' % (cwd,NEXMD,dir), 'r')
+                if dipole_type == 2:
+                    gsdipole = open ('%s/%s/%04d/excdipole.out' % (cwd,NEXMD,dir), 'w+')
+                    count = 0
+                    thelines = []
+                    edipoles = 0
+                    counter = header.out_coords_steps*header.out_data_steps
+                    suggestedNumberOfDipoles = round((tcoll/header.time_step)/(header.out_coords_steps*header.out_data_steps)+1,0)
+                    for x in range (0,nlines_grep + 2):
+                        thelines.append("NULL")
+                    for line in output:
+                        if "End classical propagation step" in line or "Begin classical propagation step #           1" in line:
+                            counter = counter -1
+                            if counter == 0 or "Begin classical propagation step #           1" in line:
+                                edipoles = edipoles + 1
+                                if edipoles > suggestedNumberOfDipoles:
+                                    edipoles = edipoles - 1
+                                    break
+                                counter = header.out_coords_steps*header.out_data_steps
+                                for x in range (0,nlines_grep + 2):
+                                    if thelines[x] == "NULL":
+                                        print '%s/%s/%04d/md.out does not conatin any dipoles of the type you selcted' %(cwd,NEXMD,dir)
+                                        sys.exit()
+                                    gsdipole.write(thelines[x])
+                        if "Frequencies (eV) and Total Molecular Dipole Moments (Debye)" in line:
+                            count = nlines_grep + 2
+                        if count > 0:
+                            thelines[nlines_grep + 2-count] = line
+                            count = count -1
+                    gsdipole.seek(0)
+                if dipole_type == 1: 
+                    gsdipole = open ('%s/%s/%04d/transdipole.out' % (cwd,NEXMD,dir), 'w+')
+                    count = 0
+                    thelines = []
+                    edipoles = 0
+                    counter = header.out_coords_steps*header.out_data_steps
+                    suggestedNumberOfDipoles = round((tcoll/header.time_step)/(header.out_coords_steps*header.out_data_steps)+1,0)
+                    for x in range (0,nlines_grep + 2):
+                        thelines.append("NULL")
+                    for line in output:
+                        if "End classical propagation step" in line or "Begin classical propagation step #           1" in line:
+                            counter = counter -1
+                            if counter == 0 or "Begin classical propagation step #           1" in line:
+                                edipoles = edipoles + 1
+                                if edipoles > suggestedNumberOfDipoles:
+                                    edipoles = edipoles - 1
+                                    break 
+                                counter = header.out_coords_steps*header.out_data_steps
+                                for x in range (0,nlines_grep + 2):
+                                    if thelines[x] == "NULL":
+                                        print '%s/%s/%04d/md.out does not conatin any dipoles of the type you selcted' %(cwd,NEXMD,dir)
+                                        sys.exit()
+                                    gsdipole.write(thelines[x])
+                        if "Frequencies (eV) and Transition Dipole Moments (AU)" in line:
+                            count = nlines_grep + 2
+                        if count > 0:
+                            thelines[nlines_grep + 2-count] = line
+                            count = count -1
+                    gsdipole.seek(0)
+                if dipole_type == 0:
+                    gsdipole = open ('%s/%s/%04d/gsdipole.out' % (cwd,NEXMD,dir), 'w+')
+                    count = 0
+                    thelines = []
+                    edipoles = 0
+                    counter = header.out_coords_steps*header.out_data_steps
+                    suggestedNumberOfDipoles = round((tcoll/header.time_step)/(header.out_coords_steps*header.out_data_steps)+1,0)
+                    for x in range (0,nlines_grep + 2):
+                        thelines.append("NULL")
+                    for line in output:
+                        if "End classical propagation step" in line or "Begin classical propagation step #           1" in line:
+                            counter = counter -1
+                            if counter == 0 or "Begin classical propagation step #           1" in line:
+                                edipoles = edipoles + 1
+                                if edipoles > suggestedNumberOfDipoles:
+                                    edipoles = edipoles - 1
+                                    break
+                                counter = header.out_coords_steps*header.out_data_steps
+                                for x in range (0,nlines_grep + 2):
+                                    gsdipole.write(thelines[x])
+                        if "Ground State Molecular Dipole Moment (A.U.)" in line:
+                            count = nlines_grep + 2
+                        if count > 0:
+                            thelines[nlines_grep + 2-count] = line
+                            count = count -1
+                    gsdipole.seek(0)
+                if edipoles > maxDipole:
+                    maxDipole =  edipoles
                 if not os.path.exists('%s/%s/%04d/%s.out' % (cwd,NEXMD,dir,file_name)):
                     print >> error, 'Path %s%04d/%s.out does not exist.' % (NEXMD,dir,file_name)
                     errflag = 1
+                    sys.exit()
                     continue
                 print '%s%04d dipoles in md.out extracted' % (NEXMD,dir)
                 ## Another check to ensure dipole calculation ##
                 with open('%s/%s/%04d/%s.out' % (cwd,NEXMD,dir,file_name),'r') as data:
-                    if len(data.readlines()) != tdipoles*(nlines_grep + 3):
+                    if  len(data.readlines()) != round((suggestedNumberOfDipoles*(nlines_grep + 2)),1):
                         print >> error, 'Path %s%04d/%s.out is incomplete.' % (NEXMD,dir,file_name)
                         errflag = 1
                         os.remove('%s/%s/%04d/%s.out' % (cwd,NEXMD,dir,file_name))
@@ -273,12 +353,12 @@ def dipole(pathtopack,header,dipole_type):
                         data = data.readlines()
                         states = np.zeros(edipoles)
                         index = 0
-                        for line in data[0:tscol:header.out_data_steps*header.out_coords_steps]:
+                        for line in data[0:tscol:header.out_coords_steps]:
                             val = line.split()
                             pes = np.int(val[0])
                             time = np.around(np.float(val[1]), decimals = 3)
                             ## Another check to ensure dipole calculation ##
-                            if time != times[index]:
+                            if round(time,3) != round(times[index],3):
                                 print >> error, 'There is an inconsistency in time-step in %s%04d/coeff-n.out at %.3f fs' % (NEXMD,dir,times[index])
                                 errflag = 1
                                 break
@@ -299,16 +379,12 @@ def dipole(pathtopack,header,dipole_type):
                 sys.exit()
         else:
             os.remove('%s/dipole_collection_ensemble.err' % (cwd))
-
     ## Grep dipole moments and states from single trajectory ##
     if dynq == 1: ## single trajectory
         print 'Checking dipole moments and states.  Please wait ...'
         ## Checks to make sure scripts are available ##
         if not os.path.exists('%s/getexcited_package/collectdipline.sh' % (pathtopack)):
             print 'The script, collectdipline.sh, must be in the getexcited_package.'
-            sys.exit()
-        if not os.path.exists('%s/getexcited_package/collectdipole.sh' % (pathtopack)):
-            print 'The script, collectdipole.sh, must be in the getexcited_package.'
             sys.exit()
         ## Go to directory ##
         os.chdir('%s/%s' % (cwd,NEXMDir))
@@ -325,22 +401,107 @@ def dipole(pathtopack,header,dipole_type):
         ## data = [line number of classical step, classical step] ##
         data = np.genfromtxt('%s/%s/dipline.out' % (cwd,NEXMDir))
         tdipoles = len(data)
-        ## Check to ensure dipole calculation ##
-        if np.array_equal(np.around(data[1:edipoles:1,1]*header.time_step, decimals = 3), times[1:edipoles:1]) == False:
-            print 'There is an inconsistency in time-step in %s/dipline.out.' % (NEXMDir)
-            sys.exit()
         ## Delete previous dipole file if exists ##
         if os.path.exists('%s/%s/%s.out' % (cwd,NEXMDir,file_name)):
             os.remove('%s/%s/%s.out' % (cwd,NEXMDir,file_name))
         ## Grep dipoles from standard output ##
-        subprocess.call(shlex.split('sh %s/getexcited_package/collectdipole.sh %d %d' % (pathtopack, dipole_type, nlines_grep + 2)))
+        output = open ('%s/%s/md.out' % (cwd,NEXMDir), 'r')
+        if dipole_type == 1:
+            gsdipole = open ('%s/%s/transdipole.out' % (cwd,NEXMDir), 'w+')
+            count = 0
+            thelines = []
+            edipoles = 0
+            counter = header.out_coords_steps*header.out_data_steps
+            suggestedNumberOfDipoles = round((tcoll/header.time_step)/(header.out_coords_steps*header.out_data_steps)+1,0)
+            for x in range (0,nlines_grep + 2):
+                thelines.append("NULL")
+            for line in output:
+                if "End classical propagation step" in line or "Begin classical propagation step #           1" in line:
+                    counter = counter -1
+                    if counter == 0 or "Begin classical propagation step #           1" in line:
+                        edipoles = edipoles + 1
+                        if edipoles > suggestedNumberOfDipoles:
+                            edipoles = edipoles - 1
+                            break
+                        counter = header.out_coords_steps*header.out_data_steps
+                        for x in range (0,nlines_grep + 2):
+                            if thelines[x] == "NULL":
+                                print '%s/%s/%04d/md.out does not conatin any dipoles of the type you selcted' %(cwd,NEXMD,dir)
+                                sys.exit()
+                            gsdipole.write(thelines[x])
+                if "Frequencies (eV) and Transition Dipole Moments (AU)" in line:
+                    count = nlines_grep + 2
+                if count > 0:
+                    thelines[nlines_grep + 2-count] = line
+                    count = count -1
+            gsdipole.seek(0)
+        if dipole_type == 0:
+            gsdipole = open ('%s/%s/gsdipole.out' % (cwd,NEXMDir), 'w+')
+            count = 0
+            thelines = []
+            edipoles = 0
+            counter = header.out_coords_steps*header.out_data_steps
+            suggestedNumberOfDipoles = round((tcoll/header.time_step)/(header.out_coords_steps*header.out_data_steps)+1,0)
+            for x in range (0,nlines_grep + 2):
+                thelines.append("NULL")
+            for line in output:
+                if "End classical propagation step" in line or "Begin classical propagation step #           1" in line:
+                    counter = counter -1
+                    if counter == 0 or "Begin classical propagation step #           1" in line:
+                        edipoles = edipoles + 1
+                        if edipoles > suggestedNumberOfDipoles:
+                            edipoles = edipoles - 1
+                            break
+                        counter = header.out_coords_steps*header.out_data_steps
+                        for x in range (0,nlines_grep + 2):
+                            if thelines[x] == "NULL":
+                                print '%s/%s/%04d/md.out does not conatin any dipoles of the type you selcted' %(cwd,NEXMD,dir)
+                                sys.exit()
+                            gsdipole.write(thelines[x])
+                if "Ground State Molecular Dipole Moment (A.U.)" in line:
+                    count = nlines_grep + 2
+                if count > 0:
+                    thelines[nlines_grep + 2-count] = line
+                    count = count -1
+            gsdipole.seek(0)
+        if dipole_type == 2:
+            gsdipole = open ('%s/%s/excdipole.out' % (cwd,NEXMDir), 'w+')
+            count = 0
+            thelines = []
+            edipoles = 0
+            counter = header.out_coords_steps*header.out_data_steps
+            suggestedNumberOfDipoles = round((tcoll/header.time_step)/(header.out_coords_steps*header.out_data_steps)+1,0)
+            for x in range (0,nlines_grep + 2):
+                thelines.append("NULL")
+            for line in output:
+                if "End classical propagation step" in line or "Begin classical propagation step #           1" in line:
+                    counter = counter -1
+                    if counter == 0 or "Begin classical propagation step #           1" in line:
+                        edipoles = edipoles + 1
+                        if edipoles > suggestedNumberOfDipoles:
+                            edipoles = edipoles - 1
+                            break
+                        counter = header.out_coords_steps*header.out_data_steps
+                        for x in range (0,nlines_grep + 2):
+                            if thelines[x] == "NULL":
+                                print '%s/%s/md.out does not conatin any dipoles of the type you selcted' %(cwd,NEXMDir)
+                                sys.exit()
+                            gsdipole.write(thelines[x])
+                if "Frequencies (eV) and Total Molecular Dipole Moments (Debye)" in line:
+                    count = nlines_grep + 2
+                if count > 0:
+                    thelines[nlines_grep + 2-count] = line
+                    count = count -1
+            gsdipole.seek(0)
+        if edipoles > maxDipole:
+            maxDipole =  edipoles
         if not os.path.exists('%s/%s/%s.out' % (cwd,NEXMDir,file_name)):
             print 'Path %s/%s.out does not exist.' % (NEXMDir,file_name)
             sys.exit()
         print '%s dipoles in md.out extracted' % (NEXMDir)
         ## Another check to ensure dipole calculation ##
         with open('%s/%s/%s.out' % (cwd,NEXMDir,file_name),'r') as data:
-            if len(data.readlines()) != tdipoles*(nlines_grep + 3):
+            if len(data.readlines()) != round(((tcoll/header.time_step)/(header.out_coords_steps*header.out_data_steps)+1)*(nlines_grep + 2),1):
                 print 'Path %s/%s.out is incomplete.' % (NEXMDir,file_name)
                 sys.exit()
         ## Delete previous pop.out if exists ##
@@ -361,12 +522,12 @@ def dipole(pathtopack,header,dipole_type):
                 data = data.readlines()
                 states = np.zeros(edipoles)
                 index = 0
-                for line in data[0:tscol:header.out_data_steps*header.out_coords_steps]:
+                for line in data[0:tscol:header.out_coords_steps]:
                     val = line.split()
                     pes = np.int(val[0])
                     time = np.around(np.float(val[1]), decimals = 3)
                     ## Another check to ensure dipole calculation ##
-                    if time != times[index]:
+                    if round(time,3) != round(times[index],3):
                         print 'There is an inconsistency in time-step in %s/coeff-n.out at %.3f fs.' % (NEXMDir,times[index])
                         sys.exit()
                     states[index] = pes
@@ -376,8 +537,12 @@ def dipole(pathtopack,header,dipole_type):
                     states[index::] = pes
         ## Save populations to file ##
         np.savetxt('pop.out', np.transpose([times,states]), fmt=['%10.5e','%d'])
-
     ## Collect user-defined vector in the molecule to determine dipole direction for ensembles ##
+    try: 
+        edipoles
+    except: 
+        print ' WARNING ERROR: NO DIPOLES WERE COLLECTED. EXITING.....'
+        sys.exit()
     if dynq == 0: ## ensemble
         os.chdir('%s' % (cwd))
         print 'Checking coordinate files for vector generation.  Please wait ...'
@@ -422,10 +587,10 @@ def dipole(pathtopack,header,dipole_type):
                                 break
                         else:
                             time = np.around(np.float(line.split()[-1]), decimals = 3)
-                            if time > tcoll:
+                            if round(time,3) > round(tcoll,3):
                                 tflag3 = 1
                                 break
-                            if time != times[ncoords]:
+                            if round(time,3) != round(times[ncoords],3):
                                 tflag2 = 1
                                 break
                         ncoords += 1
@@ -454,7 +619,7 @@ def dipole(pathtopack,header,dipole_type):
                     errflag = 1
                     continue
                 ## Generation of user-defined vector file ##
-                output = open('%s/%04d/uservec.out' % (NEXMD,dir),'w')
+                output = open('%s/%04d/uservec.out' % (NEXMD,dir),'w+')
                 ## Print user-defined vector to file ##
                 for ncoord in np.arange(ncoords):
                     coords = data[array[ncoord] + 1: array[ncoord + 1] - 1:1]
@@ -463,6 +628,7 @@ def dipole(pathtopack,header,dipole_type):
                     uvec = np.subtract(vec1, vec0)
                     output.write('{:>12}  {:>12}  {:>12}  {:>12}\n'.format(times[ncoord],uvec[0],uvec[1],uvec[2]))
                 print '%s%04d user-defined vector from coords.xyz extracted' % (NEXMD,dir)
+                output.seek(0)
         if errflag == 1:
             print 'One or more trajectories have experienced an error, check uservec_collection.err.'
             contq = input('Continue? Answer yes [1] or no [0]: ')
@@ -477,6 +643,7 @@ def dipole(pathtopack,header,dipole_type):
     ## Collect user-defined vector in the molecule to determine dipole direction for single trajectory ##
     if dynq == 1: ## single trajectory
         os.chdir('%s' % (cwd))
+        error = open('%s/uservec_collection.err' % (cwd),'w')
         print 'Checking coordinate files for vector generation.  Please wait ...'
         ## Check if trajectory directory exists ##
         if not os.path.exists('%s' % (NEXMDir)):
@@ -505,17 +672,17 @@ def dipole(pathtopack,header,dipole_type):
                         break
                 else:
                     time = np.around(np.float(line.split()[-1]), decimals = 3)
-                    if time > tcoll:
+                    if round(time,3) > round(tcoll,3):
                         tflag3 = 1
                         break
-                    if time != times[ncoords]:
+                    if round(time,3) != round(times[ncoords],3):
                         tflag2 = 1
                         break
                 ncoords += 1
                 array = np.append(array,index)
             index += 1
         if tflag1 == 1:
-            print >> error, 'Initial time in %s/coords.xyz does not match time_init in %s/input.ceon.' % (NEXMDir)
+            print >> error, 'Initial time in %s/coords.xyz does not match time_init in %s/input.ceon.' % (NEXMDir,NEXMDir)
             sys.exit()
         if tflag2 == 1:
             print >> error, 'There is an inconsistency in time-step in %s/coords.xyz.' % (NEXMDir)
@@ -542,7 +709,7 @@ def dipole(pathtopack,header,dipole_type):
             uvec = np.subtract(vec1, vec0)
             output.write('{:>12}  {:>12}  {:>12}  {:>12}\n'.format(times[ncoord],uvec[0],uvec[1],uvec[2]))
         print '%s user-defined vector from coords.xyz extracted' % (NEXMDir)
-            
+        error.close()
     ## Collect dipole moment along a single trajectory ##
     if dynq == 1: ## single trajectory
         os.chdir('%s' % (cwd))
@@ -562,7 +729,7 @@ def dipole(pathtopack,header,dipole_type):
         ## Generate array with indices of the dipole blocks along trajectory ##
         if tsteps >= tscol:
             if not os.path.exists('%s/%s.out' % (NEXMDir,file_name)):
-                print 'Path %s/%s.out does not exist.' % (NEXMDir,file_name)
+                print ' Path %s/%s.out does not exist.' % (NEXMDir,file_name)
                 sys.exit()
             data = open('%s/%s.out' % (NEXMDir,file_name),'r')
             data = data.readlines()
@@ -577,14 +744,14 @@ def dipole(pathtopack,header,dipole_type):
                         time = header.time_init
                     else:
                         time += header.time_step*header.out_data_steps*header.out_coords_steps
-                        if time > tcoll:
+                        if round(time,3) > round(tcoll,3):
                             tflag = 1
                             break
                     ndipoles += 1
                     array = np.append(array,index)
                 index += 1
             ## Another check to ensure dipole calculation ##
-            if ndipoles != edipoles:
+            if ndipoles != suggestedNumberOfDipoles:
                 print 'Number of dipoles detected in %s/%s.out, %d, does not match the expected %d.' % (NEXMDir,file_name,ndipoles,edipoles)
                 sys.exit()
             ## Append lines for last dipole set ##
@@ -617,12 +784,12 @@ def dipole(pathtopack,header,dipole_type):
             os.remove('%s/%s.out' % (NEXMDir,file_name))
             os.remove('%s/pop.out' % (NEXMDir))
             os.remove('%s/uservec.out' % (NEXMDir))
-            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
             ctraj += 1
-            if tsteps == header.n_class_steps:
+            if tsteps  == math.floor((header.n_class_steps)/(header.out_data_steps)):
                 etraj += 1
         else:
-            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
         ttraj += 1
         ## Summary of results ##
         if ctraj == 0:
@@ -659,8 +826,8 @@ def dipole(pathtopack,header,dipole_type):
         ## Generate dipole arrays for final results ##
         fdipole = np.zeros(len(times)) ## magnitude
         fcosine = np.zeros(len(times)) ## direction
-        edipole = np.zeros((edipoles, len(dirlist1)))
-        ecosine = np.zeros((edipoles, len(dirlist1)))
+        edipole = np.zeros((maxDipole, len(dirlist1)))
+        ecosine = np.zeros((maxDipole, len(dirlist1)))
         ttraj = 0
         ctraj = 0
         etraj = 0
@@ -676,6 +843,7 @@ def dipole(pathtopack,header,dipole_type):
                 ## Determine completed number of time-steps ##
                 if not os.path.exists('%s/%04d/energy-ev.out' % (NEXMD,dir)):
                     print >> error, 'Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir)
+                    print'it should'
                     errflag = 1
                     ttraj += 1
                     continue
@@ -685,7 +853,7 @@ def dipole(pathtopack,header,dipole_type):
                 ## Generate array with indices of the dipole blocks along a single trajectory ##
                 if tsteps >= tscol:
                     if not os.path.exists('%s/%04d/%s.out' % (NEXMD,dir,file_name)):
-                        print >> error, 'Path %s%04d/%s.out does not exist.' % (NEXMD,dir,file_name)
+                        print >> error, '  Path %s%04d/%s.out does not exist.' % (NEXMD,dir,file_name)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -702,14 +870,14 @@ def dipole(pathtopack,header,dipole_type):
                                 time = header.time_init
                             else:
                                 time += header.time_step*header.out_data_steps*header.out_coords_steps
-                                if time > tcoll:
+                                if round(time,3) > round(tcoll,3):
                                     tflag = 1
                                     break
                             ndipoles += 1
                             array = np.append(array,index)
                         index += 1
                     ## Check to ensure dipole calculation ##
-                    if ndipoles != edipoles:
+                    if ndipoles != suggestedNumberOfDipoles:
                         print >> error, 'Number of dipoles detected in %s%04d/%s.out, %d, does not match the expected %d.' % (NEXMD,dir,file_name,ndipoles,edipoles)
                         errflag = 1
                         ttraj += 1
@@ -738,6 +906,7 @@ def dipole(pathtopack,header,dipole_type):
                     ## Collect dipole along a single trajectory ##
                     sdipole = np.zeros(ndipoles)
                     scosine = np.zeros(ndipoles)
+
                     for ndipole in np.arange(ndipoles):
                         dipoles = data[array[ndipole] + 1:array[ndipole + 1]:1]
                         vdipole = np.float_(dipoles[np.int(states[ndipole, 1])].split()[0 if dipole_type == 0 else 2::1]) ## extracts dipole vector and magnitude
@@ -752,12 +921,14 @@ def dipole(pathtopack,header,dipole_type):
                     os.remove('%s/%04d/%s.out' % (NEXMD,dir,file_name))
                     os.remove('%s/%04d/pop.out' % (NEXMD,dir))
                     os.remove('%s/%04d/uservec.out' % (NEXMD,dir))
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps-1)*header.time_step*header.out_data_steps)
                     ctraj += 1
-                    if tsteps == header.n_class_steps:
+                    if tsteps  == math.floor((header.n_class_steps)/(header.out_data_steps)):
                         etraj += 1
                 else:
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps-1)*header.time_step*header.out_data_steps)
+                    print >> error, '%s%04d did not finish up to the user-specified time' % (NEXMD,dir)
+                    errflag = 1
                 ttraj += 1
         ## Summary of results ##
         if ctraj == 0:
@@ -783,7 +954,7 @@ def dipole(pathtopack,header,dipole_type):
         if errflag == 1:
             print 'One or more trajectories have experienced an error, check %s_mean_ensemble.err.' % (file_name)
         else:
-            os.remove('%s/%s_mean_ensemble.err' % (cwd,file_name))
+           os.remove('%s/%s_mean_ensemble.err' % (cwd,file_name))
     
     ## Collect dipoles from ensemble of trajectories at all time-steps ##
     if dynq == 0 and typeq == 1: ## all from ensemble
@@ -835,7 +1006,7 @@ def dipole(pathtopack,header,dipole_type):
                         array = np.append(array,index)
                     index += 1
                 ## Another check to ensure dipole calculation ##
-                if ndipoles != edipoles:
+                if ndipoles != suggestedNumberOfDipoles:
                     print >> error, 'Number of dipoles detected in %s%04d/%s.out, %d, does not match the expected %d.' % (NEXMD,dir,file_name,ndipoles,edipoles)
                     errflag = 1
                     ttraj += 1
@@ -855,7 +1026,9 @@ def dipole(pathtopack,header,dipole_type):
                     errflag = 1
                     ttraj += 1
                     continue
-                uservec = np.genfromtxt('%s/%04d/uservec.out' % (NEXMD,dir))
+                f = open('%s/%04d/uservec.out' % (NEXMD,dir),'r')
+                
+                uservec = np.genfromtxt('%s/%04d/uservec.out' % (NEXMD,dir), autostrip=True)
                 ## Open population data = [time, state] ##
                 if not os.path.exists('%s/%04d/pop.out' % (NEXMD,dir)):
                     print >> error, 'Path %s/%04d/pop.out does not exist.' % (NEXMD,dir)
@@ -873,16 +1046,13 @@ def dipole(pathtopack,header,dipole_type):
                 os.remove('%s/%04d/%s.out' % (NEXMD,dir,file_name))
                 os.remove('%s/%04d/pop.out' % (NEXMD,dir))
                 os.remove('%s/%04d/uservec.out' % (NEXMD,dir))
-                print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
-                if tsteps == header.n_class_steps:
+                print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps-1)*header.time_step*header.out_data_steps)
+                if tsteps  == math.floor((header.n_class_steps)/(header.out_data_steps)):
                     etraj += 1
                 ttraj += 1
         ## Summary of results ##
-        if ttraj == 0:
-            print 'No trajectories completed with %0*.2f.' % (len(str(header.n_class_steps)), tcoll)
-        else:
-            print 'Total trajectories:', '%04d' % (ttraj)
-            print 'Excellent trajectories:', '%04d' % (etraj)
+        print 'Total trajectories:', '%04d' % (ttraj)
+        print 'Excellent trajectories:', '%04d' % (etraj)
         if errflag == 1:
             print 'One or more trajectories have experienced an error, check %s_raw_ensemble.err.' % (file_name)
         else:

@@ -120,7 +120,7 @@ def bla(header):
     ## Number of time-steps for coordinates ##
     ccoll = 0
     num = 0
-    while ccoll <= tcoll:
+    while round(ccoll,3) <= round(tcoll,3): #changed
         ccoll += header.time_step*header.out_data_steps*header.out_coords_steps
         num += 1
 
@@ -178,6 +178,8 @@ def bla(header):
             array = np.array([])
             for line in data:
                 if 'time' in line:
+                    if ncoords == num: #changed
+                        break          #changed
                     if ncoords == 0:
                         tinit = np.float(line.split()[-1])
                         if tinit != header.time_init:
@@ -188,7 +190,7 @@ def bla(header):
                         if time > tcoll:
                             tflag3 = 1
                             break
-                        if time != times[ncoords]:
+                        if round(time,3) != round(times[ncoords],3): #changed
                             tflag2 = 1
                             break
                     ncoords += 1
@@ -225,12 +227,12 @@ def bla(header):
                 b = np.linalg.norm(np.subtract(vec2, vec1))
                 c = np.linalg.norm(np.subtract(vec3, vec2))
                 sbla[ncoord] = (a + c)/2.0 - b
-            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
             ctraj = 1
-            if tsteps == header.n_class_steps:
+            if tsteps == math.floor(header.n_class_steps/header.out_data_steps):
                 etraj = 1
         else:
-            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
         ttraj = 1
         ## summary of results ##
         if ctraj == 0:
@@ -303,6 +305,8 @@ def bla(header):
                     array = np.array([])
                     for line in data:
                         if 'time' in line:
+                            if ncoords == num: #changed
+                               break          #changed
                             if ncoords == 0:
                                 tinit = np.float(line.split()[-1])
                                 if tinit != header.time_init:
@@ -313,7 +317,7 @@ def bla(header):
                                 if time > tcoll:
                                     tflag3 = 1
                                     continue
-                                if time != times[ncoords]:
+                                if round(time,3) != round(times[ncoords],3):  #changed
                                     tflag2 = 1
                                     continue
                             ncoords += 1
@@ -360,13 +364,13 @@ def bla(header):
                         sbla[ncoord] = (a + c)/2.0 - b
                         ebla[ncoord,ctraj] = sbla[ncoord]
                     fbla += sbla
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
                     ctraj += 1
-                    if tsteps == header.n_class_steps:
+                    if tsteps == math.floor(header.n_class_steps/header.out_data_steps):
                         etraj += 1
                 else:
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
-                    print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
+                    print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
                     errflag = 1
                 ttraj += 1
         ## Summary of results ##
@@ -431,6 +435,8 @@ def bla(header):
                 tflag3 = 0
                 array = np.array([])
                 for line in data:
+                    if ncoords == num: #changed
+                        break          #changed
                     if 'time' in line:
                         if ncoords == 0:
                             tinit = np.float(line.split()[-1])
@@ -442,7 +448,7 @@ def bla(header):
                             if time > tcoll:
                                 tflag3 = 1
                                 continue
-                            if time != times[ncoords]:
+                            if round(time,3) != round(times[ncoords],3): #changed
                                 tflag2 = 1
                                 continue
                         ncoords += 1
@@ -487,12 +493,11 @@ def bla(header):
                     c = np.linalg.norm(np.subtract(vec3, vec2))
                     bla = (a + c)/2.0 - b
                     print >> output, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2,header.time_step*header.out_data_steps*header.out_coords_steps*ncoord), '%08.3f' % (bla)
-                print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
-                if tsteps == header.n_class_steps:
+                print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
+                if tsteps == math.floor(header.n_class_steps/header.out_data_steps):
                     etraj += 1
                 else:
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
-                    print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                    print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
                     errflag = 1
                 ttraj += 1
         ## Summary of results ##

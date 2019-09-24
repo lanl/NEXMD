@@ -117,7 +117,7 @@ def angle(header):
     ## Number of time-steps for coordinates ##
     ccoll = 0
     num = 0
-    while ccoll <= tcoll:
+    while round(ccoll,3) <= round(tcoll,3): #changed
         ccoll += header.time_step*header.out_data_steps*header.out_coords_steps
         num += 1
 
@@ -173,9 +173,12 @@ def angle(header):
             cindex = 0
             tflag1 = 0
             tflag2 = 0
+            tflag3 = 0 #changed
             array = np.array([])
             for line in data:
                 if 'time' in line:
+                    if ncoords == num: #changed
+                        break          #changed
                     if ncoords == 0:
                         tinit = np.float(line.split()[-1])
                         if tinit != header.time_init:
@@ -186,7 +189,7 @@ def angle(header):
                         if time > tcoll:
                             tflag3 = 1
                             break
-                        if time != times[ncoords]:
+                        if round(time,3) != round(times[ncoords],3): #changed
                             tflag2 = 1
                             break
                     ncoords += 1
@@ -217,20 +220,20 @@ def angle(header):
                 coords = data[array[ncoord]+1:array[ncoord+1]-1:1]
                 index = 0
                 for line in lines:
-                    vec0 = np.float_(coords[line[0,0]].split()[1:])
-                    vec1 = np.float_(coords[line[0,1]].split()[1:])
-                    vec2 = np.float_(coords[line[0,2]].split()[1:])
+                    vec0 = np.float_(coords[line[0]].split()[1:])
+                    vec1 = np.float_(coords[line[1]].split()[1:])
+                    vec2 = np.float_(coords[line[2]].split()[1:])
                     a = np.subtract(vec0, vec1)
                     b = np.subtract(vec2, vec1)
                     cosine = np.arccos(np.dot(a, b)/(np.linalg.norm(a)*np.linalg.norm(b)))
                     sangle[ncoord,index] = cosine
                     index += 1
-            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
             ctraj = 1
-            if tsteps == header.n_class_steps:
+            if tsteps == math.floor(header.n_class_steps/header.out_data_steps):
                 etraj = 1
         else:
-            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
         ttraj = 1
         ## Summary of results ##
         if ctraj == 0:
@@ -303,6 +306,8 @@ def angle(header):
                     array = np.array([])
                     for line in data:
                         if 'time' in line:
+                            if ncoords == num: #changed
+                                break          #changed
                             if ncoords == 0:
                                 tinit = np.float(line.split()[-1])
                                 if tinit != header.time_init:
@@ -313,7 +318,7 @@ def angle(header):
                                 if time > tcoll:
                                     tflag3 = 1
                                     continue
-                                if time != times[ncoords]:
+                                if round(time,3) != round(times[ncoords],3): #changed
                                     tflag2 = 1
                                     continue
                             ncoords += 1
@@ -362,13 +367,13 @@ def angle(header):
                             eangle[ncoord,ctraj,index] = cosine
                             index += 1
                     fangle += sangle
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
                     ctraj += 1
-                    if tsteps == header.n_class_steps:
+                    if tsteps == math.floor(header.n_class_steps/header.out_data_steps):
                         etraj += 1
                 else:
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
-                    print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
+                    print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
                     errflag = 1
                 ttraj += 1
         ## Summary of results ##
@@ -433,6 +438,8 @@ def angle(header):
                 array = np.array([])
                 for line in data:
                     if 'time' in line:
+                        if ncoords == num: #changed
+                            break          #changed
                         if ncoords == 0:
                             tinit = np.float(line.split()[-1])
                             if tinit != header.time_init:
@@ -443,7 +450,7 @@ def angle(header):
                             if time > tcoll:
                                 tflag3 = 1
                                 continue
-                            if time != times[ncoords]:
+                            if round(time,3) != round(times[ncoords],3): #changed
                                 tflag2 = 1
                                 continue
                         ncoords += 1
@@ -491,12 +498,11 @@ def angle(header):
                         sangle[index] = cosine
                         index += 1
                     print >> output, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2,header.time_step*header.out_data_steps*header.out_coords_steps*ncoord), ' '.join('%08.3f' % (np.degrees(angle)) for angle in sangle)
-                print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
-                if tsteps == header.n_class_steps:
+                print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
+                if tsteps == math.floor(header.n_class_steps/header.out_data_steps):
                     etraj += 1
                 else:
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
-                    print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                    print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
                     errflag = 1
                 ttraj += 1
         ## Summary of results ##

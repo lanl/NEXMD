@@ -124,7 +124,7 @@ def dihedral(header):
     ## Number of time-steps for coordinates ##
     ccoll = 0
     num = 0
-    while ccoll <= tcoll:
+    while round(ccoll,3) <= round(tcoll,3): #changed
         ccoll += header.time_step*header.out_data_steps*header.out_coords_steps
         num += 1
 
@@ -182,6 +182,8 @@ def dihedral(header):
             array = np.array([])
             for line in data:
                 if 'time' in line:
+                    if ncoords == num: #changed
+                        break          #changed
                     if ncoords == 0:
                         tinit = np.float(line.split()[-1])
                         if tinit != header.time_init:
@@ -192,7 +194,9 @@ def dihedral(header):
                         if time > tcoll:
                             tflag3 = 1
                             break
-                        if time != times[ncoords]:
+                        if round(time,3) != round(times[ncoords],3):
+                            print(time)
+                            print(times[ncoords])
                             tflag2 = 1
                             break
                     ncoords += 1
@@ -237,12 +241,12 @@ def dihedral(header):
                 x = np.dot(un1, un2)
                 y = np.dot(m1, un2)
                 sdihedral[ncoord] = np.degrees(-math.atan2(y,x))
-            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
             ctraj = 1
-            if tsteps == header.n_class_steps:
+            if tsteps == math.floor(header.n_class_steps/header.out_data_steps):
                 etraj += 1
         else:
-            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
         ttraj = 1
         ## Summary of results ##
         if ctraj == 0:
@@ -315,6 +319,8 @@ def dihedral(header):
                     array = np.array([])
                     for line in data:
                         if 'time' in line:
+                            if ncoords == num: #changed
+                                break          #changed
                             if ncoords == 0:
                                 tinit = np.float(line.split()[-1])
                                 if tinit != header.time_init:
@@ -325,7 +331,7 @@ def dihedral(header):
                                 if time > tcoll:
                                     tflag3 = 1
                                     continue
-                                if time != times[ncoords]:
+                                if round(time,3) != round(times[ncoords],3): #changed
                                     tflag2 = 1
                                     continue
                             ncoords += 1
@@ -380,13 +386,13 @@ def dihedral(header):
                         sdihedral[ncoord] = np.degrees(-math.atan2(y,x))
                         edihedral[ncoord,ctraj] = sdihedral[ncoord]
                     fdihedral += sdihedral
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
                     ctraj += 1
-                    if tsteps == header.n_class_steps:
+                    if tsteps == math.floor(header.n_class_steps/header.out_data_steps):
                         etraj += 1
                 else:
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
-                    print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
+                    print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
                     errflag = 1
                 ttraj += 1
         ## Summary of results ##
@@ -409,7 +415,7 @@ def dihedral(header):
         if errflag == 1:
             print 'One or more trajectories have experienced an error, check dihedral_mean_ensemble.err.'
         else:
-            os.remove('%s/dihedral_mean_ensemble.err' % (CWD))
+            os.remove('%s/dihedral_mean_ensemble.err' % (cwd))
 
     ## Calculate dihedral from ensemble of trajectories at all time-steps ##
     if dynq == 0 and typeq == 1: ## all from ensemble
@@ -452,6 +458,8 @@ def dihedral(header):
                 array = np.array([])
                 for line in data:
                     if 'time' in line:
+                        if ncoords == num: #changed
+                            break          #changed
                         if ncoords == 0:
                             tinit = np.float(line.split()[-1])
                             if tinit != header.time_init:
@@ -462,7 +470,7 @@ def dihedral(header):
                             if time > tcoll:
                                 tflag3 = 1
                                 continue
-                            if time != times[ncoords]:
+                            if round(time,3) != round(times[ncoords],3): #changed
                                 tflag2 = 1
                                 continue
                         ncoords += 1
@@ -515,12 +523,11 @@ def dihedral(header):
                     y = np.dot(m1, un2)
                     dihedral = np.degrees(-math.atan2(y,x))
                     print >> output, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2,header.time_step*header.out_data_steps*header.out_coords_steps*ncoord), '%08.3f' % (dihedral)
-                print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
-                if tsteps == header.n_class_steps:
+                print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
+                if tsteps == math.floor(header.n_class_steps/header.out_data_steps):
                     etraj += 1
                 else:
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
-                    print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                    print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
                     errflag = 1
                 ttraj += 1
         ## Summary of results ##

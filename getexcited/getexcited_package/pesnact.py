@@ -454,7 +454,7 @@ def pesnact(header):
                 print 'Completed trajectories:', '%04d' % (ctraj)
                 print 'Excellent trajectories:', '%04d' % (etraj)
             if errflag == 1:
-                print 'One of more trajectories have experienced an error, check pesnact.err.' % (len(str(header.n_class_steps)), tcoll)
+                print 'One of more trajectories have experienced an error, check pesnact.err.' 
             else:
                 os.remove('%s/pesnact.err' % (cwd))
 

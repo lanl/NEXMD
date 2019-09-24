@@ -142,7 +142,7 @@ def nexmd(header):
         sys.exit()
     if ncoords > 1:
         index = 0
-        arrayv = np.array([0])
+        arrayv = np.array([])
         for line in datav:
             if 'time' in line:
                 arrayv = np.append(arrayv,index)
@@ -330,9 +330,11 @@ def nexmd(header):
             print 'Excitation energy must be integer or float.'
             sys.exit()
         if stype == 0:
-            specb = input('Spectral broadening (i.e. Gaussian standard deviation) in eV [e.g. 0.15]: ')
+            FWHM = input('Please enter the full width at half maximum (FWHM) for the Gaussian lineshape in eV [e.g. 0.36]: ')
+            specb = FWHM/(2*np.sqrt(2*np.log(2)))
         else:
-            specb = input('Spectral broadening (i.e. Lorentzian fwhm) in eV [e.g. 0.36]: ')
+            FWHM = input('Please enter the full width at half maximum (FWHM) for the Lorentzian lineshape in eV  [e.g. 0.36]: ')
+            specb = FWHM
         if isinstance(specb, int) == False and isinstance(specb, float) == False:
             print 'Spectral broadening must be integer or float.'
             sys.exit()

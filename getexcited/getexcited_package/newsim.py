@@ -75,7 +75,7 @@ def newsim(header):
     if not os.path.exists('%s/header' % (olddir)):
         print 'Path %s/header does not exist.' % (olddir)
         sys.exit()
-    old_header = header('%s/header' % (oldir))
+    old_header = header('%s/header' % (olddir))
 
     ## Check output data ##
     if old_header.out_data_steps == 0:
@@ -110,9 +110,9 @@ def newsim(header):
     bottom = None
     index = 0
     for line in anum:
-        if '$coord' in line:
+        if '$COORD' in line:
             top = index
-        if '$endcoord' in line:
+        if '$ENDCOORD' in line:
             bottom = index
             break
         index += 1
@@ -165,18 +165,18 @@ def newsim(header):
     rseeds = np.int_(rseeds)
 
     ## Choose time at which geometries should be taken from the old simulation ##
-    startq = input('At what time, in femtoseconds, should geometries be taken from %s? ' % (olddir))
+    startq = input('At what time, in femtoseconds, should geometries be taken from %s?  Plese enter a time greater than 0:   ' % (olddir))
     if isinstance(startq, int) == False and isinstance(startq, float) == False:
         print 'Time must be integer or float'
         sys.exit()
-    if startq < 0:
+    if startq <= 0:
         print 'Time must be integer or float greater than zero.'
         sys.exit()
     startq = np.float(startq)
     nsteps = 0
-    while nsteps*cprint + old_header.time_init <= startq:
+    while round(nsteps*cprint + old_header.time_init,3) <= round(startq,3):
         nsteps += 1
-    if (nsteps - 1)*cprint + old_header.time_init != startq:
+    if round((nsteps - 1)*cprint + old_header.time_init,2) != round(startq,2):
         print 'The time, %.2f, minus the initial time, %.2f, is not divisible by %.2f.' % (startq,old_header.time_init,cprint)
         sys.exit()
 
@@ -226,7 +226,7 @@ def newsim(header):
                     if ncoords == 0:
                         dtinit = np.around(np.float(line.split()[-1]), decimals = 3)
                         if dtinit != old_header.time_init:
-                            print >> error, 'Initial time in %s%04d/coords.xyz does not match initial time in %s/header.' (NEXMD,dir,olddir)
+                            print >> error, 'Initial time in %s%04d/coords.xyz does not match initial time in %s/header.' %(NEXMD,dir,olddir)
                             errflag = 1
                             terrflag = 1
                             break
@@ -244,7 +244,12 @@ def newsim(header):
                 traj += 1
                 continue
             arrayc = np.append(arrayc, lenc + 1)
-            cindex = np.where(arrayc == tindex)
+            try: 
+                cindex = np.where(arrayc == tindex)
+            except:
+                print >> error, ' There is problem with the directory: %s%04d' %(NEXMD,dir)
+                traj +=1
+                continue
             if len(cindex[0]) == 0:
                 print >> error, 'Coordinates at %.2f fs in %s%04d/coords.xyz were not found.' % (startq,NEXMD,dir)
                 tarrayc = np.append(tarrayc, np.array([-9999,-9999]))
@@ -254,7 +259,7 @@ def newsim(header):
                 continue
             arrayc = np.int_(arrayc[[cindex[0][0], cindex[0][0] + 1]])
             index = 0
-            arrayv = np.array([0])
+            arrayv = np.array([])
             for line in datav:
                 if 'time' in line:
                     time = np.around(np.float(line.split()[-1]), decimals = 3)

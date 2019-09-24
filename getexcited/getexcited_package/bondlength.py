@@ -108,7 +108,6 @@ def bondlength(header):
             tcoll = (header.n_class_steps - 1)*header.time_step
     if typeq == 1: ## all bla
         tcoll = (header.n_class_steps - 1)*header.time_step
-
     ## Number of classical steps ##
     tscol = 0
     while tscol*header.time_step*header.out_data_steps <= tcoll:
@@ -117,7 +116,7 @@ def bondlength(header):
     ## Number of time-steps for coordinates ##
     ccoll = 0
     num = 0
-    while ccoll <= tcoll:
+    while round(ccoll,3) <= round(tcoll,3):#Changed
         ccoll += header.time_step*header.out_data_steps*header.out_coords_steps
         num += 1
 
@@ -173,9 +172,12 @@ def bondlength(header):
             cindex = 0
             tflag1 = 0
             tflag2 = 0
+            tflag3 = 0  #changed
             array = np.array([])
             for line in data:
                 if 'time' in line:
+                    if ncoords == num: #changed
+                        break          #changed
                     if ncoords == 0:
                         tinit = np.float(line.split()[-1])
                         if tinit != header.time_init:
@@ -186,7 +188,7 @@ def bondlength(header):
                         if time > tcoll:
                             tflag3 = 1
                             break
-                        if time != times[ncoords]:
+                        if (round(time,3) != round(times[ncoords],3)):#Changed
                             tflag2 = 1
                             break
                     ncoords += 1
@@ -222,12 +224,12 @@ def bondlength(header):
                     a = np.subtract(vec1, vec0)
                     sbondlen[ncoord,index] = np.linalg.norm(a)
                     index += 1
-            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
             ctraj = 1
-            if tsteps == header.n_class_steps:
+            if tsteps == math.floor(header.n_class_steps/header.out_data_steps):
                 etraj = 1
         else:
-            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
         ttraj = 1
         ## Summary of results ##
         if ctraj == 0:
@@ -300,6 +302,8 @@ def bondlength(header):
                     array = np.array([])
                     for line in data:
                         if 'time' in line:
+                            if ncoords == num: #changed
+                                break          #changed
                             if ncoords == 0:
                                 tinit = np.float(line.split()[-1])
                                 if tinit != header.time_init:
@@ -310,7 +314,7 @@ def bondlength(header):
                                 if time > tcoll:
                                     tflag3 = 1
                                     continue
-                                if time != times[ncoords]:
+                                if round(time,3) != round(times[ncoords],3):#changed
                                     tflag2 = 1
                                     continue
                             ncoords += 1
@@ -356,13 +360,13 @@ def bondlength(header):
                             ebondlen[ncoord,ctraj,index] = sbondlen[ncoord,index]
                             index += 1
                     fbondlen += sbondlen
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
                     ctraj += 1
-                    if tsteps == header.n_class_steps:
+                    if tsteps == math.floor(header.n_class_steps/header.out_data_steps):
                         etraj += 1
                 else:
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
-                    print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
+                    print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
                     errflag = 1
                 ttraj += 1
         ## Summary of results ##
@@ -427,6 +431,8 @@ def bondlength(header):
                 array = np.array([])
                 for line in data:
                     if 'time' in line:
+                        if ncoords == num: #changed
+                            break          #changed
                         if ncoords == 0:
                             tinit = np.float(line.split()[-1])
                             if tinit != header.time_init:
@@ -437,7 +443,7 @@ def bondlength(header):
                             if time > tcoll:
                                 tflag3 = 1
                                 continue
-                            if time != times[ncoords]:
+                            if round(time,3) != round(times[ncoords],3): #changed
                                 tflag2 = 1
                                 continue
                         ncoords += 1
@@ -482,12 +488,11 @@ def bondlength(header):
                         sbondlen[index] = np.linalg.norm(a)
                         index += 1
                     print >> output, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2,header.time_step*header.out_data_steps*header.out_coords_steps*ncoord), ' '.join('%08.3f' % (bond) for bond in sbondlen)
-                print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
-                if tsteps == header.n_class_steps:
+                print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
+                if tsteps == math.floor(header.n_class_steps/header.out_data_steps):
                     etraj += 1
                 else:
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
-                    print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                    print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
                     errflag = 1
                 ttraj += 1
         ## Summary of results ##

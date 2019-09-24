@@ -53,6 +53,10 @@ def restart(pathtopack,header):
     if dynq not in [1,0]:
         print 'Answer must be 1 or 0.'
         sys.exit()
+    numRestarts = input('Input the number of times you have restarted the trajectories? i.e 1 if this is the first time you have run a restart ')
+    if numRestarts < 0 or not(isinstance(numRestarts,int)) :
+        print 'Answer must be greater than 1 and an integer.'
+        sys.exit()
     if dynq == 0: ## ensemble
         NEXMDir = raw_input('Ensemble directory [e.g. NEXMD]: ')
         if not os.path.exists(NEXMDir):
@@ -100,11 +104,13 @@ def restart(pathtopack,header):
             print 'Answer must be greater than or equal to the previous number of classical steps used, which was %d.\nTo reduce number of classical steps past %d, simply change n_class_steps in header.' % (header.n_class_steps,header.n_class_steps)
             sys.exit()
         nheader = open('%s/nheader' % (NEXMDir),'w')
-        for line in header:
+        headerFile = open('%s/header' % (NEXMDir)) #Changed
+        for line in headerFile: #Changed
             if 'n_class_steps' in line:
                 nheader.write('   n_class_steps=%d, ! number of classical steps [1]\n' % (ntsmax))
             else:
                 nheader.write(line)
+        headerFile.close() # Changed
         nheader.close()
         header.n_class_steps = ntsmax
         os.rename('%s/nheader' % (NEXMDir), '%s/header' % (NEXMDir))
@@ -230,8 +236,10 @@ def restart(pathtopack,header):
                     else:
                         maxview = 0
                     ## Make new input file ##
+                    os.rename('%s/%04d/input.ceon' % (NEXMD,dir), '%s/%04d/input%d.ceon' % (NEXMD,dir,numRestarts))
                     inputfile = open('%s/%04d/input.ceon' % (NEXMD,dir),'w')
-                    for line in header:
+                    headerFile = open('%s/header' % (NEXMDir))  #Changed
+                    for line in headerFile:  #Changed
                         if 'rnd_seed_flag' in line:
                             inputfile.write('   rnd_seed=%d, ! seed for the random number generator\n' % (rseed if randq == 1 else rseeds[traj]))
                         else:
@@ -261,6 +269,7 @@ def restart(pathtopack,header):
                                                     inputfile.write('$endcoeff\n')
                                                 else:
                                                     inputfile.write(line)
+                    headerFile.close() # Changed
                     rtimes = np.append(rtimes,time)
                     print >> dirlist, '%04d' % (dir)
                     print '%s%04d' % (NEXMD,dir)
@@ -269,8 +278,6 @@ def restart(pathtopack,header):
                     print >> rseedslist, '%d' % (-123456789)
                 traj += 1
             dirlist.close()
-        if filecmp.cmp('%s/rseedslist%d' % (NEXMDir,maxdir), '%s/rseedslist%d' % (NEXMDir,maxdir + 1)):
-            os.remove('%s/rseedslist%d' % (NEXMDir,maxdir + 1))
         if rstflag == 1:
             print 'One or more trajectories cannot be restarted, check restart.err.'
         else:
@@ -343,8 +350,10 @@ def restart(pathtopack,header):
             else:
                 maxview = 0
             ## Make new input file ##
+            os.rename('%s/input.ceon' % (NEXMDir), '%s/input%d.ceon' % (NEXMDir,numRestarts))
             inputfile = open('%s/input.ceon' % (NEXMDir),'w')
-            for line in header:
+            headerFile = open('%s/header' % (NEXMDir))  #Changed
+            for line in headerFile: #Changed
                 if 'rnd_seed_flag' in line:
                     inputfile.write('   rnd_seed=%d, ! seed for the random number generator\n' % (rseed if randq == 1 else rseeds[traj]))
                 else:
@@ -375,6 +384,7 @@ def restart(pathtopack,header):
                                         else:
                                             inputfile.write(line)
             rtimes = np.append(rtimes,time)
+            headerFile.close() #Changed
             print '%s' % (NEXMDir)
             print >> rseedslist, '%d' % (rseed if randq == 1 else rseeds[traj])
         else:

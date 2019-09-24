@@ -100,7 +100,7 @@ def spcalc(header):
         sys.exit()
     if ncoords > 1:
         index = 0
-        arrayv = np.array([0])
+        arrayv = np.array([])
         for line in datav:
             if 'time' in line:
                 arrayv = np.append(arrayv,index)
