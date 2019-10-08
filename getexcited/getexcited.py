@@ -16,7 +16,7 @@ pathtopack = 'Insert path to getexcited_package here, do not include "getexcited
          _______________________________________
         |#######################################|
         |##|                                 |##|
-        |##|        USE WITH CAUTION!        |##|
+        |##|        USE WITH EXTREME CAUTION!|##|
         |##|                                 |##|
         |##| Any questions or suggestions    |##|
         |##| regarding this script, feel     |##|
@@ -25,7 +25,7 @@ pathtopack = 'Insert path to getexcited_package here, do not include "getexcited
         |#######################################|
  _________________________________________________________
 |                                                         |
-| Currently, there are 13 main functions:                 |
+| Currently, there are 12 main functions:                 |
 |                                                         |
 | (1) prepare inputs for single-point calculations        |
 | (2) generate a combined optical spectrum from           |
@@ -42,8 +42,7 @@ pathtopack = 'Insert path to getexcited_package here, do not include "getexcited
 | (9) access options for geometry analysis                |
 | (10) access options for dipole analysis                 |
 | (11) access options for transition density analysis     |
-| (12) access options for pump-push-probe spectroscopy    |
-| (13) access code testing tools                          |
+| (12) access code testing tools                          |
 |                                                         |
 | NOTE: Ground-state trajectory must be completed first.  |
 | Coordinates and velocities are selected from a single   |
@@ -94,9 +93,9 @@ from getexcited_package.dipole import dipole
 from getexcited_package.tdiagonal import tdiagonal
 from getexcited_package.header import header
 
-funq = input('\nSelect a task from the following list:\n\n[1] Prepare input files for single-point calculations\n[2] Generate an optical spectrum from single-point calculations\n[3] Prepare input files for NEXMD\n[4] Prepare input files for adiabatic dynamics with geometries from NEXMD\n[5] Collect populations from NEXMD\n[6] Collect pess and nacts from NEXMD\n[7] Prepare restart input files for NEXMD\n[8] Clean out the directories of NEXMD trajectories that are incomplete\n[9] Access options for geometry analysis\n[10] Access options for dipole analysis\n[11] Access options for transition density analysis\n[12] Access options for pump-push-probe spectroscopy (*** UNDER DEVELOPMENT, DO NOT USE ***)\n[13] Access code testing tools\n\nEnter the number corresponding to the desired task: ')
-if funq not in [1,2,3,4,5,6,7,8,9,10,11,12,13]:
-    print 'Answer must be 1 through 13.'
+funq = input('\nSelect a task from the following list:\n\n[1] Prepare input files for single-point calculations\n[2] Generate an optical spectrum from single-point calculations\n[3] Prepare input files for NEXMD\n[4] Prepare input files for adiabatic dynamics with geometries from NEXMD\n[5] Collect populations from NEXMD\n[6] Collect pess and nacts from NEXMD\n[7] Prepare restart input files for NEXMD\n[8] Clean out the directories of NEXMD trajectories that are incomplete\n[9] Access options for geometry analysis\n[10] Access options for dipole analysis\n[11] Access options for transition density analysis\n[12] Access code testing tools\n\nEnter the number corresponding to the desired task: ')
+if funq not in [1,2,3,4,5,6,7,8,9,10,11,12]:
+    print 'Answer must be 1 through 12.'
     sys.exit()
 if funq == 1:
     spcalc(header)
@@ -146,18 +145,6 @@ if funq == 11:
     if advq == 1:
         tdiagonal(header)
 if funq == 12:
-    sys.exit()
-    advq = input('\nSelect a task from the following list:\n\n[1] Prepare input files for single-point calculations after pump-push delay time\n[2] Generate optical spectrum from single-point calculations after pump-push delay time\n[3] Prepare input files for NEXMD after push pulse\n\nEnter the number corresponding to the desired task: ')
-    if advq not in [1,2,3]:
-        print 'Answer must be 1 through 3.'
-        sys.exit()
-    if advq == 1:
-        spcalc_push()
-    if advq == 2:
-        optspec_push()
-    if advq == 3:
-        nexmd_push()
-if funq == 13:
     advq = input('Select a task from the following list:\n\n[1] Collect timing data from trajectories\n\nEnter the number corresponding to the desired task: ')
     if advq != 1:
         print 'Answer must be 1.'
