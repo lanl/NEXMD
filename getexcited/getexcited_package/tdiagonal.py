@@ -77,7 +77,7 @@ def tdiagonal(header):
     if dynq == 1: ## single trajectory
         typeq = input('Output occupation at all time-steps and trajectories, or up to some user-defined time?\nAnswer all [1], or user-defined [2]: ')
         if typeq not in [1,2]:
-            print 'Answer must be 0, 1, or 2.'
+            print 'Answer must be 1 or 2.'
             sys.exit()
         NEXMDir = raw_input('Single trajectory directory: ')
         if not os.path.exists(NEXMDir):
@@ -232,7 +232,7 @@ def tdiagonal(header):
             ## Check times ##
             times_td = np.around(np.genfromtxt('%s/transition-densities.out' % (NEXMDir),usecols=[0]), decimals = 3)
             if np.array_equal(times_td, times) == False:
-                print >> 'There is an inconsistency in time-step in %s/transition-densities.out.' % (NEXMDir)
+                print  'There is an inconsistency in time-step in %s/transition-densities.out.' % (NEXMDir)
                 sys.exit()
             ## Collect data ##
             tds = np.genfromtxt('%s/transition-densities.out' % (NEXMDir),usecols=np.arange(1, norbits + 1))
@@ -402,7 +402,7 @@ def tdiagonal(header):
             ## Check times ##
             times_td = np.around(np.genfromtxt('%s/transition-densities.out' % (NEXMDir),usecols=[0]), decimals = 3)
             if np.array_equal(times_td, times) == False:
-                print >> 'There is an inconsistency in time-step in %s/transition-densities.out at %.3f fs.' % (NEXMDir,times_td[np.where(np.not_equal(times_td,times)==True)[0]])
+                print 'There is an inconsistency in time-step in %s/transition-densities.out.' % (NEXMDir)
                 sys.exit()
             ## Collect data ##
             tds = np.genfromtxt('%s/transition-densities.out' % (NEXMDir),usecols=np.arange(1, norbits + 1))
@@ -488,7 +488,7 @@ def tdiagonal(header):
             ## Check times ##
             times_td = np.around(np.genfromtxt('%s/transition-densities.out' % (NEXMDir),usecols=[0]), decimals = 3)
             if len(times_td) != math.floor((header.n_class_steps)/(header.out_data_steps)):
-                print >> error, 'There is an inconsistency in time-step in %s/transition-densities.out at %.3f fs.' % (NEXMDir,times_td[np.where(np.not_equal(times_td,times)==True)[0]])
+                print 'There is an inconsistency in time-step in %s/transition-densities.out.' % (NEXMDir)
                 sys.exit()
             ## Compare completed time-steps to collection time-steps and collect data ##
             alength = round((tcoll/(header.time_step*header.out_data_steps)+1),0)
@@ -1024,7 +1024,7 @@ def tdiagonal(header):
                     ## Check times ##
                     times_td = np.around(np.genfromtxt('%s/%04d/transition-densities.out' % (NEXMD,dir),usecols=[0]), decimals = 3)
                     if len(times_td) != math.floor((header.n_class_steps)/(header.out_data_steps)):
-                        print >> error, 'There is an inconsistency in time-step in %s%04d/transition-densities.out ' % (NEXMD,dir)
+                        print >> error, 'There is an inconsistency in time-step in %s%04d/transition-densities.out.' % (NEXMD,dir)
                         errflag = 1
                         ttraj += 1
                         continue

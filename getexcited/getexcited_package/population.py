@@ -138,7 +138,7 @@ def population(header):
             ttraj += 1
     if ctraj == 0:
         print 'No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)),tcoll)
-        os.remove('%s/pop.out' % (cwd))
+        os.remove('%s/pop_mean_ensemble.out' % (cwd))
     else:
         fpoph = fpoph/ctraj
         fpopc = fpopc/ctraj
@@ -151,6 +151,6 @@ def population(header):
         for tstep in np.arange(tscol):
             print >> output, '%0*.2f' % (len(str((header.n_class_steps))) + 2,header.time_step*tstep), ' '.join(str('%.3f' % (x)) for x in fpoph[tstep]), '%.3f' % (np.sum(fpoph[tstep])), ' '.join(str('%.3f' % (x)) for x in fpopc[tstep]), '%.3f' % (np.sum(fpopc[tstep]))
     if errflag == 1:
-        print 'One or more trajectories have experienced an error, check pop.err.'
+        print 'One or more trajectories have experienced an error, check pop_mean_ensemble.err.'
     else:
         os.remove('%s/pop_mean_ensemble.err' % (cwd))
