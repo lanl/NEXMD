@@ -457,6 +457,17 @@ subroutine qm2_scf(qmmm_opnq, qm2_params, qmewald, qmmm_nml, qm_gb, qmmm_mpi, qm
 
     if (qmmm_nml%fock_predict == 1) call qm2_fock_store(qm2_struct,qm2_struct%matsize, fock_matrix, hmatrix)
 
+
+    if (qmmm_nml%printcharges .and. qm2ds%Mx .eq. 0 ) then
+        write(6,*)'Calculating Mulliken Charges'
+        allocate(density_matrix_unpacked(qm2_struct%norbs,qm2_struct%norbs));
+        call unpacking(qm2_struct%norbs,qm2_struct%den_matrix,density_matrix_unpacked,'s');
+        do i=1,qmmm_struct%nquant_nlink
+            call qm2_calc_mulliken(qm2_params,qm2_struct,i,scf_mchg(i),density_matrix_unpacked);
+        end do
+        deallocate(density_matrix_unpacked);
+    end if
+
     return
 end subroutine qm2_scf
 

@@ -1,0 +1,3 @@
+Test of the trivial crossing routine.  This test uses CIS and Langevian dynamics with decoherence.
+Benzene: exc_state_init=5
+Nitromethane: exc_state_init=8

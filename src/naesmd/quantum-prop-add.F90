@@ -21,6 +21,7 @@ contains
         !in F77. Should be updated to have an allocatable option.
         integer ascpr(260,260),z
         integer iordenapc(260)
+        integer tmp(sim%excN)
 
         !--------------------------------------------------------------------
         !
@@ -86,6 +87,11 @@ contains
                         cross(i)=1
                     else
                         cross(i)=2
+                        tmp = sim%naesmd%dbtorden
+                        if(i.lt.sim%naesmd%iorden(i)) then
+                            sim%naesmd%dbtorden(i) = tmp(sim%naesmd%iorden(i))
+                            sim%naesmd%dbtorden(i+1) = tmp(sim%naesmd%iorden(i+1))
+                        endif
                     end if
                     sim%naesmd%iordenhop(i)=sim%naesmd%iorden(i)
                     if(lprint.ge.2) then
@@ -119,6 +125,7 @@ contains
         type(simulation_t),pointer::sim
         integer k,j,i
         integer cross(sim%excN)
+        integer tmp(sim%excN)
 
         !***************************************************
         ! following the nonavoiding crossing of states
@@ -136,6 +143,11 @@ contains
                 if(i.ne.sim%naesmd%iorden(sim%naesmd%ihop)) then
                     if(dabs(sim%naesmd%scpr(i,sim%naesmd%iorden(i))).ge.0.9d0) then
                         cross(i)=2
+                        tmp = sim%naesmd%dbtorden
+                        if(i.lt.sim%naesmd%iorden(i)) then
+                            sim%naesmd%dbtorden(i) = tmp(sim%naesmd%iorden(i))
+                            sim%naesmd%dbtorden(i+1) = tmp(sim%naesmd%iorden(i+1))
+                        endif
                     end if
                 end if
             end if
@@ -150,6 +162,7 @@ contains
         integer i,j,iimdqt
         integer Na
         _REAL_ xx(Na),yy(Na),zz(Na)
+        integer temp(1:sim%excN)
 
         if(iimdqt.eq.1) then
             do i=1,sim%excN
@@ -234,12 +247,23 @@ contains
         write(6,*)'sim%naesmd%iordenhop:',sim%naesmd%iordenhop
         write(6,*)'sizevmdqtmiddle',shape(sim%naesmd%vmdqtmiddle)
 ! option 2: check trivial unavoided crossingfor for the current sim%naesmd%state
-        if(sim%naesmd%lowvalue(sim%naesmd%ihop).gt.dabs(sim%naesmd%vmdqtmiddle(sim%naesmd%ihop)- &
-                sim%naesmd%vmdqtmiddle(sim%naesmd%iordenhop(sim%naesmd%ihop)))) then
-                sim%naesmd%lowvalue(sim%naesmd%ihop)=dabs(sim%naesmd%vmdqtmiddle(sim%naesmd%ihop)- &
-                        sim%naesmd%vmdqtmiddle(sim%naesmd%iordenhop(sim%naesmd%ihop)))
-                sim%naesmd%lowvaluestep(sim%naesmd%ihop)=iimdqt
-        end if
+
+        temp = sim%naesmd%iordenhop
+        do j=1,sim%excN
+            if(sim%naesmd%iordenhop(j) .eq. 0) then
+                sim%naesmd%iordenhop(j) = j
+            endif
+        enddo
+        do j=1,sim%excN
+            if(sim%naesmd%lowvalue(j).gt.dabs(sim%naesmd%vmdqtmiddle(j)- &
+                sim%naesmd%vmdqtmiddle(sim%naesmd%iordenhop(j)))) then
+
+                sim%naesmd%lowvalue(j)=dabs(sim%naesmd%vmdqtmiddle(j)- &
+                    sim%naesmd%vmdqtmiddle(sim%naesmd%iordenhop(j)))
+                sim%naesmd%lowvaluestep(j)=iimdqt
+            end if
+        end do
+        sim%naesmd%iordenhop = temp
         return
     end subroutine
 

@@ -1,0 +1,3 @@
+Test of nonadiabatic dynamics using CIS, and Newtonian dynamics with decoherence.
+Benzene: exc_state_init=3
+Nitromethane: exc_state_init=5

@@ -1,0 +1,3 @@
+Test of nonadiabatic dynamics Linear Response solvent model with the Onsager potential using CIS, and Langevian dynamics with decoherence.
+Benzene: exc_state_init=4
+Nitromethane: exc_state_init=5

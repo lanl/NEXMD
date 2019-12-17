@@ -1,0 +1,4 @@
+Test of nonadiabatic dynamics using CIS, and Langevian dynamics with decoherence. TEST 14 uses a diferent random seed than TEST 13.
+Benzene: exc_state_init=3
+Nitromethane: exc_state_init=5
+

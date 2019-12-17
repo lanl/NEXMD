@@ -635,7 +635,7 @@
 
 ! find eigenvalues and eigenvectors of ray
    write(6,*)'info0',info
-   call dsyev ('v','u',nd1,rayv,nd,raye,xi,qm2ds%Nrpa,info)
+   call dsyev ('v','u',nd1,rayv,nd,raye,dtmp,4*nd1,info)
    do j=1,nd1
       raye(j) = Sign(Sqrt(Abs(raye(j))),raye(j))
    enddo

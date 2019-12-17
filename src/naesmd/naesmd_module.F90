@@ -50,7 +50,7 @@ module naesmd_module
 	    integer iview,jend,decorhop
 	    integer iseedmdqt,conthop,conthop2
 	    _REAL_ temp0,tempf,tempi,tao
-	    integer,allocatable :: iordenhop(:),iorden(:)
+	    integer,allocatable :: iordenhop(:),iorden(:), dbtorden(:)
 	    integer,allocatable:: atomtype(:) !atom types currently max 1000
 	    integer,allocatable:: lowvaluestep(:)
 	    _REAL_,allocatable:: lowvalue(:)
@@ -131,7 +131,7 @@ contains
         type(naesmd_structure), intent(inout) :: naesmd_struct
         write(6,*)'Allocating naesmd_module variables',Na,Nexc
         if(Nexc.ne.0) then
-                allocate(naesmd_struct%iordenhop(Nexc),naesmd_struct%iorden(Nexc))
+                allocate(naesmd_struct%iordenhop(Nexc),naesmd_struct%iorden(Nexc),naesmd_struct%dbtorden(Nexc))
                 allocate(naesmd_struct%lowvaluestep(Nexc))
                 allocate(naesmd_struct%lowvalue(Nexc))
                 allocate(naesmd_struct%vmdqt(Nexc))

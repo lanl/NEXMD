@@ -53,7 +53,7 @@ def restart(pathtopack,header):
     if dynq not in [1,0]:
         print 'Answer must be 1 or 0.'
         sys.exit()
-    numRestarts = input('Input the number of times you have restarted the trajectories? i.e 1 if this is the first time you have run a restart ')
+    numRestarts = input('Input the number of times you have restarted the trajectories? e.g 1 if this is the first time you have run a restart:')
     if numRestarts < 0 or not(isinstance(numRestarts,int)) :
         print 'Answer must be greater than 1 and an integer.'
         sys.exit()

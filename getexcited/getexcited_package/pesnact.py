@@ -516,7 +516,7 @@ def pesnact(header):
                         nact = open('%s/%04d/nact.out' % (NEXMD,dir),'r')
                         nact = nact.readlines()
                         lines = linenums[1:len(nact) + 1:1]
-                    if dtype == 3:
+                    if dtypeq == 3:
                         if not os.path.exists('%s/%04d/pes.out' % (NEXMD,dir)):
                             print >> error, 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir)
                             errflag = 1
