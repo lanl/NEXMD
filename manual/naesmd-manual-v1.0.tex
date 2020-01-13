@@ -1,6 +1,6 @@
 % book example for classicthesis.sty
 
-\documentclass[12pt,letter,footinclude=true,headinclude=true,hyphens]{book} % KOMA-Script book
+\documentclass[12pt,letter,footinclude=true,headinclude=true,hyphens,oneside]{book} % KOMA-Script book
 % scrbook = KOMA-Script book
 \usepackage[T1]{fontenc}
 \usepackage[hyphens]{url}
@@ -16,8 +16,8 @@
 
 
 \author{Manual by Dmitri Svetlov and Josiah Bjorgaard \\Los Alamos National Laboratory\\}
-\date{Last updated Oct. 20, 2016}
-\title{\texttt{NAESMD}: A software package for non-adiabatic and excited-state molecular dynamics}
+\date{Last updated Oct. 23, 2019}
+\title{\texttt{NEXMD}: A software package for non-adiabatic and excited-state molecular dynamics}
 	
 	\maketitle
 	
@@ -27,12 +27,10 @@
 %	\renewcommand{\chaptermark}[1]{\markboth{\spacedlowsmallcaps{#1}}{\spacedlowsmallcaps{#1}}}
 %	\renewcommand{\sectionmark}[1]{\markright{\thesection\enspace\spacedlowsmallcaps{#1}}}
 
-    % use \cleardoublepage here to avoid problems with pdfbookmark
-    \cleardoublepage\part{Getting Started}
     
     \chapter{Introduction}
     
-    This is a manual for the \texttt{NAESMD} package developed at Los Alamos National Laboratory under the direction of Sergei Tretiak. It simulates the photoinduced adiabatic and non-adiabatic ground- and excited-state molecular dynamics of organic chromophores. It uses the \texttt{CEO} (collective electronic oscillator) package with a variety of semiempirical methods from the \texttt{SQM} package. Tully's fewest-switches surface hopping approach to quantum transitions is employed, with instantaneous decoherence and a Min-Cost algorithm for the detection of trivial unavoided crossings. Several TD-SCF (time-dependent self-consistent field) QM/continuum models are available for including the effects of a solvent.
+    This is a manual for the \texttt{NEXMD} package developed at Los Alamos National Laboratory under the direction of Sergei Tretiak. It simulates the photoinduced adiabatic and non-adiabatic ground- and excited-state molecular dynamics of organic chromophores. It uses the \texttt{CEO} (collective electronic oscillator) package with a variety of semiempirical methods from the \texttt{SQM} package. Tully's fewest-switches surface hopping approach to quantum transitions is employed, with instantaneous decoherence and a Min-Cost algorithm for the detection of trivial unavoided crossings. Several TD-SCF (time-dependent self-consistent field) QM/continuum models are available for including the effects of a solvent.
     
     \chapter{Authors}
     
@@ -44,21 +42,15 @@
     
     \chapter{Installation}
     
-    The distribution of \texttt{NAESMD} contains all code necessary to utilize the entire package (provided that effective compilers for Fortran 90/95 and ANSI C are available). Makefiles are provided for the benefit of those computing in a Unix-based environment; these have been used successfully by our group to compile the software on our own HPC clusters. However, we cannot guarantee that any makefile will successfully compile  \texttt{NAESMD} on a given infrastructure with no changes needed.
+    The distribution of \texttt{NEXMD} contains all code necessary to utilize the entire package (provided that effective compilers for Fortran 90/95 and ANSI C are available). Makefiles are provided for the benefit of those computing in a Unix-based environment; these have been used successfully by our group to compile the software on our own HPC clusters. However, we cannot guarantee that any makefile will successfully compile  \texttt{NEXMD} on a given infrastructure with no changes needed.
     
-    To compile \texttt{NAESMD}, change into the top-level directory of the package and modify the provided Makefile to give the desired compilers (default of gfortran and gcc) and provide compiled BLAS and LAPACK libraries. Then run
+    To compile \texttt{NEXMD}, change into the top-level directory of the package and modify the provided Makefile to give the desired compilers (default gfortran or gcc) and provide compiled BLAS and LAPACK libraries. Then run
     
-    \texttt{make all}
-
-or if using LANL IC systems, run
-
-    \texttt{make all\_ic}
-
-after loading relevant intel compiler and MKL modules.    
+    \texttt{"make ic" or "make gnu" depending on the compiler available}    
     
     \part{Methodology and Preparation of Input Files}
     
-    This part is structured according to the general input file used by the entire package. For each section of input or group of closely related parameters, it briefly discusses the relevant underlying methodology and physics (assuming only a first course in quantum mechanics) and then describes how to configure the input for the system of interest. Some parameters are for features which are still under development. These features are flagged by the (prototype) keyword. A link is included at the start of each section on methodology allowing readers who are familiar with it to skip ahead. Our hope is that this guide can thus effectively serve both mature researchers who are merely new to our software and beginning students with little to no background in the field of non-adiabatic molecular dynamics. References to the texts used and to additional resources are given in the bibliography.
+    This part is structured according to the general input file used by the entire package. For each section of input or group of closely related parameters, it briefly discusses the relevant underlying methodology and physics (assuming only a first course in quantum mechanics) and then describes how to configure the input for the system of interest. A link is included at the start of each section on methodology allowing readers who are familiar with it to skip ahead. Our hope is that this guide can thus effectively serve both mature researchers who are merely new to our software and beginning students with little to no background in the field of non-adiabatic molecular dynamics. References to the texts used and to additional resources are given in the bibliography.
     
     \chapter{Electronic/Molecular Structure}
     
@@ -70,7 +62,7 @@ after loading relevant intel compiler and MKL modules.
     
     Skip ahead to \ref{ground-state-input}
     
-    Recall from basic quantum mechanics that the hydrogen atom is the simplest system containing both a nucleus and an electron for which the Schr\"{o}dinger equation can be solved exactly. Now consider a multi-electron atom. If the electrons did not interact with one another, the electronic repulsion energy $V_{ee}(\mathbf{r})$ would be zero, the Hamiltonian would be separable, and the total electronic wavefunction would be a simple - and symmetric - product of the wavefunctions of the individual electrons:
+    Recall from basic quantum mechanics that the hydrogen atom is the simplest system containing both a nucleus and an electron for which the Schr\"{o}dinger equation can be solved exactly. Now consider a multi-electron atom. If the electrons did not interact with one another, the electronic repulsion energy $V_{ee}(\mathbf{r})$ would be zero, the Hamiltonian would be separable, and the total electronic wavefunction would be a simple, and symmetric, product of the wavefunctions of the individual electrons:
     
     \begin{equation}
     \Psi_{HF}(\mathbf{r}) = \psi(\mathbf{r}_1)\psi(\mathbf{r}_2) \cdot \cdot \cdot \psi(\mathbf{r}_n)
@@ -128,15 +120,15 @@ after loading relevant intel compiler and MKL modules.
     
     The variational principle tells us that the solution to this equation (i.e., its eigenvalue) is an upper bound on the actual ground-state energy of the system; in particular, we have obviously neglected the energy resulting from electron-electron repulsion, so we cannot obtain the true minimum energy.
     
-    Computationally, these operators are represented in matrix form and the eigenvalue equations that result are solved via matrix diagonalization. However, the matrices depend on their own solutions (which will be linear combinations of the orbital bases we choose). Therefore, the euqation can only be solved iteratively: starting from a reasonable initial guess of orbitals, the electron density and total energy (including nuclear repulsions) are computed. These are then used as updated guesses, and new densities and energies are computed. This process is repeated until a set number of iterations have been completed or until the energies and densities \emph{converge} (i.e., the change in each from one iteration to the next is below a target value). Because of these aspects, this is known as a \emph{self-consistent field} method.
+    Computationally, these operators are represented in matrix form and the eigenvalue equations that result are solved via matrix diagonalization. However, the matrices depend on their own solutions (which will be linear combinations of the orbital bases we choose). Therefore, the equation can only be solved iteratively: starting from a reasonable initial guess of orbitals, the electron density and total energy (including nuclear repulsions) are computed. These are then used as updated guesses, and new densities and energies are computed. This process is repeated until a set number of iterations have been completed or until the energies and densities \emph{converge} (i.e., the change in each from one iteration to the next is below a target value). Because of these aspects, this is known as a \emph{self-consistent field} method.
     
-    In addition to purely \emph{ab initio} methods such as these, there are also \emph{semiempirical} methods that employ system-specific parameters derived from experimental data to formulate approximations of the true Hamiltonian that sacrifice chemical accuracy but are easier to solve. The earliest and perhaps most influential is the H\"{u}ckel model for conjugated $\pi$ systems, which uses a "tight-binding" approach where each carbon atom has a single $p$ orbital, overlap integrals between non-identical atoms are taken to be zero, and only two parameters, the Coulomb integral and resonance/bond integral, are required. These parameters have been established by experiment, and the model has yielded qualtitatively - and sometimes quantitatively - useful insights.
+    In addition to purely \emph{ab initio} methods such as these, there are also \emph{semiempirical} methods that employ system-specific parameters derived from experimental data to formulate approximations of the true Hamiltonian that sacrifice chemical accuracy but are easier to solve. The earliest and perhaps most influential is the H\"{u}ckel model for conjugated $\pi$ systems, which uses a "tight-binding" approach where each carbon atom has a single $p$ orbital, overlap integrals between non-identical atoms are taken to be zero, and only two parameters, the Coulomb integral and resonance/bond integral, are required. These parameters have been established by experiment, and the model has yielded qualitatively - and sometimes quantitatively - useful insights.
     
-    For example, \texttt{NAESMD} uses the method of \emph{collective} (or \emph{coupled}) \emph{electronic oscillators} developed by Mukamel and colleagues in the calculation of electronic structures. This combines the Pariser-Parr-Pople (PPP) tight-binding Hamiltonian and the single-electron density matrix in the ground state with time-dependent Hartree-Fock theory to arrive at a set of electronic "normal modes" that are in many ways analogous to their nuclear counterparts. The advantage of this approach is that in many applications - such as the nonlinear optical responses of conjugated polyenes - only a few such oscillators tend to be important. Thus we are still able to capture many important phenomena and trends, but with significant computational savings.
+    For example, \texttt{NEXMD} uses the method of \emph{collective} (or \emph{coupled}) \emph{electronic oscillators} developed by Mukamel and colleagues in the calculation of electronic structures. This combines the Pariser-Parr-Pople (PPP) tight-binding Hamiltonian and the single-electron density matrix in the ground state with time-dependent Hartree-Fock theory to arrive at a set of electronic "normal modes" that are in many ways analogous to their nuclear counterparts. The advantage of this approach is that in many applications - such as the nonlinear optical responses of conjugated polyenes - only a few such oscillators tend to be important. Thus we are still able to capture many important phenomena and trends, but with significant computational savings.
     
-    The latest version of \texttt{NAESMD} interfaces with the \texttt{sqm} package to provide a variety of semiempirical models, listed in the table of input parameters below.
+    The latest version of \texttt{NEXMD} interfaces with the \texttt{sqm} package to provide a variety of semiempirical models, listed in the table of input parameters below.
     
-    Finally, the package provides three methods for dealing with the computationally intensive problem of SCF iteration at each time step of the molecular dynamics simulation. In order to ensure adiabatic evolution of the trajectory, forces must always be calculated at the electronic ground state. Earlier approaches "propagated" combinations of the ground-state configurations from previous time steps as initial guesses to subsequent SCF calculations. While this reduces the number of iterations necessary, it also introduces systematic energy drifts, because electronic evolution is irreversible until SCF convergence is attained. As a result, methodologies such as time-reversible Born-Oppenheimer molecular dynamics (TR-BOMD), and an "extended Lagrangian" formulation (XL-BOMD) of it, have recently been developed to allow for higher-order symplectic schemes that produce physically meaningful results while preserving computational efficiency. \texttt{NAESMD} allows all three approaches.     
+    Finally, the package provides three methods for dealing with the computationally intensive problem of SCF iteration at each time step of the molecular dynamics simulation. In order to ensure adiabatic evolution of the trajectory, forces must always be calculated at the electronic ground state. Earlier approaches "propagated" combinations of the ground-state configurations from previous time steps as initial guesses to subsequent SCF calculations. While this reduces the number of iterations necessary, it also introduces systematic energy drifts, because electronic evolution is irreversible until SCF convergence is attained.     
     
     \subsection{Configuring the Input}
     \label{ground-state-input}
@@ -161,22 +153,17 @@ after loading relevant intel compiler and MKL modules.
     \hline
     \texttt{verbosity} & INTEGER & An integer between 0 (least output) and 5 (most) [Increasing the verbosity slows down the simulation and writes more data to disk. Consider a few short test calculations to determine the minimum level of verbosity needed for your purpose.]\\
     \hline
-    \texttt{printcharges} & $1$ & Prints Mulliken charges for the ground-state configuration (prototype) \\
+    \texttt{printcharges} & $1$ & Prints Mulliken charges for the ground-state configuration \\
     & $0$ & Does not print Mulliken charges \\
     \hline
-    \texttt{printdipole} & $2$ & Prints relaxed and unrelaxed ground-state dipoles \\
-    & $1$ & Prints transition dipole matrix \\
-    & $0$ & Prints no dipole information \\ \hline
-    \texttt{printbondorders} & $1$ & Prints bond orders in the ground-state configuration \\
-    & $0$ & Does not print bond orders \\ \hline
+    \texttt{printdipole} & $2$ & Prints unrelaxed/relaxed transitions plus total molecular \\
+    & $1$ & Prints unrelaxed transitions plus total molecular \\
+    & $0$ & Prints unrelaxed transitions \\ \hline
     \end{tabular}
     
     \begin{tabular}{ | c | c | p{7cm} | }
     \hline
-    \texttt{density\_predict} & $0$ & Standard HF-SCF where required \\
-    & $1$ & Reversible Born-Oppenheimer MD (prototype) \\
-    & $2$ & Extended Lagrangian formulation of Born-Oppenheimer MD (XL-BOMD) (prototype) \\ \hline
-    \texttt{K} & INTEGER & An integer between 3 and 9 inclusive; used as the parameter for XL-BOMD and irrelevant otherwise \\ \hline
+    \texttt{density\_predict} & $0$ & Standard HF-SCF where required \\ \hline
     \texttt{itrmax} & INTEGER & Maximum number of SCF iterations for the ground-state calculations [A negative integer signifies that convergence will be ignored.]\\
     \hline
     \end{tabular}
@@ -189,14 +176,14 @@ after loading relevant intel compiler and MKL modules.
     
     CIS uses the ground-state HF wavefunction as a starting point for creating singly-excited determinants ("singles"); this is done by exchanging the occupancies of an unoccupied spin orbital with an occupied one. Excited-state wavefunctions are then expressed as linear combinations of these determinants. No additional information is needed, since this can be achieved using the Fock matrix elements and two-electron integrals used in solving for the ground-state wavefunction. A combinatorial challenge is introduced because multiple spin configurations will necessarily be available to the excited molecule. Therefore, if we are only interested in, for instance, triplet excited states, we can "spin-adapt" CIS to utilize only spatial rather than spin orbitals, which leads to a Hamiltonian matrix that is four times smaller and eight times faster to diagonalize.
     
-    RPA is similar to CIS in that it also uses only singles - and indeed, the CIS matrix itself - but it involves additional excitation and de-excitation operators. In a na\"{\i}ve implementation, this yields an eigenvalue problem with twice the dimensions (and thus four times the storage size) of an equivalent CIS; however, a creative rearrangement reduces the problem to one of identical size.
+    RPA is similar to CIS in that it also uses only singles, and indeed, the CIS matrix itself, but it involves additional excitation and de-excitation operators. In a na\"{\i}ve implementation, this yields an eigenvalue problem with twice the dimensions (and thus four times the storage size) of an equivalent CIS; however, a creative rearrangement reduces the problem to one of identical size.
     
-    Each of these approaches faces the challenge of very large matrices that must be diagonalized - specifically, ones with dimensions at least as large as the product of the number of occupied orbitals and the number of unoccupied ones. For all but the smallest molecules, such matrices will not fit in core memory, and thus algorithms like the one by Ernest Davidson, or its extension by Bowen Liu, must be used. The algorithm works as follows:
+    Each of these approaches faces the challenge of very large matrices that must be diagonalized; specifically, ones with dimensions at least as large as the product of the number of occupied orbitals and the number of unoccupied ones. For all but the smallest molecules, such matrices will not fit in core memory, and thus algorithms like the one by Ernest Davidson, or its extension by Bowen Liu, must be used. The algorithm works as follows:
     
     \begin{enumerate}
     \item Select reasonable "guess vectors", at least one for each desired eigenvalue (root).
     \item Construct a "subspace" Hamiltonian within the space of guess vectors.
-    \item Build a set of "correction vectors," which depend on the diagonal terms of the Hamiltonian and on "residual vectors," which are defined such that they are zero if their corresponding guess vectors are equal to the true eigenvectors. At this point, check the norms of the residuals and the changes in the corresponding eigenvalues for convergence.
+    \item Build a set of "correction vectors," which depend on the diagonal terms of the Hamiltonian and on "residual vectors," which are defined such that they are zero if their corresponding guess vectors are equal to the true eigenvectors. At this point check the norms of the residuals and the changes in the corresponding eigenvalues for convergence.
     \item Normalize each correction vector and orthogonalize it against the set of guess vectors. Check its norm against a minimum threshold; discard it if it does not reach that threshold.
     
     Return to Step 2.
@@ -209,23 +196,10 @@ after loading relevant intel compiler and MKL modules.
     \hline
     \texttt{exst\_method} & $1$ & Configuration interaction singles (CIS) \\
     & $2$ & Random-phase approximation (RPA/TD-HF) \\ \hline
-    \texttt{dav\_guess} & $2$ & Davidson diagonalization will use XL-BOMD to provide starting guesses \\
-    & $1$ & Previous configurations will be used as starting guesses \\
+    \texttt{dav\_guess} & $1$ & Previous configurations will be used as starting guesses \\
     & $0$ & Diagonalization will start from scratch every time \\ \hline
-    \texttt{ftol} & X.dY & Minimum threshhold for retention of normalized vectors $\left ( e_{min} - e_{old} \right )$ for diagonalization, equal to $\mathrm{X} \cdot 10^{-\mathrm{Y}}$ in units of electron-volts \\ \hline
     \texttt{ftol0} & X.Yd-Z & Acceptance energy tolerance $\left ( e_{min} - e_{old} \right )$ for diagonalization, equal to $\mathrm{X.Y} \cdot 10^{-\mathrm{Z}}$ in units of electron-volts \\ \hline
-    \texttt{ftol1} & X.Yd-Z & Minimum residual-norm tolerance $\left ( e_{min} - e_{old} \right )$ for diagonalization, equal to $\mathrm{X} \cdot 10^{-\mathrm{Y}}$ in units of electron-volts \\ \hline
     \texttt{dav\_maxcyc} & INTEGER & Maximum number of Davidson diagonalization cycles for the excited-state calculations [A negative integer signifies that a fixed number (its arithmetic inverse) will be performed.] \\ \hline
-    \end{tabular}
-    
-    \begin{tabular}{ | c | c | p{7cm} | }
-    \hline
-    \texttt{printtd} & $-1$ & Prints binary files \texttt{modes.b} and \texttt{ee.b} \\
-    & $0$ & Prints no information about transition densities \\
-    & $1$ & Prints transition densities in the molecular-orbital representation \\
-    & $2$ & Prints transition densities in the atomic- and molecular-orbital representations \\
-    & $3$ & Same as $2$, and fit NDDO charges \\
-    \hline
     \texttt{calcxdens} & \texttt{.true.} & Calculate cross-density dipole moments/oscillator strengths \\
     & \texttt{.false.} & Do not calculate cross-density dipole moments/oscillator strengths \\
     \hline
@@ -235,7 +209,7 @@ after loading relevant intel compiler and MKL modules.
     
     Skip ahead to \ref{geo-opt-input}
     
-    Geometry optimization will attempt to alter the arrangement of the nuclei in order to minimize the total energy. Depending on your simulation and the stage within it, this optimal geometry may be desired, or it may not - for example, geometry optimization should not (be forced to) occur during a state transition.)
+    Geometry optimization will attempt to alter the arrangement of the nuclei in order to minimize the total energy. Depending on your simulation and the stage within it, this optimal geometry may be desired, or it may not.  For example, geometry optimization should not (be forced to) occur during a state transition.
     
     \subsection{Configuring the Input}
     \label{geo-opt-input}
@@ -252,7 +226,7 @@ after loading relevant intel compiler and MKL modules.
 
     Skip ahead to \ref{solvent-models-input}
     
-    The presence of a solvent can have significant effects on photodynamics. It is not computationally feasible to treat both a solute and a sufficient environment of solvent molecules quantum mechanically; therefore, the solute is treated quantum mechanically and the solvent is treated either molecular mechanically (a QM/MM approach) or as a polarizable continuum (QM/continuum) forming cavities in which solutes are enclosed. The latest version of \texttt{NAESMD} implements a QM/continuum treatment within the linear response (LR), vertical excitation (VE), and state-specific (SS) models. For more details, refer to our publications on "Solvent Effects in TD-SCF."
+    The presence of a solvent can have significant effects on photodynamics. It is not computationally feasible to treat both a solute and a sufficient environment of solvent molecules quantum mechanically; therefore, the solute is treated quantum mechanically and the solvent is treated either molecular mechanically (a QM/MM approach) or as a polarizable continuum (QM/continuum) forming cavities in which solutes are enclosed. The latest version of \texttt{NEXMD} implements a QM/continuum treatment within the linear response (LR), vertical excitation (VE), and state-specific (SS) models. For more details, refer to our publications on "Solvent Effects in TD-SCF."
     
     \subsection{Configuring the Input}
     \label{solvent-models-input}
@@ -260,10 +234,7 @@ after loading relevant intel compiler and MKL modules.
     \begin{tabular}{ | c | c | p{7cm} | }
     \hline
     \texttt{ceps} & INTEGER & Dielectric constant \\ \hline
-    \texttt{index\_of\_refraction} & INTEGER & Dielectric constant for excitation (prototype - program currently uses ceps dielectric contant for everything) \\ \hline
-    \texttt{nspa} & INTEGER & Approximate number of solvent cavity points per atom \\ \hline
     \texttt{cosmo\_scf\_ftol} & X.Yd-Z & SCF tolerance for SS model, given as $\mathrm{X.Y} \cdot 10^{-\mathrm{Z}}$ in units of electron-volts \\ \hline
-    \texttt{cosmo\_scf\_maxcyc} & INTEGER & Maximum number of SCF iterations for SS model \\ \hline
     \texttt{linmixparam} & INTEGER & Linear mixing parameter for state-specific solvent iterations \\ \hline
     \texttt{doZ} & \texttt{.true.} & Calculate relaxed electron density in COSMO of SS model \\
     & \texttt{.false.} & Calculate unrelaxed electron density in COSMO of SS model \\ \hline
@@ -274,15 +245,12 @@ after loading relevant intel compiler and MKL modules.
     \texttt{Ez} & INTEGER & $z$-component of electric field vector \\ \hline
     \texttt{onsager\_radius} & INTEGER & Onsager cavity radius \\ \hline
     \texttt{solvent\_model}
-    & $4$ & SS model \\
-    & $3$ & VE model prototype \\
+    & $3$ & SS model \\
     & $2$ & VE model \\
     & $1$ & LR model \\
     & $0$ & No solvent (gas phase) \\ \hline
-    \texttt{potential\_type} & $4$ & [Used only for testing] \\
-    & $3$ & COSMO \\
+    \texttt{potential\_type} & $1$ & COSMO \\
     & $2$ & Onsager \\
-    & $0$ & Normal correlation (prototype) \\
     \hline
     \end{tabular}
     
@@ -359,7 +327,7 @@ after loading relevant intel compiler and MKL modules.
     
     The system evolves over a window time discretized into both classical and quantum time points. These are separated by constant \emph{time steps} $\Delta t$ (classical) and $\delta t$ (quantum), with $\delta t < \Delta t$ because electronic dynamics are much faster than those of nuclei; large quantum steps are not sufficient for resolving NACT peaks that are strongly localized, leading to underestimated state transition probabilities.
     
-    At each intermediate $\delta t$, the energies of all excited states and NACTs between all pairs thereof are calculated. These are also determined at each classical time step, but subsequently, the electronic state coefficients are updated according to the equation of motion above. For non-adiabatic dynamics, switching probabilities $g_{\alpha \beta}$ are also evaluated, as a summation over all $N_q = \frac{\Delta t}{\delta t}$ quantum steps made since the previous classical time step:
+    At each intermediate $\delta t$ the energies of all excited states and NACTs between all pairs thereof are calculated. These are also determined at each classical time step, but subsequently, the electronic state coefficients are updated according to the equation of motion above. For non-adiabatic dynamics, switching probabilities $g_{\alpha \beta}$ are also evaluated, as a summation over all $N_q = \frac{\Delta t}{\delta t}$ quantum steps made since the previous classical time step:
     
     \begin{equation}
     g_{\alpha \beta} = \frac{\sum_{j=1}{N_q} b_{\beta \alpha}(j) \delta t}{a_{\alpha \alpha}}
@@ -376,7 +344,7 @@ after loading relevant intel compiler and MKL modules.
     \texttt{time\_step} & DOUBLE & Time step, in units of femtoseconds \\ \hline
     \texttt{n\_class\_steps} & INTEGER & Number of classical simulation steps, leading to a total simulation time of \texttt{n\_class\_steps} $\times$ \texttt{time\_step} femtoseconds. \\ \hline
     \texttt{n\_quant\_steps} & INTEGER & Number of quantum simulation steps per classical step \\ \hline
-    \texttt{moldyn\_deriv\_flag} & $2$ & Derivatives calcualted by finite-difference) \\
+    \texttt{moldyn\_deriv\_flag} & $2$ & Derivatives calculated by finite-difference \\
     & $1$ &Derivatives calculated analytically \\
     & $0$ &Derivatives are set to zero \\ \hline
     \texttt{num\_deriv\_step} & X.Yd-Z & Displacement used in calculating numerical derivatives, in units of angstroms \\ \hline
@@ -388,7 +356,7 @@ after loading relevant intel compiler and MKL modules.
     
     Skip ahead to \ref{na-input}
     
-    In non-adiabatic dynamics, quantum transitions are permissible. \texttt{NAESMD} uses John Tully's \emph{fewest-switches surface hopping} (FSSH) algorithm, whose validity has been demonstrated across a variety of systems. In this approach, a system evolves along the potential energy surface (PES) of a single electronic state, with nuclei treated classically and electrons quantum-mechanically; this continues until a "hop" (quantum transition) between states occurs. A single trajectory can illustrate mechanistic aspects of the underlying photophysics; a statistical ensemble (or "swarm") of many independent trajectories can yield observables such as branching ratios, non-radiative relaxation rates, quantum yields, and so on.
+    In non-adiabatic dynamics, quantum transitions are permissible. \texttt{NEXMD} uses John Tully's \emph{fewest-switches surface hopping} (FSSH) algorithm, whose validity has been demonstrated across a variety of systems. In this approach, a system evolves along the potential energy surface (PES) of a single electronic state, with nuclei treated classically and electrons quantum-mechanically; this continues until a "hop" (quantum transition) between states occurs. A single trajectory can illustrate mechanistic aspects of the underlying photophysics; a statistical ensemble (or "swarm") of many independent trajectories can yield observables such as branching ratios, non-radiative relaxation rates, quantum yields, and so on.
     
     The probability of such a hop from a current state $\alpha$ to another state during a given classical time step $\Delta t$ is given by
     
@@ -402,26 +370,23 @@ after loading relevant intel compiler and MKL modules.
     b_{\alpha \beta}(t) = -2 \textrm{Re} \left ( a_{\alpha \beta}^* \dot{\mathbf{R}} \cdot \mathbf{d}_{\alpha \beta} \right ). 
     \end{equation}
     
-    Hops are accepted or rejected stochastically; if the nuclear kinetic energy is insufficient to allow a particular hop to a higher state, that hop is classically forbidden and rejected. If the hop is accepted, nuceli evolve on the new PES, and conservation of energy is achieved by rescaling nuclear velocities in the direction of the NACV and by the appropriate amounts.
+    Hops are accepted or rejected stochastically; if the nuclear kinetic energy is insufficient to allow a particular hop to a higher state, that hop is classically forbidden and rejected. If the hop is accepted, nuclei evolve on the new PES, and conservation of energy is achieved by rescaling nuclear velocities in the direction of the NACV and by the appropriate amounts.
     
-    The FSSH method has the drawback that because it propagates quantum coefficients coherently on each trajectory, electronic coherence cannot be dissipated in any single-trajectory simulation. As a result, the classical and quantum "occupancies" of a given state will diverge from one another over the course of the simulation. To resolve this, our code utilizes the \emph{instantaneous decoherence} approach, in which the quantum population of the current state is reset to unity at each classical time step (where hops are attempted). The rationale is that wavepackets on different surfaces should instantaneously separate in phase space and evolve independently; no single trajectory should thus have any quantum amplitude in two states at once.
+    The FSSH method has the drawback that because it propagates quantum coefficients coherently on each trajectory, electronic coherence cannot be dissipated in any single-trajectory simulation. As a result, the classical and quantum "occupancies" of a given state will diverge from one another over the course of the simulation. To resolve this our code utilizes the \emph{instantaneous decoherence} approach, in which the quantum population of the current state is reset to unity at each classical time step (where hops are attempted). The rationale is that wavepackets on different surfaces should instantaneously separate in phase space and evolve independently; no single trajectory should thus have any quantum amplitude in two states at once. Our code can also reinitiialize the qunatum populations after frustrated, rejected hops to add additional decoherence.
     
     One final point concerns the problem of \emph{unavoided crossings}. These events can significantly effect photochemistry and can occur readily in conjugated molecules, even between noninteracting states localized in spatially separated portions of the molecule. The latter are called \emph{trivial} unavoided crossings and present a particular numerical challenge, since their NACTs are analogous to strong peaks appearing at the exact intersection and vanishing everywhere else. The numerical propagation of nuclear motion in finite time steps can cause such crossings to go undetected, leading to artifacts in state populations.
     
-    \texttt{NAESMD} uses a Min-Cost algorithm (discussed in details in one of our Relevant Publications) to ensure that such trivial crossings are detected and handled properly. This involves the occasional reduction of the quantum time step within individual classical time steps, in order to evaluate more couplings between states that could be relevant to a possible hop, and thus in essence "resolve" the NACT peak. A parameter is used to indicate how many times $\delta t$ should be reduced in each such instance.
+    \texttt{NEXMD} uses a Min-Cost algorithm (discussed in details in one of our Relevant Publications) to ensure that such trivial crossings are detected and handled properly. This involves the occasional reduction of the quantum time step within individual classical time steps, in order to evaluate more couplings between states that could be relevant to a possible hop, and thus in essence "resolve" the NACT peak. A parameter is used to indicate how many times $\delta t$ should be reduced in each such instance.
     
     \subsection{Configuring the Input}
     \label{na-input}
     
     \begin{tabular}{ | c | c | p{7cm} | }
     \hline
-    \texttt{quant\_coeffs\_reinit} & $1$ & Quantum coefficients are reinitialized after a hop \\
-    & $0$ & Coefficients are not reinitialized after a hop \\ \hline
+    \texttt{decoher\_type} & $2$ & Quantum coefficients are reinitialized after successful and frustrated hops \\
+    & $1$ & Coefficients are reinitialized after a successful hop \\
+    & $0$ & Coefficients are never reinitialized \\ \hline
     \texttt{quant\_step\_reduction\_factor} & X.YdZ & Quantum time step reduction factor for detecting trivial avoided crossings, given as $1/ (\textrm{X.Y} \cdot 10^{\textrm{Z}})$ \\ \hline
-    \texttt{decoher\_type} & $1$ & Truhlar decoherence is used \\
-    & $0$ & Persicco/Granucci decoherence is used \\ \hline
-    \texttt{decoher\_e0} & X.dY & Decoherence parameter $E_0$, given as $\textrm{X} \cdot 10^\textrm{Y}$ \\ \hline
-    \texttt{decoher\_c} & X.dY & Decoherence parameter $C$, given as $\textrm{X} \cdot 10^\textrm{Y}$ \\ \hline
         \texttt{dotrivial} & 1 & Track trivial unavoided crossings \\
         & 0 & Do not track trivial unavoided crossings \\ \hline
     \end{tabular}
@@ -432,24 +397,18 @@ after loading relevant intel compiler and MKL modules.
     
     Classical molecular dynamics simulations, integrating Newton's equations of motion, obey the law of energy conservation. Given a fixed system volume and set of particles, these simulations thus reproduce the average thermodynamic properties of a \emph{microcanonical}, or $NVE$, ensemble (fixed particle number $N$, volume $V$, and total energy $E$).
     
-    However, in many situations, we are interested in a system equilibrated such that some thermodynamic variable (e.g. temperature) is held constant at a given value. This can be accomplished by creating an $NVE$ supersystem where the surroundings of the (sub)system of interest serve as a bath. \texttt{NAESMD} provides two methods for simulating dynamics under a \emph{thermostat}, i.e. an $NVT$, or \emph{canonical}, ensemble. \\ \\
-    The Langevin thermostat combines Langevin dynamics with velocity Verlet integration. A stochastic force $\mathbf{A}$ depends on the bath temperature and a friction coefficient $\gamma$, which also impacts the nuclear velocities in a direct, linear fashion. The excited-state gradients that determine nuclear motion are determined analytically. Due to the presence of the friction coefficient, various fluid-mechanical properties of the system's surroundings can be directly introduced, particularly in simulations where a solute molecule can be treated as the system and a collection of (relatively small) solvent molecules as the supersystem/surroundings. \\ \\
-    The Berendsen thermostat multiplies all velocities by an identical $\lambda$ to bring a system at a non-target temperature $T$ closer to the target temperature $T_0$; this is done at each time step and such that the rate of temperature charge is proportional to $T_0 - T$. This thermostat does not technically produce an $NVT$ ensemble; rather, it interpolates between a microcanonical and canonical ensemble based on the value of the \emph{bath relaxation parameter}, which determines the proportionality above.   
+    However, in many situations, we are interested in a system equilibrated such that some thermodynamic variable (e.g. temperature) is held constant at a given value. This can be accomplished by creating an $NVE$ supersystem where the surroundings of the (sub)system of interest serve as a bath. \texttt{NEXMD} provides one method for simulating dynamics under a \emph{thermostat}, i.e. an $NVT$, or \emph{canonical} ensemble. \\ \\
+    The Langevin thermostat combines Langevin dynamics with velocity Verlet integration. A stochastic force $\mathbf{A}$ depends on the bath temperature and a friction coefficient $\gamma$, which also impacts the nuclear velocities in a direct, linear fashion. The excited-state gradients that determine nuclear motion are determined analytically. Due to the presence of the friction coefficient, various fluid-mechanical properties of the system's surroundings can be directly introduced, particularly in simulations where a solute molecule can be treated as the system and a collection of (relatively small) solvent molecules as the supersystem/surroundings. \\ \\   
     
     \subsection{Configuring the Input}
     \label{thermo-input}
     
     \begin{tabular}{ | c | c | p{7cm} | }
     \hline
-    \texttt{therm\_type} & $2$ & A Berendsen thermostat is used \\
-    & $1$ & A Langevin thermostat is used \\
+    \texttt{therm\_type} & $1$ & A Langevin thermostat is used \\
     & $0$ & No thermostat is used (a constant-energy simulation is performed) \\ \hline
-    \texttt{therm\_temp} & XYZ.dN & Thermostat temperature, as $XYZ \cdot 10^N$ K [This is only relevant for $NVT$ ensembles.]\\ \hline
+    \texttt{therm\_temperature} & XYZ.dN & Thermostat temperature, as $XYZ \cdot 10^N$ K [This is only relevant for $NVT$ ensembles.]\\ \hline
     \texttt{therm\_friction} & XY.dZ & Thermostat friction coefficient, as $XY \cdot 10^Z$ in units of inverse picoseconds [This is only relevant for Langevin thermostats.] \\ \hline
-    \texttt{berendsen\_relax\_const} & DOUBLE & Bath relaxation parameter within $(0, \infty)$ [This is only relevant for Berendsen thermostats.] \\ \hline
-    \texttt{heating} & $1$ & The system will be heated to \texttt{therm\_temp} \\
-    & $0$ & The system is or will be equilibrated at \texttt{therm\_temp}\\ \hline
-    \texttt{heating\_steps\_per\_degree} & INTEGER & The number of steps that will be used per degree Kelvin during a heating process [This is not relevant for equilibrated $NVT$ ensembles.] \\ \hline
     \end{tabular}
     
     \section{Output and Log Parameters}
@@ -482,7 +441,7 @@ after loading relevant intel compiler and MKL modules.
     \end{tabular}
     \end{center}
     
-    where $Z_i$ denotes the atomic number and $x_i,\ y_i,\ z_i$ the coordinates (in angstroms) of atom $i$. In preparing initial conditions for a single-point calculation or ground-state adibatic trajectory, these coordinates can be obtained from a molecular builder, such as Avogadro (\url{http://avogadro.org/}) or IQmol (\url{http://iqmol.org/}), applying an optimization procedure, if needed or desired, to obtain a reasonable initial geometry.
+    where $Z_i$ denotes the atomic number and $x_i,\ y_i,\ z_i$ the coordinates (in angstroms) of atom $i$. In preparing initial conditions for a single-point calculation or ground-state adiabatic trajectory, these coordinates can be obtained from a molecular builder, such as Avogadro (\url{http://avogadro.org/}) or IQmol (\url{http://iqmol.org/}), applying an optimization procedure, if needed or desired, to obtain a reasonable initial geometry.
     
     Velocities are specified analogously, in units of angstroms per atomic time units, for each Cartesian coordinate of each atom:
     
@@ -511,30 +470,18 @@ after loading relevant intel compiler and MKL modules.
 %	\include{multiToC}
 
     \appendix
-    \cleardoublepage\part{Appendix}
     
     \chapter{Sample Workflow and Helper Scripts}
     
-    Each input file for \texttt{NAESMD} specifies only one single-point calculation and/or molecular dynamics trajectory. This offers several advantages, such as the fact that a swarm of independent trajectories can be handled by a separate call to \texttt{NAESMD}, executed on a separate processor, for each individual trajectory. However, performing such simulations efficiently and in an organized fashion requires the construction of a workflow that involves helper scripts to prepare input for \texttt{NAESMD} and to process and present its outputs. In particular, it is beneficial to make use of \emph{header files} that contain only the simulation parameters and omit all coordinates, velocities, and coefficients. Scripts can then be used to extract the coordinates and velocities from the output of previous runs and write a matrix of coefficients to select the initial state of the system.
-    
-    As an illustration, a pump-push-probe experiment on a substituted PPV derivative in solvent could be simulated as follows:
-    
-    \begin{enumerate}
-    \item A ground-state dynamics trajectory is run using \texttt{NO2-H-10-gsl200.ceon} as input.
-    \item The \texttt{s1\_gnd\_to\_exc-new.sh} script is used to extract sample geometries from various classical time points and generate input files for excitation to the first excited state.
-    \item Use \texttt{launch.sh} with a PBS script \texttt{SQMscript.pbs} to queue all such jobs.
-    \item Use \texttt{find-brightest-state.sh}, which uses \texttt{header-for-brightest-state} to determine the cross-density oscillator strength of each excited state with the first excited state.
-    \item Use \texttt{push-to-brightest-state.sh}, which uses \texttt{ExtractStates.java} and \texttt{header-for-push-to-brightest} to excite the molecule to the "brightest" (i.e. $mA_g$ or $S_n$) state for each particular geometry and allow for relaxation (NAMD).
-    \item Use the analysis tools \texttt{pop.pl}, \texttt{KE\_avg.pl}, \texttt{bla.f90}, \texttt{dihed.f90}, and others to obtain state populations as a function of a time, system kinetic energies over time, bond lengths, dihedral angles, and so on. 
-    \end{enumerate}
+    Each input file for \texttt{NEXMD} specifies only one single-point calculation and/or molecular dynamics trajectory. This offers several advantages, such as the fact that a swarm of independent trajectories can be handled by a separate call to \texttt{NEXMD}, executed on a separate processor, for each individual trajectory. However, performing such simulations efficiently and in an organized fashion requires the construction of a workflow that involves helper scripts to prepare input for \texttt{NEXMD} and to process and present its outputs. In particular, it is beneficial to make use of \emph{header files} that contain only the simulation parameters and omit all coordinates, velocities, and coefficients. Scripts can then be used to extract the coordinates and velocities from the output of previous runs and write a matrix of coefficients to select the initial state of the system.  To aid with calculations we provided the getexcited.py script.  This script, written in python 2.7, is capable of aiding NEXMD calculations in many ways including, but not limited to, preparing a swarm of trajectories for non-adiabatic simulation, preparing any number of single-point calculations, preparing restart files for unfinished non-adiabatic trajectories, and performing a geometry analysis of completed dynamics calculations.  For a full list of the getexcited.py script's functions and an in-depth overview of how to use to the script see the documentation.pdf file provided inside the NEXMD package.
     
     \chapter{References and Resources}
 
     \section{Relevant Publications}
     
-    Start with our review of \texttt{NAESMD}: \url{http://dx.doi.org/10.1021/ar400263p}
+    Start with our review of \texttt{NEXMD}: \url{http://dx.doi.org/10.1021/ar400263p}
     
-    \noindent These publications have used \texttt{NAESMD} to study various phenomena:
+    \noindent These publications have used \texttt{NEXMD} to study various phenomena:
     
     State-specific vibrations in dendrimers: \url{http://dx.doi.org/10.1021/jp301293e}
     
@@ -554,7 +501,7 @@ after loading relevant intel compiler and MKL modules.
     \noindent For more on parameters and numerical testing of convergence: \url{http://dx.doi.org/10.1063/1.3680565}
     
     
-    \noindent For more on electronic decoherence as implemented in \texttt{NAESMD}: \url{http://dx.doi.org/10.1063/1.4809568}
+    \noindent For more on electronic decoherence as implemented in \texttt{NEXMD}: \url{http://dx.doi.org/10.1063/1.4809568}
     
     \section{Electronic Structure}
     
