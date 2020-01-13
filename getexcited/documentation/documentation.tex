@@ -73,10 +73,10 @@
 \newpage
 \section{Introduction}
 
-The Born--Oppenheimer (or adiabatic) approximation assumes that electronic and nuclear degrees of freedom are essentially decoupled and evolve on different time scales.  In other words, nuclei adjust very slowly to changes in electronic structure.  Throughout the dynamics, however, excited-state energies may become closely-spaced, so that even the smallest changes in nuclear geometry can greatly affect excited-state properties.  In these cases, nuclear-electronic coupling becomes strong and the Born--Oppenheimer approximation is no longer valid.  Instead, the chemical system of interest may choose to transition between excited states and evolve non-adiabatically.  One of the primary uses of the Non-adiabatic EXcited-State Molecular Dynamics (\verb+NEXMD+) software is to simulate the non-dynamics of molecules after photo-excitation.  The goal being to explain processes such as excited-state lifetimes, charge and energy transfer, photoisomerization, photodissociation, nuclear vibrational dependences on excited-state dynamics, etc.  The program is capable of simulating molecules on the order of 100 atoms and for time-scales of up to 50 ps.  The purpose of this document is not to give an in-depth discussion of the theory or methods implemented in \verb+NEXMD+, but rather, it is to provide a comprehensive introduction on how to use the \verb+NEXMD+ program.  For the former, we refer readers to Refs. \cite{nelson2011nonadiabatic, nelson2014nonadiabatic}.  A number of papers using development versions of the code have been published, and can be catagorized under methods development (Refs. \cite{nelson2012nonadiabatic,fernandez2012identification,nelson2013nonadiabatic,
+The Born--Oppenheimer (or adiabatic) approximation assumes that electronic and nuclear degrees of freedom are essentially decoupled and evolve on different time scales.  In other words, nuclei adjust very slowly to changes in electronic structure.  Throughout the dynamics, however, excited-state energies may become closely-spaced, so that even the smallest changes in nuclear geometry can greatly affect excited-state properties.  In these cases, nuclear-electronic coupling becomes strong and the Born--Oppenheimer approximation is no longer valid.  Instead, the chemical system of interest may choose to transition between excited states and evolve non-adiabatically.  One of the primary uses of the Non-adiabatic EXcited-State Molecular Dynamics (\verb+NEXMD+) software is to simulate the non-dynamics of molecules after photo-excitation.  The goal being to explain processes such as excited-state lifetimes, charge and energy transfer, photoisomerization, photodissociation, nuclear vibrational dependence on excited-state dynamics, etc.  The program is capable of simulating molecules on the order of 100 atoms and for time-scales of up to 50 ps.  The purpose of this document is not to give an in-depth discussion of the theory or methods implemented in \verb+NEXMD+, but rather, it is to provide a comprehensive introduction on how to use the \verb+NEXMD+ program.  For the former, we refer readers to Refs. \cite{nelson2011nonadiabatic, nelson2014nonadiabatic}.  A number of papers using development versions of the code have been published, and can be categorized under methods development (Refs. \cite{nelson2012nonadiabatic,fernandez2012identification,nelson2013nonadiabatic,
 nelson2013artifacts,soler2014signature,bjorgaard2015solvent1,bjorgaard2015solvent2,nelson2016nonadiabatic,bjorgaard2016nonequilibrium}) and applications (Refs. \cite{fernandez2009nonadiabatic,fernandez2010unidirectional,soler2012analysis,fernandez2012shishiodoshi,nelson2013conformational,oldani2014modeling,
 ondarse2014computational,galindo2015dynamics,bricker2015non,shenai2015internal,greenfield2015photoactive,alfonso2015photoexcited,bjorgaard2015simulations,
-franklin2016carbon,ondarse2016ultrafast,nelson2016ultrafast,alfonso2016interference,nelson2017electronic,franklin2017phonon,zheng2017photoinduced}).  Included in the Appendix \ref{benchmark_excpop_timing} of this document, are all benchmark tests of the most current version of the code.  This section is updated during every release.
+franklin2016carbon,ondarse2016ultrafast,nelson2016ultrafast,alfonso2016interference,nelson2017electronic,franklin2017phonon,zheng2017photoinduced}).  Included in the Appendix \ref{benchmark_excpop_timing} of this document are all benchmark tests of the most current version of the code.  This section is updated during every release.
 
 \newpage
 \section{Compiling NEXMD}
@@ -122,7 +122,7 @@ The following section contains input parameters pertaining to geometry optimizat
 \item \verb+grms_tol+ sets the convergence criteria for geometry optimization.  The units for \verb+grms_tol+ are in eV per \AA, so that a smaller \verb+grms_tol+ is a smaller change in energy per change in bond length (i.e. a tighter convergence criteria).
 \end{itemize}
 
-The following section contains input parameters pertaining to the ground-state calculation and its associated outputs.
+\noindent The following section contains input parameters pertaining to the ground-state calculation and its associated outputs.
 \begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
    !***** Ground-State and Output Parameters
    qm_theory='AM1', ! Integral type, check Amber's SQM for more options [AM1]
@@ -132,10 +132,6 @@ The following section contains input parameters pertaining to the ground-state c
    printdipole=2, ! (0) Unrelaxed transitions, (1) Unrelaxed transitions plus 
    ! total molecular, or (2) Unrelaxed/relaxed transitions plus 
    ! total molecular [1 for dynamics and 2 for single-point]
-   printbondorders=0, ! (0) No or (1) Yes [0]
-   ! *** UNDER DEVELOPMENT, DO NOT USE ***
-   density_predict=0, ! (0) None, (1) Reversible MD, 
-   ! or (2) XL-BOMD [0] *** ALL ARE UNDER DEVELOPMENT, DO NOT USE ***
    itrmax=300, ! Max SCF iterations for ground state 
    ! (negative to ignore convergence) [300]
 \end{lstlisting}
@@ -144,18 +140,15 @@ The following section contains input parameters pertaining to the ground-state c
 \item \verb+scfconv+ sets the convergence criteria for the self-consistent field (SCF) ground-state energy in eV. In other words, the user requests that the ground-state energy be determined to within \verb+scfconv+ eV.
 \item \verb+verbosity+ sets the level of printing of QM/MM related outputs.  The outputs of each level can be found in Ref. \cite{amber2017}.  The verbosity should be set to at least \verb+1+ in order to obtain ground-to-excited state oscillator strengths.  This is important for single-point calculations and obtaining an optical spectrum, as described in Subsections \ref{spcalc} and \ref{optspec}, respectively.
 \item \verb+printdipole+ sets the printing level for dipole moments.  There are three options to choose from which are: \verb+(0)+, ground-to-excited state transition dipole moments, \verb+(1)+, same as \verb+(0)+ plus the total molecular dipole moment, and \verb+(2)+, same as \verb+(1)+ plus relaxed and unrelaxed difference dipole moments.
-\item \verb+itrmax+ sets the maximum number of cycles for the ground-state SCF calculation.  If the number of cycles reaches \verb+itrmax+, the code will stop.  A negative value for \verb+itrmax+ means the ground-state SCF calculation will go through $\left|\verb+itrmax+\right|$ cycles, regardless of whether or not the convergence criteria in \verb+scfconv+ has been met.
+\item \verb+itrmax+ sets the maximum number of cycles for the ground-state SCF calculation.  If the number of cycles reaches \verb+itrmax+, the code will stop.  A negative value for \verb+itrmax+ means the ground-state SCF calculation will go through $\left|\verb+itrmax+\right|$ cycles regardless of whether or not the convergence criteria in \verb+scfconv+ has been met.
 \end{itemize}
 
-The following section contains input parameters pertaining to the excited-state calculation.
+\noindent The following section contains input parameters pertaining to the excited-state calculation.
 \begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
    !***** Excited-State Parameters
    exst_method=1, ! CIS (1) or RPA (2) [1]
    dav_guess=1, ! Restart Davidson from (0) Scratch, (1) Previous, 
-   ! or (2) XL-BOMD [1] *** (2) IS UNDER DEVELOPMENT, DO NOT USE ***
    ftol0=1.0d-7, ! Acceptance tolerance (|emin-eold|) [1.0d-5]
-   ftol1=1.0d-8, ! Acceptance tolerance for residual norm [1.0d-5] 
-   ! *** UNDER DEVELOPMENT, DO NOT USE ***
    dav_maxcyc=200, ! Max cycles for Davidson diagonalization 
    ! (negative to ignore convergence) [100]
    printcharges=0, ! Print (1) or do not print (0) Mulliken charges of QM atoms [0]
@@ -164,14 +157,14 @@ The following section contains input parameters pertaining to the excited-state 
 \end{lstlisting}
 \begin{itemize}
 \item \verb+exst_method+ sets the approximate excited-state wavefunction, which is used to compute excited-state properties.  There are two options to choose from in \verb+NEXMD+.  The first is the configuration interactions singles (\verb+CIS+) wavefunction and the other is the random phase approximation wavefunction (\verb+RPA+).  The RPA wavefunction is a slight extension of the CIS wavefunction and includes more electron correlation effects.  Therefore, it is common for RPA to be more computationally demanding than CIS.  The CIS wavefunction is stable and has been used for the majority of studies with \verb+NEXMD+.
-\item \verb+dav_guess+ sets the initial guess for the Davidson algorithm.  The Davidson algorithm is used to calculate excited-state eigenvalues and eigenvectors.  One option is to start Davidson from \verb+scratch+.  However, this option may increase computation time.  Another option is start Davidson from results of the \verb+previous+ calculation.  The latter option should be used for realistic simulations.
+\item \verb+dav_guess+ sets the initial guess for the Davidson algorithm.  The Davidson algorithm is used to calculate excited-state eigenvalues and eigenvectors.  One option is to start Davidson from \verb+scratch+.  However, this option may increase computation time.  Another option is start Davidson from the results of the \verb+previous+ calculation.  The latter option should be used for realistic simulations.
 \item \verb+ftol0+ sets the convergence criteria on excited-state energies.  In other words, the user requests that excited-state energies be determined to within \verb+ftol0+ eV.
-\item \verb+dav_maxcyc+ sets the maximum number of cycles for the Davidson algorithm.  If the number of cycles exceeds \verb+dav_maxcyc+, an error message will read: \verb+Number+ \verb+of+ \verb+Davidson+ \verb+iterations+ \verb+exceeded,+ \verb+exiting.+  A negative value for \verb+dav_maxcyc+ means the excited-state calculation will go through $\left|\verb+dav_maxcyc+\right|$ cycles, regardless of whether or not the convergence criteria in \verb+ftol0+ has been met.
+\item \verb+dav_maxcyc+ sets the maximum number of cycles for the Davidson algorithm.  If the number of cycles exceeds \verb+dav_maxcyc+, an error message will read: \verb+Number+ \verb+of+ \verb+Davidson+ \verb+iterations+ \verb+exceeded,+ \verb+exiting.+  A negative value for \verb+dav_maxcyc+ means the excited-state calculation will go through $\left|\verb+dav_maxcyc+\right|$ cycles regardless of whether or not the convergence criteria in \verb+ftol0+ has been met.
 \item \verb+printcharges+ sets whether or not to print Mulliken charges of QM atoms to the standard output file.
 \item \verb+calcxdens+ sets whether or not to print excited-to-excited transition dipole moments.  This option can only be set to \verb+true+ during single-point calculations.  An error will occur if \verb+calcxdens+ is set to \verb+true+ during dynamics.  A file called \verb+muab.out+ will be generated if \verb+calcxdens=.true.+, which contains excited-to-excited transition dipoles in arbitrary units.  The number of excited states included in \verb+muab.out+ depends on the number of excited states being propagated, which is controlled by \verb+n_exc_states_propagate+, located in an upcoming section of the input file.
 \end{itemize}
 
-The following section contains input parameters pertaining to solvent models and external electric fields.
+\noindent The following section contains input parameters pertaining to solvent models and external electric fields.
 \begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
    !***** Solvent Models and External Electric Fields
    solvent_model=0, ! (0) None, (1) Linear response, (2) Vertical excitation, 
@@ -185,8 +178,6 @@ The following section contains input parameters pertaining to solvent models and
    ! SCF tolerance, eV [1.0d-5]
    doZ=.false. ! Use relaxed (.true.) or unrelaxed (.false) density for 
    ! vertical excitation or state-specific COSMO or Onsager [.false.]
-   index_of_refraction=100, ! Dielectric constant for linear response 
-   ! solvent in excited state, unitless [100] *** UNDER DEVELOPMENT, DO NOT USE ***
    EF=0, ! (0) None or (1) Electric field in ground and excited state [0]
    Ex=0, ! Electric field vector X, eV/A [0]
    Ey=0, ! Electric field vector Y, eV/A [0]
@@ -200,11 +191,12 @@ The following section contains input parameters pertaining to solvent models and
 \item \verb+ceps+ sets the dielectric constant of the solvent.  A list of solvents and their dielectric constants can be found in Ref. \cite{haynes2014crc}.  Be sure to reference Ref. \cite{haynes2014crc}.
 \item \verb+linmixparam+ sets the degree to which the last two SCF iterations are mixed.  The mixed solution is used as an input for the following SCF iteration.  The goal of introducing \verb+linmixparam+ is to significantly reduce the high cost of finding the SCF solution by inputting a solvent potential into the current iteration that is extrapolated from previous iterations.  See Refs. \cite{bjorgaard2015solvent1,bjorgaard2015solvent2} for more information.
 \item \verb+cosmo_scf_ftol+ sets the convergence criteria of the vertical excitation or state-specific solvent model SCF calculation.  In other words, the user requests that the energy be determined to within \verb+cosmo_scf_ftol+ eV.  The \verb+cosmo_scf_ftol+ flag sets the tolerance for both the Onsager and COSMO potentials.
+\item \verb+doZ+ sets whether to use the relaxed or unrelaxed density for the vertical excitation or state-specific solvent model.
 \item \verb+EF+ sets whether or not there is an external electric field applied to the system.
 \item \verb+Ex+, \verb+Ey+, \verb+Ez+ sets the magnitude and direction of the external electric field in the $x$, $y$, and $z$ axes, respectively.  The user must also set \verb+EF+ to \verb+1+ if an external electric field is desired in the simulation.
 \end{itemize}
 
-\textit{General Note}: The default tolerances within the section enclosed by \verb+&qmmm+ and \verb+&endqmmm+ are within accepted levels of convergence.  However, these values may be increased depending on the size of the system or time of simulation.
+\noindent \textit{General Note}: The default tolerances within the section enclosed by \verb+&qmmm+ and \verb+&endqmmm+ are within accepted levels of convergence.  However, these values may be increased depending on the size of the system or time of simulation.
 \\
 \\
 The following section contains general input parameters pertaining to molecular dynamics.
@@ -223,7 +215,7 @@ The following section contains general input parameters pertaining to molecular 
 \item \verb+rnd_seed+ sets the seed for the random number generator.  For each \verb+rnd_seed+, there is a well-defined sequence of random numbers.  For non-adiabatic ensemble simulations, \verb+rnd_seed+ must be different from one trajectory to another.  This ensures the stochastic nature of the simulation, which is important for both the nuclear Langevin dynamics (i.e. coupling of the system to a heat bath) and the surface hopping algorithm,\cite{tully1990molecular} which governs electronic transitions between electronic states (i.e. non-adiabatic dynamics).  The details of how \verb+rnd_seed+ is chosen for non-adiabatic dynamics will be discussed in Subsection \ref{nexmd}. 
 \item \verb+bo_dynamics+ sets whether the dynamics is non-Born--Oppenheimer (non-adiabatic) or Born--Oppenheimer (adiabatic).  If the simulation is non-adiabatic, this typically means the user is running an ensemble of trajectories.  This may also be the case for an adiabatic simulation, depending on the study.
 \item \verb+exc_state_init+ sets the initial excited-state of the system.  For a non-adiabatic ensemble simulation, a distribution of initial excited-states is needed to model a photo-excited wavepacket of different nuclear geometries.  Therefore, \verb+exc_state_init+ may be different from one trajectory to another.  The details of how \verb+exc_state_init+ is chosen for non-adiabatic dynamics will be discussed in Subsection \ref{nexmd}. 
-\item \verb+n_exc_states_propagate+ sets the total number of excited-states to be propagated in the dynamics.  The user must be careful not to include unnecessary higher-energy states if it is unlikely for the system to access those states, as this may greatly increase computation time.  The number of excited-states to include in the simulation is determined by the electronic structure and optical spectrum of the system, which will be discussed in Subsections \ref{spcalc} and \ref{optspec}.
+\item \verb+n_exc_states_propagate+ sets the total number of excited-states to be propagated in the dynamics.  The user must be careful not to include unnecessary higher-energy states if it is unlikely for the system to access those states as this may greatly increase computation time.  The number of excited-states to include in the simulation is determined by the electronic structure and optical spectrum of the system, which will be discussed in Subsections \ref{spcalc} and \ref{optspec}.
 \end{itemize}
 
 The following section contains more inputs for molecular dynamics.
@@ -238,13 +230,13 @@ The following section contains more inputs for molecular dynamics.
    rk_tolerance=1.0d-7, ! Tolerance for the Runge-Kutta propagator [1.0d-7]
 \end{lstlisting}
 \begin{itemize}
-\item \verb+time_init+ sets the initial time of the trajectory.  If the trajectory has not yet begun, then this number is set 0.0 fs.  However, it is common for a trajectory to be restarted from where it left off.  In these cases, the initial time depends on when the previous simulation has ended.  Restart input files will be discussed in Section \ref{restart}.
+\item \verb+time_init+ sets the initial time of the trajectory.  If the trajectory has not yet begun, then this number is set 0.0 fs.  However, it is common for a trajectory to be restarted from where it left off.  In these cases the initial time depends on when the previous simulation has ended.  Restart input files will be discussed in Section \ref{restart}.
 \item \verb+time_step+ sets the classical time-step of the trajectory.  This is the time-step at which nuclear degrees of freedom are integrated.
 \item \verb+n_class_steps+ sets the total number of classical time-steps in the trajectory.  An error message will read: \verb+You+ \verb+must+ \verb+run+ \verb+dynamics+ \verb+(n_class_steps > 0)+ \verb+or+ \verb+geometry+ \verb+optimization+ \verb+(maxcyc > 0).+ \verb+Running+ \verb+both+ \verb+simultaneously+ \verb+is+ \verb+not+ \verb+possible.+
 \item \verb+n_quant_steps+ sets the number of quantum steps per classical step.  The nuclear degrees of freedom are integrated with the Velocity Verlet (VV) algorithm, while the electronic degrees of freedom (i.e. the quantum coefficients) are integrated with the Runge-Kutta (RK) algorithm.  The nuclear dynamics are more computationally stable than the quantum coefficients.  The VV algorithm, while less computationally demanding than RK, is sufficient for nuclear dynamics.  Quantum coefficients are more susceptible to computational instabilities and require a more rigorous method for integrating their equations of motion (i.e. the Schr\"{o}dinger equation).
 \item \verb+moldyn_deriv_flag+ sets how gradients are calculated.  The options here are numerical or analytical.  Generally, analytical derivatives should be used because they are more computationally stable and less computationally expensive than numerical derivatives.
 \item \verb+num_deriv_step+ sets the derivative step-size in units of angstroms (\AA) when the \verb+moldyn_deriv_flag+ is set to \verb+numerical+.
-\item \verb+rk_tolerance+ sets the convergence criteria on the quantum coefficients in arbitrary units.  The smaller the \verb+rk_tolerance+, the tighter the convergence criteria.  The user should be careful not to set this quantity too low, as RK may not be able to handle very low tolerance levels.  In these cases, the output file will show an error message that reads, \verb+RK tolerance may be too low+.  The \verb+rk_tolerance+ should be increased and trajectories should be restarted from 0.0 fs.
+\item \verb+rk_tolerance+ sets the convergence criteria on the quantum coefficients in arbitrary units.  The smaller the \verb+rk_tolerance+, the tighter the convergence criteria.  The user should be careful not to set this quantity too low as RK may not be able to handle very low tolerance levels.  In these cases, the output file will show an error message that reads, \verb+RK tolerance may be too low+.  The \verb+rk_tolerance+ should be increased and trajectories should be restarted from 0.0 fs.
 \end{itemize}
 
 The following section contains input parameters pertaining to non-adiabatic dynamics.
@@ -252,24 +244,11 @@ The following section contains input parameters pertaining to non-adiabatic dyna
    !***** Non-Adiabatic Parameters
    decoher_type=2, ! Type of decoherence: Reinitialize (0) Never, 
    ! (1) At successful hops, (2) At successful plus frustrated hops... 
-   ! (3) Persico/Granucci, or (4) Truhlar [2]
-   ! *** (3) AND (4) ARE UNDER DEVELOPMENT, DO NOT USE ***
-   decoher_e0=0.0, ! Decoherence parameter E0, Hartrees [0.1]
-   ! (only for decoher_type = 3 or 4) *** UNDER DEVELOPMENT, DO NOT USE ***
-   decoher_c=0.0, ! Decoherence parameter C, unitless [0.1]
-   ! (only for decoher_type = 3 or 4) *** UNDER DEVELOPMENT, DO NOT USE ***
    dotrivial=1, ! Do unavoided (trivial) crossing routine (1) or not (0) [1]
    quant_step_reduction_factor=2.5d-2, ! Quantum step reduction factor [2.5d-2]
 \end{lstlisting}
 \begin{itemize}
-\item \verb+decoher_type+ sets the method for decoherence.  The surface hopping method treats nuclear degrees of freedom classically and electronic degrees of freedom quantum mechanically.  Due to the classical treatment of nuclei, there is an overcoherence between quantum states.  In realistic simulations, there should always be some form of decoherence.  Method \verb+0+ does not introduce any form of decoherence and should only be used for code testing or benchmarking purposes.  By reinitializing the quantum coefficients after hops, this introduces a form of decoherence that is instantaneous.  Method \verb+1+ collapses the wavefunction at all successful hops, whereas \verb+2+ collapses the wavefunction at all successful plus frustrated hops.  Frustrated hops are those that were unable to satisfy energy conservation and were rejected.  The methods defined by \verb+3+ and \verb+4+ are categorized as energy-based decoherence corrections, where coefficients are rescaled at classical steps, such that the coherence between two states decays as a function of their energy gap (i.e. a larger energy gap means faster decoherence).  It has been shown that the simple collapse method is sufficient for introducing decoherence.\cite{nelson2013nonadiabatic}   In general, method \verb+2+ should be used for realistic simulations.
-\item \verb+decoher_e0+ sets the value of $E_{0}$ in units of Hartrees in the following expression for the decoherence time,
-\begin{equation}
-\label{decrate}
-\tau_{\beta\alpha}=\frac{\hbar}{\left|E_{\beta}\left(t\right)-E_{\alpha}\left(t\right)\right|}\left(C+\frac{E_{0}}{\left({\bf{P}}\cdot\hat{d}_{\beta\alpha}\right)^{2}/2\mu}\right)\,,
-\end{equation}
-where ${\bf{P}}\cdot\hat{d}_{\beta\alpha}$ is momentum in the direction of non-adiabatic coupling, $E_{i}\left(t\right)$ is the energy of the PES associated to state $\ket{i}$, and $\mu$ is the reduced mass.  In Grannuci's formalism,\cite{granucci2010including,granucci2007critical} the kinetic energy term, $\left({\bf{P}}\cdot\hat{d}_{\beta\alpha}\right)^{2}/2\mu$, is replaced by the \textit{total} kinetic energy, which reduces computational cost since non-adiabatic coupling vector can be ignored.  Truhlar's formalism can be found in Refs. \cite{zhu2004coherent,hack2001natural}.
-\item \verb+decoher_c+ sets the value of the unitless parameter, $C$, in Eq. (\ref{decrate}).
+\item \verb+decoher_type+ sets the method for decoherence.  The surface hopping method treats nuclear degrees of freedom classically and electronic degrees of freedom quantum mechanically.  Due to the classical treatment of nuclei, there is an overcoherence between quantum states.  In realistic simulations there should always be some form of decoherence.  Method \verb+0+ does not introduce any form of decoherence and should only be used for code testing or benchmarking purposes.  By reinitializing the quantum coefficients after hops, this introduces a form of decoherence that is instantaneous.  Method \verb+1+ collapses the wavefunction at all successful hops, whereas \verb+2+ collapses the wavefunction at all successful plus frustrated hops.  Frustrated hops are those that were unable to satisfy energy conservation and were rejected.  In general, method \verb+2+ should be used for realistic simulations.
 \item \verb+dotrivial+ sets whether or not to reduce the time-step in the vicinity of trivial crossings.  See description under \verb+quant_step_reduction_factor+ for more details.  Trivial crossings are identified by the method described in Ref. \cite{fernandez2012identification}.
 \item \verb+quant_step_reduction_factor+ sets how much to reduce the quantum step in the vicinity of an unavoided or trivial crossing.  At trivial crossings, the energy gap between the adjacent states is vanishingly small.  The coupling between these states is essentially localized to the spatial {\it{point}} at which they are degenerate.  Therefore, in order to resolve the non-adiabatic coupling between these states and determine whether or not an electronic transition occurs, the time-step must be reduced.  It is defined as \verb+quant_step_reduction_factor+ $\times$ \verb+quant_time_step+, where \verb+quant_time_step+ is determined by \verb+time_step+ and \verb+n_quant_steps+.
 \end{itemize}
@@ -279,22 +258,13 @@ The following section contains input parameters pertaining to the thermostat.
 \begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
    !***** Thermostat Parameters
    therm_type=1, ! Thermostat type: (0) Newtonian, (1) Langevin, 
-   ! or (2) Berendsen [1] *** (2) IS UNDER DEVELOPMENT, DO NOT USE ***
    therm_temperature=300, ! Thermostat temperature, K [300]
    therm_friction=20, ! Thermostat friction coefficient, 1/ps [20]
-   berendsen_relax_const=0.4, ! Bath relaxation constant for Berendsen 
-   ! thermostat, ps [0.4] *** UNDER DEVELOPMENT, DO NOT USE ***
-   heating=0, ! Equilibrated (0) or heating (1) [0]
-   ! *** UNDER DEVELOPMENT, DO NOT USE ***
-   heating_steps_per_degree=100, ! Number of steps per degree 
-   ! *** UNDER DEVELOPMENT, DO NOT USE ***
-   ! during heating [100] *** UNDER DEVELOPMENT, DO NOT USE ***
 \end{lstlisting}
 \begin{itemize}
-\item \verb+therm_type+ sets the type of thermostat to be used in the simulation.  This determines the equation of motion governing nuclear dynamics.  There are three options for this input, one of which is \verb+Newtonian+.  This is the same as introducing no thermostat, which should only be used for code testing or benchmarking purposes.  The other two options are \verb+Langevin+ and \verb+Berendsen+.  For the latter, velocities are rescaled to attain the user-defined temperature.  This suppresses thermal fluctuations, which is not consistent with the canonical ensemble.  The Langevin equation of motion is a stochastic differential equation that introduces terms for viscosity and a Gaussian random force that controls temperature in such a way that obeys the canonical ensemble.  In realistic simulations, the thermostat should be set to \verb+Langevin+.
+\item \verb+therm_type+ sets the type of thermostat to be used in the simulation.  This determines the equation of motion governing nuclear dynamics.  There are two options for this input, one of which is \verb+Newtonian+.  This is the same as introducing no thermostat, which should only be used for code testing or benchmarking purposes.  The other option is \verb+Langevin+.  The Langevin equation of motion is a stochastic differential equation that introduces terms for viscosity and a Gaussian random force that controls temperature in such a way that obeys the canonical ensemble.  In realistic simulations, the thermostat should be set to \verb+Langevin+.
 \item \verb+therm_temperature+ sets the temperature of the thermostat in units of Kelvin (K).
-\item \verb+therm_friction+ sets the friction parameter for the Langevin thermostat in units of inverse picoseconds $\left(\text{ps}^{-1}\right)$.  This input generally depends on the viscosity of the solvent that is being modeled, however, in most cases, the default parameter should be used.
-\item \verb+berendsen_relax_const+ sets the relaxation time constant of the Berendsen thermostat.  The velocities of the nuclei in the system are rescaled at a rate given by inverse \verb+berendsen_relax_const+ in order to reach thermal equilibrium at the user-defined temperature in \verb+therm_temperature+.
+\item \verb+therm_friction+ sets the friction parameter for the Langevin thermostat in units of inverse picoseconds $\left(\text{ps}^{-1}\right)$.  This input generally depends on the viscosity of the solvent that is being modeled. However, in most cases, the default parameter should be used.
 \end{itemize}
 
 The following section contains input parameters pertaining to output data.
@@ -316,7 +286,7 @@ The following section contains input parameters pertaining to output data.
 \item \verb+out_count_init+ sets the initial time step of the \verb+.DATA+ files.  At the beginning of a trajectory, \verb+out_count_init+ should be set to \verb+0+.  During generation of restart input files, \verb+out_count_init+ will be changed accordingly.
 \end{itemize}
 
-The following section contains input parameters pertaining to the coordinates and velocities of the atoms that constitute the molecule being studied, as well as its excited-state coefficients.
+\noindent The following section contains input parameters pertaining to the coordinates and velocities of the atoms that constitute the molecule being studied as well as its excited-state coefficients.
 \begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
 &coord
   6       -7.9798271101       0.6776918081      -0.0532285388
@@ -361,7 +331,7 @@ The following section contains input parameters pertaining to the coordinates an
 \end{lstlisting}
 \begin{itemize}
 \item Between \verb+&coord+ and \verb+&endcoord+ are coordinates of the atoms in angstroms (\AA).  The first column identifies each atom with its atomic number.  The following three columns are the $x$, $y$, and $z$ coordinates, respectively.  The coordinates shown above are those of a benzene molecule.
-\item Between \verb+&veloc+ and \verb+&endveloc+ are three columns showing velocities of each atom along the $x$, $y$, and $z$ axes, respectively.  The units of velocity are \AA/fs. 
+\item Between \verb+&veloc+ and \verb+&endveloc+ are three columns showing velocities of each atom along the $x$, $y$, and $z$ axes, respectively.  The units of velocity are \AA/ps. 
 \item Between \verb+&coeff+ and \verb+&endcoeff+ are two columns showing the magnitude and phase of the excited-state coefficients, respectively.  The number of rows should be equal to the number of excited states being propagated, \verb+n_exc_states_propagate+.  In this example, eight excited-states are being propagated and the system is initially fully excited in the sixth excited-state. 
 \end{itemize}
 
@@ -371,7 +341,7 @@ The following section contains input parameters pertaining to the coordinates an
 
 \subsection{Geometry Optimization}
 \label{geopt}
-The first step before any simulation is to build the chemical system of interest in some molecular visualization tool such as \verb+Jmol+ or \verb+Avogadro+.  Then, the system's ground-state geometry must be determined according to some model quantum-chemistry.  The geometry may be optimized within \verb+NEXMD+ using the available semi-empirical model Hamiltonians.  An example input file is available in Subsection \ref{input_geopt}.  Jobs submissions are discussed in Section \ref{submit}.  Note: It may be necessary to use other levels of theory, such as density functional theory, to obtain an accurate ground-state geometry.  This can be done with electronic structure packages such as \verb+Gaussian+.
+The first step before any simulation is to build the chemical system of interest in some molecular visualization tool such as \verb+Jmol+ or \verb+Avogadro+.  Then, the system's ground-state geometry must be determined according to some model quantum-chemistry.  The geometry may be optimized within \verb+NEXMD+ using the available semi-empirical model Hamiltonians.  An example input file is available in Subsection \ref{input_geopt}.  Note: It may be necessary to use other levels of theory, such as density functional theory, to obtain an accurate ground-state geometry.  This can be done with electronic structure packages such as \verb+Gaussian+.
 
 \subsection{Ground-State Trajectory}
 \label{gstraj}
@@ -390,12 +360,12 @@ After completing a long ground-state trajectory and obtaining a good ground-stat
 \label{spcalc}
 Throughout the ground-state trajectory, a set of coordinates and velocities will be written to \verb+coords.xyz+ and \verb+velocity.xyz+.  These files contain snap shots of the system taken throughout the ground-state trajectory at a rate which was specified in Subsection \ref{gstraj}.  After the ground-state trajectory is complete, single-point calculations at these geometries determine the electronic structure and optical spectrum of the system.  It is important to consider many single-point calculations before generating an optical spectrum since the geometry of the system, and therefore electronic structure, changes from one time-step to another due to its interaction with the heat bath.  It is good to plot temperature as a function of time from \verb+temperature.out+ of the ground-state trajectory to know at which time the system has equilibrated.  This happens once the temperature oscillates around the set temperature of the bath (typically 300 K).  {\it{The ground-state sampling should be taken at times after the system has reached thermal equilibrium.}}
 
-To prepare input files for single-point calculations, use \verb+getexcited.py+.  First, create a directory for the single-point calculations (e.g. \verb+singlepoint+).  Second, create an input file with the name \verb+header+ inside \verb+singlepoint+.  In \verb+header+, you must set the parameters which are to be the same for all single-point calculations.  Be sure to set \verb+verbosity+ within \verb+&qmmm+ and \verb+&endqmmm+ to at least \verb+1+ for single-point calculations!  The only varying parameter among the different single-point calculations is geometry.  An example input file is available in Subsection \ref{input_spcalc}.  In place of both nuclear coordinates and velocities, type in the flag, \verb+nucl_coord_veloc+, as shown below.
+To prepare input files for single-point calculations, use \verb+getexcited.py+.  First, create a directory for the single-point calculations (e.g. \verb+singlepoint+).  Second, create an input file with the name \verb+header+ inside \verb+singlepoint+.  In \verb+header+, you must set the parameters which are to be the same for all single-point calculations.  Be sure to set \verb+verbosity+ within \verb+&qmmm+ and \verb+&endqmmm+ to at least \verb+1+ for single-point calculations!  The only varying parameter among the different single-point calculations is geometry.  An example input file is available in Subsection \ref{input_spcalc}.  In place of both nuclear coordinates and velocities, type in the flag, \verb+nucl_coord_veloc_flag+, as shown below.
 \begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
 (*@{\vdots\vspace*{3pt}}@*)
 &endmoldyn
 
-nucl_coord_veloc
+nucl_coord_veloc_flag
 
 &coeff
 (*@{\vdots\vspace*{3pt}}@*)
@@ -424,8 +394,7 @@ Select a task from the following list:
 [9] Access options for geometry analysis
 [10] Access options for dipole analysis
 [11] Access options for transition density analysis
-[12] Access options for pump-push-probe spectroscopy (*** UNDER DEVELOPMENT, DO NOT USE ***)
-[13] Access code testing tools
+[12] Access code testing tools
 
 Enter the number corresponding to the desired task: 1
 Preparing input files for single-point calculations.
@@ -453,11 +422,11 @@ header  NEXMD1  NEXMD2  NEXMD3  NEXMD4  NEXMD5
 
 \subsection{Optical Spectrum}
 \label{optspec}
-It is important to generate an optical spectrum from single-point calculations to determine the energy at which to excite the system.  To do so, use \verb+getexcited.py+, which generates an average spectrum over all geometries (i.e. the sum of all spectra, divided by the number of geometries).  The oscillator strength of each excitation energy is given a Gaussian lineshape with some user-defined width.  This is a Gaussian-shaped Franck-Condon window.  To be more explicit, the optical absorbance of each excitation energy is broadened by a Gaussian lineshape and is weighted by the oscillator strength at that energy,
+It is important to generate an optical spectrum from single-point calculations to determine the energy at which to excite the system.  To do so, use \verb+getexcited.py+, which generates an average spectrum over all geometries (i.e. the sum of all spectra, divided by the number of geometries).  The oscillator strength of each excitation energy may be modeled by a Gaussian lineshape with some user-defined width.  This is a Gaussian-shaped Franck-Condon window.  To be more explicit, the optical absorbance of each excitation energy is broadened by a Gaussian lineshape and is weighted by the oscillator strength at that energy,
 \begin{equation}
 A_{e}^{i}\left(\Omega\right) = f_{ge}^{i}\left(\Omega_{e}\right)\times\frac{1}{\sqrt{2\pi\sigma^{2}}}\,\exp\left[-\frac{\left(\Omega_{e}-\Omega\right)^{2}}{2\sigma^{2}}\right]\,,
 \end{equation}
-where $A_{e}^{i}$ defines the contribution to the absorbance of the $i^{\text{th}}$ geometry from excited-state $\ket{e}$. The absorbance over all excitation energies becomes
+where $A_{e}^{i}$ defines the contribution to the absorbance of the $i^{\text{th}}$ geometry from excited-state $\ket{e}$. The full width at half maximum (FWHM) for this curve is $2sqrt(2ln(2))*\sigma$. The absorbance over all excitation energies becomes
 \begin{equation}
 A^{i}\left(\Omega\right) = \sum_{e} A_{e}^{i}\left(\Omega\right)\,.
 \end{equation}
@@ -469,9 +438,9 @@ where $N$ is the number of geometries.  You may also choose a Lorentzian linesha
 \begin{equation}
 A_{e}^{i}\left(\Omega\right) = f_{ge}^{i}\left(\Omega_{e}\right)\times\frac{2}{\Gamma\pi}\frac{1}{1+4\left(\frac{\Omega-\Omega_{ge}}{\Gamma}\right)^{2}}\,,
 \end{equation}
-where $\Gamma$ is a full width at half maximum (FWHM).
+where $\Gamma$ is now the full width at half maximum (FWHM).
 
-One of three files will be generated in the current working directory if an optical spectrum is requested, \verb+ceo.err+, \verb+ceo_gauss.out+ or \verb+ceo_lorentz.out+.  Shown in \verb+ceo.err+, are directories of single-point calculations that are problematic.  The latter two output files cannot be generated unless all single-point calculations are complete.  There are two types of spectral lineshapes to choose from, Gaussian or Lorentzian.  To obtain the spectrum, type \verb+python getexcited.py+, which generates a set of questions, one of which is spectral broadening of the Franck-Condon window.  An example of generating an optical spectrum is shown below.
+One of three files will be generated in the current working directory if an optical spectrum is requested, \verb+ceo.err+, \verb+ceo_gauss.out+ or \verb+ceo_lorentz.out+.  Shown in \verb+ceo.err+ are directories of single-point calculations that are problematic.  The latter two output files cannot be generated unless all single-point calculations are complete.  There are two types of spectral lineshapes to choose from, Gaussian or Lorentzian.  To obtain the spectrum, type \verb+python getexcited.py+, which generates a set of questions, one of which is the FWHM.  An example of generating an optical spectrum is shown below.
 \newline
 \begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
 [sifain@wc-fe1 realistic]$ ls
@@ -491,15 +460,15 @@ Select a task from the following list:
 [9] Access options for geometry analysis
 [10] Access options for dipole analysis
 [11] Access options for transition density analysis
-[12] Access options for pump-push-probe spectroscopy (*** UNDER DEVELOPMENT, DO NOT USE ***)
-[13] Access code testing tools
+[12] Access code testing tools
 
 Enter the number corresponding to the desired task: 2
 Generating optical spectrum.
 Single-point calculations directory: singlepoint
 Checking energies and oscillator strengths. Please wait ...
-Spectral lineshape? Answer GAUSSIAN [0] or LORENTZIAN [1]: 0
-Spectral broadening (i.e. Gaussian standard deviation) in eV [e.g. 0.15]: 0.15
+Spectral lineshape? Answer Gaussian [0] or Lorentzian [1]: 0
+Please enter the full width at half maximum (FWHM) 
+for the Gaussian lineshape in eV [e.g. 0.36]: 0.36
 singlepoint/NEXMD1/1000
 singlepoint/NEXMD1/1004
 singlepoint/NEXMD1/1008
@@ -531,11 +500,11 @@ The columns in \verb+ceo_gauss.out+ or \verb+ceo_lorentz.out+ are the following:
 
 \subsection{NEXMD}
 \label{nexmd}
-Input files for NEXMD may be prepared once single-point calculations are complete, and you know at which energy to excite the system.  First, create a directory for NEXMD (e.g. \verb+nexmd+).  Inside \verb+nexmd+, place an input file with the name \verb+header+.  Similar to Subsection \ref{spcalc}, you must set the parameters which are to be the same for all trajectories.  An example input file is available in Subsection \ref{input_nexmd}.  The four parameters that are different among the trajectories are: random seed, initial excited-state, initial nuclear coordinates and velocities, and initial quantum amplitudes and phase.  In place of these parameters, insert their respective flags: \verb+rnd_seed+, \verb+exc_state_init_flag+, \verb+nucl_coord_veloc+, and \verb+quant_amp_phase+.  The \verb+getexcited.py+ script searches for these flags and generates an input file for each initial geometry.
+Input files for NEXMD may be prepared once single-point calculations are complete, and you know at which energy to excite the system.  First, create a directory for NEXMD (e.g. \verb+nexmd+).  Inside \verb+nexmd+, place an input file with the name \verb+header+.  Similar to Subsection \ref{spcalc}, you must set the parameters which are to be the same for all trajectories.  An example input file is available in Subsection \ref{input_nexmd}.  The four parameters that are different among the trajectories are: random seed, initial excited-state, initial nuclear coordinates and velocities, and initial quantum amplitudes and phase.  In place of these parameters, insert their respective flags: \verb+rnd_seed_flag+, \verb+exc_state_init_flag+, \verb+nucl_coord_veloc_flag+, and \verb+quant_amp_phase_flag+.  The \verb+getexcited.py+ script searches for these flags and generates an input file for each initial geometry.
 
-To prepare input files for NEXMD, type \verb+python getexcited.py+.  Among the questions asked is, \verb+New random+ \verb+seeds? Answer YES [1] or NO [0]: +.  By answering \verb+YES+, you are requesting for a new list of random seeds.  By answering \verb+NO+, you are requesting to use a pre-generated list of random seeds.  If you request the former, new random seeds will be used to create input files and the complete list of these random seeds will be generated in the \verb+nexmd+ directory with name \verb+rseedslist+.  If you request the latter, the path to the pre-generated list of random seeds must be supplied in the proceeding question.  The pre-generated list of random seeds must strictly be a list of random seeds with no header or footer, and the number of random seeds must be at least equal to the number of trajectories requested.  The pre-generated list of random seeds option may be important for code testing or benchmarking purposes.  \textit{It is important to keep in mind that different compilers may have different sequences of random numbers for a given random seed.}
+To prepare input files for NEXMD, type \verb+python getexcited.py+.  Among the questions asked is, \verb+New random+ \verb+seeds? Answer YES [1] or NO [0]: +.  By answering \verb+YES+ you are requesting for a new list of random seeds.  By answering \verb+NO+ you are requesting to use a pre-generated list of random seeds.  If you request the former, new random seeds will be used to create input files and the complete list of these random seeds will be generated in the \verb+nexmd+ directory with name \verb+rseedslist+.  If you request the latter, the path to the pre-generated list of random seeds must be supplied in the proceeding question.  The pre-generated list of random seeds must strictly be a list of random seeds with no header or footer, and the number of random seeds must be at least equal to the number of trajectories requested.  The pre-generated list of random seeds option may be important for code testing or benchmarking purposes.  \textit{It is important to keep in mind that different compilers may have different sequences of random numbers for a given random seed.}
 
-You must supply both the excitation energy and spectral broadening of the Franck-Condon window.  The latter quantity should be the same as that supplied in Subsection \ref{optspec}, which was used to generate the optical spectrum.  These two quantities are used to determine \verb+exc_state_init+ and \verb+quant_amp_phase+.  For each initial geometry, excitation energies and oscillator strengths were determined from single-point calculations in Subsection \ref{spcalc}.  In order to determine the initial excited-state of each geometry upon photo-excitation, a Gaussian-shaped Franck-Condon window (centered at the user-defined excitation energy, $\Omega$, with spectral broadening, $\sigma$) is multiplied by each oscillator strength, $f_{eg}$,
+You must supply both the excitation energy and FWHM of the Franck-Condon window.  The latter quantity should be the same as that supplied in Subsection \ref{optspec}, which was used to generate the optical spectrum.  These two quantities are used to determine \verb+exc_state_init+ and \verb+quant_amp_phase+.  For each initial geometry excitation energies and oscillator strengths were determined from single-point calculations in Subsection \ref{spcalc}.  In order to determine the initial excited-state of each geometry upon photo-excitation, a Gaussian-shaped Franck-Condon window (centered at the user-defined excitation energy, $\Omega$, with FWHM, $2sqrt(2ln(2))*\sigma$) is multiplied by each oscillator strength, $f_{eg}$,
 \begin{equation}\label{unormp}
 P^{\prime}\left(\Omega_{e}\right) = f_{ge}\left(\Omega_{e}\right)\times\frac{1}{\sqrt{2\pi\sigma^{2}}}\,\exp\left[-\frac{\left(\Omega_{e}-\Omega\right)^{2}}{2\sigma^{2}}\right]\,.
 \end{equation}
@@ -566,37 +535,42 @@ Select a task from the following list:
 [9] Access options for geometry analysis
 [10] Access options for dipole analysis
 [11] Access options for transition density analysis
-[12] Access options for pump-push-probe spectroscopy (*** UNDER DEVELOPMENT, DO NOT USE ***)
-[13] Access code testing tools
+[12] Access code testing tools
 
 Enter the number corresponding to the desired task: 3
 Preparing input files for NEXMD.
 Ground-state dynamics directory: gsdynamics
-Single-point calculations directory: singlepoint
 Output directory [e.g. nexmd]: nexmd 
+Initial excited states will model a photoexcited wavepacket 
+according to the optical spectrum.
+Single-point calculations directory: singlepoint
 A total of 1001 coordinate files, ranging from 0.00 to 
 100.00 fs in increments of 0.10 fs, were found.
-Note: Only coordinate files used for single-point 
-calculations can be used for NEXMD.
-How many trajectories for NEXMD? Enter a number no greater than 1000: 1000
-Number of trajectories per NEXMD folder: 200
-New random seeds? Answer YES [1] or NO [0]: 1
-Spectral lineshape? Answer GAUSSIAN [0] or LORENTZIAN [1]: 0
+Enter requested range of the ground-state sampling by coordinate files
+and the number of trajectories. Input an array of the form 
+[start, end, number]: [1,1000,500]
+You have requested 500 evenly-spaced coordinate 
+files in the range 1 to 1000.
+Continue? Answer yes [1] or no [0]:1
+Number of trajectories per NEXMD folder: 100
+New random seeds? Answer yes [1] or no [0]: 1
+Spectral lineshape? Answer Gaussian [0] or Lorentzian [1]: 0
 Laser excitation energy in eV: 5.40
-Spectral broadening (i.e. Gaussian standard deviation) in eV [e.g. 0.15]: 0.15
+Please enter the full width at half maximum (FWHM) 
+for the Gaussian lineshape in eV [e.g. 0.36]: 0.36
 nexmd/NEXMD1/0001
-nexmd/NEXMD1/0002
 nexmd/NEXMD1/0003
+nexmd/NEXMD1/0005
 (*@{\vdots\vspace*{3pt}}@*)
-nexmd/NEXMD5/0998
+nexmd/NEXMD5/0995
+nexmd/NEXMD5/0997
 nexmd/NEXMD5/0999
-nexmd/NEXMD5/1000
 [sifain@wc-fe1 realistic]$ cd nexmd/
 [sifain@wc-fe1 nexmd]$ ls
 header  NEXMD1  NEXMD2  NEXMD3  NEXMD4  NEXMD5  rseedslist
 \end{lstlisting}
 
-An example of preparing input files for NEXMD with a pre-generated list of random seeds is shown below.
+\noindent An example of preparing input files for NEXMD with a pre-generated list of random seeds is shown below.
 \begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
 [sifain@wc-fe1 realistic]$ ls
 ceo_gauss.out  getexcited.py  gsdynamics  nexmd  rseedslist  singlepoint
@@ -617,25 +591,30 @@ Select a task from the following list:
 [9] Access options for geometry analysis
 [10] Access options for dipole analysis
 [11] Access options for transition density analysis
-[12] Access options for pump-push-probe spectroscopy (*** UNDER DEVELOPMENT, DO NOT USE ***)
-[13] Access code testing tools
+[12] Access code testing tools
 
 Enter the number corresponding to the desired task: 3
 Preparing input files for NEXMD.
 Ground-state dynamics directory: gsdynamics
+Output direcitory [e.g. nexmd]: nexmd 
+Initial excited states will model a photoexcited wavepacket 
+according to the optical spectrum.
 Single-point calculations directory: singlepoint
-Output directory [e.g. nexmd]: nexmd 
 A total of 1001 coordinate files, ranging from 0.00 to 
 100.00 fs in increments of 0.10 fs, were found.
 Note: Only coordinate files used for single-point 
 calculations can be used for NEXMD.
 How many trajectories for NEXMD? Enter a number no greater than 1000: 1000
+You have requested 20 evenly-spaced coordinate 
+files in the range 101 to 1051 for NEXMD.
+Continue? Answer yes [1] or no [0]:1
 Number of trajectories per NEXMD folder: 200
-New random seeds? Answer YES [1] or NO [0]: 0
+New random seeds? Answer yes [1] or no [0]: 0
 Path to random-seeds list: rseedslist
-Spectral lineshape? Answer GAUSSIAN [0] or LORENTZIAN [1]: 0
+Spectral lineshape? Answer Gaussian [0] or Lorentzian [1]: 0
 Laser excitation energy in eV: 5.40
-Spectral broadening (i.e. Gaussian standard deviation) in eV [e.g. 0.15]: 0.15
+Please enter the full width at half maximum (FWHM) 
+for the Gaussian lineshape in eV [e.g. 0.36]: 0.36
 nexmd/NEXMD1/0001
 nexmd/NEXMD1/0002
 nexmd/NEXMD1/0003
@@ -649,7 +628,7 @@ header  NEXMD1  NEXMD2  NEXMD3  NEXMD4  NEXMD5  rseedslist
 \end{lstlisting}
 
 \subsection{Adiabatic Simulation from NEXMD Geometries}
-In many cases, the adiabatic dynamics on a low-lying surface can describe important processes, one such example is photo-isomerization observed in a \textit{trans}-to-\textit{cis} conformation change of a molecule.  Upon photo-excitation, the molecule evolves on a high-level surface and then relaxes by exchanging energy to nuclear kinetic energy via transitions to lower-lying excited states.  It is common for the molecule to reach its first excited state and evolve for a considerable amount of time before relaxing to its ground state (possibly in the form of radiative emission).  This is what is known as adiabatic dynamics on the first excited state.  Instead of a non-adiabatic simulation continuing on the first excited-state, it may be necessary to continue dynamics adiabatically.  The advantages of doing so include, reducing computational cost by eliminating the propagation of unnecessary states and increasing the time-step of simulation in order to propagate for longer times.  For this to happen, the final geometries of trajectories in the non-adiabatic simulation must be carried over to the adiabatic simulation.  This can be done with \verb+getexcited.py+.  An example of starting an adiabatic simulation on the first excited-state using geometries from a non-adiabatic simulation is shown below.  \textit{It is important for the molecule to have fully reached the first excited state before beginning adiabatic dynamics.}  See Subsection \ref{relax_rate} to calculate populations.  It is also important to remember to change \verb+exc_state_init+ and \verb+n_exc_states_propagate+ to \verb+1+ in \verb+header+ located in a newly-created directory when adiabatic dynamics on the first excited-state is desired.  The coefficients between \verb+&coeff+ and \verb+&endcoeff+ should be changed to fully populate the first excited state.
+In many cases, the adiabatic dynamics on a low-lying surface can describe important processes. One such example is photo-isomerization observed in a \textit{trans}-to-\textit{cis} conformation change of a molecule.  Upon photo-excitation, the molecule evolves on a high-level surface and then relaxes by exchanging energy to nuclear kinetic energy via transitions to lower-lying excited states.  It is common for the molecule to reach its first excited state and evolve for a considerable amount of time before relaxing to its ground state (possibly in the form of radiative emission).  This is what is known as adiabatic dynamics on the first excited state.  Instead of a non-adiabatic simulation continuing on the first excited-state, it may be necessary to continue dynamics adiabatically.  The advantages of doing so include, reducing computational cost by eliminating the propagation of unnecessary states and increasing the time-step of simulation in order to propagate for longer times.  For this to happen the final geometries of trajectories in the non-adiabatic simulation must be carried over to the adiabatic simulation.  This can be done with \verb+getexcited.py+.  An example of starting an adiabatic simulation on the first excited-state using geometries from a non-adiabatic simulation is shown below.  \textit{It is important for the molecule to have fully reached the first excited state before beginning adiabatic dynamics.}  See Subsection \ref{relax_rate} to calculate populations.  It is also important to remember to change \verb+exc_state_init_flag+ and \verb+n_exc_states_propagate+ to \verb+1+ in \verb+header+ located in a newly-created directory when adiabatic dynamics on the first excited-state is desired.  The coefficients between \verb+&coeff+ and \verb+&endcoeff+ should be changed to fully populate the first excited state.
 
 \begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
 [sifain@wc-fe1 nexmd_solvent]$ ls
@@ -673,8 +652,7 @@ Select a task from the following list:
 [9] Access options for geometry analysis
 [10] Access options for dipole analysis
 [11] Access options for transition density analysis
-[12] Access options for pump-push-probe spectroscopy (*** UNDER DEVELOPMENT, DO NOT USE ***)
-[13] Access code testing tools
+[12] Access code testing tools
 
 Enter the number corresponding to the desired task: 4
 Preparing input files for adiabatic dynamics with geometries taken from another simulation.
@@ -682,9 +660,10 @@ Ground-state dynamics directory: gsdynamics
 NEXMD directory where geometries should be taken from: nexmd
 NEXMD directory for new simulation: adiabatic_S1
 The coordinates in nexmd began at 0.00 fs and were printed to coords.xyz every 1.00 fs.
-New random seeds? Answer YES [1] or NO [0]: 1
-At what time, in femtoseconds, should geometries be taken from nexmd? 1000
-Finding coordinates and velocities from nexmd.  Please wait ...
+New random seeds? Answer yes [1] or no [0]: 1
+At what time, in femtoseconds, should geometries be taken from namd? 
+Plese enter a time greater than 0: 1000
+Finding coordinates and velocities from namd.  Please wait ...
 adiabatic_S1/NEXMD1/0041
 adiabatic_S1/NEXMD1/0100
 adiabatic_S1/NEXMD1/0159
@@ -704,7 +683,7 @@ header  NEXMD1  NEXMD2  NEXMD3  NEXMD4  NEXMD5  rseedslist
 \label{relax_rate}
 The relaxation rate of the system after photo-induced excitation is a common quantity of interest.  This can be obtained by fitting excited-state populations as a function of time to some fitting function.  One such example is an exponential function of the form $P\left(t\right)=A-B\exp\left[-k\left(t-t_{0}\right)\right]$, where $A-B$ is the initial population at time $t=t_{0}$, $A$ is the final population as $t\rightarrow\infty$, and $k$ is the relaxation rate.  Other fitting functions may be better-suited depending on how the population evolves.  In any case, you must first collect populations as a function of time from NEXMD simulations.  To do so, use \verb+getexcited.py+.
 
-If collecting populations is requested, two files may be generated in the current working directory, \verb+pop.err+ and \verb+pop.out+.  Shown in \verb+pop.err+, are directories of trajectories that did not complete within the user-defined time.  The last column in \verb+pop.err+ shows the last time-step of the simulation.  In \verb+pop.out+, first column is time in femtoseconds, followed by the average population on each potential energy surface (PES), followed by the sum of all PES populations (i.e. which should be 1.0), followed by the average populations from quantum coefficients, followed by the sum of quantum populations (i.e. which should also be 1.0).  \verb+Completed+ \verb+trajectories+ are those that finish within the user-defined time.  \verb+Excellent+ \verb+trajectories+ are those that finish with the time defined in \verb+header+ located in the NEXMD directory (e.g. \verb+nexmd+).  Unlike Subsection \ref{optspec}, \verb+pop.out+ can be generated even if a set of trajectories did not complete within the user-defined time.  However, it is highly recommended that a sufficient sampling size be obtained before analyzing relaxation rates.  Incomplete trajectories can be restarted from their last time-steps.  This is discussed in Section \ref{restart}.  An example of collecting populations is shown below.
+If collecting populations is requested, two files may be generated in the current working directory, \verb+pop_mean_ensemble.err+ and \verb+pop_mean_ensemble.out+.  Shown in \verb+pop_mean_ensemble.err+, are directories of trajectories that did not complete within the user-defined time.  The last column in \verb+pop_mean_ensemble.err+ shows the last time-step of the simulation.  In \verb+pop_mean_ensemble.out+, the first column is time in femtoseconds, followed by the average population on each potential energy surface (PES), followed by the sum of all PES populations (i.e. which should be 1.0), followed by the average populations from quantum coefficients, followed by the sum of quantum populations (i.e. which should also be 1.0).  \verb+Completed+ \verb+trajectories+ are those that finish within the user-defined time.  \verb+Excellent+ \verb+trajectories+ are those that finish within the time defined in \verb+header+ located in the NEXMD directory (e.g. \verb+nexmd+).  Unlike Subsection \ref{optspec}, \verb+pop_mean_ensemble.out+ can be generated even if a set of trajectories did not complete within the user-defined time.  However, it is highly recommended that a sufficient sampling size be obtained before analyzing relaxation rates.  Incomplete trajectories can be restarted from their last time-steps.  This is discussed in Section \ref{restart}.  An example of collecting populations is shown below.
 \begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
 [sifain@wc-fe1 realistic]$ python getexcited.py 
 
@@ -721,13 +700,14 @@ Select a task from the following list:
 [9] Access options for geometry analysis
 [10] Access options for dipole analysis
 [11] Access options for transition density analysis
-[12] Access options for pump-push-probe spectroscopy (*** UNDER DEVELOPMENT, DO NOT USE ***)
-[13] Access code testing tools
+[12] Access code testing tools
 
 Enter the number corresponding to the desired task: 5
 Collecting populations.
-NEXMD directory: nexmd 
-Collect populations up to what time in femtoseconds: 1000
+NEXMD directory: nexmd
+Calculate populations up to what time in femtoseconds? 
+Note that averaged results will only include
+trajectories that are complete up to this time: 1000
 nexmd/NEXMD1/0101 1000.00
 nexmd/NEXMD1/0102 1000.00
 nexmd/NEXMD1/0103 1000.00
@@ -738,12 +718,13 @@ nexmd/NEXMD4/1000 1000.00
 Total Trajectories: 0400
 Completed Trajectories: 0399
 Excellent Trajectories: 0399
-One or more trajectories did not finish within 1000.00 femtoseconds, check pop.err.
+One or more trajectories did not finish within 
+1000.00 femtoseconds, check pop_mean_ensemble.err.
 [sifain@wc-fe1 realistic]$ ls
-ceo_gauss.out  getexcited.py  gsdynamics  nexmd  pop.err  pop.out  singlepoint
+ceo_gauss.out  getexcited.py  gsdynamics  nexmd  pop_mean_ensemble.err  pop_mean_ensemble.out  singlepoint
 \end{lstlisting}
 
-Once \verb+pop.out+ is obtained, excited-state populations may be plotted.  Select states may be fit to fitting functions to determine rates.  An example is shown in Figure \ref{pop_fit}.
+Once \verb+pop_mean_ensemble.out+ is obtained, excited-state populations may be plotted.  Select states may be fit to fitting functions to determine rates.  An example is shown in Figure \ref{pop_fit}.
 \begin{figure*}[h]
         \centering
         \begin{subfigure}[h]{0.475\textwidth}
@@ -769,14 +750,14 @@ S7: [A, B, k] = [-3.36844e-02, -7.97627e-01, 2.03588e-03]
 \end{lstlisting}
 
 \subsection{PESs and NACTs}
-Analyzing excited-state lifetimes may involve explicity looking into the coupling between states, given by non-adiabatic coupling terms (NACTs).  They are of the form $\dot{{\bf{R}}}\cdot {\bf{d}}_{\alpha\beta}$, where $\dot{{\bf{R}}}$ is velocity and ${\bf{d}}_{\alpha\beta}$ is the non-adiabatic coupling vector between states $\ket{\alpha}$ and $\ket{\beta}$.  The latter can be expressed as
+Analyzing excited-state lifetimes may involve explicitly looking into the coupling between states, given by non-adiabatic coupling terms (NACTs).  They are of the form $\dot{{\bf{R}}}\cdot {\bf{d}}_{\alpha\beta}$, where $\dot{{\bf{R}}}$ is velocity and ${\bf{d}}_{\alpha\beta}$ is the non-adiabatic coupling vector between states $\ket{\alpha}$ and $\ket{\beta}$.  The latter can be expressed as
 \begin{equation}
 \label{nacvec}
 {\bf{d}}_{\alpha\beta} = \frac{\left<\alpha|\nabla H|\beta\right>}{E_{\beta}-E_{\alpha}}\,,
 \end{equation}
 where $\nabla H$ is the gradient of the Hamiltonian and $E_{i}$ is the potential energy surface (PES) corresponding to state $\ket{i}$.  Eq. (\ref{nacvec}) shows how non-adiabatic coupling between two states is inversely proportional to the energy gap between those states.  As $|E_{\beta}-E_{\alpha}|$ becomes small, $|{\bf{d}}_{\alpha\beta}|$ becomes large and the system may transition between these excited-states.  The strength of non-adiabatic coupling largely depends on energy gap, making it a useful parameter to analyze.
 
-There are several files that can be generated if collecting NACTs and/or PESs are requested.  You may choose to request PESs and NACTs at all time-steps or only at time-steps where hops occur.  If the latter is requested, two files can be generated, \verb+nact_hop_ensemble.out+ and \verb+pes_hop_ensemble.out+.  In \verb+nact_hop_ensemble.out+, columns from left to right are: directory of trajectory, excited-state at time $t$, excited-state at time $t+\Delta t$, and time in fs.  The remaining columns are NACTs, which are consecutive rows of the upper triangle of the NACT matrix.  For example, for a 2-state system, the indices of these terms would be 11, 12, and 22, respectively.  In \verb+pes_hop_ensemble.out+, the first four columns are the same as those in \verb+nact_hop_ensemble.out+.  The remaining columns are PESs of the ground state followed by all the excited-state PESs in units of eV.  If data at all time-steps are requested, two files can be generated, \verb+nact_raw_ensemble.out+ and \verb+pes_raw_ensemble.out+.  The format of these files are the same as those of \verb+nact_hop_ensemble.out+ and \verb+pes_hop_ensemble.out+, respectively, with the exception that the first column is trajectory directory.  A specific time of collection may be set for cases in which the user is only interested in data up to some time less than the total simulation time.  An example of collecting NACTs and PESs is shown below.
+There are several files that can be generated if collecting NACTs and/or PESs are requested.  You may choose to request PESs and NACTs at all time-steps or only at time-steps where hops occur.  If the latter is requested, two files can be generated, \verb+nact_hop_ensemble.out+ and \verb+pes_hop_ensemble.out+.  In \verb+nact_hop_ensemble.out+, columns from left to right are: directory of trajectory, excited-state at time $t$, excited-state at time $t+\Delta t$, and time in fs.  The remaining columns are NACTs, which are consecutive rows of the upper triangle of the NACT matrix.  For example, for a 2-state system the indices of these terms would be 11, 12, and 22, respectively.  In \verb+pes_hop_ensemble.out+, the first four columns are the same as those in \verb+nact_hop_ensemble.out+.  The remaining columns are PESs of the ground state followed by all the excited-state PESs in units of eV.  If data at all time-steps are requested two files can be generated, \verb+nact_raw_ensemble.out+ and \verb+pes_raw_ensemble.out+.  The format of these files are the same as those of \verb+nact_hop_ensemble.out+ and \verb+pes_hop_ensemble.out+, respectively.  A specific time of collection may be set for cases in which the user is only interested in data up to some time less than the total simulation time.  An example of collecting NACTs and PESs is shown below.
 \begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
 [sifain@wc-fe1 realistic]$ ls
 ceo_gauss.out  getexcited.py  gsdynamics  nexmd  pop.out  singlepoint
@@ -795,15 +776,16 @@ Select a task from the following list:
 [9] Access options for geometry analysis
 [10] Access options for dipole analysis
 [11] Access options for transition density analysis
-[12] Access options for pump-push-probe spectroscopy (*** UNDER DEVELOPMENT, DO NOT USE ***)
-[13] Access code testing tools
+[12] Access code testing tools
 
 Enter the number corresponding to the desired task: 6
 Collecting PESs and NACTs.
 NEXMD directory: nexmd
-Collect PESs and NACTs up to what time in femtoseconds: 1000
-Collect PESs [1], NACTs [2], or BOTH [3]: 3
-Collect PESs and NACTs from All TIME-STEPS [1] or HOPS ONLY [2]: 2
+Output pess and/or nacts at all time-steps and trajectories,
+ up to some user-defined time, or hops only?
+answer all [0], user-defined time [1], or hops [2]:2
+Collect data up to what time in femtoseconds: 1000
+Collect pess [1], nacts [2], or both [3]: 3
 nexmd/NEXMD1/1000 1000.00
 nexmd/NEXMD1/1004 1000.00
 nexmd/NEXMD1/1008 1000.00
@@ -834,10 +816,10 @@ An example histogram from the data in \verb+pes_hop_ensemble.out+ is shown in Fi
         \caption{\small (Left) Histogrammed data of energy gaps, $|\Delta\text{PES}_{ij}|=|E_{j}-E_{i}|$ for $ij=\{87, 76\}$, at all time-steps in a 1000 trajectory ensemble, where each trajectory is 1.0 ps in length.  (Right) Histogrammed data of the same energy gaps, but only at hops $8\rightarrow7$ and $7\rightarrow6$, respectively.  The number of hops $8\rightarrow7$ and $7\rightarrow6$ are 3044 and 573, respectively.}
 \label{peshist}
 \end{figure}
-In this example, hops from $8\rightarrow7$ and $7\rightarrow6$ as a function of their energy gap are histogrammed.  The number of hops $8\rightarrow7$ is 3044, whereas the number of hops $7\rightarrow6$ is 573.  The energy gap, $|\Delta\text{PES}_{87}|$, is noticeably smaller than $|\Delta\text{PES}_{87}|$, which is likely correlated to the large difference in the number of hops.
+In this example, hops from $8\rightarrow7$ and $7\rightarrow6$ as a function of their energy gap are histogrammed.  The number of hops $8\rightarrow7$ is 3044, whereas the number of hops $7\rightarrow6$ is 573.  The energy gap, $|\Delta\text{PES}_{87}|$, is noticeably smaller than $|\Delta\text{PES}_{76}|$, which is likely correlated to the large difference in the number of hops.
 
 \subsection{Geometry Analysis}
-There may be conformational changes of the molecule due to photoinduced dynamics.  This can be analyzed as a function of a time.  There are several geometrical quantities that can be calculated with \verb+getexcited.py+, which include dihedrals, bond lengths, and bond length alternations (BLA).  \textit{Dihedral:} The dihedral is calculated from four atoms, where the first three atoms define one plane and the last three atoms define the other plane.  The dihedral is defined as the positive angle between these planes and ranges from 0 to 180 degrees.  \textit{Bond length:} The bond length is calculated using Pythagorean theorem.  \textit{BLA:} BLA is calculated from four atoms giving three consecutive bond lengths, where the first and third have the same bond order and the second has a different bond order.  The BLA is defined as $\left(d_{1}+d_{3}\right)/2 - d_{2}$, where $d_{i}$ is the $i^{\text{th}}$ bond length.  An example of calculating the mean dihedral angle as a function of time over all trajectories is shown below.  The four atoms defining the dihedral are shown below.
+There may be conformational changes of the molecule due to photoinduced dynamics.  This can be analyzed as a function of a time.  There are several geometrical quantities that can be calculated with \verb+getexcited.py+, which include dihedrals, bond lengths, bond length alternations (BLA), and the angle between two bonds.  \textit{Dihedral:} The dihedral is calculated from four atoms, where the first three atoms define one plane and the last three atoms define the other plane.  The dihedral is defined as the positive angle between these planes and ranges from 0 to 180 degrees.  \textit{Bond length:} The bond length is calculated using Pythagorean theorem.  \textit{BLA:} BLA is calculated from four atoms giving three consecutive bond lengths, where the first and third have the same bond order and the second has a different bond order.  The BLA is defined as $\left(d_{1}+d_{3}\right)/2 - d_{2}$, where $d_{i}$ is the $i^{\text{th}}$ bond length.  Finally, the angle between two bonds is calculated using three atoms.  The angle is calculated as the angle between the two vectors that define the bonds originating from the central atom terminating on the outlying atoms.  An example of calculating the mean dihedral angle as a function of time over all trajectories is shown below.  The four atoms defining the dihedral are shown below.
 \begin{figure}[h]
 	\centering 
 	\includegraphics[scale=.50]{asymm_dihedral.png}
@@ -861,8 +843,7 @@ Select a task from the following list:
 [9] Access options for geometry analysis
 [10] Access options for dipole analysis
 [11] Access options for transition density analysis
-[12] Access options for pump-push-probe spectroscopy (*** UNDER DEVELOPMENT, DO NOT USE ***)
-[13] Access code testing tools
+[12] Access code testing tools
 
 Enter the number corresponding to the desired task: 9
 
@@ -871,16 +852,18 @@ Select a task from the following list:
 [1] Calculate a dihedral angle
 [2] Calculate a bond length
 [3] Calculate a bond length alternation
+[4] Calculate angle between two bonds
 
 Enter the number corresponding to the desired task: 1
 Calculating a dihedral angle as a function of time.
 Calculate a dihedral along one trajectory or an ensemble of trajectories? 
-Answer ONE [1] or ENSEMBLE [0]: 0
-Ensemble directory [e.g. nexmd]: nexmd_opt
+Answer one [1] or ensemble [0]: 0
+Ensemble directory [e.g. NEXMD]: nexmd_opt
 Ouput mean dihedral in time or output dihedrals at all time-steps and trajectories? 
-Answer MEAN [0] or ALL [1]: 0
+Answer mean [0] or all [1]: 0
 Calculate dihedral up to what time in femtoseconds?
-Note that averaged results will only include trajectories that are complete up to this time: 1000
+Note that averaged results will only include trajectories that are complete
+up to this time: 1000
 Input the line numbers labeling the coordinates of the four atoms.
 Input an array of the form [ .., .., .., .. ]: [1,2,3,4]
 nexmd/NEXMD1/1000 1000.00
@@ -894,14 +877,14 @@ Total Trajectories: 1000
 Completed Trajectories: 1000
 Excellent Trajectories: 1000
 [sifain@wc-fe1 realistic]$ ls
-dihedral.out  getexcited.py  gsdynamics  nexmd  singlepoint
+dihedral_mean_ensemble.out  getexcited.py  gsdynamics  nexmd  singlepoint
 \end{lstlisting}
 
 \newpage
 \subsection{Dipole Analysis}
 \label{dipanalysis}
 
-The dipole moment of the molecule can be tracked as a function of time throughout its excited state dynamics.  Given the occupied state at a given time-step, the dipole of that state can be extracted from the standard output file.  Note that in order for permanent (or total) dipole data to be available in the standard output file, the user must set \verb+printdipole = 1+ or more.  Dipole analysis can be done on a single trajectory (\verb+permdipole_raw_single.out+) or an ensemble of trajectories.  For the latter, the mean over all trajectories (\verb+permdipole_mean_ensemble.out+) or the raw data over all trajectories and time-steps (\verb+permdipole_raw_ensemble+) may be requested.  In \verb+permdipole_raw_single.out+ and \verb+permdipole_mean_ensemble.out+, columns from left to right are: time (fs) and dipole moment (Debye).  For the latter, there is third column with standard deviation.  Columns in \verb+permdipole_raw_ensemble.out+ are the same as those in \verb+permdipole_raw_single.out+ except that the first column is trajectory directory.   {\textit{Note that this function only works for excited-state dynamics, and that the dipole moment of the ground state is not yet available.}}  An example of calculating the mean dipole as a function of time is shown below.
+The dipole moment of the molecule can be tracked as a function of time throughout its excited state dynamics.  Given the occupied state at a given time-step, the dipole of that state can be extracted from the standard output file.  Note that in order for permanent (or total) dipole data to be available in the standard output file, the user must set \verb+printdipole = 1+ or more.  Dipole analysis can be done on a single trajectory (\verb+DIPOLE_raw_single.out+) or an ensemble of trajectories.  For the latter, the mean over all trajectories (\verb+DIPOLE_mean_ensemble.out+) or the raw data over all trajectories and time-steps (\verb+DIPOLE_raw_ensemble+) may be requested.  Furthermore, getexcited.py can collect either the ground-state dipole moment, the transition dipole moment, or the excited-state dipole moment. (DIPOLE = gsdipole, transdipole, or excdipole)  Along with collecting the dipole moment, getexcited.py can calculate the angle between the dipole moment and a user-defined vector calculated using the postion of two atoms.  Finally, in \verb+DIPOLE_raw_single.out+, columns from left to right are: time (fs), dipole moment (x,y,z components and total moment in Debye), and angle between the dipole and the user-defined vector.  For \verb+DIPOLE_mean_ensemble.out+, the columns are time (fs), dipole moment (Debye), standard deviation, angle between the dipole and a user-defined vector, and standard deviation.  Columns in \verb+DIPOLE_raw_ensemble.out+ are the same as those in \verb+DIPOLE_raw_single.out+ except that the first column lists the trajectory's directory.  An example of calculating the mean dipole as a function of time is shown below.
 
 \begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
 [sifain@wc-fe1 realistic]$ ls
@@ -921,24 +904,31 @@ Select a task from the following list:
 [9] Access options for geometry analysis
 [10] Access options for dipole analysis
 [11] Access options for transition density analysis
-[12] Access options for pump-push-probe spectroscopy (*** UNDER DEVELOPMENT, DO NOT USE ***)
-[13] Access code testing tools
+[12] Access code testing tools
 
 Enter the number corresponding to the desired task: 10
 
 Select a task from the following list:
 
-[1] Collect excited-state permanent dipole moment
+[1] Collect ground-state dipole moment
+[2] Collect transition dipole moment
+[3] Collect excited-state dipole moment
 
 Enter the number corresponding to the desired task: 1
-Calculating the permanent dipole moment as a function of time.
+Calculating the ground-state dipole moment as a function of time.
 Calculate dipole moment along one trajectory or an ensemble of trajectories?
-Answer ONE [1] or ENSEMBLE [0]: 0
-Ensemble directory [e.g. nexmd]: nexmd/0009
+Answer one [1] or ensemble [0]: 0
+Ensemble directory [e.g. NEXMD]: nexmd
 Output mean dipole in time or output dipoles at all time-steps and trajectories?
-Answer MEAN [0] or ALL [1]: 0
+Answer mean [0] or all [1]: 0
 Calculate dipole up to what time in femtoseconds?
-Note that averaged results will only include trajectories that are complete up to this time: 1000
+Note that averaged results will only include trajectories that are complete
+up to this time: 1000
+Find the angle between the dipole and a user-defined vector on the molecule?
+Answer yes [1] or no [0]:1
+Input an array of the form [atom1, atom2], where atom# = 
+line number of atom (0 is the first line)
+These two atoms will be used to construct a vector:[0,1]
 Checking permanent dipole moments and states.  Please wait ...
 nexmd/NEXMD1/0041 dipole lines in md.out found
 nexmd/NEXMD1/0041 dipoles in md.out extracted
@@ -949,6 +939,13 @@ nexmd/NEXMD5/29895 dipole lines in md.out found
 nexmd/NEXMD5/29895 dipoles in md.out extracted
 nexmd/NEXMD5/29954 dipole lines in md.out found
 nexmd/NEXMD5/29954 dipoles in md.out extracted
+Checking coordinate files for vector generation.  Please wait ...
+nexmd/NEXMD1/0041 user-defined vector from coords.xyz extracted
+nexmd/NEXMD1/0100 user-defined vector from coords.xyz extracted
+(*@{\vdots\vspace*{3pt}}@*)
+nexmd/NEXMD5/29895 user-defined vector from coords.xyz extracted
+nexmd/NEXMD5/29954 user-defined vector from coords.xyz extracted
+Collecting mean dipole moment from ensemble.  Please wait ...
 nexmd/NEXMD1/0041 1000.00
 nexmd/NEXMD1/0100 1000.00
 (*@{\vdots\vspace*{3pt}}@*)
@@ -958,7 +955,7 @@ Total Trajectories: 0508
 Completed Trajectories: 0508
 Excellent Trajectories: 0508
 [sifain@wc-fe1 nexmd_solvent]$ ls
-getexcited.py    gsdynamics     nexmd    permdipole.out    singlepoint
+getexcited.py    gsdynamics     nexmd    gsdipole_mean_ensemble.out    singlepoint
 \end{lstlisting}
 
 \newpage
@@ -978,7 +975,7 @@ break
 8
 \end{lstlisting}
 
-In this example, the molecule contains 8 atoms and is split in half where the first four atoms between \verb+&coord+ and \verb+&endcoord+ define one fragment and the remaining atoms define the other fragment.  TD analysis can be done on a single trajectory (\verb+td_single.out+) or an ensemble of trajectories.  For the latter, the mean over all trajectories (\verb+td_mean_ensemble.out+) or the raw data over all trajectories and time-steps (\verb+td_raw_ensemble+) may be requested.  In \verb+td_single.out+ and \verb+td_mean_ensemble.out+, columns from left to right are: time (fs), followed by the occupations of all fragements in the same order as they were defined in the user-generated fragment file, followed by the sum of all contributions (should be equal to 1.0).  Columns in \verb+td_raw_ensemble.out+ are the same as those in \verb+td_mean_ensemble.out+ except that the first column is trajectory directory.  An example of performing TD analysis is shown below.
+In this example, the molecule contains 8 atoms and is split in half where the first four atoms between \verb+&coord+ and \verb+&endcoord+ define one fragment and the remaining atoms define the other fragment.  TD analysis can be done on a single trajectory (\verb+td_single.out+) or an ensemble of trajectories.  For the latter, the mean over all trajectories (\verb+td_mean_ensemble.out+) or the raw data over all trajectories and time-steps (\verb+td_raw_ensemble.out+) may be requested.  In \verb+td_mean_ensemble.out+, columns from left to right are: time (fs), followed by the occupations of all fragments in the same order as they were defined in the user-generated fragment file, followed by the sum of all contributions (should be equal to 1.0), followed by the width of the exciton center of mass.  Columns in \verb+td_raw_ensemble.out+ and \verb+td_single.out+ are the same as those in \verb+td_mean_ensemble.out+ except for the addition of one column that lists the trajectory's directory.  An example of performing TD analysis is shown below.
 \begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
 [sifain@wc-fe1 realistic]$ ls
 frag_HH_asymm  getexcited.py  gsdynamics  nexmd  singlepoint
@@ -997,8 +994,7 @@ Select a task from the following list:
 [9] Access options for geometry analysis
 [10] Access options for dipole analysis
 [11] Access options for transition density analysis
-[12] Access options for pump-push-probe spectroscopy (*** UNDER DEVELOPMENT, DO NOT USE ***)
-[13] Access code testing tools
+[12] Access code testing tools
 
 Enter the number corresponding to the desired task: 11
 
@@ -1007,13 +1003,16 @@ Select a task from the following list:
 [1] Analyze occupancy according to diagonal elements of the transition density matrix
 
 Enter the number corresponding to the desired task: 1
-Calculating occupation of excitation as a function of time according to transition densities.
+Calculating occupation of excitation as a function of time 
+according to transition densities.
 Calculate occupation along one trajectory or an ensemble of trajectories?
-Answer ONE [1] or ENSEMBLE [0]: 0
-Ensemble directory [e.g. nexmd]: nexmd
+Answer one [1] or ensemble [0]: 0
+Ensemble directory [e.g. NEXMD]: nexmd
 Output mean occupation in time, at all time-steps and trajectories, 
-or up to some user-defined time? Answer MEAN [0], ALL [1], or USER-DEFINED [2]: 0
-Directory with an input.ceon file for coordinates, do not include input.ceon in the path: 
+or up to some user-defined time? Answer mean [0], all [1],
+or user-defined [2]: 0
+Directory with an input.ceon file for coordinates, 
+do not include input.ceon in the path: 
 nexmd/NEXMD1/0041
 Directory with fragment file, include name of file in the path: frag_HH_asymm
 Calculate occupation up to what time in femtoseconds?
@@ -1057,10 +1056,9 @@ Select a task from the following list:
 [9] Access options for geometry analysis
 [10] Access options for dipole analysis
 [11] Access options for transition density analysis
-[12] Access options for pump-push-probe spectroscopy (*** UNDER DEVELOPMENT, DO NOT USE ***)
-[13] Access code testing tools
+[12] Access code testing tools
 
-Enter the number corresponding to the desired task: 13
+Enter the number corresponding to the desired task: 12
 Select a task from the following list:
 
 [1] Collect timing data from trajectories.
@@ -1076,6 +1074,15 @@ nexmd/NEXMD1/0159
 nexmd/NEXMD5/29836
 nexmd/NEXMD5/29895
 nexmd/NEXMD5/29954
+ Collecting time....
+nexmd/NEXMD1/0041
+nexmd/NEXMD1/0100
+nexmd/NEXMD1/0159
+(*@{\vdots\vspace*{3pt}}@*)
+nexmd/NEXMD5/29836
+nexmd/NEXMD5/29895
+nexmd/NEXMD5/29954
+Total number of trajectories:0508
 Mean Total CPU [s]: 051718
 Mean Ground State [s]: 001269
 Mean Excited States [s]: 006342
@@ -1085,37 +1092,10 @@ sifain@wc-fe1 realistic]$ ls
 getexcited.py    gsdynamics     nexmd    singlepoint    timing.out
 \end{lstlisting}
 
-\newpage
-\section{Submitting Jobs}
-\label{submit}
-Jobs submissions can be categorized as either single trajectory or an ensemble of trajectories.  The former, for example, is used for the long ground-state trajectory described in Subsection \ref{gstraj}.  The submission scripts discussed herein are specific to Slurm-based HPC systems.  They can be translated and used with other job schedulers, but these changes must be made by the user.  To submit a single trajectory, the \verb+nexmd_single.csh+ script may be used in the same directory where \verb+input.ceon+ is located.  You must open \verb+nexmd_single.csh+ and change the specifications of the job, such as \verb+walltime+, \verb+jobname+, etc.  Once this step is complete, simply type \verb+sbatch+ \verb+nexmd_single.csh+ in the terminal.  A job ID will appear in the terminal.  
-
-To obtain meaningful non-adiabatic results, an ensemble of trajectories must be calculated.  Two scripts are used to submit an ensemble of trajectories, \verb+launch_batch.csh+ and \verb+nexmd_batch.csh+.  The former reads the list of trajectories in \verb+dirlist+ located in each \verb+NEXMD+ directory and calls \verb+nexmd_batch.csh+, which then submits a trajectory to each processor (typically 16 processors per node).  The \verb+nexmd_batch.csh+ script can be stored in a home directory, while the \verb+launch_batch.csh+ script must be executed in each \verb+NEXMD+ folder.  You must open \verb+launch_batch.csh+ and change the path to where \verb+nexmd_batch.csh+ is located.  Similarly, you must also open \verb+nexmd_batch.csh+ and change the job specifications accordingly. An example of submitting an ensemble of trajectories is shown below.
-\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
-[sifain@wc-fe1 NEXMD1]$ ls
-0001  0067  0191  0244  0324  0408  0491  0574  0702  0837  0919  1000
-0015  0072  0196  0259  0326  0411  0509  0580  0742  0841  0931  dirlist
-0031  0074  0209  0272  0377  0430  0523  0586  0750  0843  0934  dirlist1
-0034  0078  0220  0291  0380  0435  0527  0595  0769  0861  0936
-0045  0083  0227  0292  0381  0439  0534  0596  0786  0863  0945
-0051  0125  0229  0293  0395  0440  0552  0647  0805  0884  0957
-0052  0127  0234  0306  0400  0441  0556  0664  0808  0896  0965
-0053  0162  0235  0311  0402  0467  0561  0689  0818  0916  0981
-0057  0186  0236  0322  0405  0485  0562  0697  0823  0917  0989
-[sifain@wc-fe1 NEXMD1]$ /lustre/scratch1/turquoise/sifain/bin/launch_batch.csh
-Submitted batch job 213991
-Submitted batch job 213992
-Submitted batch job 213993
-Submitted batch job 213994
-Submitted batch job 213995
-Submitted batch job 213996
-Submitted batch job 213997
-\end{lstlisting}
-In the example shown above, there are 100 trajectories in \verb+NEXMD1+.  The trajectories are sent to a total of 7 nodes.  The first 6 nodes contain $6\times16=96$ trajectories, while the $7^{\text{th}}$ node contains 4 trajectories.
   
 \section{Restarting Simulations}
 \label{restart}
-Non-adiabatic trajectories may not finish within the user-defined number of classical steps for several reasons such as (1) the computing system may have a time-limit that is less than the time to complete a trajectory, (2) the defined wall-time may not be long enough to complete the trajectory, or (3) a problem in the computing system may cause jobs to stop before completion.  In any case, trajectories may be restarted from the last time-step, as long as the last excited-state, nuclear coordinates and velocities, and quantum coefficients are known.  These quantities are available in \verb+restart.out+.  To prepare restart input files, type \verb+python getexcited.py+.  The contents of \verb+restart.out+ are inserted into a new input file, which will be called \verb+input.ceon+.  Within each \verb+NEXMD+ folder is a file called \verb+dirlist+, which lists the trajectories that are to be restarted.  During every iteration of generating restart input files a new random seeds list, called \verb+rseedslist#+, will be generated in the current working directory, where \verb+#+ refers to the iteration.  Note: It is important that the input file and list of directories for the current job submission be given the names \verb+input.ceon+ and \verb+dirlist+, respectively, as these are how they are defined in the job submission script.  If you wish to append results of the restarted trajectory to the previous standard output (e.g. \verb+md.out+), it is important to change the output command in the submission script (e.g. \verb+nexmd_batch.csh+) from \verb+>+ \verb+md.out+ to \verb+>>+ \verb+md.out+.  \textit{Before restarting trajectories, it is important to check the end of their standard output files, as there may be error messages giving reasons as to why they failed to complete.  In these cases, restarting trajectories may be irrelavant, as the same error message may reappear.}  An example of preparing restart input files is shown below.
+Non-adiabatic trajectories may not finish within the user-defined number of classical steps for several reasons such as (1) the computing system may have a time-limit that is less than the time to complete a trajectory, (2) the defined wall-time may not be long enough to complete the trajectory, or (3) a problem in the computing system may cause jobs to stop before completion.  In any case, trajectories may be restarted from the last time-step, as long as the last excited-state, nuclear coordinates and velocities, and quantum coefficients are known.  These quantities are available in \verb+restart.out+.  To prepare restart input files type \verb+python getexcited.py+.  The contents of \verb+restart.out+ are inserted into a new input file, which will be called \verb+input.ceon+.  Within each \verb+NEXMD+ folder is a file called \verb+dirlist+, which lists the trajectories that are to be restarted.  During every iteration of generating restart input files a new random seeds list, called \verb+rseedslist#+, will be generated in the current working directory, where \verb+#+ refers to the iteration.  If you wish to append results of the restarted trajectory to the previous standard output (e.g. \verb+md.out+), it is important to change the output command in the submission script (e.g. \verb+nexmd_batch.csh+) from \verb+>+ \verb+md.out+ to \verb+>>+ \verb+md.out+.  The getexcited.py script will automatically move the input file to input.ceonX where X is the number of times the calculation had to restart.  \textit{Before restarting trajectories it is important to check the end of their standard output files as there may be error messages giving reasons as to why they failed to complete.  In these cases, restarting trajectories may be irrelevant as the same error message may reappear.}  An example of preparing restart input files is shown below.
 \begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
 [sifain@wc-fe1 realistic]$ ls
 ceo_gauss.out  getexcited.py  gsdynamics  nexmd  pop.out  singlepoint
@@ -1138,18 +1118,22 @@ Select a task from the following list:
 [9] Access options for geometry analysis
 [10] Access options for dipole analysis
 [11] Access options for transition density analysis
-[12] Access options for pump-push-probe spectroscopy (*** UNDER DEVELOPMENT, DO NOT USE ***)
-[13] Access code testing tools
+[12] Access code testing tools
 
 Enter the number corresponding to the desired task: 7
 Preparing restart input files for NEXMD.
-NEXMD directory: nexmd 
+Restart a single trajectory or an ensemble of trajectories?
+Answer one [1] or ensemble [0]:0
+Input the number of times you have restarted the trajectories?
+e.g. 1 if this is the first time you have run a restart:1
+Ensemble directory[e.g. NEXMD]: nexmd 
 Currently, trajectories are set up to run for 50 
 classical steps with a time-step of 0.10 fs.
 This is a total of 5.00 fs.
 Keep this trajectory length? Answer YES [1] or NO [0]: 0
 Enter new number of classical time-steps: 100
 New random seeds? Answer YES [1] or NO [0]: 1
+Searching for incomplete trajectories and preparing input iles.
 nexmd/NEXMD1/0002
 nexmd/NEXMD1/0009
 nexmd/NEXMD1/0016
@@ -1157,6 +1141,7 @@ nexmd/NEXMD1/0016
 nexmd/NEXMD1/0987
 nexmd/NEXMD1/0989
 nexmd/NEXMD1/0996
+Continue to delete extraneous data in output files? Answer yes [1] or no [0]:1
 Deleting extraneous data in output files. Please wait ...
 [sifain@wc-fe1 realistic]$ cd nexmd/
 [sifain@wc-fe1 nexmd]$ ls
@@ -1182,18 +1167,23 @@ Select a task from the following list:
 [9] Access options for geometry analysis
 [10] Access options for dipole analysis
 [11] Access options for transition density analysis
-[12] Access options for pump-push-probe spectroscopy (*** UNDER DEVELOPMENT, DO NOT USE ***)
-[13] Access code testing tools
+[12] Access code testing tools
 
 Enter the number corresponding to the desired task: 7
 Preparing restart input files for NEXMD.
-NEXMD directory: nexmd 
+Restart a single trajectory or an ensemble of trajectories?
+Answer one [1] or ensemble [0]:0
+Input the number of times you have restarted the trajectories?
+e.g. 1 if this is the first time you have run a restart. 1
+Ensemble directory [e.g. NEXMD]: nexmd 
 Currently, trajectories are set to run for 100 
 classical steps with a time-step of 0.10 fs.
 This is a total of 10.00 fs.
-Keep this trajectory length? Answer YES [1] or NO [0]: 1
-New random seeds? Answer YES [1] or NO [0]: 0
-Path to random-seeds list (** must be different from past random seeds **): rseedslist 
+Keep this trajectory length? Answer yes [1] or no [0]: 1
+New random seeds? Answer yes [1] or no [0]: 0
+Path to random-seeds list
+(** must be different from past random seeds **): rseedslist
+Searching for incomplete trajectories and preparing input files 
 nexmd/NEXMD1/0002
 nexmd/NEXMD1/0015
 nexmd/NEXMD1/0020
@@ -1201,14 +1191,23 @@ nexmd/NEXMD1/0020
 nexmd/NEXMD1/0984
 nexmd/NEXMD1/0988
 nexmd/NEXMD1/1000
+Continue to delete extraneous data in output files? Answer yes [1] or no [0]:1
 Deleting extraneous data in output files. Please wait ...
+nexmd/NEXMD1/0002
+nexmd/NEXMD1/0015
+nexmd/NEXMD1/0020
+(*@{\vdots\vspace*{3pt}}@*)
+nexmd/NEXMD1/0984
+nexmd/NEXMD1/0988
+nexmd/NEXMD1/1000
+A total of 508 trajectories have been prepared for restart.
 [sifain@wc-fe1 realistic]$ cd nexmd/
 [sifain@wc-fe1 nexmd]$ ls
 header  NEXMD1  rseedslist  rseedslist1
 \end{lstlisting}
 
 \section{Complete Restart of Unfinished Trajectories}
-At times, you may experience strange behavior on your computing system.  Depending on the scenario, it may be best to restart trajectories from the initial time.  This is different from starting a trajectory from the last-generated time-step, as that explained in Section \ref{restart}.  To remove all the files for each trajectory that did not finish, use \verb+getexcited.py+.  The \verb+input.ceon+ file is the only file that is not removed.  If the trajectory is complete, no files are removed.  A new \verb+dirlist+ is generated with a list of trajectories.  The job submission script reads \verb+dirlist+ and runs the trajectories listed therein.  \textit{You must be certain that a complete restart of unfinished trajectories is desired before accessing this option!}  An example of deleting unfinished trajectories is shown below.
+At times, you may experience strange behavior on your computing system.  Depending on the scenario it may be best to restart trajectories from the initial time.  This is different from starting a trajectory from the last-generated time-step as that explained in Section \ref{restart}.  To remove all the files for each trajectory that did not finish use \verb+getexcited.py+.  The \verb+input.ceon+ file is the only file that is not removed.  If the trajectory is complete, no files are removed.  A new \verb+dirlist+ is generated with a list of trajectories.  A job submission script can read \verb+dirlist+ and runs the trajectories listed therein.  \textit{You must be certain that a complete restart of unfinished trajectories is desired before accessing this option!}  An example of deleting unfinished trajectories is shown below.
 \begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
 [sifain@wc-fe1 realistic]$ ls
 ceo_gauss.out  getexcited.py  gsdynamics  nexmd  singlepoint
@@ -1227,16 +1226,15 @@ Select a task from the following list:
 [9] Access options for geometry analysis
 [10] Access options for dipole analysis
 [11] Access options for transition density analysis
-[12] Access options for pump-push-probe spectroscopy (*** UNDER DEVELOPMENT, DO NOT USE ***)
-[13] Access code testing tools
+[12] Access code testing tools
 
 Enter the number corresponding to the desired task: 8
 Cleaning directories of unfinished trajectories.
 Are you sure you want to delete all unfinished trajectories?
-Answer YES [1] or NO [0]: 1
+Answer yes [1] or no [0]: 1
 NEXMD directory: nexmd 
 Trajectories less than 200 classical time-steps will be deleted.
-Continue? Answer YES [1] or NO [0]: 1
+Continue? Answer yes [1] or no [0]: 1
 nexmd/NEXMD1/0001
 nexmd/NEXMD1/0015
 nexmd/NEXMD1/0031
@@ -1249,17 +1247,23 @@ The contents of 2 trajectories have been deleted.
 
 \section{Output Files}
 \begin{itemize}
-\item \verb+coords.xyz+, \verb+velocity.out+, and \verb+coefficient.out+ contain the coordinates in angstroms (\AA), velocities in angstroms per femtosecond (\AA/fs), and coefficients of the system as a function of time, respectively.  These data are written to their respective files at a rate which was specified in \verb+out_data_steps+ and \verb+out_coords_steps+ under \verb+Output+ \verb+&+ \verb+Log+ \verb+Parameters+.  The \verb+coords.xyz+ file can be read by several molecular visualization tools.
-\item \verb+restart.out+ contains the coordinates, velocities, coefficients, and residing PES at the last-generated time-step.  This file is used to generate restart input files.
+\item \verb+coords.xyz+, \verb+velocity.out+, and \verb+coefficient.out+ contain the coordinates in angstroms (\AA), velocities in angstroms per femtosecond (\AA/ps), and coefficients of the system as a function of time, respectively.  These data are written to their respective files at a rate which was specified in \verb+out_data_steps+ and \verb+out_coords_steps+ under \verb+Output+ \verb+&+ \verb+Log+ \verb+Parameters+.  The \verb+coords.xyz+ file can be read by several molecular visualization tools.
+\item \verb+energy-ev.out+ contains the kinetic energy, potential energy, and total energy of the system, and their respective changes  from the initial time step all in eV.
+\item \verb+cm.out+ contains the coordinates of the center of mass with respect to the initial time step.
+\item \verb+restart.out+ contains the coordinates, velocities, quantum populations, and residing PES at the last-generated time-step.  This file is used to generate restart input files.
 \item \verb+pes.out+ contains PESs of all states being propagated as a function of time.  The first two columns are time in femtoseconds and ground-state energy in eV, respectively.  The remaining columns are excited-state energies in eV from $\ket{1}$ to $\ket{N}$, respectively, where $N$ is the number of states being propagated.
 \item \verb+nact.out+ contains the non-adiabatic coupling terms between all pairs of states.  The non-adiabatic coupling between states $\ket{\alpha}$ and $\ket{\beta}$ is defined as $\dot{{\bf{R}}}\cdot{\bf{d}}_{\alpha\beta}$, where $\dot{{\bf{R}}}$ is velocity and ${\bf{d}}_{\alpha\beta}$ is the non-adiabatic coupling vector between states $\ket{\alpha}$ and ${\ket{\beta}}$.  The first column is time in femtoseconds.  The remaining columns are consecutive rows of the non-adiabatic coupling matrix.  For example, if 2 states were being propagated, the output would be $\dot{{\bf{R}}}\cdot{\bf{d}}_{\alpha\beta}$ for $\alpha\beta=11$, $12$, $21$, and $22$, respectively.  The diagonal terms of the non-adiabatic coupling are zero and the non-adiabatic coupling vector matrix is anti-Hermitian such that ${\bf{d}}=-{\bf{d}}^{\dagger}$ or ${\bf{d}}_{\alpha\beta}=-{\bf{d}}_{\beta\alpha}^{*}$.
 \item \verb+temperature.out+ contains the temperature of the system as a function of time.  The temperature is calculated from the total nuclear kinetic energy.  The first column is time in femtoseconds, the second column is the temperature of the system in Kelvin, and the third column is the set temperature of the thermostat in Kelvin.
-\item \verb+hops-trial.out+ contains attempted and successful hops throughout the trajectory.  Hops may be rejected due to energy conservation.  This occurs when dispensable nuclear kinetic energy does not exceed the energy barrier between the residing and target surfaces.  Therefore, rejected hops can only occur when the target surface lies above the residing surface.  The first column is the time at which attempted hops occur in femtoseconds, the second column is the target surface, and the third column labels type of hops, where \verb+0+ is a successful hop, \verb+1+ is a rejected hop with no decoherence event, and \verb+2+ is a rejected hop with a decoherence event.  The latter two depend on whether the \verb+decoher_type+ was set to \verb+1+ or \verb+2+ under \verb+Non-Adiabatic+ \verb+Parameters+ of the \verb+input.ceon+ file.  The wavefunction also decoheres at hops of type \verb+0+ if \verb+decoher_type=1+ or \verb+2+.
-\item \verb+coeff-n.out+ contains the residing surface as a function of time, as well as populations of all excited-states being propagated.  The first two columns are residing surface and time in femtoseconds, respectively.  The remaining columns are excited-state populations from $\ket{1}$ to $\ket{N}$, respectively, where $N$ is the number of states being propagated.  The last column is the sum of all populations, which should be approximately 1.0.
-\item \verb+force.out+ contains the forces along the $x$, $y$, and $z$ directions for each atom in the system as a function of time.  In order for force data to be outputted to \verb+force.out+, \verb+verbosity+ under \verb+Output+ \verb+and+ \verb+Log+ \verb+Parameters+ must be set to \verb+3+.  The unit of force is eV/\AA.
+\item \verb+hops-trial.out+ contains attempted and successful hops throughout the trajectory.  Hops may be rejected due to energy conservation.  This occurs when dispensable nuclear kinetic energy does not exceed the energy barrier between the residing and target surfaces.  Therefore, rejected hops can only occur when the target surface lies above the residing surface.  The first column is the time at which attempted hops occur in femtoseconds, the second column is the target surface, and the third column labels the type of hop, where \verb+0+ is a successful hop, \verb+1+ is a rejected hop with no decoherence event, and \verb+2+ is a rejected hop with a decoherence event.  The latter two depend on whether the \verb+decoher_type+ was set to \verb+1+ or \verb+2+ under \verb+Non-Adiabatic+ \verb+Parameters+ of the \verb+input.ceon+ file.  The wavefunction also decoheres at hops of type \verb+0+ if \verb+decoher_type=1+ or \verb+2+.
+\item \verb+hops.out+ contains all the successful hops and trivial crossings throughout the trajectory.  The first column contains the time, the second column contains a number, where 0 corresponds to a successful hops, 2 corresponds to a trivial crossing, and 1 corresponds to points where a trivial crossing was possible, a point in time that warranted a reduction in the quantum step.  
+\item \verb+coeff-q.out+ contains the phase of each quantum coefficient as a function of time.
+\item \verb+coeff-n.out+ contains the residing surface as a function of time, as well as the populations of all excited-states being propagated.  The first two columns are the residing surface and time in femtoseconds, respectively.  The remaining columns are excited-state populations from $\ket{1}$ to $\ket{N}$, respectively, where $N$ is the number of states being propagated.  The last column is the sum of all populations, which should be approximately 1.0.
+\item \verb+forces.out+ contains the forces along the $x$, $y$, and $z$ directions for each atom in the system as a function of time.  In order for force data to be outputted to \verb+force.out+, \verb+verbosity+ under \verb+Output+ \verb+and+ \verb+Log+ \verb+Parameters+ must be set to \verb+3+.  The unit of force is eV/\AA.
 \item \verb+muab.out+ contains the excited-to-excited dipoles in arbitrary units.  This file is generated when \verb+calcxdens=.true.+ during single-point calculations.  First and second columns label states $\ket{i}$ and $\ket{j}$, respectively.  The third column is the energy difference, $E_{ji} = E_{j}-E_{i}$ in eV.  The following three columns are excited-to-excited dipoles along the $x$, $y$, and $z$ axes, respectively.  The last column is the total dipole moment.
-\item \verb+nacr.out+ contains the nonadiabatic coupling vector.  The $x$, $y$ and $z$ components of the nonadiabatic coupling vector are shown for each atom, at all attempted hops.  This includes successful and unsuccessful hops.  The latter, which are also known as rejected hops, are due to lack of energy conservation. The columns from left to right show the time at which a successful hops occurs, the state before the hop, the state after the hop, the atom number, followed by the nonadiabatic coupling in the $x$, $y$, and $z$ directions, respectively.
+\item \verb+nacr.out+ contains the nonadiabatic coupling vector.  The $x$, $y$ and $z$ components of the nonadiabatic coupling vector are shown for each atom at all attempted hops.  This includes successful and unsuccessful hops.  The latter, which are also known as frustrated hops, are due to lack of energy conservation. The columns from left to right show the atom number followed by the nonadiabatic coupling in the $x$, $y$, and $z$ directions, respectively.
 \item \verb+transition-densities.out+ contains diagonal elements of the transition density as a function of time for each atom in the current excited state.  This file is important for determining where the excitation is localized/delocalized throughout the molecule.  The number of atomic orbitals for each atom is 1 for hydrogen and at most 4 for heavier atoms.  The sequence of the atoms corresponds to the same sequence used in \verb+input.ceon+ between \verb+&coord+ and \verb+&endcoord+.  As an example, the columns from left to right, in \verb+transition-density.out+ for H$_{2}$O (where atoms are listed in this order) would be: time in femtoseconds, 1 column showing occupation of H, 1 column showing occupation of H, and 4 columns showing occupation of O.  It is important to sum the contributions of all atomic orbitals for a single atom.
+\item \verb+order.out+ lists the diabatic order of the excited states with respect to the initial order at the first time step.  The first column is the time.  The next N columns are the N excited states labeled according to the order at the first time step.  The remaining N columns indicate, with a 2, whether a trivial crossing has occurred at a specific state at a certain time step, or, with a 1, whether the quantum time step was reduced.  
+\item \verb+cross-steps.out+ contains the overlap between the hypothetical crossing states. It is written when a reduction of the quantum step is required.  The first column is the time.  The next column is the time at the reduced time step.  The third column is either a 1  or 2, indicating a potential or a confirmed trivial crossing , respectively.  The next two columns are the states involved in the crossing.  The remaining columns are the overlap of states at the reduced quantum step, the original overlap of states that triggered the trivial crossing routine, and the energy difference between the states, in Hartrees, at the reduced quantum step.
 \end{itemize}
 
 \newpage
@@ -1294,20 +1298,14 @@ You must set the convergence criteria with \verb+grms_tol+ and the number of cyc
    printdipole=2, ! (0) Unrelaxed transitions, (1) Unrelaxed transitions plus 
    ! total molecular, or (2) Unrelaxed/relaxed transitions plus 
    ! total molecular [1 for dynamics, 2 for optimization and single-point]
-   printbondorders=0, ! (0) No or (1) Yes [0]
-   ! *** UNDER DEVELOPMENT, DO NOT USE ***
-   density_predict=0, ! (0) None, (1) Reversible MD, 
-   ! or (2) XL-BOMD [0] *** ALL ARE UNDER DEVELOPMENT, DO NOT USE ***
+   density_predict=0, ! (0) None
    itrmax=300, ! Max SCF iterations for ground state 
    ! (negative to ignore convergence) [300]
 
    !***** Excited-State Parameters
    exst_method=1, ! CIS (1) or RPA (2) [1]
-   dav_guess=1, ! Restart Davidson from (0) Scratch, (1) Previous, 
-   ! or (2) XL-BOMD [1] *** (2) IS UNDER DEVELOPMENT, DO NOT USE ***
+   dav_guess=1, ! Restart Davidson from (0) Scratch, (1) Previous
    ftol0=1.0d-7, ! Acceptance tolerance (|emin-eold|) [1.0d-5]
-   ftol1=1.0d-8, ! Acceptance tolerance for residual norm [1.0d-5] 
-   ! *** UNDER DEVELOPMENT, DO NOT USE ***
    dav_maxcyc=200, ! Max cycles for Davidson diagonalization 
    ! (negative to ignore convergence) [100]
    printcharges=0, ! Print (1) or do not print (0) Mulliken charges of QM atoms [0]
@@ -1326,8 +1324,6 @@ You must set the convergence criteria with \verb+grms_tol+ and the number of cyc
    ! SCF tolerance, eV [1.0d-5]
    doZ=.false., ! Use relaxed (.true.) or unrelaxed (.false) density for 
    ! vertical excitation or state-specific COSMO or Onsager [.false.]
-   index_of_refraction=100, ! Dielectric constant for linear response 
-   ! solvent in excited-state, unitless [100] *** UNDER DEVELOPMENT, DO NOT USE ***
    EF=0, ! (0) None or (1) Electric field in ground- and excited-state [0]
    Ex=0, ! Electric field vector X, eV/A [0]
    Ey=0, ! Electric field vector Y, eV/A [0]
@@ -1355,26 +1351,13 @@ You must set the convergence criteria with \verb+grms_tol+ and the number of cyc
    !***** Non-Adiabatic Parameters
    decoher_type=2, ! Type of decoherence: Reinitialize (0) Never, 
    ! (1) At successful hops, (2) At successful plus frustrated hops... 
-   ! (3) Persico/Granucci, or (4) Truhlar [2]
-   ! *** (3) AND (4) ARE UNDER DEVELOPMENT, DO NOT USE ***
-   decoher_e0=0.0, ! Decoherence parameter E0, Hartrees [0.1]
-   ! (only for decoher_type = 3 or 4) *** UNDER DEVELOPMENT, DO NOT USE ***
-   decoher_c=0.0, ! Decoherence parameter C, unitless [0.1]
-   ! (only for decoher_type = 3 or 4) *** UNDER DEVELOPMENT, DO NOT USE ***
    dotrivial=1, ! Do unavoided (trivial) crossing routine (1) or not (0) [1]
    quant_step_reduction_factor=2.5d-2, ! Quantum step reduction factor [2.5d-2]
 
    !***** Thermostat Parameters
-   therm_type=1, ! Thermostat type: (0) Newtonian, (1) Langevin, 
-   ! or (2) Berendsen [1] *** (2) IS UNDER DEVELOPMENT, DO NOT USE ***
+   therm_type=1, ! Thermostat type: (0) Newtonian, (1) Langevin
    therm_temperature=300, ! Thermostat temperature, K [300]
    therm_friction=20, ! Thermostat friction coefficient, 1/ps [20]
-   berendsen_relax_const=0.4, ! Bath relaxation constant for Berendsen 
-   ! thermostat, ps [0.4] *** UNDER DEVELOPMENT, DO NOT USE ***
-   heating=0, ! Equilibrated (0) or heating (1) [0]
-   ! *** UNDER DEVELOPMENT, DO NOT USE ***
-   heating_steps_per_degree=100, ! Number of steps per degree
-   ! during heating [100] *** UNDER DEVELOPMENT, DO NOT USE ***
 
    !***** Output & Log Parameters
    verbosity=3, ! NEXMD output verbosity (0-minimum, 3-maximum)
@@ -1458,20 +1441,14 @@ Besides the ground-state convergence criteria, you must set \verb+bo_dynamics_fl
    printdipole=1, ! (0) Unrelaxed transitions, (1) Unrelaxed transitions plus 
    ! total molecular, or (2) Unrelaxed/relaxed transitions plus 
    ! total molecular [1 for dynamics, 2 for optimization and single-point]
-   printbondorders=0, ! (0) No or (1) Yes [0]
-   ! *** UNDER DEVELOPMENT, DO NOT USE ***
-   density_predict=0, ! (0) None, (1) Reversible MD, 
-   ! or (2) XL-BOMD [0] *** ALL ARE UNDER DEVELOPMENT, DO NOT USE ***
+   density_predict=0, ! (0) None
    itrmax=300, ! Max SCF iterations for ground state 
    ! (negative to ignore convergence) [300]
 
    !***** Excited-State Parameters
    exst_method=1, ! CIS (1) or RPA (2) [1]
-   dav_guess=1, ! Restart Davidson from (0) Scratch, (1) Previous, 
-   ! or (2) XL-BOMD [1] *** (2) IS UNDER DEVELOPMENT, DO NOT USE ***
+   dav_guess=1, ! Restart Davidson from (0) Scratch, (1) Previous
    ftol0=1.0d-7, ! Acceptance tolerance (|emin-eold|) [1.0d-5]
-   ftol1=1.0d-8, ! Acceptance tolerance for residual norm [1.0d-5] 
-   ! *** UNDER DEVELOPMENT, DO NOT USE ***
    dav_maxcyc=200, ! Max cycles for Davidson diagonalization 
    ! (negative to ignore convergence) [100]
    printcharges=0, ! Print (1) or do not print (0) Mulliken charges of QM atoms [0]
@@ -1490,8 +1467,6 @@ Besides the ground-state convergence criteria, you must set \verb+bo_dynamics_fl
    ! SCF tolerance, eV [1.0d-5]
    doZ=.false., ! Use relaxed (.true.) or unrelaxed (.false) density for 
    ! vertical excitation or state-specific COSMO or Onsager [.false.]
-   index_of_refraction=100, ! Dielectric constant for linear response 
-   ! solvent in excited-state, unitless [100] *** UNDER DEVELOPMENT, DO NOT USE ***
    EF=0, ! (0) None or (1) Electric field in ground- and excited-state [0]
    Ex=0, ! Electric field vector X, eV/A [0]
    Ey=0, ! Electric field vector Y, eV/A [0]
@@ -1519,26 +1494,13 @@ Besides the ground-state convergence criteria, you must set \verb+bo_dynamics_fl
    !***** Non-Adiabatic Parameters
    decoher_type=2, ! Type of decoherence: Reinitialize (0) Never, 
    ! (1) At successful hops, (2) At successful plus frustrated hops... 
-   ! (3) Persico/Granucci, or (4) Truhlar [2]
-   ! *** (3) AND (4) ARE UNDER DEVELOPMENT, DO NOT USE ***
-   decoher_e0=0.0, ! Decoherence parameter E0, Hartrees [0.1]
-   ! (only for decoher_type = 3 or 4) *** UNDER DEVELOPMENT, DO NOT USE ***
-   decoher_c=0.0, ! Decoherence parameter C, unitless [0.1]
-   ! (only for decoher_type = 3 or 4) *** UNDER DEVELOPMENT, DO NOT USE ***
    dotrivial=1, ! Do unavoided (trivial) crossing routine (1) or not (0) [1]
    quant_step_reduction_factor=2.5d-2, ! Quantum step reduction factor [2.5d-2]
 
    !***** Thermostat Parameters
-   therm_type=1, ! Thermostat type: (0) Newtonian, (1) Langevin, 
-   ! or (2) Berendsen [1] *** (2) IS UNDER DEVELOPMENT, DO NOT USE ***
+   therm_type=1, ! Thermostat type: (0) Newtonian, (1) Langevin
    therm_temperature=300, ! Thermostat temperature, K [300]
    therm_friction=20, ! Thermostat friction coefficient, 1/ps [20]
-   berendsen_relax_const=0.4, ! Bath relaxation constant for Berendsen 
-   ! thermostat, ps [0.4] *** UNDER DEVELOPMENT, DO NOT USE ***
-   heating=0, ! Equilibrated (0) or heating (1) [0]
-   ! *** UNDER DEVELOPMENT, DO NOT USE ***
-   heating_steps_per_degree=100, ! Number of steps per degree
-   ! during heating [100] *** UNDER DEVELOPMENT, DO NOT USE ***
 
    !***** Output & Log Parameters
    verbosity=2, ! NEXMD output verbosity (0-minimum, 3-maximum)
@@ -1606,7 +1568,7 @@ Shown below is an example input file for a single-point calculation.  Important 
 \item \verb+n_exc_states_propagate=30, ! Number of excited states [0]+
 \item \verb+n_class_steps=0, ! Number of classical steps [1]+
 \end{itemize}
-You must set the ground-state and excited-state convergence criteria in \verb+scfconv+ and \verb+ftol0+, respectively.  The number of cycles for these calculations must also be set with \verb+itrmax+ and \verb+dav_maxcyc+, respectively, but typically, these inputs will not be changed.  The initial excited-state must be set with \verb+exc_state_init+.  For determining the optical absorption from the ground state, as that discussed in Subsections \ref{spcalc} and \ref{optspec}, \verb+exc_state_init=0+.  The number of excited states must be set with \verb+n_exc_states_propagate+.  For single-point calculations, \verb+n_exc_states_propagate+ can be relatively large, and which may be needed to compute a \textit{full} absorption spectrum.  During excited-state dynamics, however, this number should only be as large as a few states above the highest-excited trajectory.  Lastly, \verb+n_class_steps=0+ for single-point calculations.  The \verb+verbosity+ of single-point calculations should be set to at least \verb+1+ in order to obtain energies and oscillators strengths, which are needed to generate the absorption spectrum in Subsection \ref{optspec}.
+You must set the ground-state and excited-state convergence criteria in \verb+scfconv+ and \verb+ftol0+, respectively.  The number of cycles for these calculations must also be set with \verb+itrmax+ and \verb+dav_maxcyc+, respectively, but typically, these inputs will not be changed.  The initial excited-state must be set with \verb+exc_state_init+.  For determining the optical absorption from the ground state, as that discussed in Subsections \ref{spcalc} and \ref{optspec}, \verb+exc_state_init=0+.  The number of excited states must be set with \verb+n_exc_states_propagate+.  For single-point calculations, \verb+n_exc_states_propagate+ can be relatively large, which may be needed to compute a \textit{full} absorption spectrum.  During excited-state dynamics, however, this number should only be as large as a few states above the highest-excited trajectory.  Lastly, \verb+n_class_steps=0+ for single-point calculations.  The \verb+verbosity+ of single-point calculations should be set to at least \verb+1+ in order to obtain energies and oscillators strengths, which are needed to generate the absorption spectrum in Subsection \ref{optspec}.
 \begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
 &qmmm
    !***** Geometry Optimization
@@ -1622,20 +1584,14 @@ You must set the ground-state and excited-state convergence criteria in \verb+sc
    printdipole=2, ! (0) Unrelaxed transitions, (1) Unrelaxed transitions plus 
    ! total molecular, or (2) Unrelaxed/relaxed transitions plus 
    ! total molecular [1 for dynamics, 2 for optimization and single-point]
-   printbondorders=0, ! (0) No or (1) Yes [0]
-   ! *** UNDER DEVELOPMENT, DO NOT USE ***
-   density_predict=0, ! (0) None, (1) Reversible MD, 
-   ! or (2) XL-BOMD [0] *** ALL ARE UNDER DEVELOPMENT, DO NOT USE ***
+   density_predict=0, ! (0) None
    itrmax=300, ! Max SCF iterations for ground state 
    ! (negative to ignore convergence) [300]
 
    !***** Excited-State Parameters
    exst_method=1, ! CIS (1) or RPA (2) [1]
-   dav_guess=1, ! Restart Davidson from (0) Scratch, (1) Previous, 
-   ! or (2) XL-BOMD [1] *** (2) IS UNDER DEVELOPMENT, DO NOT USE ***
+   dav_guess=1, ! Restart Davidson from (0) Scratch, (1) Previous 
    ftol0=1.0d-7, ! Acceptance tolerance (|emin-eold|) [1.0d-5]
-   ftol1=1.0d-8, ! Acceptance tolerance for residual norm [1.0d-5] 
-   ! *** UNDER DEVELOPMENT, DO NOT USE ***
    dav_maxcyc=200, ! Max cycles for Davidson diagonalization 
    ! (negative to ignore convergence) [100]
    printcharges=0, ! Print (1) or do not print (0) Mulliken charges of QM atoms [0]
@@ -1654,8 +1610,6 @@ You must set the ground-state and excited-state convergence criteria in \verb+sc
    ! SCF tolerance, eV [1.0d-5]
    doZ=.false., ! Use relaxed (.true.) or unrelaxed (.false) density for 
    ! vertical excitation or state-specific COSMO or Onsager [.false.]
-   index_of_refraction=100, ! Dielectric constant for linear response 
-   ! solvent in excited-state, unitless [100] *** UNDER DEVELOPMENT, DO NOT USE ***
    EF=0, ! (0) None or (1) Electric field in ground- and excited-state [0]
    Ex=0, ! Electric field vector X, eV/A [0]
    Ey=0, ! Electric field vector Y, eV/A [0]
@@ -1683,26 +1637,13 @@ You must set the ground-state and excited-state convergence criteria in \verb+sc
    !***** Non-Adiabatic Parameters
    decoher_type=2, ! Type of decoherence: Reinitialize (0) Never, 
    ! (1) At successful hops, (2) At successful plus frustrated hops... 
-   ! (3) Persico/Granucci, or (4) Truhlar [2]
-   ! *** (3) AND (4) ARE UNDER DEVELOPMENT, DO NOT USE ***
-   decoher_e0=0.0, ! Decoherence parameter E0, Hartrees [0.1]
-   ! (only for decoher_type = 3 or 4) *** UNDER DEVELOPMENT, DO NOT USE ***
-   decoher_c=0.0, ! Decoherence parameter C, unitless [0.1]
-   ! (only for decoher_type = 3 or 4) *** UNDER DEVELOPMENT, DO NOT USE ***
    dotrivial=1, ! Do unavoided (trivial) crossing routine (1) or not (0) [1]
    quant_step_reduction_factor=2.5d-2, ! Quantum step reduction factor [2.5d-2]
 
    !***** Thermostat Parameters
-   therm_type=1, ! Thermostat type: (0) Newtonian, (1) Langevin, 
-   ! or (2) Berendsen [1] *** (2) IS UNDER DEVELOPMENT, DO NOT USE ***
+   therm_type=1, ! Thermostat type: (0) Newtonian, (1) Langevin
    therm_temperature=300, ! Thermostat temperature, K [300]
    therm_friction=20, ! Thermostat friction coefficient, 1/ps [20]
-   berendsen_relax_const=0.4, ! Bath relaxation constant for Berendsen 
-   ! thermostat, ps [0.4] *** UNDER DEVELOPMENT, DO NOT USE ***
-   heating=0, ! Equilibrated (0) or heating (1) [0]
-   ! *** UNDER DEVELOPMENT, DO NOT USE ***
-   heating_steps_per_degree=100, ! Number of steps per degree
-   ! during heating [100] *** UNDER DEVELOPMENT, DO NOT USE ***
 
    !***** Output & Log Parameters
    verbosity=3, ! NEXMD output verbosity (0-minimum, 3-maximum)
@@ -1786,20 +1727,14 @@ Other important inputs that generally do not need to be changed include: \verb+t
    printdipole=1, ! (0) Unrelaxed transitions, (1) Unrelaxed transitions plus 
    ! total molecular, or (2) Unrelaxed/relaxed transitions plus 
    ! total molecular [1 for dynamics, 2 for optimization and single-point]
-   printbondorders=0, ! (0) No or (1) Yes [0]
-   ! *** UNDER DEVELOPMENT, DO NOT USE ***
-   density_predict=0, ! (0) None, (1) Reversible MD, 
-   ! or (2) XL-BOMD [0] *** ALL ARE UNDER DEVELOPMENT, DO NOT USE ***
+   density_predict=0, ! (0) None
    itrmax=300, ! Max SCF iterations for ground state 
    ! (negative to ignore convergence) [300]
 
    !***** Excited-State Parameters
    exst_method=1, ! CIS (1) or RPA (2) [1]
-   dav_guess=1, ! Restart Davidson from (0) Scratch, (1) Previous, 
-   ! or (2) XL-BOMD [1] *** (2) IS UNDER DEVELOPMENT, DO NOT USE ***
+   dav_guess=1, ! Restart Davidson from (0) Scratch, (1) Previous 
    ftol0=1.0d-7, ! Acceptance tolerance (|emin-eold|) [1.0d-5]
-   ftol1=1.0d-8, ! Acceptance tolerance for residual norm [1.0d-5] 
-   ! *** UNDER DEVELOPMENT, DO NOT USE ***
    dav_maxcyc=200, ! Max cycles for Davidson diagonalization 
    ! (negative to ignore convergence) [100]
    printcharges=0, ! Print (1) or do not print (0) Mulliken charges of QM atoms [0]
@@ -1818,8 +1753,6 @@ Other important inputs that generally do not need to be changed include: \verb+t
    ! SCF tolerance, eV [1.0d-5]
    doZ=.false., ! Use relaxed (.true.) or unrelaxed (.false) density for 
    ! vertical excitation or state-specific COSMO or Onsager [.false.]
-   index_of_refraction=100, ! Dielectric constant for linear response 
-   ! solvent in excited-state, unitless [100] *** UNDER DEVELOPMENT, DO NOT USE ***
    EF=0, ! (0) None or (1) Electric field in ground- and excited-state [0]
    Ex=0, ! Electric field vector X, eV/A [0]
    Ey=0, ! Electric field vector Y, eV/A [0]
@@ -1847,26 +1780,13 @@ Other important inputs that generally do not need to be changed include: \verb+t
    !***** Non-Adiabatic Parameters
    decoher_type=2, ! Type of decoherence: Reinitialize (0) Never, 
    ! (1) At successful hops, (2) At successful plus frustrated hops... 
-   ! (3) Persico/Granucci, or (4) Truhlar [2]
-   ! *** (3) AND (4) ARE UNDER DEVELOPMENT, DO NOT USE ***
-   decoher_e0=0.0, ! Decoherence parameter E0, Hartrees [0.1]
-   ! (only for decoher_type = 3 or 4) *** UNDER DEVELOPMENT, DO NOT USE ***
-   decoher_c=0.0, ! Decoherence parameter C, unitless [0.1]
-   ! (only for decoher_type = 3 or 4) *** UNDER DEVELOPMENT, DO NOT USE ***
    dotrivial=1, ! Do unavoided (trivial) crossing routine (1) or not (0) [1]
    quant_step_reduction_factor=2.5d-2, ! Quantum step reduction factor [2.5d-2]
 
    !***** Thermostat Parameters
-   therm_type=1, ! Thermostat type: (0) Newtonian, (1) Langevin, 
-   ! or (2) Berendsen [1] *** (2) IS UNDER DEVELOPMENT, DO NOT USE ***
+   therm_type=1, ! Thermostat type: (0) Newtonian, (1) Langevin
    therm_temperature=300, ! Thermostat temperature, K [300]
    therm_friction=20, ! Thermostat friction coefficient, 1/ps [20]
-   berendsen_relax_const=0.4, ! Bath relaxation constant for Berendsen 
-   ! thermostat, ps [0.4] *** UNDER DEVELOPMENT, DO NOT USE ***
-   heating=0, ! Equilibrated (0) or heating (1) [0]
-   ! *** UNDER DEVELOPMENT, DO NOT USE ***
-   heating_steps_per_degree=100, ! Number of steps per degree
-   ! during heating [100] *** UNDER DEVELOPMENT, DO NOT USE ***
 
    !***** Output & Log Parameters
    verbosity=2, ! NEXMD output verbosity (0-minimum, 3-maximum)
@@ -1911,9 +1831,9 @@ Other important inputs that generally do not need to be changed include: \verb+t
   0.00  0.00
   0.00  0.00
   0.00  0.00
-  0.00  0.00
-  0.00  0.00
   1.00  0.00
+  0.00  0.00
+  0.00  0.00
   0.00  0.00
   0.00  0.00
 &endcoeff
@@ -1932,7 +1852,7 @@ Shown below is an example input file for a non-adiabatic excited-state trajector
 \item \verb+time_step=0.1, ! Time step, fs [0.1]+
 \item \verb+n_class_steps=10000, ! Number of classical steps [1]+
 \end{itemize}
-Similar to adiabatic dynamics, the convergence criteria of the ground and excited state must be set with \verb+scfconv+ and \verb+ftol0+, respectively, and dynamics with \verb+n_class_steps+ $>0$.  The \verb+rnd_seed+ is important for both Langevin dynamics and stochastic hops between states according to the surface hopping algorithm.\cite{tully1990molecular}  If an ensemble of adiabatic trajectories is desired, each trajectory must have a different random seed in \verb+rnd_seed+.  Non-adiabatic dynamics are set with \verb+bo_dynamics=0+.  If an ensemble of trajectories is requested and \verb+getexcited.py+ is being used to generate input files, inputs for random seed, initial excited state, nuclear coordinates and velocities, and quantum coefficients should be replaced with their respective flags (i.e. \verb+rnd_seed+, \verb+exc_state_init_flag+, \verb+nucl_coord_veloc+, and \verb+quant_amp_phase+).  See Subsection \ref{nexmd} for more details.
+Similar to adiabatic dynamics, the convergence criteria of the ground and excited state must be set with \verb+scfconv+ and \verb+ftol0+, respectively, and dynamics with \verb+n_class_steps+ $>0$.  The \verb+rnd_seed+ is important for both Langevin dynamics and stochastic hops between states according to the surface hopping algorithm.\cite{tully1990molecular}  If an ensemble of adiabatic trajectories is desired, each trajectory must have a different random seed in \verb+rnd_seed+.  Non-adiabatic dynamics are set with \verb+bo_dynamics=0+.  If an ensemble of trajectories is requested and \verb+getexcited.py+ is being used to generate input files, inputs for random seed, initial excited state, nuclear coordinates and velocities, and quantum coefficients should be replaced with their respective flags (i.e. \verb+rnd_seed_flag+, \verb+exc_state_init_flag+, \verb+nucl_coord_veloc_flag+, and \verb+quant_amp_phase_flag+).  See Subsection \ref{nexmd} for more details.
 
 Other important inputs that generally do not need to be changed include: \verb+n_quant_steps=4+, \verb+decoher_type=2+, \verb+dotrivial=1+, \verb+quant_step_reduction_factor=2.5d-2+.  The latter two reduce the \verb+time_step+ by a factor of 40 in the vicinity of trivial crossings.  Additionally, the thermostat is set with \verb+therm_type=1+, \verb+therm_temperature=300+, and \verb+therm_friction=20+.
 \begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
@@ -1950,20 +1870,14 @@ Other important inputs that generally do not need to be changed include: \verb+n
    printdipole=1, ! (0) Unrelaxed transitions, (1) Unrelaxed transitions plus 
    ! total molecular, or (2) Unrelaxed/relaxed transitions plus 
    ! total molecular [1 for dynamics, 2 for optimization and single-point]
-   printbondorders=0, ! (0) No or (1) Yes [0]
-   ! *** UNDER DEVELOPMENT, DO NOT USE ***
-   density_predict=0, ! (0) None, (1) Reversible MD, 
-   ! or (2) XL-BOMD [0] *** ALL ARE UNDER DEVELOPMENT, DO NOT USE ***
+   density_predict=0, ! (0) None
    itrmax=300, ! Max SCF iterations for ground state 
    ! (negative to ignore convergence) [300]
 
    !***** Excited-State Parameters
    exst_method=1, ! CIS (1) or RPA (2) [1]
-   dav_guess=1, ! Restart Davidson from (0) Scratch, (1) Previous, 
-   ! or (2) XL-BOMD [1] *** (2) IS UNDER DEVELOPMENT, DO NOT USE ***
+   dav_guess=1, ! Restart Davidson from (0) Scratch, (1) Previous
    ftol0=1.0d-7, ! Acceptance tolerance (|emin-eold|) [1.0d-5]
-   ftol1=1.0d-8, ! Acceptance tolerance for residual norm [1.0d-5] 
-   ! *** UNDER DEVELOPMENT, DO NOT USE ***
    dav_maxcyc=200, ! Max cycles for Davidson diagonalization 
    ! (negative to ignore convergence) [100]
    printcharges=0, ! Print (1) or do not print (0) Mulliken charges of QM atoms [0]
@@ -1982,8 +1896,6 @@ Other important inputs that generally do not need to be changed include: \verb+n
    ! SCF tolerance, eV [1.0d-5]
    doZ=.false., ! Use relaxed (.true.) or unrelaxed (.false) density for 
    ! vertical excitation or state-specific COSMO or Onsager [.false.]
-   index_of_refraction=100, ! Dielectric constant for linear response 
-   ! solvent in excited-state, unitless [100] *** UNDER DEVELOPMENT, DO NOT USE ***
    EF=0, ! (0) None or (1) Electric field in ground- and excited-state [0]
    Ex=0, ! Electric field vector X, eV/A [0]
    Ey=0, ! Electric field vector Y, eV/A [0]
@@ -2011,26 +1923,13 @@ Other important inputs that generally do not need to be changed include: \verb+n
    !***** Non-Adiabatic Parameters
    decoher_type=2, ! Type of decoherence: Reinitialize (0) Never, 
    ! (1) At successful hops, (2) At successful plus frustrated hops... 
-   ! (3) Persico/Granucci, or (4) Truhlar [2]
-   ! *** (3) AND (4) ARE UNDER DEVELOPMENT, DO NOT USE ***
-   decoher_e0=0.0, ! Decoherence parameter E0, Hartrees [0.1]
-   ! (only for decoher_type = 3 or 4) *** UNDER DEVELOPMENT, DO NOT USE ***
-   decoher_c=0.0, ! Decoherence parameter C, unitless [0.1]
-   ! (only for decoher_type = 3 or 4) *** UNDER DEVELOPMENT, DO NOT USE ***
    dotrivial=1, ! Do unavoided (trivial) crossing routine (1) or not (0) [1]
    quant_step_reduction_factor=2.5d-2, ! Quantum step reduction factor [2.5d-2]
 
    !***** Thermostat Parameters
-   therm_type=1, ! Thermostat type: (0) Newtonian, (1) Langevin, 
-   ! or (2) Berendsen [1] *** (2) IS UNDER DEVELOPMENT, DO NOT USE ***
+   therm_type=1, ! Thermostat type: (0) Newtonian, (1) Langevin
    therm_temperature=300, ! Thermostat temperature, K [300]
    therm_friction=20, ! Thermostat friction coefficient, 1/ps [20]
-   berendsen_relax_const=0.4, ! Bath relaxation constant for Berendsen 
-   ! thermostat, ps [0.4] *** UNDER DEVELOPMENT, DO NOT USE ***
-   heating=0, ! Equilibrated (0) or heating (1) [0]
-   ! *** UNDER DEVELOPMENT, DO NOT USE ***
-   heating_steps_per_degree=100, ! Number of steps per degree
-   ! during heating [100] *** UNDER DEVELOPMENT, DO NOT USE ***
 
    !***** Output & Log Parameters
    verbosity=2, ! NEXMD output verbosity (0-minimum, 3-maximum)
@@ -2075,9 +1974,9 @@ Other important inputs that generally do not need to be changed include: \verb+n
   0.00  0.00
   0.00  0.00
   0.00  0.00
-  0.00  0.00
-  0.00  0.00
   1.00  0.00
+  0.00  0.00
+  0.00  0.00
   0.00  0.00
   0.00  0.00
 &endcoeff
@@ -2164,7 +2063,7 @@ Other important inputs that generally do not need to be changed include: \verb+n
 {population_compilers.png}
             %
         \end{subfigure}
-	\caption{\small {\textbf{Upper Left}}: Total CPU time histogrammed over all trajectories used in the 1000-trajectory ensembles simulating the non-adiabatic dynamics of the Poly(p-phenylene vinylene) (PPV3) molecule with old and new codes. {\textbf{Upper Right}}: New code (NEXMD) timing performance as a function of the number of excited states propagated using a $\sim200$ atom system.  The mean and error (standard deviation) in CPU time of the 100-trajectory ensembles are shown.  Results of four separate simulations using 10, 20, 40, and 80 excited states are shown.  All trajectories began in the highest excited state.  Trajectories are 1 fs in length, with 0.10 fs classical step and 4 quantum steps per classical step.  All typical non-adiabatic inputs were used.  {\textbf{Lower Left}}: New code (NEXMD) timing performance as a a function of different compilers using a $\sim200$ atom system.  The mean and error (standard deviation) in CPU time of 100-trajectory ensembles are shown.  A total of 10 excited states were propagated and all trajectories began in the 10$^{\text{th}}$ excited state.  All typical non-adiabatic inputs were used.  {\textbf{Lower Right}}: New Code (NEXMD) consistency performance test against several compilers using 1000-trajectory ensembles simulating the non-adiabatic dynamics of the Poly(p-phenylene vinylene) (PPV3) molecule.  Version used are: GCC 5.3.0, PGI 16.10, GOTO, goto2r1.13, MKL/11.4.1}
+	\caption{\small {\textbf{Upper Left}}: Total CPU time histogrammed over all trajectories used in the 1000-trajectory ensembles simulating the non-adiabatic dynamics of the Poly(p-phenylene vinylene) (PPV3) molecule with old and new codes. {\textbf{Upper Right}}: New code (NEXMD) timing performance as a function of the number of excited states propagated using a $\sim200$ atom system.  The mean and error (standard deviation) in CPU time of the 100-trajectory ensembles are shown.  Results of four separate simulations using 10, 20, 40, and 80 excited states are shown.  All trajectories began in the highest excited state.  Trajectories are 1 fs in length with 0.10 fs classical step and 4 quantum steps per classical step.  All typical non-adiabatic inputs were used.  {\textbf{Lower Left}}: New code (NEXMD) timing performance as a a function of different compilers using a $\sim200$ atom system.  The mean and error (standard deviation) in CPU time of 100-trajectory ensembles are shown.  A total of 10 excited states were propagated and all trajectories began in the 10$^{\text{th}}$ excited state.  All typical non-adiabatic inputs were used.  {\textbf{Lower Right}}: New Code (NEXMD) consistency performance test against several compilers using 1000-trajectory ensembles simulating the non-adiabatic dynamics of the Poly(p-phenylene vinylene) (PPV3) molecule.  Version used are: GCC 5.3.0, PGI 16.10, GOTO, goto2r1.13, MKL/11.4.1}
 \end{figure*}
 
 \end{appendix}
