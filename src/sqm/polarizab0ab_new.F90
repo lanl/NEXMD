@@ -127,8 +127,9 @@ if(1==1) then
       print *, 'i e(i) fx(i) fy(i) fz(i) f(i)'
       do i=1,qm2ds%Mx
          f=sqrt(muax(i)**2+muay(i)**2+muaz(i)**2)
-         write(6,130) i, qm2ds%e0(i), 2*qm2ds%e0(i)*muax(i)**2/21.0, 2*qm2ds%e0(i)*muay(i)**2/21.0, &
-        2*qm2ds%e0(i)*muaz(i)**2/21.0, 2*qm2ds%e0(i)*f**2/21.0
+         write(6,130) i, qm2ds%e0(i), 0.918*2*qm2ds%e0(i)*muax(i)**2/21.0, &
+         0.918*2*qm2ds%e0(i)*muay(i)**2/21.0, &
+         0.918*2*qm2ds%e0(i)*muaz(i)**2/21.0, 0.918*2*qm2ds%e0(i)*f**2/21.0
       enddo
 130   format(I5,5F12.4)
 
@@ -213,29 +214,17 @@ if(1==1) then
       do j=-1,-qm2ds%Mx,-1
          do i=abs(j),qm2ds%Mx
             f=sqrt(muabx(j,i)**2+muaby(j,i)**2+muabz(j,i)**2)
-            write(6,140) j,i,qm2ds%e0(i)-qm2ds%e0(-j),2*(qm2ds%e0(i)-qm2ds%e0(-j))*muabx(j,i)**2/21.0, &
-            2*(qm2ds%e0(i)-qm2ds%e0(-j))*muaby(j,i)**2/21.0, &
-            2*(qm2ds%e0(i)-qm2ds%e0(-j))*muabz(j,i)**2/21.0,2*(qm2ds%e0(i)-qm2ds%e0(-j))*f**2/21.0
-            write(qm2ds%muab_unit,140) abs(j),i,qm2ds%e0(i)-qm2ds%e0(-j),2*(qm2ds%e0(i)-qm2ds%e0(-j))*muabx(j,i)**2/21.0, &
-            2*(qm2ds%e0(i)-qm2ds%e0(-j))*muaby(j,i)**2/21.0, &
-            2*(qm2ds%e0(i)-qm2ds%e0(-j))*muabz(j,i)**2/21.0,2*(qm2ds%e0(i)-qm2ds%e0(-j))*f**2/21.0
+            write(6,140) abs(j),i,qm2ds%e0(i)-qm2ds%e0(-j),0.918*2*(qm2ds%e0(i)-qm2ds%e0(-j))*muabx(j,i)**2/21.0, &
+            0.918*2*(qm2ds%e0(i)-qm2ds%e0(-j))*muaby(j,i)**2/21.0, &
+            0.918*2*(qm2ds%e0(i)-qm2ds%e0(-j))*muabz(j,i)**2/21.0,0.918*2*(qm2ds%e0(i)-qm2ds%e0(-j))*f**2/21.0
+            write(qm2ds%muab_unit,140) abs(j),i,qm2ds%e0(i)-qm2ds%e0(-j),0.918*2*(qm2ds%e0(i)-qm2ds%e0(-j))*muabx(j,i)**2/21.0, &
+            0.918*2*(qm2ds%e0(i)-qm2ds%e0(-j))*muaby(j,i)**2/21.0, &
+            0.918*2*(qm2ds%e0(i)-qm2ds%e0(-j))*muabz(j,i)**2/21.0,0.918*2*(qm2ds%e0(i)-qm2ds%e0(-j))*f**2/21.0
          enddo
       enddo
       close(qm2ds%muab_unit)
 
 140   format(2I5,5F12.4)
-
-      open (qm2ds%ceo_unit,file=trim(qm2ds%ceo_out))
-      j=-qmmm_struct%state_of_interest
-      write(qm2ds%ceo_unit,*)
-      write(qm2ds%ceo_unit,*) 'Energies (eV) and oscillator strengths for transitions'
-      write(qm2ds%ceo_unit,*) 'from state ',abs(j),' to all other states'
-      do i=1,qm2ds%Mx
-         f=sqrt(muabx(j,i)**2+muaby(j,i)**2+muabz(j,i)**2)
-         write(qm2ds%ceo_unit,130) i,qm2ds%e0(i)-qm2ds%e0(-j),2*(qm2ds%e0(i)-qm2ds%e0(-j))*f**2/21.0
-      enddo
-      flush(qm2ds%ceo_unit)
-      close(qm2ds%ceo_unit)
 
       itime11=get_time()
       time11=real(itime11-itime1)/100
