@@ -732,7 +732,7 @@ subroutine sqm_read_and_alloc(qmmm_nml, qmmm_scratch, qmmm_div, qmmm_opnq, qmmm_
    
     ! Default for COSM and Solvent
     ceps=1.d0 ! no dielectric screening by default
-    index_of_refraction=1.d0
+    index_of_refraction=1.d2
     onsager_radius=4.0
     solvent_model=0 !no solvent model
     potential_type=1 !COSMO default
