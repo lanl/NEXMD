@@ -364,7 +364,7 @@ contains
     subroutine do_trivial_wrap(sim)
         type(simulation_t), pointer :: sim
         integer win,i,j
-        character(*), parameter :: fmt1 = "(F7.4,1X,F7.4,1X,I3,1X,I3,1X,I3,4(1X,F18.10))"
+        character(*), parameter :: fmt1 = "(F10.4,1X,F10.4,1X,I3,1X,I3,1X,I3,4(1X,F18.10))"
 
         if(sim%dotrivial.eq.1) then
             call checkcrossing(sim,sim%naesmd%cross,sim%lprint)
