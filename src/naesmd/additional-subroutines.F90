@@ -205,35 +205,38 @@ contains
         endif
 
         if(lprint.ge.2) then
-            if (imdtype.gt.0..and.ibo.ne.1) then
-                write (filename, "(A11,I4.4,A4)") "hops-trial_", sim%id, ".out"
-                sim%outfile_10=33*10000+sim%id 
+            if (imdtype.ne.0..and.ibo.ne.1) then
+                write (filename, "(A11,I4.4,A4)") "hops-trial_", sim%id + alldrops, ".out"
+                sim%outfile_10=33*10000+sim%id + alldrops
                 open(sim%outfile_10,file=trim(filename),status=file_status,access=file_access)
-                write (filename, "(A6,I4.4,A4)") "order_", sim%id, ".out"
-                sim%outfile_11=100*10000+sim%id 
+                write (filename, "(A6,I4.4,A4)") "order_", sim%id + alldrops, ".out"
+                sim%outfile_11=100*10000+sim%id + alldrops
                 open(sim%outfile_11,file=trim(filename),status=file_status,access=file_access)
             endif
-                write (filename, "(A3,I4.4,A4)") "fy_", sim%id, ".out"
-                sim%outfile_13=84*10000+sim%id 
-                write (filename, "(A3,I4.4,A4)") "fz_", sim%id, ".out"
-                sim%outfile_14=83*10000+sim%id 
-                write (filename, "(A12,I4.4,A4)") "cross-steps_", sim%id, ".out"
-                sim%outfile_15=101*10000+sim%id 
+                write (filename, "(A3,I4.4,A4)") "fy_", sim%id + alldrops, ".out"
+                sim%outfile_13=84*10000+sim%id + alldrops
+                write (filename, "(A3,I4.4,A4)") "fz_", sim%id + alldrops, ".out"
+                sim%outfile_14=83*10000+sim%id + alldrops
+                write (filename, "(A12,I4.4,A4)") "cross-steps_", sim%id + alldrops, ".out"
+                sim%outfile_15=101*10000+sim%id + alldrops
                 open(sim%outfile_15,file=trim(filename),status=file_status,access=file_access)
         endif
-
-        if(lprint.ge.3) then
-            if (imdtype.gt.0.and.ibo.ne.1) then
-                write (filename, "(A8,I4.4,A4)") "coeff-q_", sim%id, ".out"
-                sim%outfile_16=94*10000+sim%id 
+        if((lprint.ge.3).or.(sim%naesmd%dynam_type.eq.'aimc')) then
+                write (filename, "(A7,I4.4,A4)") "forces_", sim%id + alldrops, ".out"
+                sim%outfile_12=85*10000+sim%id + alldrops
+                open(sim%outfile_12,file=trim(filename),status=file_status,access=file_access)
+        endif
+        if((lprint.ge.3).or.(sim%naesmd%dynam_type.eq.'aimc')) then
+            if (imdtype.ne.0.and.ibo.ne.1) then
+                write (filename, "(A8,I4.4,A4)") "coeff-q_", sim%id + alldrops, ".out"
+                sim%outfile_16=94*10000+sim%id + alldrops
                 open(sim%outfile_16,file=trim(filename),status=file_status,access=file_access)
             endif
-                write (filename, "(A3,I4.4,A4)") "cm_", sim%id, ".out"
-                sim%outfile_17=91*10000+sim%id 
+        endif
+        if(lprint.ge.3) then
+                write (filename, "(A3,I4.4,A4)") "cm_", sim%id + alldrops, ".out"
+                sim%outfile_17=91*10000+sim%id + alldrops
                 open(sim%outfile_17,file=trim(filename),status=file_status,access=file_access)
-                write (filename, "(A7,I4.4,A4)") "forces_", sim%id, ".out"
-                sim%outfile_12=85*10000+sim%id 
-                open(sim%outfile_12,file=trim(filename),status=file_status,access=file_access)
         endif
 
         return

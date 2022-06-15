@@ -132,6 +132,34 @@ subroutine qm2_scf(qmmm_opnq, qm2_params, qmewald, qmmm_nml, qm_gb, qmmm_mpi, qm
 
     integer lapack_info
 
+    !Initialisation on first call
+    if(qmmm_nml%density_predict.gt.0) then
+        if(qmmm_struct%qm2_scf_first_call) then
+            ! for fixed number of iterations the very first call has to be regular one
+            ! with high accuracy
+            if(qmmm_nml%itrmax<0) then
+                qm2_params%itrmax_local=qmmm_nml%itrmax
+                qmmm_nml%itrmax=1000 ! default value
+            end if
+            !Find precision limits of this machine
+            call qm2_smallest_number(small,qm2_params%smallsum)
+            ! qm2_params%smallsum should be the smallest number for which 1.0D0 + qm2_params%smallsum /= 1.0D0
+            ! or 1.0D-17 - whichever is larger.
+            ! We will increase it in order to allow for roundoff in our calculations.
+            ! we use max here to avoid problems which occur when qm2_params%smallsum is actually too small.
+            qm2_params%smallsum = max(10.0D0 * sqrt(qm2_params%smallsum),1.4000D-7)
+            qm2_params%abstol = 2.0d0 * dlamch('S') !tolerance for dspevr
+            qmmm_struct%qm2_scf_first_call=.false.
+        elseif((qmmm_nml%density_predict==2).and.(qmmm_struct%num_qmmm_calls.lt.(xlbomd_struct%K+2))) then
+            !Do nothing until all Phi are full for XL-BOMD
+            write(6,*) 'Filling Phi_',qmmm_struct%num_qmmm_calls+1,'with fully converged result'
+        else
+            if(qm2_params%itrmax_local<0) then
+                ! restoring fixed-number-of-iterations itrmax
+                qmmm_nml%itrmax=qm2_params%itrmax_local
+            end if
+        end if
+    end if
     !Initialisation on every call
     converged = .false.
     first_iteration = .true.

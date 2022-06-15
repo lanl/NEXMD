@@ -64,21 +64,21 @@ cwd = os.getcwd()
 
 def pesnact(header):
 
-    print 'Collecting pess and/or nacts.'
+    print('Collecting pess and/or nacts.')
 
     ## Type of calculaton and directory ##
     NEXMDir = raw_input('NEXMD directory: ')
     if not os.path.exists(NEXMDir):
-        print 'Path %s does not exist.' % (NEXMDir)
+        print('Path %s does not exist.' % (NEXMDir))
         sys.exit()
     typeq = input('Output pess and/or nacts at all time-steps and trajectories, up to some user-defined time, or hops only?\nanswer all [0], user-defined time [1], or hops [2]: ')
     if typeq not in [0,1,2]:
-        print 'Answer must be 0, 1, or 2.'
+        print('Answer must be 0, 1, or 2.')
         sys.exit()
 
     ## Information from header ##
     if not os.path.exists('%s/header' % (NEXMDir)):
-        print 'Path %s/header does not exist.' % (NEXMDir)
+        print('Path %s/header does not exist.' % (NEXMDir))
         sys.exit()
     header = header('%s/header' % (NEXMDir))
 
@@ -87,7 +87,7 @@ def pesnact(header):
 
     ## Check output data ##
     if header.out_data_steps == 0:
-        print 'No data have been printed to files because out_data_steps = 0 in %s/header.' % (NEXMDir)
+        print('No data have been printed to files because out_data_steps = 0 in %s/header.' % (NEXMDir))
         sys.exit()
 
     ## Check state is set for BO dynamics ##
@@ -97,12 +97,12 @@ def pesnact(header):
     except AttributeError:
         state_set = 0
     if header.bo_dynamics_flag == 1 and state_set == 0:
-        print 'Dynamics are set to Born-Oppenheimer (bo_dynamics_flag = 1), but the initial state is not set.\nPlease check bo_dynamics_flag and exc_state_init in header.'
+        print('Dynamics are set to Born-Oppenheimer (bo_dynamics_flag = 1), but the initial state is not set.\nPlease check bo_dynamics_flag and exc_state_init in header.')
         sys.exit()
 
     ## Check that dynamics are non-Born-Oppenheimer if data for hops are requested ##
     if header.bo_dynamics_flag == 1 and typeq == 2:
-        print 'Dynamics are set to Born-Oppenheimer (bo_dynamics_flag = 1), but hops occur during non-Born-Oppenheimer (bo_dynamics_flag = 0) dynamics.\nPlease check bo_dynamics_flag in header.'
+        print('Dynamics are set to Born-Oppenheimer (bo_dynamics_flag = 1), but hops occur during non-Born-Oppenheimer (bo_dynamics_flag = 0) dynamics.\nPlease check bo_dynamics_flag in header.')
         sys.exit()
 
     ## Redefine number of quantum steps per classical step if set to 0 in header ##
@@ -115,10 +115,10 @@ def pesnact(header):
     if typeq == 1 or typeq == 2: ## user-defined time or time-steps at hops only
         tcoll = input('Collect data up to what time in femtoseconds: ')
         if isinstance(tcoll, int) == False and isinstance(tcoll, float) == False:
-            print 'Time must be integer or float.'
+            print('Time must be integer or float.')
             sys.exit()
         if tcoll < 0:
-            print 'Time must be integer or float greater than zero.'
+            print('Time must be integer or float greater than zero.')
             sys.exit()
         tcoll = np.float(tcoll)
         nsteps = 1
@@ -139,7 +139,7 @@ def pesnact(header):
     if header.bo_dynamics_flag == 1: ## adiabatic
         dtypeq = 1
     if dtypeq not in [1,2,3]:
-        print 'Answer must be 1, 2, or 3.'
+        print('Answer must be 1, 2, or 3.')
         sys.exit()
 
     ## Line number array ##
@@ -169,7 +169,7 @@ def pesnact(header):
     NEXMDs = glob.glob('%s/NEXMD*/' % (NEXMDir))
     NEXMDs.sort()
     if len(NEXMDs) == 0:
-        print 'There are no NEXMD folders in %s.' % (NEXMDir)
+        print('There are no NEXMD folders in %s.' % (NEXMDir))
         sys.exit()
 
     ### Adiabatic ###
@@ -186,7 +186,7 @@ def pesnact(header):
             errflag = 0
             for NEXMD in NEXMDs:
                 if not os.path.exists('%s/dirlist1' % (NEXMD)):
-                    print 'Path %dirlist1 does not exist.' % (NEXMD)
+                    print('Path %dirlist1 does not exist.' % (NEXMD))
                     sys.exit()
                 dirlist1 = np.int_(np.genfromtxt('%s/dirlist1' % (NEXMD)))
                 if isinstance(dirlist1,int) == True:
@@ -194,7 +194,7 @@ def pesnact(header):
                 for dir in dirlist1:
                     ## Determine completed number of time-steps ##
                     if not os.path.exists('%s/%04d/energy-ev.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir)
+                        error.wirte( 'Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir))
                         errflag = 1
                         ttraj += 1
                         continue
@@ -203,7 +203,7 @@ def pesnact(header):
                     tsteps = len(data) - 1
                     ## Determine if pes files exist and open them ##
                     if not os.path.exists('%s/%04d/pes.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir)
+                        error.wirte( 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir))
                         errflag = 1
                         ttraj += 1
                         continue
@@ -217,28 +217,28 @@ def pesnact(header):
                         pess = np.float_(pes[line].split())
                         time = np.around(pess[0], decimals = 3)
                         if time != times[index]:
-                            print >> error, 'There is an inconsistency in time-step in %s%04d at %.3f fs' % (NEXMD,dir,times[index])
+                            error.wirte( 'There is an inconsistency in time-step in %s%04d at %.3f fs' % (NEXMD,dir,times[index]))
                             tflag = 1
                             errflag = 1
                             break
-                        print >> pesall, '%s%04d' % (NEXMD,dir), '%d' % (header.exc_state_init), '%d' % (header.exc_state_init), ' '.join(str('%.10f') % (x) for x in pess)
+                        pesall.wirte( '%s%04d' % (NEXMD,dir), '%d' % (header.exc_state_init), '%d' % (header.exc_state_init), ' '.join(str('%.10f') % (x) for x in pess))
                         index += 1
                     if tflag == 0:
                         ctraj += 1
                         if tsteps == header.n_class_steps:
                             etraj += 1
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                    print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
                     ttraj += 1
             ## Summary of results ##
             if ctraj == 0:
-                print 'No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll)
+                print('No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll))
                 os.remove('%s/pes_raw_ensemble.out' % (cwd))
             else:
-                print 'Total trajectories:', '%04d' % (ttraj)
-                print 'Completed trajectories:', '%04d' % (ctraj)
-                print 'Excellent trajectories:', '%04d' % (etraj)
+                print('Total trajectories:', '%04d' % (ttraj))
+                print('Completed trajectories:', '%04d' % (ctraj))
+                print('Excellent trajectories:', '%04d' % (etraj))
             if errflag == 1:
-                print 'One or more trajectories did not finish within %0*.2f femtoseconds, check pesnact.err.' % (len(str(header.n_class_steps)),tcoll)
+                print('One or more trajectories did not finish within %0*.2f femtoseconds, check pesnact.err.' % (len(str(header.n_class_steps)),tcoll))
             else:
                 os.remove('%s/pesnact.err' % (cwd))
 
@@ -254,7 +254,7 @@ def pesnact(header):
             errflag = 0
             for NEXMD in NEXMDs:
                 if not os.path.exists('%s/dirlist1' % (NEXMD)):
-                    print 'Path %dirlist1 does not exist.' % (NEXMD)
+                    print('Path %dirlist1 does not exist.' % (NEXMD))
                     sys.exit()
                 dirlist1 = np.int_(np.genfromtxt('%s/dirlist1' % (NEXMD)))
                 if isinstance(dirlist1,int) == True:
@@ -262,7 +262,7 @@ def pesnact(header):
                 for dir in dirlist1:
                     ## Determine completed number of time-steps ##
                     if not os.path.exists('%s/%04d/energy-ev.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir)
+                        error.wirte( 'Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir))
                         errflag = 1
                         ttraj += 1
                         continue
@@ -271,7 +271,7 @@ def pesnact(header):
                     tsteps = len(data) - 1
                     ## Determine if pes files exist and open them ##
                     if not os.path.exists('%s/%04d/pes.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir)
+                        error.wirte( 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir))
                         errflag = 1
                         ttraj += 1
                         continue
@@ -286,31 +286,31 @@ def pesnact(header):
                             pess = np.float_(pes[line].split())
                             time = np.around(pess[0], decimals = 3)
                             if time != times[index]:
-                                print >> error, 'There is an inconsistency in time-step in %s%04d at %.3f fs' % (NEXMD,dir,times[index])
+                                error.wirte( 'There is an inconsistency in time-step in %s%04d at %.3f fs' % (NEXMD,dir,times[index]))
                                 tflag = 1
                                 errflag = 1
                                 break
-                            print >> pesall, '%s%04d' % (NEXMD,dir), '%d' % (header.exc_state_init), '%d' % (header.exc_state_init), ' '.join(str('%.10f') % (x) for x in pess)
+                            pesall.wirte( '%s%04d' % (NEXMD,dir), '%d' % (header.exc_state_init), '%d' % (header.exc_state_init), ' '.join(str('%.10f') % (x) for x in pess))
                             index += 1
                         if tflag == 0:
                             ctraj += 1
                             if tsteps == header.n_class_steps:
                                 etraj += 1
                     else:
-                        print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                        error.wirte( '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
                         errflag = 1
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                    print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
                     ttraj += 1
             ## Summary of results ##
             if ctraj == 0:
-                print 'No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll)
+                print('No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll))
                 os.remove('%s/pes_raw_ensemble.out' % (cwd))
             else:
-                print 'Total trajectories:', '%04d' % (ttraj)
-                print 'Completed trajectories:', '%04d' % (ctraj)
-                print 'Excellent trajectories:', '%04d' % (etraj)
+                print('Total trajectories:', '%04d' % (ttraj))
+                print('Completed trajectories:', '%04d' % (ctraj))
+                print('Excellent trajectories:', '%04d' % (etraj))
             if errflag == 1:
-                print 'One or more trajectories did not finish within %0*.2f femtoseconds, check pesnact.err.' % (len(str(header.n_class_steps)),tcoll)
+                print('One or more trajectories did not finish within %0*.2f femtoseconds, check pesnact.err.' % (len(str(header.n_class_steps)),tcoll))
             else:
                 os.remove('%s/pesnact.err' % (cwd))
 
@@ -334,7 +334,7 @@ def pesnact(header):
             errflag = 0
             for NEXMD in NEXMDs:
                 if not os.path.exists('%s/dirlist1' % (NEXMD)):
-                    print 'path %sdirlist1 does not exist.' % (NEXMD)
+                    print('path %sdirlist1 does not exist.' % (NEXMD))
                     sys.exit()
                 dirlist1 = np.int_(np.genfromtxt('%s/dirlist1' % (NEXMD)))
                 if isinstance(dirlist1,int) == True:
@@ -342,7 +342,7 @@ def pesnact(header):
                 for dir in dirlist1:
                     ## Determine completed number of time-steps ##
                     if not os.path.exists('%s/%04d/energy-ev.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir)
+                        error.wirte( 'Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir))
                         errflag = 1
                         ttraj += 1
                         continue
@@ -351,7 +351,7 @@ def pesnact(header):
                     tsteps = len(data) - 1
                     ## Determine if pes/nact files exist and open them ##
                     if not os.path.exists('%s/%04d/coeff-n.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/coeff-n.out does not exist.' % (NEXMD,dir)
+                        error.wirte( 'Path %s%04d/coeff-n.out does not exist.' % (NEXMD,dir))
                         errflag = 1
                         ttraj += 1
                         continue
@@ -360,7 +360,7 @@ def pesnact(header):
                     hsteps = len(hops)
                     if dtypeq == 1:
                         if not os.path.exists('%s/%04d/pes.out' % (NEXMD,dir)):
-                            print >> error, 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir)
+                            error.wirte( 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir))
                             errflag = 1
                             ttraj += 1
                             continue
@@ -369,7 +369,7 @@ def pesnact(header):
                         lines = linenums[0:len(pes):1]
                     if dtypeq == 2:
                         if not os.path.exists('%s/%04d/nact.out' % (NEXMD,dir)):
-                            print >> error, 'Path %s%04d/nact.out does not exist.' % (NEXMD,dir)
+                            error.wirte( 'Path %s%04d/nact.out does not exist.' % (NEXMD,dir))
                             errflag = 1
                             ttraj += 1
                             continue
@@ -378,7 +378,7 @@ def pesnact(header):
                         lines = linenums[1:len(nact) + 1:1]
                     if dtypeq == 3:
                         if not os.path.exists('%s/%04d/pes.out' % (NEXMD,dir)):
-                            print >> error, 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir)
+                            error.wirte( 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir))
                             errflag = 1
                             ttraj += 1
                             continue
@@ -386,7 +386,7 @@ def pesnact(header):
                         pes = pes.readlines()
                         lines = linenums[1:len(pes):1]
                         if not os.path.exists('%s/%04d/nact.out' % (NEXMD,dir)):
-                            print >> error, 'Path %s%04d/nact.out does not exist.' % (NEXMD,dir)
+                            error.wirte( 'Path %s%04d/nact.out does not exist.' % (NEXMD,dir))
                             errflag = 1
                             ttraj += 1
                             continue
@@ -403,7 +403,7 @@ def pesnact(header):
                             pess = np.float_(pes[line].split())
                             time = np.around(pess[0], decimals = 3)
                             if time != times[index]:
-                                print >> error, 'There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index])
+                                error.wirte( 'There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index]))
                                 tflag = 1
                                 errflag = 1
                                 break
@@ -412,36 +412,36 @@ def pesnact(header):
                                 nacts = np.float_(nact[line - 1].split())[indices]
                                 time = np.around(nacts[0], decimals = 3)
                                 if time != times[index]:
-                                    print >> error, 'There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index])
+                                    error.wirte( 'There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index]))
                                     tflag = 1
                                     errflag = 1
                                     break
                         if dtypeq == 1:
-                            print >> pesall, '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess)
+                            pesall.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess))
                             cstate = nstate
                             index += 1
                             continue
                         if dtypeq == 2:
                             if line <= hsteps - 1:
-                                print >> nactall, '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts)
+                                nactall.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts))
                                 cstate = nstate
                                 index += 1
                                 continue
                         if dtypeq == 3:
-                            print >> pesall, '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess)
+                            pesall.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess))
                             if line <= hsteps - 1:
-                                print >> nactall, '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts)
+                                nactall.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts))
                         cstate = nstate
                         index += 1
                     if tflag == 0:
                         ctraj += 1
                         if tsteps == header.n_class_steps:
                             etraj += 1
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                    print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
                     ttraj += 1
             ## Summary of results ##
             if ctraj == 0:
-                print 'No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll)
+                print('No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll))
                 if dtypeq == 1:
                     os.remove('%s/pes_raw_ensemble.out' % (cwd))
                 if dtypeq == 2:
@@ -450,11 +450,11 @@ def pesnact(header):
                     os.remove('%s/pes_raw_ensemble.out' % (cwd))
                     os.remove('%s/nact_raw_ensemble.out' % (cwd))
             else:
-                print 'Total trajectories:', '%04d' % (ttraj)
-                print 'Completed trajectories:', '%04d' % (ctraj)
-                print 'Excellent trajectories:', '%04d' % (etraj)
+                print('Total trajectories:', '%04d' % (ttraj))
+                print('Completed trajectories:', '%04d' % (ctraj))
+                print('Excellent trajectories:', '%04d' % (etraj))
             if errflag == 1:
-                print 'One of more trajectories have experienced an error, check pesnact.err.' 
+                print('One of more trajectories have experienced an error, check pesnact.err.' % (len(str(header.n_class_steps)), tcoll))
             else:
                 os.remove('%s/pesnact.err' % (cwd))
 
@@ -476,7 +476,7 @@ def pesnact(header):
             errflag = 0
             for NEXMD in NEXMDs:
                 if not os.path.exists('%s/dirlist1' % (NEXMD)):
-                    print 'Path %sdirlist1 does not exist.' % (NEXMD)
+                    print('Path %sdirlist1 does not exist.' % (NEXMD))
                     sys.exit()
                 dirlist1 = np.int_(np.genfromtxt('%s/dirlist1' % (NEXMD)))
                 if isinstance(dirlist1,int) == True:
@@ -484,14 +484,14 @@ def pesnact(header):
                 for dir in dirlist1:
                     ## Determine number of completed time-steps ##
                     if not os.path.exists('%s/%04d/energy-ev.out' % (NEXMD,dir)):
-                        print 'Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir)
+                        print('Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir))
                         sys.exit()
                     data = open('%s/%04d/energy-ev.out' % (NEXMD,dir),'r')
                     data = data.readlines()
                     tsteps = len(data) - 1
                     ## Determine if pes/nact files exist ##
                     if not os.path.exists('%s/%04d/coeff-n.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/coeff-n.out does not exist.' % (NEXMD,dir)
+                        error.wirte( 'Path %s%04d/coeff-n.out does not exist.' % (NEXMD,dir))
                         errflag = 1
                         ttraj += 1
                         continue
@@ -500,7 +500,7 @@ def pesnact(header):
                     htsteps = len(hops)
                     if dtypeq == 1:
                         if not os.path.exists('%s/%04d/pes.out' % (NEXMD,dir)):
-                            print >> error, 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir)
+                            error.wirte( 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir))
                             errflag = 1
                             ttraj += 1
                             continue
@@ -509,16 +509,16 @@ def pesnact(header):
                         lines = linenums[0:len(pes):1]
                     if dtypeq == 2:
                         if not os.path.exists('%s/%04d/nact.out' % (NEXMD,dir)):
-                            print >> error, 'Path %s%04d/nact.out does not exist.' % (NEXMD,dir)
+                            error.wirte( 'Path %s%04d/nact.out does not exist.' % (NEXMD,dir))
                             errflag = 1
                             ttraj += 1
                             continue
                         nact = open('%s/%04d/nact.out' % (NEXMD,dir),'r')
                         nact = nact.readlines()
                         lines = linenums[1:len(nact) + 1:1]
-                    if dtypeq == 3:
+                    if dtype == 3:
                         if not os.path.exists('%s/%04d/pes.out' % (NEXMD,dir)):
-                            print >> error, 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir)
+                            error.wirte( 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir))
                             errflag = 1
                             ttraj += 1
                             continue
@@ -526,7 +526,7 @@ def pesnact(header):
                         pes = pes.readlines()
                         lines = linenums[1:len(pes):1]
                         if not os.path.exists('%s/%04d/nact.out' % (NEXMD,dir)):
-                            print >> error, 'Path %s%04d/nact.out does not exist.' % (NEXMD,dir)
+                            error.wirte( 'Path %s%04d/nact.out does not exist.' % (NEXMD,dir))
                             errflag = 1
                             ttraj += 1
                             continue
@@ -544,7 +544,7 @@ def pesnact(header):
                                 pess = np.float_(pes[line].split())
                                 time = np.around(pess[0], decimals = 3)
                                 if time != times[index]:
-                                    print >> error, 'There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index])
+                                    error.wirte( 'There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index]))
                                     tflag = 1
                                     errflag = 1
                                     break
@@ -553,25 +553,25 @@ def pesnact(header):
                                     nacts = np.float_(nact[line-1].split())[indices]
                                     time = np.around(nacts[0], decimals = 3)
                                     if time != times[index]:
-                                        print >> error, 'There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index])
+                                        error.wirte( 'There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index]))
                                         tflag = 1
                                         errflag = 1
                                         break
                             if dtypeq == 1:
-                                print >> pesall, '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess)
+                                pesall.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess))
                                 cstate = nstate
                                 index += 1
                                 continue
                             if dtypeq == 2:
                                 if line <= htsteps - 1:
-                                    print >> nactall, '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts)
+                                    nactall.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts))
                                     cstate = nstate
                                     index += 1
                                     continue
                             if dtypeq == 3:
-                                print >> pesall, '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess)
+                                pesall.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess))
                                 if line <= htsteps - 1:
-                                    print >> nactall, '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts)
+                                    nactall.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts))
                             cstate = nstate
                             index += 1
                         if tflag == 0:
@@ -579,13 +579,13 @@ def pesnact(header):
                             if tsteps == header.n_class_steps:
                                 etraj += 1
                     else:
-                        print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                        error.wirte( '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
                         errflag = 1
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                    print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
                     ttraj += 1
             ## Summary of results ##
             if ctraj == 0:
-                print 'No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll)
+                print('No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll))
                 if dtypeq == 1:
                     os.remove('%s/pes_raw_ensemble.out' % (cwd))
                 if dtypeq == 2:
@@ -594,11 +594,11 @@ def pesnact(header):
                     os.remove('%s/pes_raw_ensemble.out' % (cwd))
                     os.remove('%s/nact_raw_ensemble.out' % (cwd))
             else:
-                print 'Total trajectories:', '%04d' % (ttraj)
-                print 'Completed trajectories:', '%04d' % (ctraj)
-                print 'Excellent trajectories:', '%04d' % (etraj)
+                print('Total trajectories:', '%04d' % (ttraj))
+                print('Completed trajectories:', '%04d' % (ctraj))
+                print('Excellent trajectories:', '%04d' % (etraj))
             if errflag == 1:
-                print 'One or more trajectories did not finish within %0*.2f femtoseconds, check pesnact.err.' % (len(str(header.n_class_steps)),tcoll)
+                print('One or more trajectories did not finish within %0*.2f femtoseconds, check pesnact.err.' % (len(str(header.n_class_steps)),tcoll))
             else:
                 os.remove('%s/pesnact.err' % (cwd))
 
@@ -620,7 +620,7 @@ def pesnact(header):
             errflag = 0
             for NEXMD in NEXMDs:
                 if not os.path.exists('%s/dirlist1' % (NEXMD)):
-                    print 'Path %sdirlist1 does not exist.' % (NEXMD)
+                    print('Path %sdirlist1 does not exist.' % (NEXMD))
                     sys.exit()
                 dirlist1 = np.int_(np.genfromtxt('%s/dirlist1' % (NEXMD)))
                 if isinstance(dirlist1,int) == True:
@@ -628,14 +628,14 @@ def pesnact(header):
                 for dir in dirlist1:
                     ## determine number of completed time-steps ##
                     if not os.path.exists('%s/%04d/energy-ev.out' % (NEXMD,dir)):
-                        print 'Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir)
+                        print('Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir))
                         sys.exit()
                     data = open('%s/%04d/energy-ev.out' % (NEXMD,dir),'r')
                     data = data.readlines()
                     tsteps = len(data) - 1
                     ## determine if pes/nact files exist ##
                     if not os.path.exists('%s/%04d/coeff-n.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/coeff-n.out does not exist.' % (NEXMD,dir)
+                        error.wirte( 'Path %s%04d/coeff-n.out does not exist.' % (NEXMD,dir))
                         errflag = 1
                         ttraj += 1
                         continue
@@ -644,7 +644,7 @@ def pesnact(header):
                     hsteps = len(hops)
                     if dtypeq == 1:
                         if not os.path.exists('%s/%04d/pes.out' % (NEXMD,dir)):
-                            print >> error, 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir)
+                            error.wirte( 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir))
                             errflag = 1
                             ttraj += 1
                             continue
@@ -653,7 +653,7 @@ def pesnact(header):
                         lines = linenums[0:len(pes):1]
                     if dtypeq == 2:
                         if not os.path.exists('%s/%04d/nact.out' % (NEXMD,dir)):
-                            print >> error, 'Path %s%04d/nact.out does not exist.' % (NEXMD,dir)
+                            error.wirte( 'Path %s%04d/nact.out does not exist.' % (NEXMD,dir))
                             errflag = 1
                             ttraj += 1
                             continue
@@ -662,7 +662,7 @@ def pesnact(header):
                         lines = linenums[1:len(nact) + 1:1]
                     if dtypeq == 3:
                         if not os.path.exists('%s/%04d/pes.out' % (NEXMD,dir)):
-                            print >> error, 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir)
+                            error.wirte( 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir))
                             errflag = 1
                             ttraj += 1
                             continue
@@ -670,7 +670,7 @@ def pesnact(header):
                         pes = pes.readlines()
                         lines = linenums[1:len(pes):1]
                         if not os.path.exists('%s/%04d/nact.out' % (NEXMD,dir)):
-                            print >> error, 'Path %s%04d/nact.out does not exist.' % (NEXMD,dir)
+                            error.wirte( 'Path %s%04d/nact.out does not exist.' % (NEXMD,dir))
                             errflag = 1
                             ttraj += 1
                             continue
@@ -688,7 +688,7 @@ def pesnact(header):
                                 pess = np.float_(pes[line].split())
                                 time = np.around(pess[0], decimals = 3)
                                 if time != times[index]:
-                                    print >> error, 'There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index])
+                                    error.wirte( 'There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index]))
                                     tflag = 1
                                     errflag = 1
                                     break
@@ -697,26 +697,26 @@ def pesnact(header):
                                     nacts = np.float_(nact[line - 1].split())[indices]
                                     time = np.around(nacts[0], decimals = 3)
                                     if time != times[index]:
-                                        print >> error, 'There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index])
+                                        error.wirte( 'There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index]))
                                         tflag = 1
                                         errflag = 1
                                         break
                             if nstate != cstate:
                                 if dtypeq == 1:
-                                    print >> peshop, '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess)
+                                    peshop.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess))
                                     cstate = nstate
                                     index += 1
                                     continue
                                 if dtypeq == 2:
                                     if line <= hsteps - 1:
-                                        print >> nacthop, '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts)
+                                        nacthop.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts))
                                         cstate = nstate
                                         index += 1
                                         continue
                                 if dtypeq == 3:
-                                    print >> peshop, '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess)
+                                    peshop.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess))
                                     if line <= hsteps - 1:
-                                        print >> nacthop, '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts)
+                                        nacthop.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts))
                             cstate = nstate
                             index += 1
                         if tflag == 0:
@@ -724,13 +724,13 @@ def pesnact(header):
                             if tsteps == header.n_class_steps:
                                 etraj += 1
                     else:
-                        print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                        error.wirte( '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
                         errflag = 1
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step)
+                    print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
                     ttraj += 1
             ## Summary of results ##
             if ctraj == 0:
-                print 'No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll)
+                print('No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll))
                 if dtypeq == 1:
                     os.remove('%s/pes_hop_ensemble.out' % (cwd))
                 if dtypeq == 2:
@@ -739,10 +739,10 @@ def pesnact(header):
                     os.remove('%s/pes_hop_ensemble.out' % (cwd))
                     os.remove('%s/nact_hop_ensemble.out' % (cwd))
             else:
-                print 'Total trajectories:', '%04d' % (ttraj)
-                print 'Completed trajectories:', '%04d' % (ctraj)
-                print 'Excellent trajectories:', '%04d' % (etraj)
+                print('Total trajectories:', '%04d' % (ttraj))
+                print('Completed trajectories:', '%04d' % (ctraj))
+                print('Excellent trajectories:', '%04d' % (etraj))
             if errflag == 1:
-                print 'One or more trajectories did not finish within %0*.2f femtoseconds, check pesnact.err.' % (len(str(header.n_class_steps)),tcoll)
+                print('One or more trajectories did not finish within %0*.2f femtoseconds, check pesnact.err.' % (len(str(header.n_class_steps)),tcoll))
             else:
                 os.remove('%s/pesnact.err' % (cwd))

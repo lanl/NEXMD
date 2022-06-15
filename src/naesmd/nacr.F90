@@ -32,7 +32,7 @@ subroutine nacR_analytic(qm2_params,qmmm_nml,qmmm_mpi,qm2_rij_eqns,qm2_struct,qm
     parameter (fbar = 0.05d0)  ! maximum dE in numerical derivative, eV.
     integer Na
     _REAL_ xyz(3,qmmm_struct%nquant_nlink),dxyz1(3,qmmm_struct%nquant_nlink)
-    if (qmmm_nml%verbosity.gt.4) write(6,*)'nacR_analytic called'
+    !if (qmmm_nml%verbosity.gt.4) write(6,*)'nacR_analytic called'
 
     Na = qmmm_struct%nquant_nlink
     N3 = 3*qmmm_struct%nquant_nlink

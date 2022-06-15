@@ -384,6 +384,10 @@ subroutine qm_print_dyn_mem(qm2_params,qmmm_nml,qmewald, qm_gb, qmmm_mpi, qmmm_s
 
   element_memory = (size(qm2_struct%old_den_matrix)+size(qm2_struct%old2_density))* &
                    bytes_per_real
+  if (qmmm_nml%density_predict == 1) then
+    element_memory = element_memory + (( size(qm2_struct%md_den_mat_guess1) + &
+                                        size(qm2_struct%md_den_mat_guess2) ) * bytes_per_real)
+  end if
   write(6,'("| QMMM:          Density Matrix Copies : ",i12," bytes")') element_memory
   total_memory = total_memory + element_memory
 

@@ -139,6 +139,7 @@ OBJSQM = \
 	$(OBJDIR)/$(SQMDIR)/davidson.o \
 	$(OBJDIR)/$(SQMDIR)/liouville.o \
 	$(OBJDIR)/$(SQMDIR)/timing.o \
+	$(OBJDIR)/$(SQMDIR)/qm2_print_bondorders.o \
 	$(OBJDIR)/$(SQMDIR)/printNM.o \
         $(OBJDIR)/$(SQMDIR)/polarizab0ab_new.o
 OBJNAESMD = \
@@ -146,7 +147,7 @@ OBJNAESMD = \
 	$(OBJDIR)/$(NAESMDDIR)/apc.o \
         $(OBJDIR)/$(NAESMDDIR)/md_module.o\
         $(OBJDIR)/$(NAESMDDIR)/naesmd_constants.o\
-        $(OBJDIR)/$(NAESMDDIR)/fcn.o \
+        $(OBJDIR)/$(NAESMDDIR)/aimc_type.o \
         $(OBJDIR)/$(NAESMDDIR)/quantum-prop.o \
         $(OBJDIR)/$(NAESMDDIR)/communism.o \
         $(OBJDIR)/$(NAESMDDIR)/additional-subroutines.o \
@@ -156,15 +157,23 @@ OBJNAESMD = \
         $(OBJDIR)/$(NAESMDDIR)/nacr.o \
 	$(OBJDIR)/$(NAESMDDIR)/nacT_analytic.o \
 	$(OBJDIR)/$(NAESMDDIR)/fewest-switches.o \
+	$(OBJDIR)/$(NAESMDDIR)/coherence.o \
 	$(OBJDIR)/$(NAESMDDIR)/cadiab.o \
 	$(OBJDIR)/$(NAESMDDIR)/quantum-prop-add.o \
 	$(OBJDIR)/$(NAESMDDIR)/writeoutput.o \
+	$(OBJDIR)/$(NAESMDDIR)/freezing.o\
 	$(OBJDIR)/$(NAESMDDIR)/verlet.o \
         $(OBJDIR)/$(NAESMDDIR)/sqm_subs.o \
 	$(OBJDIR)/$(NAESMDDIR)/deriv.o \
+	$(OBJDIR)/$(NAESMDDIR)/nuclear_normal_modes.o \
 	$(OBJDIR)/$(NAESMDDIR)/buildM.o \
 	$(OBJDIR)/$(NAESMDDIR)/liouv_new.o \
         $(OBJDIR)/$(NAESMDDIR)/rescaleveloc.o\
+        $(OBJDIR)/$(NAESMDDIR)/clone.o\
+        $(OBJDIR)/$(NAESMDDIR)/aimc.o \
+		$(OBJDIR)/$(NAESMDDIR)/check_files.o \
+		$(OBJDIR)/$(NAESMDDIR)/mce_prop.o \
+        $(OBJDIR)/$(NAESMDDIR)/dropout_module.o \
 	$(OBJDIR)/$(NAESMDDIR)/main.o 
 
 OBJSANDER = \

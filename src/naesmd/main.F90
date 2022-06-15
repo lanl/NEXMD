@@ -23,6 +23,8 @@ program MD_Geometry
     use naesmd_module!,only: allocate_naesmd_module2
     use md_module
     use cosmo_C, only : cosmo_C_structure
+    use clone_module
+    use AIMC_type_module
     implicit none
     !
     !--------------------------------------------------------------------
@@ -40,59 +42,206 @@ program MD_Geometry
     !
     !--------------------------------------------------------------------
 
-    !The instances of all sim structures
-    type(qm2_davidson_structure_type),target :: qm2ds_notp
-    type(qmmm_struct_type), target :: qmmm_struct_notp
-    type(qm2_structure), target :: qm2_struct_notp
-    type(cosmo_C_structure), target :: cosmo_C_struct_notp
-    type(naesmd_structure), target :: naesmd_struct_notp
-    type(xlbomd_structure), target :: xlbomd_struct_notp
-    type(md_structure), target :: md_struct_notp
-    type(rk_comm_real_1d), target :: rk_struct_notp
-    type(qm2_params_type),target :: qparams_struct_notp
-    type(qmmm_nml_type),target :: qnml_struct_notp
-    type(qm2_rij_eqns_structure),target:: rij_struct_notp
-    type(qm_gb_structure),target :: gb_struct_notp
-    type(qmmm_mpi_structure),target :: qmpi_struct_notp
-    type(qmmm_opnq_structure),target :: opnq_struct_notp
-    type(qmmm_div_structure), target :: div_struct_notp
-    type(qmmm_vsolv_type), target :: vsolv_struct_notp
-    type(qmmm_scratch_structure), target:: scratch_struct_notp
-    type(qm_ewald_structure), target :: ewald_struct_notp
+    integer :: Nsim = 1, Nsim_max=100
+    integer :: restart_flag
 
-    !The sim structure, a set of pointers and some values
-    type(simulation_t),target::sim_notp
-    !The pointer to sim structure, more rapidly passed into subroutines
-    type(simulation_t),pointer::sim
-    integer :: Nsim = 1
-   
-    sim=>sim_notp
-    call init0_simulation(sim,Nsim)
-    call setp_simulation(sim,qmmm_struct_notp,qm2ds_notp, &
-                qm2_struct_notp,naesmd_struct_notp,md_struct_notp,rk_struct_notp, &
-                cosmo_c_struct_notp,xlbomd_struct_notp,qparams_struct_notp, &
-                qnml_struct_notp,rij_struct_notp,gb_struct_notp,qmpi_struct_notp, &
-                opnq_struct_notp,div_struct_notp,vsolv_struct_notp,scratch_struct_notp, &
-                ewald_struct_notp)
-         sim%id=0
-    call nexmd_sim(sim)
+    call calculate_Nsim(Nsim,restart_flag)
+    call simulations(Nsim,Nsim_max,restart_flag)
 
 contains
 
+subroutine simulations(Nsim,Nsim_max,restart_flag)
+    use AIMC, only: AIMC_clone_check, AIMC_clone
+    use dropout_module
+    use naesmd_constants
+    integer, intent(inout) :: Nsim
+    integer, intent(in) :: Nsim_max
+    integer, intent(in) :: restart_flag
+    integer :: i,imdqt,j,k,l
+    _REAL_ :: tini, tfin !For integrating MCE equations
+    _REAL_ :: time
+    integer,dimension(:) :: drops(Nsim_max) !For stroing dropout indexes
 
-subroutine nexmd_sim(sim)
-    type(simulation_t),pointer::sim
+    !The instances of all sim structures
+    type(qm2_davidson_structure_type),target :: qm2ds_notp(Nsim_max)
+    type(qmmm_struct_type), target :: qmmm_struct_notp(Nsim_max)
+    type(qm2_structure), target :: qm2_struct_notp(Nsim_max)
+    type(cosmo_C_structure), target :: cosmo_C_struct_notp(Nsim_max)
+    type(naesmd_structure), target :: naesmd_struct_notp(Nsim_max)
+    type(xlbomd_structure), target :: xlbomd_struct_notp(Nsim_max)
+    type(md_structure), target :: md_struct_notp(Nsim_max)
+    type(qm2_params_type),target :: qparams_struct_notp(Nsim_max)
+    type(qmmm_nml_type),target :: qnml_struct_notp(Nsim_max)
+    type(qm2_rij_eqns_structure),target:: rij_struct_notp(Nsim_max)
+    type(qm_gb_structure),target :: gb_struct_notp(Nsim_max)
+    type(qmmm_mpi_structure),target :: qmpi_struct_notp(Nsim_max)
+    type(qmmm_opnq_structure),target :: opnq_struct_notp(Nsim_max)
+    type(qmmm_div_structure), target :: div_struct_notp(Nsim_max)
+    type(qmmm_vsolv_type), target :: vsolv_struct_notp(Nsim_max)
+    type(qmmm_scratch_structure), target:: scratch_struct_notp(Nsim_max)
+    type(qm_ewald_structure), target :: ewald_struct_notp(Nsim_max)
+    type(AIMC_type), target :: aimc_struct_notp(Nsim_max)
 
-    integer i,j,k
-    integer imdqt
-    integer itime1,itime11,itime2,itime3,get_time
-    _REAL_ time11,time12
-    _REAL_ t_start,t_finish
-    character*30 datetime, machname*36
-    integer inputfdes
-    character(100) ::  filename
+    !The sim structure, a set of pointers and some values
+    type(simulation_t),target::sim_notp(Nsim_max)
+    !The pointer to sim structure, more rapidly passed into subroutines
+    type(sim_pointer_array) ::sims(Nsim_max)
+
+    !The MCE structure for solving the nuclear TDS
+    type(MCE) :: nuclear
+    logical file_exists2
+    integer dps
+    _REAL_ junk_time
+    integer, allocatable :: indexes(:)
+
+    dps = 0
+    inquire(FILE="dropped.out", EXIST=file_exists2)
+    if(file_exists2) then
+        call system('wc dropped.out > dropped.tmp')
+        open(1,file='dropped.tmp')
+            read(1,*) dps
+        close(1)
+        call system('rm dropped.tmp')
+        if(dps.gt.0) then
+            allocate(indexes(dps))
+            open(1,file='dropped.out')
+                do i = 1, dps
+                    read(1,*) junk_time, indexes(i)
+                enddo
+            close(1)
+        else
+            allocate(indexes(1))
+            indexes(1) = -1
+        endif
+    endif
+    Nsim = Nsim - dps
+
+    drops = 0
+    do i = 0, dps - 1
+        if (any(indexes == i)) drops(i + 1) = 1
+    enddo
+
+    do i=1, Nsim_max
+            sims(i)%sim=>sim_notp(i)
+            sims(i)%sim%id=i-1
+            call init0_simulation(sims(i)%sim,Nsim)
+            call setp_simulation(sims(i)%sim,qmmm_struct_notp(i),qm2ds_notp(i), &
+                        qm2_struct_notp(i),naesmd_struct_notp(i),md_struct_notp(i), &
+                        cosmo_c_struct_notp(i),xlbomd_struct_notp(i),qparams_struct_notp(i), &
+                        qnml_struct_notp(i),rij_struct_notp(i),gb_struct_notp(i),qmpi_struct_notp(i), &
+                        opnq_struct_notp(i),div_struct_notp(i),vsolv_struct_notp(i),scratch_struct_notp(i), &
+                        ewald_struct_notp(i),aimc_struct_notp(i))
+    enddo
     
-   
+    j=0
+    do i=1, Nsim + dps
+        if(.not.any(sims(i)%sim%id == indexes)) then
+            j = j + 1
+            call initiate_sim(sims(j)%sim,Nsim,Nsim_max,restart_flag,nuclear,i-1)
+            if(sims(j)%sim%naesmd%tfemto.gt.0.0d0.and.(sims(j)%sim%naesmd%dynam_type.eq.'aimc'.or.sims(j)%sim%naesmd%dynam_type.eq.'mf')) then
+                call check_sign_for_restart(sims(j)%sim)
+            endif
+        endif
+    enddo 
+    if(sims(1)%sim%naesmd%dynam_type.eq.'aimc'.and.restart_flag.eq.1) then
+        do i = 2, Nsim
+            allocate(sims(i)%sim%naesmd%w(3*sims(i)%sim%naesmd%natom))
+            sims(i)%sim%naesmd%w = sims(1)%sim%naesmd%w
+        enddo
+        open(1,file='Pha_last.out')
+            read(1,999) j, time, (sims(i)%sim%naesmd%pha,i=1,Nsim)
+        close(1)
+    endif
+    
+!Parallel Trajectories (need to make this makefile option) 
+     do imdqt=1,sims(Nsim)%sim%naesmd%nstep !Main loop (ONLY LAST INPUT FILE NSTEP is used)
+         if (sims(1)%sim%naesmd%dynam_type.eq.'aimc'.and.sims(1)%sim%naesmd%tfemto.eq.0.0d0) then
+            call write_mce_data_0(sims, nuclear, Nsim)
+         endif
+         do i=1,Nsim
+            call nexmd_sim_step(sims(i)%sim,imdqt,nuclear,Nsim)
+         enddo
+!Dropping trajectories at S0/S1 conincal intersection
+         do i = 1, Nsim
+            if (sims(i)%sim%excN.gt.0.and.(sims(i)%sim%naesmd%vmdqt(1)-sims(i)%sim%naesmd%vgs)*feVmdqt.lt.sims(i)%sim%naesmd%dpt) then
+                call dropout(sims,nuclear,i,Nsim,drops,Nsim_max)
+            endif
+         enddo
+!Dropping trajectories at S0/S1 conincal intersection
+         if(sims(1)%sim%naesmd%dynam_type.eq.'aimc') then
+            call propagate_sE(sims,nuclear,Nsim)
+            if(sims(1)%sim%naesmd%icontw.ne.sims(1)%sim%naesmd%nstepw) then
+                call update_nuclear(nuclear,sims,Nsim,0,0)
+            else
+                if(sims(i)%sim%naesmd%icont.ne.sims(i)%sim%naesmd%nstepcoord) then
+                    call update_nuclear(nuclear,sims,Nsim,1,0)
+                else
+                    call update_nuclear(nuclear,sims,Nsim,1,1)
+                endif
+            endif
+         endif
+
+         do i=1, Nsim
+            if(sims(i)%sim%naesmd%dynam_type.eq.'aimc') then
+                if( AIMC_clone_check(sims(i)%sim).and.(Nsim.lt.Nsim_max) ) then
+                        Nsim=Nsim+1
+                        sims(Nsim)%sim%id=Nsim-1
+                        sims(i)%sim%aimc%nclones=sims(i)%sim%aimc%nclones+1
+                        call clone_sim(sims(i)%sim,sims(Nsim)%sim) !exact copy of sim
+                        call AIMC_clone(sims(i)%sim, sims(Nsim)%sim, nuclear, Nsim, i) !AIMC cloning procedure
+                        sims(Nsim)%sim%aimc%new_clone=.true.
+                        call open_output_multi(sims(Nsim)%sim,sims(Nsim)%sim%ibo,&
+                                sims(Nsim)%sim%naesmd%tfemto,sims(Nsim)%sim%md%imdtype,sims(Nsim)%sim%lprint,sum(drops))
+                endif
+            endif
+            if(sims(i)%sim%naesmd%icontw.ne.sims(i)%sim%naesmd%nstepw) then 
+            else 
+               call writeoutput(sims(i)%sim,sims(i)%sim%ibo,sims(i)%sim%naesmd%yg,sims(i)%sim%naesmd%yg_new,sims(i)%sim%lprint,sims(i)%sim%naesmd%cross,Nsim)
+            end if
+         enddo
+
+         do i=1,Nsim
+             if(sims(i)%sim%naesmd%icontw.ne.sims(i)%sim%naesmd%nstepw) then
+                 sims(i)%sim%naesmd%icontw=sims(i)%sim%naesmd%icontw+1
+             else
+                 sims(i)%sim%naesmd%icontw=1
+                 if(sims(i)%sim%naesmd%icont.ne.sims(i)%sim%naesmd%nstepcoord) then
+                     sims(i)%sim%naesmd%icont=sims(i)%sim%naesmd%icont+1
+                 else
+                     call write_restart(sims(i)%sim, Nsim, drops, Nsim_max) !Restart written here to achieve syncronization
+                     print *, 'Restart written for tr ', sims(i)%sim%id, ' at ', sims(i)%sim%naesmd%tfemto, 'fs'
+                     sims(i)%sim%naesmd%icont=1
+                     sims(i)%sim%naesmd%icontpdb=sims(i)%sim%naesmd%icontpdb+1
+                 endif
+             endif
+         enddo
+
+     enddo
+    do i=1, Nsim
+        call finish_sim(sims(i)%sim,Nsim)
+    enddo 
+    stop
+
+999     FORMAT(I3,1000(1X,F18.10))
+
+end subroutine simulations
+
+
+subroutine initiate_sim(sim,Nsim,Nsim_max,restart_flag,nuclear,tr_number)
+    type(simulation_t), pointer::sim
+    type(MCE) :: nuclear
+    character*30 datetime, machname*36
+    integer inputfdes, get_time
+    integer i,j,k,l
+    integer, intent(inout) :: Nsim
+    integer, intent(in) :: Nsim_max
+    integer, intent(in) :: restart_flag
+    integer nstep0
+    _REAL_ t_start,t_finish 
+    character(100) ::  filename
+    integer drops
+    integer, intent(in) :: tr_number
+
     call get_date(datetime)
     call get_machine(machname)
     write (6,*)
@@ -101,9 +250,16 @@ subroutine nexmd_sim(sim)
     write (6,7) '| Computer: ',   machname,'|'
     write (6,*) '|________________________________________________|'
     write (6,*)
-    itime1=get_time()
+    sim%itime1=get_time()
+
+    filename = ''
     
-    call init_main(sim, inputfdes)
+    if(restart_flag.eq.1) then
+        call check_files(Nsim,nstep0,tr_number,sim%id)
+        write(6,*), 'All files checked and ready for restart for trajectory: ', tr_number
+    endif
+    call init_main(sim, inputfdes, Nsim, Nsim_max, restart_flag, nuclear, tr_number)
+    if(restart_flag.eq.1) sim%naesmd%nstep0=nstep0
 
     !Put derivative variables into module
 
@@ -113,14 +269,32 @@ subroutine nexmd_sim(sim)
     !
     !Open input file, initialize variables, run first calculation
     !***********************************************************
-    if(sim%Nsim.eq.1) then
+    if(Nsim.eq.1.and.restart_flag.eq.0) then
         open (inputfdes,file='input.ceon',status='old')
+    elseif(Nsim.eq.1.and.restart_flag.eq.1) then
+        open(inputfdes,file='restart.out',status='old')
     else
-        write (filename, "(a6,i4.4,a5)") "input_", sim%id, ".ceon"
-        open (inputfdes,file=trim(filename),status='old')
+        write (filename, "(a8,i4.4,a4)") "restart_", sim%id, ".out"
+        open (inputfdes,file=trim(adjustl(filename)),status='old')
     endif 
+
+    !Open output files
+    if((Nsim.eq.1).and.sim%naesmd%dynam_type.ne.'aimc') then
+            call open_output(sim,sim%ibo,sim%naesmd%tfemto,sim%md%imdtype,sim%lprint)
+            sim%naesmd%ihop=sim%qmmm%state_of_interest 
+    else
+            drops = 0
+            call open_output_multi(sim,sim%ibo,sim%naesmd%tfemto,sim%md%imdtype,sim%lprint,tr_number-sim%id)
+            sim%naesmd%ihop=sim%qmmm%state_of_interest 
+    endif
+
     call init_sqm(sim,inputfdes,STDOUT) ! involves call to Davidson
     close(inputfdes)
+
+    if((((sim%naesmd%dynam_type.eq.'mf').or.(sim%naesmd%dynam_type.eq.'aimc'))).and.(sim%cosmo%solvent_model>0)) then
+        write(6,*) 'Mean-field not yet compatible with solvent models'
+        stop
+    endif    
 
     sim%naesmd%nbasis=sim%dav%Nb  ! this is number of atomic orbitals
     sim%nbasis=sim%naesmd%nbasis  ! not to confuse with Ncis or Nrpa !!!
@@ -141,13 +315,15 @@ subroutine nexmd_sim(sim)
     sim%naesmd%vgs=sim%naesmd%E0;
     sim%naesmd%vmdqt(1:sim%excN)=sim%naesmd%Omega(1:sim%excN)+sim%naesmd%vgs
 
-    itime2=get_time()
-    time12=real(itime2-itime1)/100
 
     !Calculate derivatives
     call cpu_time(t_start)
     if (sim%qmmm%ideriv.gt.0) then
-        call deriv(sim,sim%naesmd%ihop)
+        if(((sim%naesmd%dynam_type.eq.'mf').or.(sim%naesmd%dynam_type.eq.'aimc'))) then
+                call deriv_MF(sim,restart_flag)
+        else
+                call deriv(sim,sim%naesmd%ihop)
+        endif
     elseif (sim%naesmd%nstep.gt.0) then
         write(6,*)'Must choose derivative type greater than zero for dynamics'
         stop
@@ -163,32 +339,26 @@ subroutine nexmd_sim(sim)
     !! Molecular dynamics with Quantum transition main loop
     !##########################################################
     sim%naesmd%icontw=1
-    !Open output files
-    if(Nsim.eq.1) then
-            call open_output(sim,sim%ibo,sim%naesmd%tfemto,sim%md%imdtype,sim%lprint)
-            sim%naesmd%ihop=sim%qmmm%state_of_interest 
-    else
-            call open_output_multi(sim,sim%ibo,sim%naesmd%tfemto,sim%md%imdtype,sim%lprint)
-            sim%naesmd%ihop=sim%qmmm%state_of_interest 
-    endif
-    call writeoutputini(sim,sim%ibo,sim%naesmd%yg,sim%lprint)
 
-    sim%rk_comm%tmax=sim%naesmd%nstep*sim%naesmd%dtmdqt
-    do i =1,sim%excN
-        sim%rk_comm%thresholds(i)=1.0d0
-        sim%rk_comm%thresholds(i+sim%excN)=6.29d0
-    enddo
-    if((sim%naesmd%nstep.gt.0).and.(sim%naesmd%nquantumreal.gt.0).and.(sim%ibo.ne.1)) then
-            call setup(sim%rk_comm,sim%naesmd%tfemto,sim%naesmd%yg,sim%rk_comm%tmax,sim%rk_comm%rk_tol,sim%rk_comm%thresholds, &
-        'M','R')
-    endif
-    do i=1,sim%excN
-        sim%naesmd%dbtorden(i) = i
-    enddo
+    if (sim%naesmd%tfemto==0.0d0) call writeoutputini(sim,sim%ibo,sim%naesmd%yg,sim%naesmd%yg_new,sim%lprint)
 
-    do imdqt=1,sim%naesmd%nstep !Main loop
+7   format (' ',A12,' ',A35,A2)
+8   format (' ',A27,'  ',A30,A2)
+
+    call flush(6)
+    return
+
+end subroutine initiate_sim
+
+subroutine nexmd_sim_step(sim, imdqt, nuclear, Nsim)
+    type(simulation_t),pointer::sim
+    integer, intent(in) :: imdqt
+    integer ii
+    type(MCE) :: nuclear
+    integer, intent(in) :: Nsim
+    
         !Classical propagation step - BOMD or NAESMD
-        write(6,*)"Begin classical propagation step #",imdqt
+        write(6,*)"Begin classical propagation step #",imdqt, " sim #: ", sim%id
         sim%naesmd%tfemto=sim%naesmd%tfemto+sim%naesmd%dtmdqt*convtf
         sim%qmmm%num_qmmm_calls=imdqt !necessary for BO dynamics
 
@@ -197,7 +367,7 @@ subroutine nexmd_sim(sim)
             sim%qmmm%state_of_interest=sim%naesmd%ihop;
             call verlet1(sim)
             write(6,*)'Begin nonadiabatic couplings and crossings calculations'
-            call initialize(sim,sim%naesmd%yg)
+            call initialize(sim,sim%naesmd%yg_new)
             !****************************************************************
             ! calculation of the energies(=sim%naesmd%vmdqtold) and nacT(=sim%naesmd%cadiabold) values at the beginning
             ! of the classical step
@@ -213,27 +383,30 @@ subroutine nexmd_sim(sim)
             !*************************************************************** 
             call do_trivial_wrap(sim) 
             write(6,*)'End nonadiabatic couplings calculation'
-            write(6,*)"End classical propagation step #",imdqt 
+            write(6,*)"End classical propagation step #",imdqt, " sim #: ", sim%id
             !--------------------------------------------------------------------
             ! Loop for quantum propagation steps
             ! that implies CEO energy calculations
             !--------------------------------------------------------------------
-            if(sim%ibo.ne.1) then
-                    call quantum_propagation(sim, imdqt)         
-            endif
+            call quantum_propagation(sim, imdqt, nuclear, Nsim)         
             !--------------------------------------------------------------------
             ! last part of velocity verlet algorithm
-            ! for ehrenfest should go after evalhop
+            do ii=1,sim%excN
+                sim%naesmd%yg(ii)=sqrt(sim%naesmd%yg_new(ii)**2+sim%naesmd%yg_new(ii+sim%excN)**2)
+                sim%naesmd%yg(ii+sim%excN)=atan2(sim%naesmd%yg_new(ii+sim%excN),sim%naesmd%yg_new(ii))+sim%naesmd%yg_new(ii+2*sim%excN)
+            enddo
             call verlet2(sim)
-            !--------------------------------------------------------------------
-            ! analyze the hopping
-            !--------------------------------------------------------------------
-            call evalhop(sim, sim%rk_comm, sim%lprint, sim%rk_comm%tend, sim%rk_comm%tmax, &
-                         sim%rk_comm%rk_tol, sim%rk_comm%thresholds, &
-                sim%Na, sim%naesmd%yg, sim%naesmd%cross)
-            !--------------------------------------------------------------------
+            if(sim%naesmd%dynam_type.eq.'tully') then
+                    !--------------------------------------------------------------------
+                    ! analyze the hopping
+                    !--------------------------------------------------------------------
+                    call evalhop(sim,sim%lprint,sim%Na,sim%naesmd%yg,sim%naesmd%yg_new,sim%naesmd%cross)
+                    !--------------------------------------------------------------------
 
-            !call check_ntotcoher(sim) 
+                     call decoherence_E0_and_C(sim)!currently this is not available
+            else if (sim%dotrivial.eq.1) then
+                     call just_trivial(sim,sim%naesmd%yg,sim%naesmd%yg_new,sim%naesmd%cross,nuclear,Nsim)
+            endif 
         !--------------------------------------------------------------------
         else
             !BOMD-propagate======================================================================================
@@ -248,29 +421,32 @@ subroutine nexmd_sim(sim)
             sim%naesmd%icontpdb=sim%naesmd%icontini
         end if
 
-        if(sim%naesmd%icontw.ne.sim%naesmd%nstepw) then
-            sim%naesmd%icontw=sim%naesmd%icontw+1
-        else
-            sim%naesmd%icontw=1
-            call writeoutput(sim,sim%ibo,sim%naesmd%yg,sim%lprint,sim%naesmd%cross)
-        end if
-    end do
 
     !***********************************
     !      ttime=dtime(tarray)
     !      write(19,*) tarray(1)
 
-779 format(F18.10,10000(1X,I3,3(1X,F18.10)))
-886 format(10000(1X,F7.4))
+    return
+end subroutine nexmd_sim_step
+
+subroutine finish_sim(sim,Nsim)
+    use writeoutput_module
+
+    type(simulation_t),pointer::sim
+
+    integer itime11,itime2,itime3,get_time
+    integer, intent(in) :: Nsim
+    _REAL_ time11,time12
+    character*30 datetime
 
     !##########################################################
     !! END of the Molecular dynamics with Quantum transition main loop
     !##########################################################
 
     itime11=get_time()
-    time11=real(itime11-itime1)/100
+    time11=real(itime11-sim%itime1)/100
     itime11=time11
-    itime1=MOD(itime11,60)
+    sim%itime1=MOD(itime11,60)
     itime11=itime11/60
     itime2=MOD(itime11,60)
     itime11=itime11/60
@@ -283,7 +459,7 @@ subroutine nexmd_sim(sim)
     write (6,*) '|^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|'
     write (6,8) '| MD normal termination at ', datetime,' |'
     write (6,9) '| MD total CPU time            ',  time11, ' seconds |'
-    write(6,301) itime11,itime3,itime2,itime1
+    write(6,301) itime11,itime3,itime2,sim%itime1
     write(6,*)
 
     ! Cumulative execution time of various code blocks
@@ -298,44 +474,40 @@ subroutine nexmd_sim(sim)
     write (6,*) '|________________________________________________|'
     write (6,*)
 
-7   format (' ',A12,' ',A35,A2)
+
 8   format (' ',A27,'  ',A30,A2)
 9   format (' ',A20,'    ',g16.5,A10)
 301 format(' |     ',i2,' days ',i2,' hours ',i2,' minutes ',i2, &
         ' seconds     |')
-302 format(A3,3f12.6)
-303 format(i6,f9.3,g11.3,5g16.8)
-304 format('STEP:',i5,f9.3,6g13.5,g10.2,f16.10)
-305 format(a,i5,6g16.8,g12.4)
-306 format(i7,10000g12.4)
-307 format(a,g8.4,6g16.8,g12.4)
-999 format(I3,1X,1000(1X,F18.10))
 
-    call flush(6)
-
-    stop
-
-98  stop 'bad input'
-end subroutine 
+    return
+end subroutine finish_sim
 
     !
     !********************************************************************
     !
-    subroutine init_main(sim, inputfdes)
+    subroutine init_main(sim, inputfdes, Nsim, Nsim_max, restart_flag, nuclear, tr_number)
         use naesmd_constants
-        use communism, only : simulation_t 
+        use communism
         implicit none
         type(simulation_t),pointer::sim
+        type(MCE) :: nuclear
+        integer, intent(in) :: Nsim
+        integer, intent(in) :: Nsim_max
+        integer, intent(in) :: restart_flag
         _REAL_,allocatable::xx(:),yy(:),zz(:)
         integer, intent (inout) :: inputfdes
+        integer, intent(in) :: tr_number
         integer ifind
-        integer :: i,j,k,ii,jjj
+        integer :: i,j,k,l,m,ii,jjj,ios
         integer :: Na, Nm, N1, N2, N3
         integer slen
         integer :: itime1
         character*(150) txt
         character(100) ::  filename
-        _REAL_ :: rk_tolerance
+        character(100) :: NAMD_type
+        _REAL_ :: AIMC_dclone_1,AIMC_dclone_2,AIMC_dclone_3,AIMC_max_clone,AIMC_force_pop_min
+        integer nclones0
         logical moldyn_found
         ! variables of the moldyn namelist
             integer natoms
@@ -355,20 +527,24 @@ end subroutine
             integer decoher_type,dotrivial
             _REAL_ deltared
             integer iredpot,nstates
-            namelist /moldyn/ natoms,bo_dynamics_flag,exc_state_init, &
+            integer ifixed
+            integer :: nmc, npc
+            integer :: printTdipole
+            integer :: printTDM
+            _REAL_ :: dpt
+            namelist /moldyn/ natoms,bo_dynamics_flag,NAMD_type,exc_state_init, &
                 n_exc_states_propagate,out_count_init,time_init, &
-                rk_tolerance,time_step,n_class_steps,n_quant_steps, &
+                time_step,n_class_steps,n_quant_steps, &
                 num_deriv_step, &
                 therm_temperature,therm_type, &
                 berendsen_relax_const,heating, &
                 heating_steps_per_degree,out_data_steps,out_coords_steps, &
                 therm_friction,rnd_seed,out_data_cube,verbosity,moldyn_deriv_flag, &
                 quant_step_reduction_factor,decoher_e0,decoher_c,decoher_type,dotrivial,&
-                iredpot,nstates,deltared
+                iredpot,nstates,deltared,ifixed,AIMC_dclone_1,AIMC_dclone_2,AIMC_dclone_3,&
+                AIMC_max_clone,AIMC_force_pop_min,nmc,npc,printTdipole,printTDM,nclones0,dpt
         !dtnact is the incremental time to be used at nact calculation
         sim%naesmd%dtnact=0.002d0
-
-
 
         ! definition of variables
         i=0
@@ -407,10 +583,6 @@ end subroutine
             end do
         end do
 
-        ! ido= Flag indicating the state of the computation
-        ! use by divprk propagator
-        !ido=1
-        !idocontrol=1
         sim%naesmd%conthop=0
         sim%naesmd%conthop2=0
         !
@@ -418,12 +590,15 @@ end subroutine
         !
 
         inputfdes=12*10000+sim%id
+        filename = ''
         ! copy input file
-        if(sim%Nsim.eq.1) then
-              open (inputfdes,file='input.ceon',status='old')
+        if(Nsim.eq.1.and.restart_flag.eq.0) then
+            open(inputfdes,file='input.ceon',status='old')
+        elseif(Nsim.eq.1.and.restart_flag.eq.1) then
+            open(inputfdes,file='restart.out',status='old')
         else
-              write (filename, "(a6,i4.4,a5)") "input_", sim%id, ".ceon"
-              open (inputfdes,file=trim(filename),status='old')
+            write (filename, "(a8,i4.4,a4)") "restart_", tr_number, ".out"
+            open (inputfdes,file=filename(1:16),status='old')
         endif 
         j=0
         do while(readstring(inputfdes,sim%naesmd%cardini,slen).ge.0)
@@ -458,7 +633,6 @@ end subroutine
         n_exc_states_propagate=0 ! total number of excited state to propagate
         out_count_init=0 ! iniit count for output files
         time_init=0.d0 ! initial time, fs
-        rk_tolerance=1.d-6 ! tolerance for Runge-Kutta propagator
         time_step=0.1d0 ! classical time step, fs
         n_class_steps=1 ! number of classical steps
         n_quant_steps=4 ! number of quantum steps for each classical step
@@ -483,12 +657,28 @@ end subroutine
         iredpot=0 !don't reduce the number of potentials during dynamics
         nstates=2 !do 2 states higher by default for iredpot
         deltared=1 !do 1 eV higher in energy for iredpot
- 
-        if(sim%Nsim.eq.1) then
-              open (inputfdes,file='input.ceon',status='old')
+        ifixed=0 ! do not use fixed atoms
+        NAMD_type='tully' ! 'tully' for SH, 'mf' for EHR, 'aimc' for cloning
+        AIMC_dclone_1=1.5
+        AIMC_dclone_2=0.2617
+        AIMC_dclone_3=0.005
+        AIMC_max_clone=4
+        AIMC_force_pop_min=0.0
+        nclones0=0 !initial count for the number of clones
+        nmc=0 ! number of nuclear directions to freeze
+        npc=0 ! number of pairs of atoms to freeze the distance between them
+        printTdipole=0 !to print transition dipole moments in separate files
+        printTDM=0 !to print complete TDM
+        dpt = 0.2d0 !for dropping trajectory when S0/S1 gap is lower than "dpt" (eV)
+
+        filename = ''
+        if(Nsim.eq.1.and.restart_flag.eq.0) then
+            open (inputfdes,file='input.ceon',status='old')
+        elseif(Nsim.eq.1.and.restart_flag.eq.1) then
+            open(inputfdes,file='restart.out',status='old')
         else
-              write (filename, "(a6,i4.4,a5)") "input_", sim%id, ".ceon"
-              open (inputfdes,file=trim(filename),status='old')
+            write (filename, "(a8,i4.4,a4)") "restart_", tr_number, ".out"
+            open (inputfdes,file=filename(1:16),status='old')
         endif 
                
         ! looking for namelist
@@ -504,13 +694,23 @@ end subroutine
             stop
         endif
 
+        if(ifixed.ne.0) then
+          open(617,file='fixed_atoms')
+          do i=1,ifixed
+             read(617,*) sim%naesmd%ifxd(i) 
+          enddo
+          close(617)
+        endif
         
         sim%naesmd%iredpot=iredpot
         sim%naesmd%nstates=nstates 
         sim%naesmd%deltared=deltared 
-        sim%rk_comm%rk_tol=rk_tolerance 
         sim%dotrivial=dotrivial
         !Input checks for features under development
+        if(decoher_type>2) then
+            write(6,*) "decoher_type under development. Do not use."
+            stop
+        endif
         call int_legal_range('moldyn: (decoher_type ) ', decoher_type,0,2) 
         call int_legal_range('moldyn: (trivial crossing ) ', dotrivial,0,1)
         call float_legal_range('moldyn: (quant_step_reduction_factor ) ',quant_step_reduction_factor,0.0d-16,1.0d1)
@@ -532,18 +732,19 @@ end subroutine
         call int_legal_range('moldyn: (moldyn_deriv_flag ) ', moldyn_deriv_flag,0,2)
 
         call float_legal_range('moldyn: (Displacement for numerical derivatives) ',num_deriv_step,0.0d-16,1.0d0)
-        call float_legal_range('moldyn: (Tolerance for the Runge-Kutta propagator) ',rk_tolerance,0.0d-16,1.0d0)
 
         call int_legal_range('moldyn: (verbosity ) ', verbosity,0,3)
 
         call int_legal_range('moldyn: (Number of steps to write data  ) ', out_data_steps,0,999999999)
         call int_legal_range('moldyn: (Number of steps to write the restart file ) ', out_coords_steps,0,999999999)
         call int_legal_range('moldyn: (view files to generate cubes ) ', out_data_cube,0,1)
-
-
         
+        if(therm_type==2) then
+            write(6,*) "Berendsen thermostat under development. Do not use."
+            stop
+        endif
         
-        if(heating.NE.0) then
+        if(heating>0) then
             write(6,*) "heating under development. Do not use."
         endif
         !End input checks
@@ -571,6 +772,19 @@ end subroutine
         sim%ibo=bo_dynamics_flag
    
         sim%md%imdtype=exc_state_init
+        sim%naesmd%dynam_type=NAMD_type
+        if(n_exc_states_propagate.eq.0.and.NAMD_type.eq.'aimc') then
+            write(6,*) "Can't run ground state dynamics (n_exc_states_propagate = 0) and AIMC (NAMD_type = 'aimc'). Fix and relaunch!"
+            STOP;
+        endif
+        if((NAMD_type.eq.'mf').or.(NAMD_type.eq.'aimc')) sim%md%imdtype=-1
+        if((sim%ibo.eq.0).AND.NAMD_type.ne.'tully') then
+            if((NAMD_type.ne.'mf').AND.(NAMD_type.ne.'aimc')) then
+               write(6,*) 'only Surface hopping-"NAMD_type=tully",Ehrenfest-"NAMD_type=mf"'
+               write(6,*) 'and Ab-Initio Multiple Cloning- "NAMD_type=aimc" are allowed'
+               stop
+            endif
+        endif
         sim%naesmd%ihop=sim%md%imdtype
         if(sim%md%imdtype==0) then
             sim%naesmd%state='fund'
@@ -587,6 +801,11 @@ end subroutine
         sim%naesmd%dtmdqt=sim%naesmd%dtmdqt/convtf
 
         sim%naesmd%nstep=n_class_steps
+        if(restart_flag.eq.0) sim%naesmd%nstep0=sim%naesmd%nstep
+        if((NAMD_type.eq.'aimc').and.(1.ne.n_quant_steps)) then
+             n_quant_steps=1
+             write(6,*) 'AIMC requires n_quant_steps Equal 1, for now'
+        endif
 
         sim%naesmd%nquantumreal=n_quant_steps
         sim%naesmd%dtquantum=sim%naesmd%dtmdqt/dfloat(sim%naesmd%nquantumreal)
@@ -601,15 +820,20 @@ end subroutine
         therm_type=therm_type
         if(therm_type==0) sim%naesmd%ensemble ='energy'
         if(therm_type==1) sim%naesmd%ensemble ='langev'
+        if(therm_type==2) sim%naesmd%ensemble ='temper'
+        sim%naesmd%fix = ifixed 
 
         sim%naesmd%tao=berendsen_relax_const
 
+        if(heating==1) then
+            sim%naesmd%prep='heat'
+        else
             sim%naesmd%prep='equi'
+        end if
 
         sim%naesmd%istepheat=heating_steps_per_degree
         sim%naesmd%nstepw=out_data_steps
         sim%naesmd%nstepcoord=out_coords_steps
-   
         sim%naesmd%friction=therm_friction/1.d3*convtf !convter therm_friction (in 1/ps) to sim%naesmd%friction (1/AU)
 
         sim%naesmd%iseedmdqt=rnd_seed
@@ -622,8 +846,18 @@ end subroutine
         sim%constcoherE0=decoher_e0
         sim%constcoherC=decoher_c
 
+        sim%aimc%delta_clone_1=AIMC_dclone_1
+        sim%aimc%delta_clone_2=AIMC_dclone_2
+        sim%aimc%delta_clone_3=AIMC_dclone_3
+        sim%aimc%force_pop_min=AIMC_force_pop_min
+        sim%aimc%nclones_max=AIMC_max_clone
         sim%cohertype=decoher_type
 
+        sim%naesmd%nmc=nmc
+        sim%naesmd%npc=npc
+        sim%naesmd%printTdipole=printTdipole
+        sim%naesmd%printTDM=printTDM
+        sim%naesmd%dpt=dpt
         sim%naesmd%deltared=sim%naesmd%deltared/feVmdqt !for reducing number of potentials   
 
         write(6,*) '!!!!!!-----MD INPUT-----!!!!!!'
@@ -645,8 +879,16 @@ end subroutine
             write(6,*)'MD using Langevin '
 
         else
+            if(sim%naesmd%ensemble.eq.'temper') then
+                write(6,*)'MD using Berendsen thermostat'
+                write(6,*)'with bath relaxation constant [ps]=',sim%naesmd%tao
+            else
                 write(6,*)'MD at constant energy'
+            end if
         end if
+
+        if (sim%naesmd%printTdipole.gt.0) write(6,*) 'Printing transition dipole moments: ', sim%naesmd%printTdipole
+        if (sim%naesmd%printTDM.gt.0) write(6,*) 'Printing the complete TDM', sim%naesmd%printTDM
 
         write(6,*)'Starting time, fs        ',sim%naesmd%tfemto
         write(6,*)'Time step, fs                      ',sim%naesmd%dtmdqt*convtf
@@ -658,12 +900,28 @@ end subroutine
             write(6,*)'Newtonian dynamics,           therm_type=',therm_type
         else if(therm_type.eq.1) then
             write(6,*)'Langevin thermostat dynamics, therm_type=',therm_type
+        else if(therm_type.eq.2) then
+            write(6,*)'Temperature thermostat,       therm_type=',therm_type
         end if
 
+        if(nmc.gt.0.and.npc.gt.0) then
+            write(6,*)'Fatal error: NEXMD can not freeze normal modes (nmc > 0) and distances between atoms (npc > 0) at the same time!'
+            stop
+        endif
+
+        if(nmc.gt.0) then
+            write(6,*)'Freezing a total of ', nmc, ' normal modes'
+        else if(npc.gt.0) then
+            write(6,*)'Freezing a total of ', npc, 'distances between atoms'
+        else
+            write(6,*)'MD without freezing'
+        endif
+        
         write(6,*)'Temperature, K               ',sim%naesmd%temp0
         write(6,*)'Bath relaxation constant     ',sim%naesmd%tao
 
         if(sim%naesmd%prep.eq.'equi') write(6,*)'Equilibrated dynamics'
+        if(sim%naesmd%prep.eq.'heat') write(6,*)'Heating dynamics from T=0'
 
         write(6,*)'Number of steps per degree K  ',sim%naesmd%istepheat
         write(6,*)'Number of steps to write data ',sim%naesmd%nstepw
@@ -695,7 +953,7 @@ end subroutine
 
         ! reading atoms and modes:
         rewind (inputfdes)
-       Na=0
+        Na=0
         ! read the cartesian coordinates
         !****************************************************************************
         do
@@ -748,7 +1006,94 @@ end subroutine
             if(sim%naesmd%atomtype(Na).eq.16) sim%naesmd%atomtype2(Na)='S '
             if(sim%naesmd%atomtype(Na).eq.17) sim%naesmd%massmdqt(Na)=35.453d0*convm
             if(sim%naesmd%atomtype(Na).eq.17) sim%naesmd%atomtype2(Na)='Cl'
-
+            if(sim%naesmd%atomtype(Na).eq.18) sim%naesmd%massmdqt(Na)=39.948d0*convm
+            if(sim%naesmd%atomtype(Na).eq.18) sim%naesmd%atomtype2(Na)='Ar'
+            if(sim%naesmd%atomtype(Na).eq.19) sim%naesmd%massmdqt(Na)=39.098d0*convm
+            if(sim%naesmd%atomtype(Na).eq.19) sim%naesmd%atomtype2(Na)='K'
+            if(sim%naesmd%atomtype(Na).eq.20) sim%naesmd%massmdqt(Na)=40.078d0*convm
+            if(sim%naesmd%atomtype(Na).eq.20) sim%naesmd%atomtype2(Na)='Ca'
+            if(sim%naesmd%atomtype(Na).eq.21) sim%naesmd%massmdqt(Na)=44.956d0*convm
+            if(sim%naesmd%atomtype(Na).eq.21) sim%naesmd%atomtype2(Na)='Sc'
+            if(sim%naesmd%atomtype(Na).eq.22) sim%naesmd%massmdqt(Na)=47.867d0*convm
+            if(sim%naesmd%atomtype(Na).eq.22) sim%naesmd%atomtype2(Na)='Ti'
+            if(sim%naesmd%atomtype(Na).eq.23) sim%naesmd%massmdqt(Na)=50.942d0*convm
+            if(sim%naesmd%atomtype(Na).eq.23) sim%naesmd%atomtype2(Na)='V'
+            if(sim%naesmd%atomtype(Na).eq.24) sim%naesmd%massmdqt(Na)=51.996d0*convm
+            if(sim%naesmd%atomtype(Na).eq.24) sim%naesmd%atomtype2(Na)='Cr'
+            if(sim%naesmd%atomtype(Na).eq.25) sim%naesmd%massmdqt(Na)=54.938d0*convm
+            if(sim%naesmd%atomtype(Na).eq.25) sim%naesmd%atomtype2(Na)='Mn'
+            if(sim%naesmd%atomtype(Na).eq.26) sim%naesmd%massmdqt(Na)=55.845d0*convm
+            if(sim%naesmd%atomtype(Na).eq.26) sim%naesmd%atomtype2(Na)='Fe'
+            if(sim%naesmd%atomtype(Na).eq.27) sim%naesmd%massmdqt(Na)=58.933d0*convm
+            if(sim%naesmd%atomtype(Na).eq.27) sim%naesmd%atomtype2(Na)='Co'
+            if(sim%naesmd%atomtype(Na).eq.28) sim%naesmd%massmdqt(Na)=58.693d0*convm
+            if(sim%naesmd%atomtype(Na).eq.28) sim%naesmd%atomtype2(Na)='Ni'
+            if(sim%naesmd%atomtype(Na).eq.29) sim%naesmd%massmdqt(Na)=63.546d0*convm
+            if(sim%naesmd%atomtype(Na).eq.29) sim%naesmd%atomtype2(Na)='Cu'
+            if(sim%naesmd%atomtype(Na).eq.30) sim%naesmd%massmdqt(Na)=65.38d0*convm
+            if(sim%naesmd%atomtype(Na).eq.30) sim%naesmd%atomtype2(Na)='Zn'
+            if(sim%naesmd%atomtype(Na).eq.31) sim%naesmd%massmdqt(Na)=69.723d0*convm
+            if(sim%naesmd%atomtype(Na).eq.31) sim%naesmd%atomtype2(Na)='Ga'
+            if(sim%naesmd%atomtype(Na).eq.32) sim%naesmd%massmdqt(Na)=72.640d0*convm
+            if(sim%naesmd%atomtype(Na).eq.32) sim%naesmd%atomtype2(Na)='Ge'
+            if(sim%naesmd%atomtype(Na).eq.33) sim%naesmd%massmdqt(Na)=74.922d0*convm
+            if(sim%naesmd%atomtype(Na).eq.33) sim%naesmd%atomtype2(Na)='As'
+            if(sim%naesmd%atomtype(Na).eq.34) sim%naesmd%massmdqt(Na)=78.960d0*convm
+            if(sim%naesmd%atomtype(Na).eq.34) sim%naesmd%atomtype2(Na)='Se'
+            if(sim%naesmd%atomtype(Na).eq.35) sim%naesmd%massmdqt(Na)=79.904d0*convm
+            if(sim%naesmd%atomtype(Na).eq.35) sim%naesmd%atomtype2(Na)='Br'
+            if(sim%naesmd%atomtype(Na).eq.36) sim%naesmd%massmdqt(Na)=83.798d0*convm
+            if(sim%naesmd%atomtype(Na).eq.36) sim%naesmd%atomtype2(Na)='Kr'
+            if(sim%naesmd%atomtype(Na).eq.37) sim%naesmd%massmdqt(Na)=85.468d0*convm
+            if(sim%naesmd%atomtype(Na).eq.37) sim%naesmd%atomtype2(Na)='Rb'
+            if(sim%naesmd%atomtype(Na).eq.38) sim%naesmd%massmdqt(Na)=87.620d0*convm
+            if(sim%naesmd%atomtype(Na).eq.38) sim%naesmd%atomtype2(Na)='Sr'
+            if(sim%naesmd%atomtype(Na).eq.39) sim%naesmd%massmdqt(Na)=88.906d0*convm
+            if(sim%naesmd%atomtype(Na).eq.39) sim%naesmd%atomtype2(Na)='Y'
+            if(sim%naesmd%atomtype(Na).eq.40) sim%naesmd%massmdqt(Na)=91.224d0*convm
+            if(sim%naesmd%atomtype(Na).eq.40) sim%naesmd%atomtype2(Na)='Zr'
+            if(sim%naesmd%atomtype(Na).eq.41) sim%naesmd%massmdqt(Na)=92.906d0*convm
+            if(sim%naesmd%atomtype(Na).eq.41) sim%naesmd%atomtype2(Na)='Nb'
+            if(sim%naesmd%atomtype(Na).eq.42) sim%naesmd%massmdqt(Na)=95.950d0*convm
+            if(sim%naesmd%atomtype(Na).eq.42) sim%naesmd%atomtype2(Na)='Mo'
+            if(sim%naesmd%atomtype(Na).eq.43) sim%naesmd%massmdqt(Na)=98.000d0*convm
+            if(sim%naesmd%atomtype(Na).eq.43) sim%naesmd%atomtype2(Na)='Tc'
+            if(sim%naesmd%atomtype(Na).eq.44) sim%naesmd%massmdqt(Na)=101.07d0*convm
+            if(sim%naesmd%atomtype(Na).eq.44) sim%naesmd%atomtype2(Na)='Ru'
+            if(sim%naesmd%atomtype(Na).eq.45) sim%naesmd%massmdqt(Na)=102.91d0*convm
+            if(sim%naesmd%atomtype(Na).eq.45) sim%naesmd%atomtype2(Na)='Rh'
+            if(sim%naesmd%atomtype(Na).eq.46) sim%naesmd%massmdqt(Na)=106.42d0*convm
+            if(sim%naesmd%atomtype(Na).eq.46) sim%naesmd%atomtype2(Na)='Pd'
+            if(sim%naesmd%atomtype(Na).eq.47) sim%naesmd%massmdqt(Na)=107.87d0*convm
+            if(sim%naesmd%atomtype(Na).eq.47) sim%naesmd%atomtype2(Na)='Ag'
+            if(sim%naesmd%atomtype(Na).eq.48) sim%naesmd%massmdqt(Na)=112.41d0*convm
+            if(sim%naesmd%atomtype(Na).eq.48) sim%naesmd%atomtype2(Na)='Cd'
+            if(sim%naesmd%atomtype(Na).eq.49) sim%naesmd%massmdqt(Na)=114.82d0*convm
+            if(sim%naesmd%atomtype(Na).eq.49) sim%naesmd%atomtype2(Na)='In'
+            if(sim%naesmd%atomtype(Na).eq.50) sim%naesmd%massmdqt(Na)=118.71d0*convm
+            if(sim%naesmd%atomtype(Na).eq.50) sim%naesmd%atomtype2(Na)='Sn'
+            if(sim%naesmd%atomtype(Na).eq.51) sim%naesmd%massmdqt(Na)=121.76d0*convm
+            if(sim%naesmd%atomtype(Na).eq.51) sim%naesmd%atomtype2(Na)='Sb'
+            if(sim%naesmd%atomtype(Na).eq.52) sim%naesmd%massmdqt(Na)=127.60d0*convm
+            if(sim%naesmd%atomtype(Na).eq.52) sim%naesmd%atomtype2(Na)='Te'
+            if(sim%naesmd%atomtype(Na).eq.53) sim%naesmd%massmdqt(Na)=126.90d0*convm
+            if(sim%naesmd%atomtype(Na).eq.53) sim%naesmd%atomtype2(Na)='I'
+            if(sim%naesmd%atomtype(Na).eq.54) sim%naesmd%massmdqt(Na)=131.29d0*convm
+            if(sim%naesmd%atomtype(Na).eq.54) sim%naesmd%atomtype2(Na)='Xe'
+            if(sim%naesmd%atomtype(Na).eq.55) sim%naesmd%massmdqt(Na)=132.91d0*convm
+            if(sim%naesmd%atomtype(Na).eq.55) sim%naesmd%atomtype2(Na)='Cs'
+            if(sim%naesmd%atomtype(Na).eq.56) sim%naesmd%massmdqt(Na)=137.33d0*convm
+            if(sim%naesmd%atomtype(Na).eq.56) sim%naesmd%atomtype2(Na)='Ba'
+            if(sim%naesmd%atomtype(Na).eq.78) sim%naesmd%massmdqt(Na)=195.08d0*convm
+            if(sim%naesmd%atomtype(Na).eq.78) sim%naesmd%atomtype2(Na)='Pt'
+            if(sim%naesmd%atomtype(Na).eq.79) sim%naesmd%massmdqt(Na)=196.97d0*convm
+            if(sim%naesmd%atomtype(Na).eq.79) sim%naesmd%atomtype2(Na)='Au'
+            if(sim%naesmd%atomtype(Na).eq.80) sim%naesmd%massmdqt(Na)=200.59d0*convm
+            if(sim%naesmd%atomtype(Na).eq.80) sim%naesmd%atomtype2(Na)='Hg'
+            if(sim%naesmd%atomtype(Na).eq.82) sim%naesmd%massmdqt(Na)=207.20d0*convm
+            if(sim%naesmd%atomtype(Na).eq.82) sim%naesmd%atomtype2(Na)='Pb'
+            if(sim%naesmd%atomtype(Na).eq.83) sim%naesmd%massmdqt(Na)=208.98d0*convm
+            if(sim%naesmd%atomtype(Na).eq.83) sim%naesmd%atomtype2(Na)='Bi'
             read(inputfdes,'(a)',err=29) txt
         end do
         !--------------------------------------------------------------------
@@ -760,13 +1105,177 @@ end subroutine
         sim%excN=sim%naesmd%npot
         call allocate_naesmd_module(sim%naesmd,Na,sim%naesmd%npot)
         call allocate_md_module(sim%md,Na)
-        if(sim%naesmd%npot.gt.0) then
-                allocate(sim%rk_comm%thresholds(2*sim%excN))
-                allocate(sim%naesmd%yg(2*sim%excN))
-                allocate(sim%naesmd%ygprime(2*sim%excN))
-                allocate(sim%naesmd%cross(sim%excN))
-                allocate(sim%naesmd%Omega(sim%excN))
+
+        !Reading normal modes to freeze
+        if (sim%naesmd%nmc.gt.0) then
+            rewind (inputfdes)
+            do  
+                read(inputfdes,'(a)',err=29) txt 
+                if( &
+                    txt(1:6).eq.'$MODES' &
+                    .or.txt(1:6).eq.'$modes' &
+                    .or.txt(1:6).eq.'&MODES' &
+                    .or.txt(1:6).eq.'&modes') exit ! exiting infinite loop
+            end do
+            i=1 
+            do  
+                read(inputfdes,'(a)',err=29) txt 
+                if( &
+                    txt(1:9).eq.'$ENDMODES' &
+                    .or.txt(1:9).eq.'$endmodes' &
+                    .or.txt(1:9).eq.'&ENDMODES' &
+                    .or.txt(1:9).eq.'&endmodes') exit
+                read(txt,*,err=29) sim%naesmd%mc(i)
+                i=i+1
+            end do
+            write(6,*) 'Normal modes to freeze:'
+            do i=1,sim%naesmd%nmc
+                write(6,*) sim%naesmd%mc(i)
+            enddo
+            !Reading all normal modes for freezing
+            open(34,file='nma_modes.out')
+            do i=1,3*sim%naesmd%natom
+               print *, 'Reading degree # ', i
+               read(34,*) (sim%naesmd%enm(i,j),j=1,sim%naesmd%natom*3)
+!               read(34,198) (sim%naesmd%enm(i,j),j=1,sim%naesmd%natom*3)
+            enddo
+            close(34)
+            !Reading equilibrium positions for normal mode freezing
+            open(34,file='tempA')
+            do i=1,sim%naesmd%natom
+               read(34,*) j, sim%naesmd%xbf0(i), sim%naesmd%ybf0(i),&
+                          sim%naesmd%zbf0(i) 
+               sim%naesmd%xbf0(i) = sim%naesmd%xbf0(i)/convl
+               sim%naesmd%ybf0(i) = sim%naesmd%ybf0(i)/convl
+               sim%naesmd%zbf0(i) = sim%naesmd%zbf0(i)/convl
+            enddo
+            close(34)
+            !Calculating total mass
+            sim%naesmd%masatotal = sum(sim%naesmd%massmdqt)
+            do i=1, sim%naesmd%natom
+               sim%naesmd%massqrt(i) = sqrt(sim%naesmd%massmdqt(i))
+            enddo
+        else if (sim%naesmd%npc.gt.0) then
+            !Reading pairs of distances to freeze
+            rewind (inputfdes)
+            do
+                read(inputfdes,'(a)',err=29) txt
+                if( &
+                    txt(1:6).eq.'$PAIRS' &
+                    .or.txt(1:6).eq.'$pairs' &
+                    .or.txt(1:6).eq.'&PAIRS' &
+                    .or.txt(1:6).eq.'&pairs') exit ! exiting infinite loop
+            end do
+            i=1
+            do
+                read(inputfdes,'(a)',err=29) txt
+                if( &
+                    txt(1:9).eq.'$ENDPAIRS' &
+                    .or.txt(1:9).eq.'$endpairs' &
+                    .or.txt(1:9).eq.'&ENDPAIRS' &
+                    .or.txt(1:9).eq.'&endpairs') exit
+                read(txt,*,err=29) sim%naesmd%dtc(i,1),sim%naesmd%dtc(i,2)
+                i=i+1
+            end do
+            write(6,*) 'Pairs of atoms to freeze:'
+            do i=1,sim%naesmd%npc
+                write(6,*) sim%naesmd%dtc(i,1),sim%naesmd%dtc(i,2)
+            enddo
         endif
+
+        if(sim%naesmd%npot.gt.0) then
+            allocate(sim%naesmd%yg(2*sim%excN))
+            allocate(sim%naesmd%ygprime(2*sim%excN))
+            allocate(sim%naesmd%yg_new(3*sim%excN))
+            allocate(sim%naesmd%ygprime_new(3*sim%excN))
+            allocate(sim%naesmd%cross(sim%excN))
+            allocate(sim%naesmd%Omega(sim%excN))
+            allocate(sim%naesmd%sgn(sim%excN,sim%excN))
+        endif
+        if(sim%naesmd%dynam_type.eq.'aimc'.and.sim%id.eq.0) then
+            !Output files
+            nuclear%outfile_0=400 !for debugging
+            nuclear%outfile_1=401 !for populations 
+            nuclear%outfile_2=402 !for nuclear coefficients
+            nuclear%outfile_3=403 !for electronic overlaps
+            nuclear%outfile_4=404 !for last Heff (for restart)
+            nuclear%outfile_5=405 !for last Pha (for restart)
+            nuclear%outfile_6=406 !for dropped trajectories (for restart)
+            call open_output_mce(nuclear,sim%naesmd%tfemto)
+            !Effective Hamiltonians
+            allocate(nuclear%Heff(Nsim_max,Nsim_max),nuclear%Heff_old(Nsim_max,Nsim_max))
+            nuclear%Heff=0.0d0
+            nuclear%Heff_old=0.0d0
+            allocate(nuclear%cloned(Nsim_max))
+            nuclear%cloned=.false.
+            !Nuclear cofficients D
+            allocate(nuclear%D(Nsim))
+            nuclear%D = (0.0d0, 0.0d0)
+            nuclear%D(1) = (1.0d0, 0.0d0)
+            !Electronic populations
+            allocate(nuclear%pop(sim%excN))
+            !Defoult initial values for the electronic overaps
+            allocate(nuclear%sE(Nsim_max,Nsim_max,sim%excN,sim%excN))
+            nuclear%sE = 0.0d0
+            do i = 1, sim%excN
+                do j = 1, Nsim
+                    nuclear%sE(j,j,i,i) = 1.0d0
+                enddo
+            enddo
+            !Initial defoult value for the nuclear phase (gamma)
+            sim%naesmd%pha = 0.0d0
+            !Gaussian widths for MCE (1/Bohr^2)
+            allocate(sim%naesmd%w(3*sim%naesmd%natom))
+            do i = 1, sim%naesmd%natom
+                if(sim%naesmd%atomtype(i).eq.1) then !H
+                    sim%naesmd%w(3*i-2) = 4.7d0
+                    sim%naesmd%w(3*i-1) = 4.7d0
+                    sim%naesmd%w(3*i) = 4.7d0
+                elseif(sim%naesmd%atomtype(i).eq.5) then !B
+                    sim%naesmd%w(3*i-2) = 15.2d0
+                    sim%naesmd%w(3*i-1) = 15.2d0
+                    sim%naesmd%w(3*i) = 15.2d0
+                elseif(sim%naesmd%atomtype(i).eq.6) then !C
+                    sim%naesmd%w(3*i-2) = 22.7d0
+                    sim%naesmd%w(3*i-1) = 22.7d0
+                    sim%naesmd%w(3*i) = 22.7d0
+                elseif(sim%naesmd%atomtype(i).eq.7) then !N
+                    sim%naesmd%w(3*i-2) = 19.0d0
+                    sim%naesmd%w(3*i-1) = 19.0d0
+                    sim%naesmd%w(3*i) = 19.0d0
+                elseif(sim%naesmd%atomtype(i).eq.8) then !O
+                    sim%naesmd%w(3*i-2) = 12.2d0
+                    sim%naesmd%w(3*i-1) = 12.2d0
+                    sim%naesmd%w(3*i) = 12.2d0
+                elseif(sim%naesmd%atomtype(i).eq.9) then !F
+                    sim%naesmd%w(3*i-2) = 8.5d0
+                    sim%naesmd%w(3*i-1) = 8.5d0
+                    sim%naesmd%w(3*i) = 8.5d0
+                elseif(sim%naesmd%atomtype(i).eq.12) then !Mg (Calculated for the Chlorophyll monomer)
+                    sim%naesmd%w(3*i-2) = 10.3
+                    sim%naesmd%w(3*i-1) = 10.3
+                    sim%naesmd%w(3*i) = 10.3
+                elseif(sim%naesmd%atomtype(i).eq.16) then !S
+                    sim%naesmd%w(3*i-2) = 16.7d0
+                    sim%naesmd%w(3*i-1) = 16.7d0
+                    sim%naesmd%w(3*i) = 16.7d0
+                elseif(sim%naesmd%atomtype(i).eq.17) then !Cl
+                    sim%naesmd%w(3*i-2) = 7.4d0
+                    sim%naesmd%w(3*i-1) = 7.4d0
+                    sim%naesmd%w(3*i) = 7.4d0
+                else
+                    print *, 'Fatal error, Gaussian width mising for atomic number: ', sim%naesmd%atomtype(i)
+                    stop
+                endif
+            enddo
+            if(restart_flag.eq.1) call read_aimc_for_restart(nuclear,Nsim,sim%excN)
+        endif
+
+        do i=1,sim%excN
+          do j=1, sim%excN
+            sim%naesmd%sgn(i,j)=1.0d0
+          enddo
+        enddo
 
         !--------------------------------------------------------------------
         !
@@ -827,11 +1336,10 @@ end subroutine
                 .or.txt(1:9).eq.'&ENDCOEFF' &
                 .or.txt(1:9).eq.'&endcoeff') exit
 
-            read(txt,*,err=29) sim%naesmd%yg(i),sim%naesmd%yg(i+sim%excN)
-
-            sim%naesmd%yg(i)=dsqrt(sim%naesmd%yg(i))
-            !sim%naesmd%yg(i+sim%excN)=dasin(sim%naesmd%yg(i+sim%excN))
-
+            read(txt,*,err=29) sim%naesmd%yg(i), sim%naesmd%yg(i+sim%excN)!, sim%naesmd%yg_new(i), sim%naesmd%yg_new(i+sim%excN), sim%naesmd%yg_new(i+2*sim%excN)
+            sim%naesmd%yg_new(i)=sim%naesmd%yg(i)*dcos(sim%naesmd%yg(i+sim%excN))
+            sim%naesmd%yg_new(i+sim%excN)=sim%naesmd%yg(i)*dsin(sim%naesmd%yg(i+sim%excN))
+            sim%naesmd%yg_new(i+2*sim%excN)=0.0d0
             i=i+1
             if(i.gt.sim%excN) exit ! too many coefficients - leaving the loop
           end do
@@ -918,10 +1426,34 @@ end subroutine
             write(6,100) sim%md%atoms(i),xx(i),yy(i),zz(i)
         end do
 100     format(I5,'     ',3F12.6)
+198     format(2000(e18.10,1x))
 
 
         sim%coords(1:3*Na)=sim%md%r0(1:3*Na)
         allocate(sim%deriv_forces(3*Na))
+        allocate(sim%deriv_forces_state(sim%excN,3*Na))
+
+        !Reading input.ceon lines for restart 
+        open(10000-1,file='input.ceon',status='old')
+        j=1
+        do
+          read(10000-1, '(A)', iostat=ios) txt
+          if (ios /= 0 .or. txt(2:6).eq.'coord') exit
+          j = j + 1
+        end do
+        allocate(sim%input_line(j)) 
+        rewind(10000-1)
+        do i = 1, j
+          read(10000-1, '(A)', iostat=ios) sim%input_line(i)
+        end do
+        close(10000-1)
+
+        if(sim%naesmd%dynam_type.eq.'aimc') then
+                allocate(sim%aimc%FM(3*Na))
+                allocate(sim%aimc%FE(3*Na))
+                allocate(sim%aimc%Fmax(3*Na))
+                sim%aimc%nclones=nclones0
+        endif
 
         return
 
@@ -941,9 +1473,4 @@ end subroutine
 98      stop 'bad input'
     end subroutine
 
-
-
-
-
-  
 end

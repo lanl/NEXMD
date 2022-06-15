@@ -217,6 +217,16 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
     allocate ( qm2_struct%old2_density(qm2_struct%norbs), stat=ier )
     REQUIRE ( ier == 0 ) !Used by qm2_cnvg as workspace.
 
+    if (qmmm_nml%density_predict == 1) then
+        !We are using Niklasson et al. density matrix prediction.
+        allocate ( qm2_struct%md_den_mat_guess1(qm2_struct%matsize), stat=ier )
+        REQUIRE ( ier == 0 )
+        allocate ( qm2_struct%md_den_mat_guess2(qm2_struct%matsize), stat=ier )
+        REQUIRE ( ier == 0 )
+    elseif (qmmm_nml%density_predict == 2) then
+        !We are using XL-BOMD
+        call init_xlbomd(xlbomd_struct,qm2_struct%matsize)
+    end if
 
     if (qmmm_nml%fock_predict == 1) then
         !We are using Pulay et al. Fock matrix prediction.
@@ -306,6 +316,18 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
         end do
     end do
 
+    if ( qmmm_nml%density_predict == 1) then
+        !We are using Pguess(t) = 2Pconv(t-1) - Pguess(t-2)
+        !in this case for an initial start we set
+        !den_matrix = 0.5 initial guess
+        !md_den_mat_guess1 = initial guess
+        !md_den_mat_guess2 = 0.0d0
+
+        qm2_struct%md_den_mat_guess2(1:qm2_struct%matsize) = 0.0d0
+        qm2_struct%md_den_mat_guess1(1:qm2_struct%matsize) = 0.0d0
+        qm2_struct%den_matrix(1:qm2_struct%matsize) = qm2_struct%den_matrix(1:qm2_struct%matsize) * 0.5d0
+
+    end if
       
     !!            qxd_s, qxd_z0, qxd_zq, qxd_d0, qxd_dq, qxd_q0, qxd_qq, qxd_neff
     !----------------------------------------
