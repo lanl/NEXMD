@@ -13,10 +13,10 @@ module communism
     use md_module, only            : md_structure
     use xlbomd_module, only            : xlbomd_structure
     use naesmd_constants
-    use rksuite_90, only:rk_comm_real_1d 
     use cosmo_C, only : cosmo_C_structure          
     use qm2_params_module,  only : qm2_params_type
     use qmmm_nml_module   , only : qmmm_nml_type
+    use AIMC_type_module, only: AIMC_type
     implicit none
           
     type:: simulation_t
@@ -36,11 +36,12 @@ module communism
         integer :: outfile_13,outfile_14,outfile_15,outfile_16
         integer :: outfile_17,outfile_18,outfile_19,outfile_20
         integer :: outfile_21,outfile_22,outfile_23,outfile_24
+        integer :: outfile_28
         _REAL_                         :: escf
         _REAL_, dimension(:), pointer  :: deriv_forces ! forces as they come out
-        ! of deriv (eV/A)
-        ! Various cumulative times (initial values=0.d0)
+        ! of deriv (eV/A) for each electronic state
         _REAL_:: constcoherE0,constcoherC
+        ! Various cumulative times (initial values=0.d0)
         _REAL_::time_sqm_took=0.d0
         _REAL_::time_davidson_took=0.d0
         _REAL_::time_deriv_took=0.d0 ! adiabatic derivatives (i.e., forces)
@@ -53,7 +54,6 @@ module communism
         type(qm2_structure),pointer               :: qm2
         type(xlbomd_structure),pointer            :: xlbomd
         type(cosmo_C_structure),pointer           :: cosmo
-	type(rk_comm_real_1d),pointer :: rk_comm !quantum coeff ode solver common variables
         type(qm2_params_type),pointer :: qparams
         type(qmmm_nml_type),pointer :: qnml
         type(qm2_rij_eqns_structure),pointer :: rij
@@ -65,7 +65,28 @@ module communism
         type(qmmm_scratch_structure),pointer:: scratch
         type(qm_ewald_structure),pointer :: ewald
         type(qmmm_openmp_structure),pointer  :: qomp 
+        type(AIMC_type),pointer  :: aimc
     end type simulation_t
+    
+    type sim_pointer_array
+        type(simulation_t),pointer :: sim
+    end type sim_pointer_array
+
+    type :: MCE
+        double complex, dimension(:), allocatable :: D !nuclear coeffients for AIMC
+        _REAL_, dimension(:,:,:,:), allocatable :: sE !electronic overlaps 
+        double complex, dimension(:,:), allocatable :: Heff, Heff_old !Effective Hamiltonian
+        logical, dimension(:), allocatable :: cloned !Flag for clones
+        _REAL_, dimension(:), allocatable :: pop !Electronic populations
+        !Outputs:
+        integer :: outfile_0 !for debugging
+        integer :: outfile_1 !for populations
+        integer :: outfile_2 !for nuclear coefficients
+        integer :: outfile_3 !for electronic overlaps
+        integer :: outfile_4 !for last Heff (for restart)
+        integer :: outfile_5 !for last Pha (for restart)
+        integer :: outfile_6 !for dropped trajectories (for restart)
+    end type MCE
           
 contains
           
@@ -80,7 +101,6 @@ contains
         a%qm2      => null()
         a%naesmd      => null()
         a%md      => null()
-        a%rk_comm      => null()
         a%cosmo      => null()
         a%xlbomd      => null()
         a%qparams => null() 
@@ -93,6 +113,7 @@ contains
         a%vsolv => null() 
         a%scratch => null()  
         a%ewald => null()
+        a%aimc => null()
         a%Nsim = Nsim
 #ifdef OPENMP 
         a%qomp => null()
@@ -100,11 +121,11 @@ contains
         allocate(a%naesmd)
     end subroutine
 
-    subroutine setp_simulation(a,qmmm_struct,qm2ds,qm2_struct,naesmd_struct,md_struct,rk_struct, &
-		cosmo_c_struct, xlbomd_struct, qparams_struct, &
+    subroutine setp_simulation(a,qmmm_struct,qm2ds,qm2_struct,naesmd_struct,md_struct, &
+                cosmo_c_struct, xlbomd_struct, qparams_struct, &
                 qnml_struct, rij_struct, gb_struct, qmpi_struct, &
                 opnq_struct, div_struct, vsolv_struct, scratch_struct, &
-                ewald_struct, qomp_struct)
+                ewald_struct, aimc_struct, qomp_struct)
         type(simulation_t), pointer  :: a
         type(qmmm_struct_type),target :: qmmm_struct
         type(qm2_davidson_structure_type),target :: qm2ds
@@ -113,7 +134,6 @@ contains
         type(cosmo_C_structure),target :: cosmo_c_struct
         type(naesmd_structure),target :: naesmd_struct
         type(md_structure),target :: md_struct
-	type(rk_comm_real_1d),target :: rk_struct
         type(qm2_params_type),target :: qparams_struct
         type(qmmm_nml_type),target :: qnml_struct
         type(qm2_rij_eqns_structure),target:: rij_struct
@@ -124,15 +144,15 @@ contains
         type(qmmm_vsolv_type), target :: vsolv_struct
         type(qmmm_scratch_structure), target:: scratch_struct
         type(qm_ewald_structure), target :: ewald_struct 
+        type(AIMC_type), target :: aimc_struct
         type(qmmm_openmp_structure),optional,target :: qomp_struct
         a%qmmm     => qmmm_struct
         a%dav     => qm2ds
         a%qm2     => qm2_struct
         a%naesmd  => naesmd_struct
         a%md  => md_struct
-	a%rk_comm => rk_struct
-	a%cosmo => cosmo_c_struct
-	a%xlbomd => xlbomd_struct
+        a%cosmo => cosmo_c_struct
+        a%xlbomd => xlbomd_struct
         a%qparams => qparams_struct
         a%qnml => qnml_struct
         a%rij => rij_struct
@@ -143,6 +163,7 @@ contains
         a%vsolv => vsolv_struct  
         a%scratch => scratch_struct  
         a%ewald => ewald_struct
+        a%aimc => aimc_struct
         if(present(qomp_struct)) a%qomp => qomp_struct 
     end subroutine
           
@@ -266,7 +287,7 @@ contains
     !
     !********************************************************************
     !
-    subroutine do_sqm_and_davidson(sim,rx,ry,rz,r,statelimit)
+    subroutine do_sqm_and_davidson(sim,printTdipole,rx,ry,rz,r,statelimit)
         implicit none
           
         type(simulation_t),pointer::sim
@@ -279,6 +300,7 @@ contains
         _REAL_ ddot
         integer :: quir_cmdqt=0
         integer,optional::statelimit
+        integer printTdipole
           
           
         if(present(rx).and.present(ry).and.present(rz)) then
@@ -291,7 +313,7 @@ contains
           
         call qmmm2coords_r(sim)
         if(sim%excN>0) then
-            sim%dav%Mx=sim%excN+1
+            sim%dav%Mx=sim%excN+2
         else
             sim%dav%Mx=sim%excN
         endif
@@ -300,14 +322,26 @@ contains
         endif
 
         ! CML Includes call to Davidson within sqm_energy() 7/16/12
-        call sqm_energy(sim%ewald,sim%opnq, sim%rij,sim%qmpi,sim%gb,sim%scratch,sim%qnml,sim%qparams, sim%xlbomd,sim%cosmo,&
-            sim%qm2,sim%dav,sim%qmmm,sim%Na,sim%coords,sim%escf,born_radii, &
-            one_born_radii,intdiel,extdiel,Arad,sim%qm2%scf_mchg, &
-            sim%time_sqm_took,sim%time_davidson_took) !The use of sim here is a hack right now and could be fixed
+        if(sim%naesmd%tfemto.eq.0.0d0) then
+            call sqm_energy(sim%ewald,sim%opnq, sim%rij,sim%qmpi,sim%gb,sim%scratch,sim%qnml,sim%qparams, sim%xlbomd,sim%cosmo,&
+                sim%qm2,sim%dav,sim%qmmm,sim%Na,sim%coords,sim%escf,born_radii, &
+                one_born_radii,intdiel,extdiel,Arad,sim%qm2%scf_mchg, &
+                sim%time_sqm_took,sim%time_davidson_took,printTdipole,sim%outfile_28,sim%naesmd%tfemto) !The use of sim here is a hack right now and could be fixed
+        elseif(sim%naesmd%icontw.ne.sim%naesmd%nstepw) then
+            call sqm_energy(sim%ewald,sim%opnq, sim%rij,sim%qmpi,sim%gb,sim%scratch,sim%qnml,sim%qparams, sim%xlbomd,sim%cosmo,&
+                sim%qm2,sim%dav,sim%qmmm,sim%Na,sim%coords,sim%escf,born_radii, &
+                one_born_radii,intdiel,extdiel,Arad,sim%qm2%scf_mchg, &
+                sim%time_sqm_took,sim%time_davidson_took,0,sim%outfile_28,sim%naesmd%tfemto) !The use of sim here is a hack right now and could be fixed
+        else
+            call sqm_energy(sim%ewald,sim%opnq, sim%rij,sim%qmpi,sim%gb,sim%scratch,sim%qnml,sim%qparams, sim%xlbomd,sim%cosmo,&
+                sim%qm2,sim%dav,sim%qmmm,sim%Na,sim%coords,sim%escf,born_radii, &
+                one_born_radii,intdiel,extdiel,Arad,sim%qm2%scf_mchg, &
+                sim%time_sqm_took,sim%time_davidson_took,printTdipole,sim%outfile_28,sim%naesmd%tfemto) !The use of sim here is a hack right now and could be fixed
+        endif
         ! ground state energy
         sim%dav%Eground=sim%dav%Eground
         sim%nbasis=sim%dav%Nb
-          
+
         if (.not.allocated(sim%dav%vhf_old)) allocate(sim%dav%vhf_old(sim%dav%Nb,sim%dav%Nb));
         sim%dav%vhf_old(1:sim%dav%Nb,1:sim%dav%Nb)=sim%dav%vhf(1:sim%dav%Nb,1:sim%dav%Nb);        ! updating hartree-fock vectors
         ! Checking and restoring the sign of the transition density matrix (cmdqt)
@@ -331,7 +365,7 @@ contains
             write(6,*) ' Restoring quirality in cmdqt'
         end if
         return
-    end subroutine
+    end subroutine do_sqm_and_davidson
     !
     !********************************************************************
     !
@@ -343,21 +377,22 @@ contains
     !
     !********************************************************************
     !
-    subroutine do_sqm_davidson_update(sim,cmdqt,vmdqt,vgs,rx,ry,rz,r,statelimit)
-	use naesmd_module, only : realp_t
+    subroutine do_sqm_davidson_update(sim,printTdipole,cmdqt,vmdqt,vgs,rx,ry,rz,r,statelimit)
+        use naesmd_module, only : realp_t
         
-	implicit none
+        implicit none
         type(simulation_t),pointer::sim
+        integer printTdipole
         _REAL_,intent(inout),optional::cmdqt(:,:),vmdqt(:),vgs
         _REAL_,intent(in),optional::rx(:),ry(:),rz(:)
         type(realp_t),intent(in),optional::r(3)
         integer i
         integer,optional::statelimit
-	
+
           
         sim%dav%mdflag=2
           
-        call do_sqm_and_davidson(sim,rx,ry,rz,r,statelimit)
+        call do_sqm_and_davidson(sim,printTdipole,rx,ry,rz,r,statelimit)
         call dav2naesmd_Omega(sim) ! energy conversion
         if(present(vgs)) vgs=sim%naesmd%E0
           
@@ -371,7 +406,7 @@ contains
             call dav2cmdqt(sim,cmdqt)
         end if
         return
-    end subroutine
+    end subroutine do_sqm_davidson_update
     !
     !********************************************************************
     !
@@ -413,7 +448,8 @@ contains
         _REAL_ excharge(sim%qmmm%qm_mm_pairs*4)
         integer chgatnum(sim%Na)
         integer ncharge
-        integer :: igb, maxcyc
+        integer :: igb, maxcyc, do_nm
+        _REAL_ :: deltaX
         _REAL_  :: grms_tol
         logical :: master=.true.
 
@@ -466,7 +502,7 @@ contains
             sim%Na,igb,atnam,sim%naesmd%atomtype,maxcyc, &
             grms_tol,ntpr, ncharge,excharge,chgatnum, &
             sim%excN,sim%dav%struct_opt_state,sim%dav%idav,sim%dav%dav_guess, &
-            sim%dav%ftol,sim%dav%ftol0,sim%dav%ftol1,sim%dav%icount_M,sim%naesmd%nstep)
+            sim%dav%ftol,sim%dav%ftol0,sim%dav%ftol1,sim%dav%icount_M,sim%naesmd%nstep,do_nm,deltaX)
           
         call qm_assign_atom_types(sim%qmmm)
           
@@ -491,7 +527,19 @@ contains
         allocate ( sim%qmmm%qm_coords(3,sim%qmmm%nquant_nlink), stat=ier )
         REQUIRE(ier == 0)
           
-        !Check if we are doing Geometry Optimization or Dynamics and act accordingly
+        !Check if we are doing Geometry Optimization or Dynamics or NM and act accordingly
+        if (maxcyc.gt.0.and.do_nm.gt.0) then
+            write(6,*) "You must run geometry optimization (maxcyc > 0) or calculate nuclear &
+                normal modes (do_nm > 0). Running both simultaneously is not possible."    
+            STOP 0;
+        elseif (sim%naesmd%nstep.gt.0.and.do_nm.gt.0) then
+            write(6,*) "You must run dynamics (n_class_steps > 0) or calculate nuclear normal &
+                modes (do_nm > 0). Running both simultaneously is not possible."
+            STOP 0;
+        elseif (do_nm.gt.0) then
+            print *, 'before call hessian', deltaX
+            call hessian_calc(sim,deltaX)
+        endif
         if (maxcyc < 1) then
             sim%dav%minimization = .FALSE.
             sim%Ncharge  = ncharge
@@ -502,7 +550,7 @@ contains
             if ((sim%cosmo%solvent_model.eq.4).or.(sim%cosmo%solvent_model.eq.5)) then !solvent model that loops over ground sim%naesmd%state
                 call calc_cosmo_4(sim)
             else
-                call do_sqm_davidson_update(sim,sim%naesmd%cmdqt,sim%naesmd%vmdqt,sim%naesmd%vgs)
+                call do_sqm_davidson_update(sim,sim%naesmd%printTdipole,sim%naesmd%cmdqt,sim%naesmd%vmdqt,sim%naesmd%vgs)
             endif
         else if (sim%naesmd%nstep<1) then ! sim%naesmd%nstep - number of classical steps for dynamics
           
@@ -676,6 +724,11 @@ contains
                             write(6,100) sim_pass%qmmm%iqm_atomic_numbers(i),x(3*(i-1)+1),x(3*(i-1)+2),x(3*(i-1)+3)
                         end do
           
+                        if ( sim_pass%qnml%printbondorders ) then
+                            write(6,*) ''
+                            write(6,*) 'Bond Orders'
+                            call qm2_print_bondorders(sim_pass%qparams,sim_pass%qm2,sim_pass%qmmm)
+                        end if
                     endif
                 case ( CALCENRG, CALCGRAD, CALCBOTH )
                     ! Normal Amber control of NB list updates.
@@ -685,7 +738,7 @@ contains
                         if((sim_pass%cosmo%solvent_model.eq.4).or.(sim_pass%cosmo%solvent_model.eq.5)) then
                             call calc_cosmo_4(sim_pass)
                         else
-                            call do_sqm_davidson_update(sim_pass)
+                            call do_sqm_davidson_update(sim_pass,0)
                         endif
                         call deriv(sim_pass,sim_pass%qmmm%state_of_interest)
                         fg(1:3*natom)=-sim_pass%deriv_forces(1:3*natom)
@@ -713,7 +766,7 @@ contains
                         if((sim_pass%cosmo%solvent_model.eq.4).or.(sim_pass%cosmo%solvent_model.eq.5)) then
                             call calc_cosmo_4(sim_pass)
                         else
-                            call do_sqm_davidson_update(sim_pass)
+                            call do_sqm_davidson_update(sim_pass,0)
                         endif
                         call deriv(sim_pass,sim_pass%qmmm%state_of_interest)
                         if(sim_pass%qmmm%state_of_interest>0) then
@@ -729,11 +782,11 @@ contains
                     is_error = status_flag < 0
                     if ( .not. is_error ) then
                         call qmmm2naesmd_r(sim_pass);
-                        call do_sqm_davidson_update(sim_pass);
+                        call do_sqm_davidson_update(sim_pass,0);
                         if((sim_pass%cosmo%solvent_model.eq.4).or.(sim_pass%cosmo%solvent_model.eq.5)) then
                             call calc_cosmo_4(sim_pass)
                         else
-                            call do_sqm_davidson_update(sim_pass)
+                            call do_sqm_davidson_update(sim_pass,0)
                         endif
                         call deriv(sim_pass,sim_pass%qmmm%state_of_interest)
                         if(sim_pass%qmmm%state_of_interest>0) then

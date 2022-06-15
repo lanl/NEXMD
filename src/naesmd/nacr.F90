@@ -87,7 +87,6 @@ subroutine nacR_analytic(qm2_params,qmmm_nml,qmmm_mpi,qm2_rij_eqns,qm2_struct,qm
         end do
     end if
 
-	    write(6,*) "no"
 
     return
 

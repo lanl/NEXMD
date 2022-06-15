@@ -1164,6 +1164,34 @@ end if
      alp_mndod(atomic_number) = 2.1349930D0
      USS_mndod(atomic_number) = -34.5471300D0
      UPP_mndod(atomic_number) = -23.1216900D0
+  !AM1 added by Nicolas Oldani
+     am1_ref_index(atomic_number) = 4
+     element_supported_am1(atomic_number) = .true.
+     s_orb_exp_am1(atomic_number) = 1.6117090D0 !
+     p_orb_exp_am1(atomic_number) = 1.5553850D0 !
+     betas_am1(atomic_number) = -9.5991140D0  !
+     betap_am1(atomic_number) = -6.2737570D0  !
+     FN1_am1(1,atomic_number) = 0.3134200D0  !
+     FN2_am1(1,atomic_number) = 8.5432200D0
+     FN3_am1(1,atomic_number) = 0.8018400D0
+     FN1_am1(2,atomic_number) = 0.0388400D0
+     FN2_am1(2,atomic_number) = 8.9895000D0
+     FN3_am1(2,atomic_number) = 1.5730400D0
+     FN1_am1(3,atomic_number) = -0.006030D0
+     FN2_am1(3,atomic_number) = 6.1553500D0
+     FN3_am1(3,atomic_number) = 0.4512400D0
+     FN1_am1(4,atomic_number) = 0.0000000D0
+     FN2_am1(4,atomic_number) = 0.0000000D0
+     FN3_am1(4,atomic_number) = 0.0000000D0
+     NUM_FN_am1(atomic_number) = 3
+     GSS_am1(atomic_number) =  10.5900000D0  !
+     GSP_am1(atomic_number) =   9.5600000D0  !
+     GPP_am1(atomic_number) =   8.8600000D0  !
+     GP2_am1(atomic_number) =   7.8600000D0  !
+     HSP_am1(atomic_number) =   1.8100000D0  !
+     alp_am1(atomic_number) =   2.4469090D0  !
+     USS_am1(atomic_number) = -34.4928700D0  !
+     UPP_am1(atomic_number) = -22.6315250D0  !
   !PM6
    ! Reference J.J.P. Stewart, J. Mol. Mod., 13, 1173, (2007). (Index 35)
      pm6_ref_index(atomic_number) = 35

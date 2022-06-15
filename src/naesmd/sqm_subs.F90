@@ -12,7 +12,7 @@
 subroutine sqm_energy(qmewald, qmmm_opnq, qm2_rij_eqns,qmmm_mpi,qm_gb, qmmm_scratch, qmmm_nml, qm2_params, &
     xlbomd_struct,cosmo_c_struct, qm2_struct,qm2ds,qmmm_struct, natom,coords,escf,born_radii,one_born_radii, &
     intdiel,extdiel,Arad,scf_mchg, &
-    time_sqm_took,time_davidson_took)
+    time_sqm_took,time_davidson_took,printTdipole,outfile_28,tfemto)
     !
     !     Argument list variables:
     !
@@ -41,7 +41,7 @@ subroutine sqm_energy(qmewald, qmmm_opnq, qm2_rij_eqns,qmmm_mpi,qm_gb, qmmm_scra
     use constants,only:EV_TO_KCAL,KCAL_TO_EV,zero,one,alpb_alpha
     use qm2_davidson_module
     use cosmo_C,only:cosmo_C_structure !,cosmo_c_struct%EF,cosmo_c_struct%nps,cosmo_c_struct%tri_2D,cosmo_c_struct%potential_type,cosmo_c_struct%solvent_model,cosmo_c_struct%onsagE;
-    use xlbomd_module,only: xlbomd_structure
+    use xlbomd_module,only:init_xlbomd, xlbomd_structure
     use qmmm_struct_module, only : qmmm_struct_type
     use qmmm_nml_module   , only : qmmm_nml_type
     use qm2_params_module , only : qm2_params_type
@@ -70,7 +70,8 @@ subroutine sqm_energy(qmewald, qmmm_opnq, qm2_rij_eqns,qmmm_mpi,qm_gb, qmmm_scra
     _REAL_,intent(in)::intdiel,extdiel,Arad
     _REAL_,intent(inout)::scf_mchg(qmmm_struct%nquant_nlink)
     _REAL_,intent(inout)::time_sqm_took,time_davidson_took
-    _REAL_ ,allocatable, dimension(:,:) :: density_matrix_unpacked
+    integer, intent(in) :: printTdipole,outfile_28
+    _REAL_, intent(in) :: tfemto
 
     ! Locals
     _REAL_,dimension(2,3)::bxbnd
@@ -141,6 +142,7 @@ subroutine sqm_energy(qmewald, qmmm_opnq, qm2_rij_eqns,qmmm_mpi,qm_gb, qmmm_scra
 
         if(qm2ds%Mx>0) then
             call allocate_davidson(qmmm_scratch,qmmm_nml,qm2_struct, qm2ds, qmmm_struct) ! Davidson allocation
+            if(qm2ds%dav_guess.gt.1) call init_xlbomd(xlbomd_struct,qm2ds%Nb**2*qm2ds%Mx)
         endif
 
         !cosmo_c_struct%ceps-Dielectric Permittivity from COSMO module
@@ -241,10 +243,10 @@ subroutine sqm_energy(qmewald, qmmm_opnq, qm2_rij_eqns,qmmm_mpi,qm_gb, qmmm_scra
     !===================================
     !  Calculate Excited State Energies (Davidson)
     !===================================
- 		
+
     if(qm2ds%Mx>0) then
         call cpu_time(t_start)
-        call dav_wrap(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct)
+        call dav_wrap(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,printTdipole,outfile_28,tfemto)
         call cpu_time(t_finish)
         ! Incrementing cumulative Davidson execution time
         time_davidson_took=time_davidson_took+t_finish-t_start
@@ -500,7 +502,7 @@ subroutine sqm_read_and_alloc(qmmm_nml, qmmm_scratch, qmmm_div, qmmm_opnq, qmmm_
     atnum,maxcyc,grms_tol,ntpr,ncharge_in, &
     excharge,chgatnum, &
     excNin,struct_opt_state,exst_method,dav_guess, & ! Excited state
-    ftol,ftol0,ftol1,dav_maxcyc,nstep)
+    ftol,ftol0,ftol1,dav_maxcyc,nstep,do_nm,deltaX)
 
     use findmask
     use constants, only : RETIRED_INPUT_OPTION
@@ -551,6 +553,8 @@ subroutine sqm_read_and_alloc(qmmm_nml, qmmm_scratch, qmmm_div, qmmm_opnq, qmmm_
     integer, intent(in) :: chgatnum(*)
     integer, intent(in) :: ncharge_in
     integer, intent(in) :: nstep
+    integer, intent(out) :: do_nm !Flag for calculating nuclear normal modes [0]
+    _REAL_, intent(out) :: deltaX !Displacement for Hessian calculation, A [1.0d-4]
 
     ! Input parameters for excited state calculations
   
@@ -718,7 +722,9 @@ subroutine sqm_read_and_alloc(qmmm_nml, qmmm_scratch, qmmm_div, qmmm_opnq, qmmm_
         !XL-BOMD parameters
         xlbomd_flag,K,dt2w2,xlalpha, &
         !Cross densities
-        calcxdens
+        calcxdens, &
+        !Nuclear normal modes
+        do_nm,deltaX
 
     !the input value of excNin MUST NOT be changed.
     excN=excNin;
@@ -743,7 +749,7 @@ subroutine sqm_read_and_alloc(qmmm_nml, qmmm_scratch, qmmm_div, qmmm_opnq, qmmm_
    
     ! Default for COSM and Solvent
     ceps=1.d0 ! no dielectric screening by default
-    index_of_refraction=1.d2
+    index_of_refraction=1.d0
     onsager_radius=4.0
     solvent_model=0 !no solvent model
     potential_type=1 !COSMO default
@@ -780,6 +786,10 @@ subroutine sqm_read_and_alloc(qmmm_nml, qmmm_scratch, qmmm_div, qmmm_opnq, qmmm_
 
     !Cross densities
     calcxdens=.false.
+
+    !Default for nuclear normal modes
+    do_nm = 0  !Flag for calculating nuclear normal modes
+    deltaX = 1.0d-4 !Displacement for Hessian calculation, A [1.0d-4]
 
     !+TJG 01/26/2010
 
@@ -1077,7 +1087,7 @@ subroutine sqm_read_and_alloc(qmmm_nml, qmmm_scratch, qmmm_div, qmmm_opnq, qmmm_
     call int_legal_range(  'QMMM: (QM-MM State to Optimize) ',struct_opt_state,0,excN)
     call int_legal_range('QMMM: (QM-MM Excited State Method) ',exst_method,1,2)
     call int_legal_range('QMMM: (QM-MM use (1) or not (0) Davidson guess or (2) for XL-BOXMD) ', &
-        dav_guess,0,1)
+        dav_guess,0,3)
     call int_legal_range('QMMM: (QM-MM use -10-500 for max cycles of Davidson, negative for fixed number) ', dav_maxcyc,-10,500)
 
     ! Checking COSMO parameters
@@ -1390,7 +1400,7 @@ subroutine sqm_read_and_alloc(qmmm_nml, qmmm_scratch, qmmm_div, qmmm_opnq, qmmm_
    qmmm_omp%diag_threads = qmmm_omp_max_threads
    qmmm_omp%pdiag_threads = qmmm_omp_max_threads
 #endif
-    qmmm_nml%density_predict = 0
+    qmmm_nml%density_predict = density_predict
     qmmm_nml%fock_predict = fock_predict
     qmmm_nml%fockp_d1 = fockp_d1
     qmmm_nml%fockp_d2 = fockp_d2
@@ -1504,7 +1514,6 @@ subroutine sqm_read_and_alloc(qmmm_nml, qmmm_scratch, qmmm_div, qmmm_opnq, qmmm_
 
     return
 end subroutine sqm_read_and_alloc
-
 
 !  following stub routine to avoid changing qmmm_module.f for sqm:
 #ifdef MPI

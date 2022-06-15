@@ -11,7 +11,7 @@
 !
 !********************************************************************
 !
-subroutine dav_wrap(qm2_params,qmmm_nml,qmmm_mpi, cosmo_c_struct, qm2_struct, qm2ds, qmmm_struct)
+subroutine dav_wrap(qm2_params,qmmm_nml,qmmm_mpi, cosmo_c_struct, qm2_struct, qm2ds, qmmm_struct, printTdipole, outfile_28, tfemto)
     use qm2_davidson_module
     use cosmo_C, only: cosmo_C_structure !cosmo_c_struct%solvent_model
     use qmmm_struct_module, only : qmmm_struct_type
@@ -27,6 +27,8 @@ subroutine dav_wrap(qm2_params,qmmm_nml,qmmm_mpi, cosmo_c_struct, qm2_struct, qm
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
     type(qm2_davidson_structure_type), intent(inout) :: qm2ds
     type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
+    integer, intent(in) :: printTdipole, outfile_28
+    _REAL_, intent(in) :: tfemto
 
     _REAL_ f,ddot
     integer i
@@ -37,7 +39,7 @@ subroutine dav_wrap(qm2_params,qmmm_nml,qmmm_mpi, cosmo_c_struct, qm2_struct, qm
     if ((cosmo_c_struct%solvent_model.lt.2).or.(cosmo_c_struct%solvent_model.gt.3)) then
         call davidson(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct, qm2ds, qmmm_struct);
     elseif ((cosmo_c_struct%solvent_model.eq.2).or.(cosmo_c_struct%solvent_model.eq.3)) then
-        call solvent_scf_and_davidson_test(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct);
+        call solvent_scf_and_davidson_test(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,printTdipole,outfile_28,tfemto);
     end if
 
     ! Total energy of the ground state
@@ -68,8 +70,8 @@ subroutine dav_wrap(qm2_params,qmmm_nml,qmmm_mpi, cosmo_c_struct, qm2_struct, qm
     qm2ds%v0_old(:,:)=qm2ds%v0(:,:)
 
     ! Output
-    if (qm2ds%verbosity>0) then
-        call outDavidson(qm2_params,qmmm_nml,qm2_struct,qm2ds,qmmm_struct)
+    if (qm2ds%verbosity>0.or.printTdipole.gt.0) then
+        call outDavidson(qm2_params,qmmm_nml,qm2_struct,qm2ds,qmmm_struct,printTdipole,outfile_28,tfemto)
     endif
         
     if (qm2ds%calcxdens) then
@@ -88,7 +90,7 @@ endsubroutine dav_wrap
 !
 !********************************************************************
 !
-subroutine outDavidson(qm2_params,qmmm_nml,qm2_struct,qm2ds,qmmm_struct)
+subroutine outDavidson(qm2_params,qmmm_nml,qm2_struct,qm2ds,qmmm_struct,printTdipole,outfile_28,tfemto)
     use qm2_davidson_module
     use qmmm_module, only : qm2_structure
     use constants, only : ONE_AU
@@ -105,6 +107,9 @@ subroutine outDavidson(qm2_params,qmmm_nml,qm2_struct,qm2ds,qmmm_struct)
     type(qm2_davidson_structure_type), intent(inout) :: qm2ds
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
     _REAL_ mu(3, qm2ds%Mx), alpha(3), ft
+    integer, intent(inout) :: printTdipole
+    integer, intent(in) :: outfile_28
+    _REAL_, intent(in) :: tfemto
 
     ! Evaluation of transition dipole moments
 
@@ -128,6 +133,12 @@ subroutine outDavidson(qm2_params,qmmm_nml,qm2_struct,qm2ds,qmmm_struct)
         write(6,"(i4,5g25.15)") i,qm2ds%e0(i), &
             mu(1,i),mu(2,i),mu(3,i), ft
     end do
+    if (printTdipole.gt.0) then
+       do i=1,qm2ds%Mx-2
+           ft = (mu(1,i)**2 + mu(2,i)**2 + mu(3,i)**2)
+           write(outfile_28,"(f18.10,i4,4g25.15)") tfemto,i,mu(1,i),mu(2,i),mu(3,i),ft
+       enddo
+    endif
 
 
     write(6,*)

@@ -457,7 +457,6 @@ subroutine qm2_scf(qmmm_opnq, qm2_params, qmewald, qmmm_nml, qm_gb, qmmm_mpi, qm
 
     if (qmmm_nml%fock_predict == 1) call qm2_fock_store(qm2_struct,qm2_struct%matsize, fock_matrix, hmatrix)
 
-
     return
 end subroutine qm2_scf
 

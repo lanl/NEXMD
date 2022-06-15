@@ -37,7 +37,7 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
         qmmm_mpi_structure, qmmm_scratch_structure, qmmm_opnq_structure
     use MNDOChargeSeparation, only : GetDDAndPho
     use qm2_diagonalizer_module, only : qm2_diagonalizer_setup
-    use xlbomd_module, only : xlbomd_structure                                
+    use xlbomd_module, only : init_xlbomd, xlbomd_structure                                
     use qmmm_struct_module, only : qmmm_struct_type
     use qm2_params_module,  only : qm2_params_type
     use qmmm_nml_module   , only : qmmm_nml_type
@@ -2041,6 +2041,9 @@ if (.not. qmmm_nml%qmtheory%DFTB) then
     ! Now see if user wants an MM peptide torsion correction
     ! ------------------------------------------------------
     qm2_struct%n_peptide_links = 0
+    if (qmmm_nml%peptide_corr) then
+        call qm2_identify_peptide_links(qm2_struct,qmmm_struct, qm2_struct%n_peptide_links,qmmm_struct%qm_coords)
+    end if
 
     ! Finally setup the STO-6G orbital expansions and allocate the memory required.
     ! Setup the STO-6G orbital expansions and pre-calculate as many overlaps by type

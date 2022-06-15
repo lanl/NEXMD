@@ -9,19 +9,17 @@ module fewest_switches
     use communism
     implicit none
 contains
-    subroutine evalhop(sim, rkcomm, lprint, tend,tmax,rk_tolerance,thresholds, &
-        Na,yg,cross)
-	use rksuite_90, only: rk_comm_real_1d, setup 
+    subroutine evalhop(sim,lprint,Na,yg,yg_new,cross)
         implicit none
         type(simulation_t), pointer :: sim
-        type(rk_comm_real_1d) :: rkcomm 
         integer Na,lprint,excNtemp,ipn,indx(Na)
         integer k,i,j,jj,icheck,itest,ini,ihopavant
-        _REAL_ tmax,tend,rk_tolerance,pn,kavant
+        _REAL_ pn,kavant
         _REAL_ g(sim%excN),gacum(sim%excN)
         _REAL_ iseedhop,eavant, eapres
         _REAL_ xx(Na),yy(Na),zz(Na)
-        _REAL_ yg(sim%excN*2),ytemp,ytemp2, thresholds(sim%excN*2)
+        _REAL_ yg(sim%excN*2),ytemp,ytemp2,ytemp3,ytemp4,ytemp5
+        _REAL_ yg_new(sim%excN*3)
         _REAL_ t_start,t_finish
         integer cross(sim%excN),crosstemp,ininonhop
         if(sim%naesmd%conthop.eq.3) sim%naesmd%conthop=0
@@ -73,9 +71,9 @@ contains
         if(icheck.ne.0.and.cross(sim%naesmd%ihop).ne.2) then
             ini=0
             ! adjustment of velocities
-            if(sim%naesmd%conthop2.gt.0) then
-                if(sim%naesmd%ihopprev.ne.icheck) sim%naesmd%conthop2=0
-            end if
+            !if(sim%naesmd%conthop2.gt.0) then
+            !    if(sim%naesmd%ihopprev.ne.icheck) sim%naesmd%conthop2=0
+            !end if
             if(sim%naesmd%conthop2.eq.0) then
                 call veladjustment(sim, lprint,Na,icheck,ini)
                 if(lprint.ge.2) then
@@ -92,17 +90,20 @@ contains
                 call deriv(sim,sim%naesmd%ihop)
                 call cpu_time(t_finish)
                 sim%time_deriv_took=sim%time_deriv_took+t_finish-t_start
-                call do_sqm_davidson_update(sim,vmdqt=sim%naesmd%vmdqtnew,vgs=sim%naesmd%vgs)
+                call do_sqm_davidson_update(sim,0,vmdqt=sim%naesmd%vmdqtnew,vgs=sim%naesmd%vgs)
 
 
 !Added for patch JAKB
                if(sim%naesmd%decorhop.ne.0) then
                   do j=1,sim%excN
                      yg(j)=0.0d0
-                     yg(j+sim%excN)=rranf1(sim%naesmd%iseedmdqt)
+                     yg(j+sim%excN)=0.0d0
+                     yg_new(j)=0.0d0
+                     yg_new(j+sim%excN)=0.0d0
+                     yg_new(j+2*sim%excN)=0.0d0
                   enddo
                   yg(sim%naesmd%ihop)=1.0d0
-	          call    setup(rkcomm, tend, yg, tmax, rk_tolerance, thresholds, 'M','R')
+                  yg_new(sim%naesmd%ihop)=1.0d0
 ! after kirill
 ! check the reduction of sim%excN
                  if(sim%naesmd%iredpot.eq.1) then
@@ -183,11 +184,13 @@ contains
 !######################################### 
                do j=1,sim%excN
                   yg(j)=0.0d0
-                  yg(j+sim%excN)=rranf1(sim%naesmd%iseedmdqt)
+                  yg(j+sim%excN)=0.0d0
+                  yg_new(j)=0.0d0
+                  yg_new(j+sim%excN)=0.0d0
+                  yg_new(j+2*sim%excN)=0.0d0
                enddo
                yg(ihopavant)=1.0d0
-		    call    setup(rkcomm, tend, yg, tmax, rk_tolerance, thresholds, &
-			    'M','R')
+               yg_new(ihopavant)=1.0d0
                sim%naesmd%conthop=1
 ! check the reduction of sim%excN
                if(sim%naesmd%iredpot.eq.1) then
@@ -281,15 +284,22 @@ contains
                 yy(j)=sim%naesmd%ry(j)
                 zz(j)=sim%naesmd%rz(j)
             end do
-            call do_sqm_davidson_update(sim,vmdqt=sim%naesmd%vmdqtnew,vgs=sim%naesmd%vgs)
+            call do_sqm_davidson_update(sim,0,vmdqt=sim%naesmd%vmdqtnew,vgs=sim%naesmd%vgs)
             ytemp=yg(ihopavant)
             ytemp2=yg(ihopavant+sim%excN)
+            ytemp3=yg_new(ihopavant)
+            ytemp4=yg_new(ihopavant+sim%excN)
+            ytemp5=yg_new(ihopavant+2*sim%excN)
             yg(ihopavant)=yg(sim%naesmd%ihop)
             yg(ihopavant+sim%excN)=yg(sim%naesmd%ihop+sim%excN)
+            yg_new(ihopavant)=yg_new(sim%naesmd%ihop)
+            yg_new(ihopavant+sim%excN)=yg_new(sim%naesmd%ihop+sim%excN)
+            yg_new(ihopavant+2*sim%excN)=yg_new(sim%naesmd%ihop+2*sim%excN)
             yg(sim%naesmd%ihop)=ytemp
             yg(sim%naesmd%ihop+sim%excN)=ytemp2
-	    call    setup(rkcomm, tend, yg, tmax, rk_tolerance, thresholds, &
-	            'M','R')
+            yg_new(sim%naesmd%ihop)=ytemp3
+            yg_new(sim%naesmd%ihop+sim%excN)=ytemp4
+            yg_new(sim%naesmd%ihop+2*sim%excN)=ytemp5
         end if
         ! Evaluation of other crossings that do not involve the sim%naesmd%ihop sim%naesmd%state
         !*************************************************************
@@ -302,12 +312,19 @@ contains
                     ! after the hop, we reinicialize the variables
                     ytemp=yg(i)
                     ytemp2=yg(i+sim%excN)
+                    ytemp3=yg_new(i)
+                    ytemp4=yg_new(i+sim%excN)
+                    ytemp5=yg_new(i+2*sim%excN)
                     yg(i)=yg(sim%naesmd%iorden(i))
                     yg(i+sim%excN)=yg(sim%naesmd%iorden(i)+sim%excN)
+                    yg_new(i)=yg_new(sim%naesmd%iorden(i))
+                    yg_new(i+sim%excN)=yg_new(sim%naesmd%iorden(i)+sim%excN)
+                    yg_new(i+2*sim%excN)=yg_new(sim%naesmd%iorden(i)+2*sim%excN)
                     yg(sim%naesmd%iorden(i))=ytemp
                     yg(sim%naesmd%iorden(i)+sim%excN)=ytemp2
-		    call    setup(rkcomm, tend, yg, tmax, rk_tolerance, thresholds, &
-	            	'M','R')
+                    yg_new(sim%naesmd%iorden(i))=ytemp3
+                    yg_new(sim%naesmd%iorden(i)+sim%excN)=ytemp4
+                    yg_new(sim%naesmd%iorden(i)+2*sim%excN)=ytemp5
                 end if
             end if
         enddo
@@ -347,6 +364,103 @@ contains
 884   FORMAT(F18.10,1X,I2,1X,I3,1X,I3,1X,I3,10000(1X,F18.10))
         return
     end subroutine
+
+    subroutine just_trivial(sim, yg, yg_new,cross, nuclear, Nsim)
+        implicit none
+        type(simulation_t), pointer :: sim
+        integer i,j,k,l, icheck
+        _REAL_ yg(sim%excN*2),ytemp,ytemp2,ytemp3,ytemp4,ytemp5
+        _REAL_ yg_new(sim%excN*3)
+        _REAL_ t_start,t_finish
+        integer cross(sim%excN),ininonhop
+        type(MCE) :: nuclear
+        _REAL_, allocatable :: sE0(:,:,:), sE1(:,:,:)
+        integer, intent(in) :: Nsim
+        _REAL_, dimension(sim%excN,sim%excN) :: cadiabmiddleold
+        _REAL_, dimension(sim%excN,sim%excN) :: cadiabmiddle
+        _REAL_, dimension(sim%excN,sim%excN) :: bcoeffcadiab
+
+        if(sim%naesmd%conthop.eq.3) sim%naesmd%conthop=0
+        if(sim%naesmd%conthop.gt.0) sim%naesmd%conthop=sim%naesmd%conthop+1
+
+        ininonhop=1
+        do i=1,sim%excN
+            if(i.lt.sim%naesmd%iorden(i)) then
+                if(cross(i).eq.2.and.sim%naesmd%conthop.eq.0) then
+                    ininonhop=0
+                    icheck=i
+                    ! after the hop, we reinicialize the variables
+                    ytemp=yg(i)
+                    ytemp2=yg(i+sim%excN)
+                    ytemp3=yg_new(i)
+                    ytemp4=yg_new(i+sim%excN)
+                    ytemp5=yg_new(i+2*sim%excN)
+                    yg(i)=yg(sim%naesmd%iorden(i))
+                    yg(i+sim%excN)=yg(sim%naesmd%iorden(i)+sim%excN)
+                    yg_new(i)=yg_new(sim%naesmd%iorden(i))
+                    yg_new(i+sim%excN)=yg_new(sim%naesmd%iorden(i)+sim%excN)
+                    yg_new(i+2*sim%excN)=yg_new(sim%naesmd%iorden(i)+2*sim%excN)
+                    yg(sim%naesmd%iorden(i))=ytemp
+                    yg(sim%naesmd%iorden(i)+sim%excN)=ytemp2
+                    yg_new(sim%naesmd%iorden(i))=ytemp3
+                    yg_new(sim%naesmd%iorden(i)+sim%excN)=ytemp4
+                    yg_new(sim%naesmd%iorden(i)+2*sim%excN)=ytemp5
+
+                    if(sim%naesmd%dynam_type.eq.'aimc') then !Swap electronic overlaps at crossings for aimc:
+                        print *, 'Interchanging states for electronic overlaps calculations:', sim%id + 1, i
+                        allocate(sE0(Nsim,sim%excN,sim%excN), sE1(Nsim,sim%excN,sim%excN))
+                        sE0 = nuclear%sE(sim%id+1,:,:,:)
+                        nuclear%sE(sim%id+1,:,i,:) = sE0(:,sim%naesmd%iorden(i),:)
+                        nuclear%sE(sim%id+1,:,sim%naesmd%iorden(i),:) = sE0(:,i,:)
+                        sE1 = nuclear%sE(:,sim%id+1,:,:)
+                        nuclear%sE(:,sim%id+1,:,i) = sE1(:,:,sim%naesmd%iorden(i))
+                        nuclear%sE(:,sim%id+1,:,sim%naesmd%iorden(i)) = sE1(:,:,i)
+                        deallocate(sE0,sE1)
+                    endif
+!Interchanging cadiabmiddleold, cadiabmiddle and bcoeffcadiab for interpolation after crossing
+                    cadiabmiddleold = sim%naesmd%cadiabmiddleold
+                    bcoeffcadiab = sim%naesmd%bcoeffcadiab
+                    sim%naesmd%cadiabmiddleold(i,:) = cadiabmiddleold(sim%naesmd%iorden(i),:)
+                    sim%naesmd%cadiabmiddle(i,:) = cadiabmiddle(sim%naesmd%iorden(i),:)
+                    sim%naesmd%bcoeffcadiab(i,:) = bcoeffcadiab(sim%naesmd%iorden(i),:)
+                    sim%naesmd%cadiabmiddleold(:,i) = cadiabmiddleold(:,sim%naesmd%iorden(i))
+                    sim%naesmd%cadiabmiddle(:,i) = cadiabmiddle(:,sim%naesmd%iorden(i))
+                    sim%naesmd%bcoeffcadiab(:,i) = bcoeffcadiab(:,sim%naesmd%iorden(i))
+                    sim%naesmd%cadiabmiddleold(sim%naesmd%iorden(i),:) = cadiabmiddleold(i,:)
+                    sim%naesmd%cadiabmiddle(sim%naesmd%iorden(i),:) = cadiabmiddle(i,:)
+                    sim%naesmd%bcoeffcadiab(sim%naesmd%iorden(i),:) = bcoeffcadiab(i,:)
+                    sim%naesmd%cadiabmiddleold(:,sim%naesmd%iorden(i)) = cadiabmiddleold(:,i)
+                    sim%naesmd%cadiabmiddle(:,sim%naesmd%iorden(i)) = cadiabmiddle(:,i)
+                    sim%naesmd%bcoeffcadiab(:,sim%naesmd%iorden(i)) = bcoeffcadiab(:,i)
+                    sim%naesmd%cadiabmiddleold(i,sim%naesmd%iorden(i)) = 0.0d0
+                    sim%naesmd%cadiabmiddle(i,sim%naesmd%iorden(i)) = 0.0d0
+                    sim%naesmd%bcoeffcadiab(i,sim%naesmd%iorden(i)) = 0.0d0
+                    sim%naesmd%cadiabmiddleold(sim%naesmd%iorden(i),i) = 0.0d0
+                    sim%naesmd%cadiabmiddle(sim%naesmd%iorden(i),i) = 0.0d0
+                    sim%naesmd%bcoeffcadiab(sim%naesmd%iorden(i),i) = 0.0d0
+!Interchanging cadiabmiddleold, cadiabmiddle and bcoeffcadiab for interpolation after crossing
+                end if
+            end if
+        enddo
+        if(icheck.ne.0.and.sim%naesmd%conthop.eq.0) then
+            if(ininonhop.eq.0) then
+                do j=1,sim%excN
+                        if(cross(j).eq.2) then
+                            sim%naesmd%conthop=1
+                            write(sim%outfile_3,887) sim%naesmd%tfemto,cross(j),j,sim%naesmd%iorden(j)
+                            call flush(sim%outfile_3)
+                        endif
+                end do
+            end if
+        end if
+        !***********************************
+        ! end analyze the hopping
+        !**********************************
+887     FORMAT(F18.10,1X,I2,1X,I3,1X,I3,10000(1X,F18.10))
+        return
+    end subroutine
+
+
     ! At the point of hop, in general, the value of the potential energy in the new
     ! surface is different to the one in the older.
     ! In order to conserve the energy, we adjust the velocities
@@ -355,7 +469,7 @@ contains
         type(simulation_t),pointer::sim
         integer Na,lprint
         integer i,j,icheck,ini,ihoptemp
-        _REAL_ dij(Na*3),vicheck
+        _REAL_ dij(Na*3),vicheck,ki
         _REAL_ alpha,racine,ctehop1,dctehop1
         _REAL_ vtemp(sim%excN),vgstemp
         !********************************************************
@@ -363,21 +477,13 @@ contains
         !********************************************************
         ! Added by ST: calculate here NAC <psi| d psi/dR> in one step:
         !   Current energy calculation
-        call do_sqm_davidson_update(sim,vmdqt=vtemp,vgs=vgstemp)
+        call do_sqm_davidson_update(sim,0,vmdqt=vtemp,vgs=vgstemp)
         !    Feed here energies and wavefunctions and geometry, get back dij
         ! if necessary here the signs of the CI coefficient matrix can be checked right here
         ! analytical calculation of nacR
         call nacR_analytic_wrap(sim, sim%naesmd%ihop, icheck, dij)
         ! end of the calculation of the non-adiabatic coupling vector dij
         !*********************************
-        if(lprint.ge.1) then
-            j=1
-            do i=1,sim%naesmd%natom
-                write(sim%outfile_6,*) i,dij(j),dij(j+1),dij(j+2)
-                j=j+3
-            end do
-            call flush(sim%outfile_6)
-        end if
         ! calculation of the current energy
         ! and the velocities adjustment
         ihoptemp=icheck
@@ -385,58 +491,104 @@ contains
         alpha=sim%naesmd%vmdqtnew(sim%naesmd%ihop)-vicheck
         racine = 0.0d0
 
-        j=1
-        do i=1,sim%naesmd%natom
-            racine=racine+sim%naesmd%vx(i)*dij(j)+sim%naesmd%vy(i)*dij(j+1) &
-                +sim%naesmd%vz(i)*dij(j+2)
-            j=j+3
-        end do
-        racine=racine**2
-        j=1
-        do i=1,sim%naesmd%natom
-            racine=racine+2.0d0*alpha/sim%naesmd%massmdqt(i) &
-                *(dij(j)**2+dij(j+1)**2+dij(j+2)**2)
-            j=j+3
-        end do
-        if(racine.le.0.0d0) then
-            ini=1
-! change made after Kirill
-            if(sim%naesmd%decorhop.eq.2) ini=2
-! end change made after Kirill
-            goto 4321
-        end if
-        ctehop1=0.0d0
-        j=1
-        do i=1,sim%naesmd%natom
-            ctehop1=ctehop1+sim%naesmd%vx(i)*dij(j)+sim%naesmd%vy(i)*dij(j+1)+sim%naesmd%vz(i)*dij(j+2)
-            j=j+3
-        end do
-        ctehop1=ctehop1+dsqrt(racine)
-        dctehop1=0.d0
-        j=1
-        do i=1,sim%naesmd%natom
-            dctehop1=dctehop1+1.0d0/sim%naesmd%massmdqt(i) &
-                *(dij(j)**2+dij(j+1)**2+dij(j+2)**2)
-            j=j+3
-        end do
-        ctehop1=ctehop1/dctehop1
+        if (sim%naesmd%nmc.lt.1) then !readjustment of the energy in the direction of NACR
+            j=1
+            do i=1,sim%naesmd%natom
+                racine=racine+sim%naesmd%vx(i)*dij(j)+sim%naesmd%vy(i)*dij(j+1) &
+                    +sim%naesmd%vz(i)*dij(j+2)
+                j=j+3
+            end do
+            racine=racine**2
+            j=1
+            do i=1,sim%naesmd%natom
+                racine=racine+2.0d0*alpha/sim%naesmd%massmdqt(i) &
+                    *(dij(j)**2+dij(j+1)**2+dij(j+2)**2)
+                j=j+3
+            end do
+            if(racine.le.0.0d0) then
+                ini=1
+                ! change made after Kirill
+                if(sim%naesmd%decorhop.eq.2) ini=2
+                ! end change made after Kirill
+                goto 4321
+            end if
+            ctehop1=0.0d0
+            j=1
+            do i=1,sim%naesmd%natom
+                ctehop1=ctehop1+sim%naesmd%vx(i)*dij(j)+sim%naesmd%vy(i)*dij(j+1)+sim%naesmd%vz(i)*dij(j+2)
+                j=j+3
+            end do
+            ctehop1=ctehop1+dsqrt(racine)
+            dctehop1=0.d0
+            j=1
+            do i=1,sim%naesmd%natom
+                dctehop1=dctehop1+1.0d0/sim%naesmd%massmdqt(i) &
+                    *(dij(j)**2+dij(j+1)**2+dij(j+2)**2)
+                j=j+3
+            end do
+            ctehop1=ctehop1/dctehop1
 
-        ! option to adjust the velocities in the direction of
-        ! the nonadiabatic coupling vector
-        j=1
-        do i=1,sim%naesmd%natom
-            sim%naesmd%vx(i)=sim%naesmd%vx(i)-ctehop1*dij(j)/sim%naesmd%massmdqt(i)
-            sim%naesmd%vy(i)=sim%naesmd%vy(i)-ctehop1*dij(j+1)/sim%naesmd%massmdqt(i)
-            sim%naesmd%vz(i)=sim%naesmd%vz(i)-ctehop1*dij(j+2)/sim%naesmd%massmdqt(i)
-            j=j+3
-        end do
+            ! option to adjust the velocities in the direction of
+            ! the nonadiabatic coupling vector
+            j=1
+            do i=1,sim%naesmd%natom
+                sim%naesmd%vx(i)=sim%naesmd%vx(i)-ctehop1*dij(j)/sim%naesmd%massmdqt(i)
+                sim%naesmd%vy(i)=sim%naesmd%vy(i)-ctehop1*dij(j+1)/sim%naesmd%massmdqt(i)
+                sim%naesmd%vz(i)=sim%naesmd%vz(i)-ctehop1*dij(j+2)/sim%naesmd%massmdqt(i)
+                j=j+3
+            end do
+        else  !readjustment of the energy in the direction of the velocity
+            ki=0.0d0
+            do i=1, sim%naesmd%natom
+                ki=ki+0.5*sim%naesmd%massmdqt(i) &
+                *(sim%naesmd%vx(i)**2+sim%naesmd%vy(i)**2+sim%naesmd%vz(i)**2)
+            end do
+            racine=ki**2+alpha*ki
+            if(racine.le.0.0d0) then
+                ini=1
+                ! change made after Kirill
+                if(sim%naesmd%decorhop.eq.2) ini=2
+                ! end change made after Kirill
+                goto 4321
+            end if
+            ctehop1=0.0d0
+            ctehop1=ki-dsqrt(racine)
+            ctehop1=ctehop1/ki
+            do i=1,sim%naesmd%natom
+               sim%naesmd%vx(i)=sim%naesmd%vx(i)-ctehop1*sim%naesmd%vx(i)
+               sim%naesmd%vy(i)=sim%naesmd%vy(i)-ctehop1*sim%naesmd%vy(i)
+               sim%naesmd%vz(i)=sim%naesmd%vz(i)-ctehop1*sim%naesmd%vz(i)
+            end do
+        endif
+        if(lprint.ge.1) then
+            write(sim%outfile_6,451) sim%naesmd%tfemto, sim%naesmd%ihop, icheck, (dij(3*j-2),dij(3*j-1),dij(3*j),j=1,sim%naesmd%natom)
+            call flush(sim%outfile_6)
+        end if
 4321 continue
      !********************************************************
      ! end of adjustment of velocities
      !********************************************************
      return
+
+ 451     FORMAT(F18.10,I5,I5,10000(1X,F18.10))
+
  end subroutine
 
+subroutine decoherence_E0_and_C(sim)
+        type(simulation_t),pointer::sim
+            
+            if(sim%constcoherE0.ne.0.d0.and.sim%constcoherC.ne.0.d0) then
+                if(sim%naesmd%conthop.ne.1.and.sim%naesmd%conthop2.ne.1) then
+                    !BTN: I have not had time to investigate this fully, but the simulation object gets garbled when passed to coherence. 
+                    !My guess is that one of the variables passed (though it does not appear to be sim) is not defined identically correctly inside coherence.
+                    !For now, just exit.
+                    write(6,*) 'Your choices for decoher_e0 and decoher_c &
+                        are not currently available'
+                    stop
+                    call coherence(sim,sim%Na,sim%naesmd%yg,sim%naesmd%yg_new,sim%constcoherE0,sim%constcoherC,sim%cohertype)
+                end if
+            end if
+end subroutine
 
 subroutine indexx(n,arr,indx)
 ! ************************************************************************

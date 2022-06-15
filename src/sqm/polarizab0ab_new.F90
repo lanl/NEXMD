@@ -226,6 +226,18 @@ if(1==1) then
 
 140   format(2I5,5F12.4)
 
+      open (qm2ds%ceo_unit,file=trim(qm2ds%ceo_out))
+      j=-qmmm_struct%state_of_interest
+      write(qm2ds%ceo_unit,*)
+      write(qm2ds%ceo_unit,*) 'Energies (eV) and oscillator strengths for transitions'
+      write(qm2ds%ceo_unit,*) 'from state ',abs(j),' to all other states'
+      do i=1,qm2ds%Mx
+         f=sqrt(muabx(j,i)**2+muaby(j,i)**2+muabz(j,i)**2)
+         write(qm2ds%ceo_unit,130) i,qm2ds%e0(i)-qm2ds%e0(-j),2*(qm2ds%e0(i)-qm2ds%e0(-j))*f**2/21.0
+      enddo
+      flush(qm2ds%ceo_unit)
+      close(qm2ds%ceo_unit)
+
       itime11=get_time()
       time11=real(itime11-itime1)/100
       itime11=time11

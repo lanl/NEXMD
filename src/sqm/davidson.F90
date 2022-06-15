@@ -316,7 +316,6 @@
    _REAL_ ray(nd,nd),raye(nd),raye1(nd)
    _REAL_ rayv(nd,nd),rayvL(nd,nd),rayvR(nd,nd)
    _REAL_, allocatable :: dtmp(:)
-   !_REAL_ f11;
 
    if (lprint.gt.4) write(6,*)' Entering davidson0'
 

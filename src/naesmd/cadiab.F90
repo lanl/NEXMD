@@ -21,11 +21,15 @@ contains
         implicit none
  
         type(simulation_t), pointer :: sim
-        integer k,j,i,imdqt
+        integer k,j,i,imdqt,l
         type(xstep_t),target::xs
         type(xstep_t),pointer::xstep
 	type(realp_t) :: rold(3),vold(3) 
 	type(realp_t) :: deltaRp(3),deltaRm(3),deltaRpold(3),deltaRmold(3) 
+        type(simulation_t),pointer::simpoint
+        _REAL_ NACR(sim%naesmd%natom*3)
+
+        simpoint=>sim
 
         allocate(xs%Rp(3,sim%Na))
         allocate(xs%Rm(3,sim%Na))
@@ -52,7 +56,7 @@ contains
         xstep=>xs
 
         if(imdqt.eq.1) then
-            call do_sqm_davidson_update(sim,cmdqt=sim%naesmd%cmdqtnew, &
+            call do_sqm_davidson_update(sim,0,cmdqt=sim%naesmd%cmdqtnew, &
                 vmdqt=sim%naesmd%vmdqtnew,vgs=sim%naesmd%vgs,r=rold)!, sim%naesmd%cmdqt=sim%naesmd%cmdqtnew) !JAKB, not necessary bc updated already in
             call new_xstep_dtnact_r3(sim,rold, xstep)
             do k=1,3
@@ -61,7 +65,23 @@ contains
                 deltaRm(k)%p(:sim%naesmd%natom)=xstep%Rm(k,1:sim%naesmd%natom) &
                     -xstep%R(k,1:sim%naesmd%natom)
             end do
-            call nacT_analytic(sim,sim%naesmd%cadiabnew,xstep)
+            if(sim%naesmd%dynam_type.eq.'tully') then
+              call nacT_analytic(sim,sim%naesmd%cadiabnew,xstep)
+            elseif(sim%naesmd%dynam_type.eq.'aimc'.or.sim%naesmd%dynam_type.eq.'mf') then
+              do j=1,sim%excN
+                sim%naesmd%cadiabnew(j,j) = 0.0d0
+                do k=j+1,sim%excN
+                   call nacR_analytic_wrap(sim,j,k,NACR)
+                   NACR=sim%naesmd%sgn(j,k)*NACR
+                   sim%naesmd%cadiabnew(j,k)=0.0d0
+                   do l=1,sim%naesmd%natom
+                     sim%naesmd%cadiabnew(j,k)=sim%naesmd%cadiabnew(j,k)+sim%naesmd%vxold(l)*NACR(3*l-2)*convl+&
+                          sim%naesmd%vyold(l)*NACR(3*l-1)*convl+sim%naesmd%vzold(l)*NACR(3*l)*convl
+                   enddo
+                   sim%naesmd%cadiabnew(k,j)=-1.0d0*sim%naesmd%cadiabnew(j,k)
+                enddo
+              enddo
+            endif
         end if
 
         do k=1,3
@@ -102,13 +122,17 @@ contains
         use qm2_davidson_module
         implicit none
         type(simulation_t),pointer::sim
-        integer j,i,iimdqt,Na
+        integer j,i,iimdqt,Na,k,l
         _REAL_ xx(Na),yy(Na),zz(Na)
         _REAL_ xxp(Na),yyp(Na),zzp(Na)
         _REAL_ xxm(Na),yym(Na),zzm(Na)
         integer cross(sim%excN)
         type(xstep_t),target::xs
         type(xstep_t),pointer::xstep
+        type(simulation_t),pointer::simpoint
+        _REAL_ NACR(sim%naesmd%natom*3)
+
+        simpoint=>sim 
 
         allocate(xs%Rp(3,sim%Na))
         allocate(xs%Rm(3,sim%Na))
@@ -189,7 +213,7 @@ contains
                         +sim%naesmd%prand(3,j)/sim%naesmd%dtmdqt*sim%naesmd%dtquantum*dfloat(iimdqt)
                 end do
             endif
-            call do_sqm_davidson_update(sim,cmdqt=sim%naesmd%cmdqtmiddle, &
+            call do_sqm_davidson_update(sim,0,cmdqt=sim%naesmd%cmdqtmiddle, &
                 vmdqt=sim%naesmd%vmdqtmiddle,vgs=sim%naesmd%vgs,rx=xx,ry=yy, rz=zz)
 
             ! xxp,yyp, and zzp are xyz at t + sim%naesmd%dtnact
@@ -222,8 +246,22 @@ contains
             end do
 
             call new_xstep(sim,xx,yy,zz,xxp,yyp,zzp,xxm,yym,zzm, xstep)
-            call nacT_analytic(sim,sim%naesmd%cadiab,xstep)
-
+            if(sim%naesmd%dynam_type.eq.'tully') then
+              call nacT_analytic(sim,sim%naesmd%cadiab,xstep)
+            elseif(sim%naesmd%dynam_type.eq.'aimc'.or.sim%naesmd%dynam_type.eq.'mf') then
+              do j=1,sim%excN
+                do k=j+1,sim%excN
+                   call nacR_analytic_wrap(sim,j,k,NACR)
+                   NACR=sim%naesmd%sgn(j,k)*NACR
+                   sim%naesmd%cadiab(j,k)=0.0d0
+                   do l=1,sim%naesmd%natom
+                     sim%naesmd%cadiab(j,k)=sim%naesmd%cadiab(j,k)+sim%naesmd%vxold(l)*NACR(3*l-2)*convl+&
+                          sim%naesmd%vyold(l)*NACR(3*l-1)*convl+sim%naesmd%vzold(l)*NACR(3*l)*convl
+                   enddo
+                   sim%naesmd%cadiab(k,j)=-1.0d0*sim%naesmd%cadiab(j,k)
+                enddo
+              enddo
+            endif 
             do i=1,sim%excN
                 do j=1,sim%excN
                     sim%naesmd%cadiabmiddle(i,j)=sim%naesmd%cadiab(i,j)
@@ -233,15 +271,20 @@ contains
         end if
 
         do i=1,sim%excN
-            if(i.eq.sim%naesmd%ihop) then
+            if(sim%naesmd%dynam_type.eq.'aimc'.or.sim%naesmd%dynam_type.eq.'mf') then
                 if(cross(i).eq.2) then
-                    if(sim%naesmd%conthop.gt.0) then
-                        if(sim%naesmd%iordenhop(i).ne.sim%naesmd%ihopprev) sim%naesmd%conthop=0
-                    end if
+                    sim%naesmd%cadiabmiddle(i,sim%naesmd%iorden(i))=0.0d0
+                    sim%naesmd%cadiabmiddle(sim%naesmd%iorden(i),i)=0.0d0
+                endif
+            elseif(i.eq.sim%naesmd%ihop) then
+                if(cross(i).eq.2) then
+                    !if(sim%naesmd%conthop.gt.0) then
+                    !    if(sim%naesmd%iordenhop(i).ne.sim%naesmd%ihopprev) sim%naesmd%conthop=0
+                    !end if
 
-                    if(sim%naesmd%conthop2.gt.0) then
-                        if(sim%naesmd%iordenhop(i).ne.sim%naesmd%ihopprev) sim%naesmd%conthop2=0
-                    end if
+                    !if(sim%naesmd%conthop2.gt.0) then
+                    !    if(sim%naesmd%iordenhop(i).ne.sim%naesmd%ihopprev) sim%naesmd%conthop2=0
+                    !end if
 
                     if(sim%naesmd%conthop.eq.0) then
                         sim%naesmd%cadiabmiddle(i,sim%naesmd%iorden(i))=0.d0
@@ -283,11 +326,15 @@ contains
         implicit none
 
         type(simulation_t), pointer :: sim
-        integer k,j,i
+        integer k,j,i,l
         type(xstep_t),target :: xs
         type(xstep_t),pointer::xstep
 	type(realp_t) :: r(3)
 	type(realp_t) :: deltaRp(3),deltaRm(3) 
+        type(simulation_t),pointer::simpoint
+        _REAL_ NACR(sim%naesmd%natom*3)
+
+        simpoint=>sim 
 
 	r(1)%p=>sim%naesmd%rx
 	r(2)%p=>sim%naesmd%ry
@@ -304,7 +351,7 @@ contains
 
         xstep=>xs
 
-        call do_sqm_davidson_update(sim,cmdqt=sim%naesmd%cmdqtnew, &
+        call do_sqm_davidson_update(sim,sim%naesmd%printTdipole,cmdqt=sim%naesmd%cmdqtnew, &
             vmdqt=sim%naesmd%vmdqtnew,vgs=sim%naesmd%vgs)
 
         !  xxp,yyp, and zzp are xyz at t + sim%naesmd%dtnact
@@ -319,8 +366,22 @@ contains
                 -xstep%R( k,:sim%naesmd%natom)
         end do
 
-        call nacT_analytic(sim,sim%naesmd%cadiab,xstep)
-
+        if(sim%naesmd%dynam_type.eq.'tully') then
+          call nacT_analytic(sim,sim%naesmd%cadiab,xstep)
+        elseif(sim%naesmd%dynam_type.eq.'aimc'.or.sim%naesmd%dynam_type.eq.'mf') then
+          do j=1,sim%excN
+            do k=j+1,sim%excN
+              call nacR_analytic_wrap(sim,j,k,NACR)
+              NACR=sim%naesmd%sgn(j,k)*NACR
+              sim%naesmd%cadiab(j,k)=0.0d0
+              do l=1,sim%naesmd%natom
+                 sim%naesmd%cadiab(j,k)=sim%naesmd%cadiab(j,k)+sim%naesmd%vxold(l)*NACR(3*l-2)*convl+&
+                    sim%naesmd%vyold(l)*NACR(3*l-1)*convl+sim%naesmd%vzold(l)*NACR(3*l)*convl
+              enddo
+              sim%naesmd%cadiab(k,j)=-1.0d0*sim%naesmd%cadiab(j,k)
+            enddo
+          enddo
+        endif    
         do i=1,sim%excN
             do j=1,sim%excN
                 sim%naesmd%cadiabnew(i,j)=sim%naesmd%cadiab(i,j)

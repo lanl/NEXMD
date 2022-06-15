@@ -5,16 +5,16 @@
 !********************************************************************      
 !********************************************************************      
 !   
-subroutine fcn(x,yg,ygprime,naesmd_struct)
+subroutine fcn(x,yg_new,ygprime_new,naesmd_struct)
 	use naesmd_module
 	implicit none
       _REAL_, intent(in) :: x                                  !indep!
-      _REAL_, dimension(:), intent(in) :: yg                   !dep!
-      _REAL_, dimension(:), intent(in) :: ygprime                   !dep!
+      _REAL_, dimension(:), intent(in) :: yg_new                   !dep!
+      _REAL_, dimension(:), intent(in) :: ygprime_new                   !dep!
        type(naesmd_structure), intent(inout) :: naesmd_struct 
 
-	    call interpolate(size(yg,1),x,naesmd_struct)
-	    call vqcalc(size(yg,1),yg,ygprime,naesmd_struct)
+	    call interpolate(size(yg_new,1),x,naesmd_struct)
+	    call vqcalc(size(yg_new,1),yg_new,ygprime_new,naesmd_struct)
        return
 end subroutine fcn
  
@@ -32,14 +32,14 @@ subroutine interpolate(n,x,naesmd_struct)
     integer n,k,j
     _REAL_ x
  
-    do k=1,n/2
-        do j=1,n/2
+    do k=1,n/3
+        do j=1,n/3
             naesmd_struct%cadiab(k,j)=naesmd_struct%cadiabmiddleold(k,j) &
                 +naesmd_struct%bcoeffcadiab(k,j)*(x-naesmd_struct%tini0)
         end do
     end do
 
-    do k=1,n/2
+    do k=1,n/3
         naesmd_struct%vmdqt(k)=naesmd_struct%vmdqtmiddleold(k)+naesmd_struct%bcoeffvmdqt(k)*(x-naesmd_struct%tini0)
     end do
         
@@ -55,29 +55,35 @@ end subroutine
 !********************************************************************
 !
 
-subroutine vqcalc(n,yg,yprime,naesmd_struct)
+subroutine vqcalc(n,yg_new,yprime_new,naesmd_struct)
     use naesmd_module
     use md_module
     implicit none
     type(naesmd_structure), intent(inout) :: naesmd_struct 
     integer n,k,j
-    _REAL_ yg(n),yprime(n)
+    _REAL_ yg_new(n),yprime_new(n)
 
-    do k=1,n/2
-        yprime(k)=0.d0
-        yprime(k+n/2)=-1.0d0*naesmd_struct%vmdqt(k)
+    do k=1,n/3
+        yprime_new(k)=0.d0
+        yprime_new(k+n/3)=0.d0
+        yprime_new(k+2*n/3)=-1.0d0*naesmd_struct%vmdqt(k)
 
-        do j=1,n/2
-            naesmd_struct%vnqcorrhop(k,j)=-1.0d0*yg(j)* &
-                dcos(yg(j+n/2)-yg(k+n/2))*naesmd_struct%cadiab(k,j)
-
-            yprime(k)=yprime(k)+naesmd_struct%vnqcorrhop(k,j)
-            naesmd_struct%vnqcorrhop(k,j)=naesmd_struct%vnqcorrhop(k,j)*2.0d0*yg(k)
+        do j=1,n/3
+            yprime_new(k)=yprime_new(k)-1.0d0*(yg_new(j) &
+               *dcos(yg_new(j+2*n/3)-yg_new(k+2*n/3))-yg_new(j+n/3) &
+               *dsin(yg_new(j+2*n/3)-yg_new(k+2*n/3)))*naesmd_struct%cadiab(k,j)
         end do
 
-        do j=1,n/2
-            yprime(k+n/2)=yprime(k+n/2)-yg(j)/(1.0d-6+yg(k))* &
-                dsin(yg(j+n/2)-yg(k+n/2))*naesmd_struct%cadiab(k,j)
+        do j=1,n/3
+            yprime_new(k+n/3)=yprime_new(k+n/3)-1.0d0*(yg_new(j+n/3) &
+                *dcos(yg_new(j+2*n/3)-yg_new(k+2*n/3))+yg_new(j) &
+                *dsin(yg_new(j+2*n/3)-yg_new(k+2*n/3)))*naesmd_struct%cadiab(k,j)
+
+            naesmd_struct%vnqcorrhop(k,j)=2.0d0*yg_new(k) &
+                *(-1.0d0)*(yg_new(j)*dcos(yg_new(j+2*n/3)-yg_new(k+2*n/3))-yg_new(j+n/3) &
+                *dsin(yg_new(j+2*n/3)-yg_new(k+2*n/3)))*naesmd_struct%cadiab(k,j) &
+                +2.0d0*yg_new(k+n/3)*(-1.0d0)*(yg_new(j+n/3)*dcos(yg_new(j+2*n/3)-yg_new(k+2*n/3))+yg_new(j) &
+                *dsin(yg_new(j+2*n/3)-yg_new(k+2*n/3)))*naesmd_struct%cadiab(k,j)
         end do
     end do
     return

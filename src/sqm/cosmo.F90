@@ -632,7 +632,6 @@ cosmo_c_struct%qdenet(i,3)=cosmo_c_struct%qdenet(i,2)+cosmo_c_struct%qdenet(i,1)
 call coscl2(cosmo_c_struct%amat,cosmo_c_struct%nsetf,cosmo_c_struct%qscnet(1,2),cosmo_c_struct%phinet(1,2),cosmo_c_struct%nps)
 
 
-
 	s1=0.d0
 	s3=0.d0
 
@@ -753,7 +752,6 @@ a(k+indi) = summe * a(kk)
         use qmmm_struct_module, only : qmmm_struct_type
 	use qm2_params_module,  only : qm2_params_type
 	use qmmm_nml_module   , only : qmmm_nml_type
-
 
 
 	implicit none

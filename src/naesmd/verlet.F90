@@ -8,6 +8,7 @@ module verlet_module
     use naesmd_constants
     use langevin_temperature
     use communism
+    use freezing_module
     implicit none
 
 contains
@@ -76,6 +77,11 @@ contains
                 sim%naesmd%vz(i)=sim%naesmd%vz(i)+sim%naesmd%az(i)*dt_2
             end if
         end do
+
+       !Freezing distances between pairs of atoms
+       if (sim%naesmd%npc.gt.0) call freezePairs1(sim)
+       !Freezing distances between pairs of atoms
+
         !
         !--------------------------------------------------------------------
         !
@@ -85,17 +91,21 @@ contains
         if((sim%cosmo%solvent_model.eq.4).or.(sim%cosmo%solvent_model.eq.5)) then
             call calc_cosmo_4(sim)
         else
-            if(sim%excn>0) then
-                call do_sqm_davidson_update(sim,sim%naesmd%cmdqt,sim%naesmd%vmdqt,sim%naesmd%vgs, &
-                    statelimit=sim%excn+1)
+            if(sim%excN>0) then
+                call do_sqm_davidson_update(sim,sim%naesmd%printTdipole,sim%naesmd%cmdqt,sim%naesmd%vmdqt,sim%naesmd%vgs, &
+                    statelimit=sim%excN+2)
             else
-                call do_sqm_davidson_update(sim,sim%naesmd%cmdqt,sim%naesmd%vmdqt,sim%naesmd%vgs, &
+                call do_sqm_davidson_update(sim,0,sim%naesmd%cmdqt,sim%naesmd%vmdqt,sim%naesmd%vgs, &
                     statelimit=sim%qmmm%state_of_interest)
             end if
         endif
-        sim%naesmd%ihop=sim%qmmm%state_of_interest
         call cpu_time(t_start)
-        call deriv(sim,sim%naesmd%ihop)
+        if((sim%naesmd%dynam_type.eq.'mf').or.(sim%naesmd%dynam_type.eq.'aimc')) then
+            call deriv_MF(sim,0)
+        else
+            sim%naesmd%ihop=sim%qmmm%state_of_interest
+            call deriv(sim,sim%naesmd%ihop)
+        endif
         call cpu_time(t_finish)
         sim%time_deriv_took=sim%time_deriv_took+t_finish-t_start
         call deriv2naesmd_accel(sim)
@@ -117,10 +127,30 @@ contains
             end if
         end do
 
+        !Freezing nuclear normal modes
+        if (sim%naesmd%nmc.gt.0) call freeze(sim)
+        !Freezing nuclear normal modes
+
+        !Freezing distances between pairs of atoms
+        if (sim%naesmd%npc.gt.0) call freezePairs2(sim)
+        !Freezing distances between pairs of atoms
+
         !remove rotation/translation by rescaling velocities
         call rescaleveloc(sim%naesmd%rx,sim%naesmd%ry,sim%naesmd%rz,&
-		sim%naesmd%vx,sim%naesmd%vy,sim%naesmd%vz,sim%naesmd%massmdqt,sim%naesmd%natom)
+             sim%naesmd%vx,sim%naesmd%vy,sim%naesmd%vz,sim%naesmd%massmdqt,sim%naesmd%natom)
 
+        ! fix atoms
+        if(sim%naesmd%fix.ne.0) then
+          do i=1,sim%naesmd%fix
+             sim%naesmd%rx(sim%naesmd%ifxd(i))=sim%naesmd%rxold(sim%naesmd%ifxd(i))
+             sim%naesmd%ry(sim%naesmd%ifxd(i))=sim%naesmd%ryold(sim%naesmd%ifxd(i))
+             sim%naesmd%rz(sim%naesmd%ifxd(i))=sim%naesmd%rzold(sim%naesmd%ifxd(i))
+             sim%naesmd%vx(sim%naesmd%ifxd(i))=0.0d0
+             sim%naesmd%vy(sim%naesmd%ifxd(i))=0.0d0
+             sim%naesmd%vz(sim%naesmd%ifxd(i))=0.0d0
+          enddo
+        endif
+        ! fix atoms
         !
         !  kinetic energy calculation
         !
@@ -130,9 +160,8 @@ contains
             sim%naesmd%kin=sim%naesmd%kin+sim%naesmd%massmdqt(i)*(sim%naesmd%vx(i)**2+sim%naesmd%vy(i)**2+sim%naesmd%vz(i)**2)/2
         end do
 
-
         return
-    end subroutine
+    end subroutine verlet
     !
     !--------------------------------------------------------------------
     !
@@ -201,6 +230,22 @@ contains
                 sim%naesmd%vz(i)=sim%naesmd%vz(i)+sim%naesmd%az(i)*dt_2
             end if
         end do
+        ! fix atoms
+        if(sim%naesmd%fix.ne.0) then
+          do i=1,sim%naesmd%fix
+             sim%naesmd%rx(sim%naesmd%ifxd(i))=sim%naesmd%rxold(sim%naesmd%ifxd(i))
+             sim%naesmd%ry(sim%naesmd%ifxd(i))=sim%naesmd%ryold(sim%naesmd%ifxd(i))
+             sim%naesmd%rz(sim%naesmd%ifxd(i))=sim%naesmd%rzold(sim%naesmd%ifxd(i))
+             sim%naesmd%vx(sim%naesmd%ifxd(i))=0.0d0
+             sim%naesmd%vy(sim%naesmd%ifxd(i))=0.0d0
+             sim%naesmd%vz(sim%naesmd%ifxd(i))=0.0d0
+          enddo
+        endif
+        ! fix atoms
+
+        ! Freezing distances between pairs of atoms
+        if (sim%naesmd%npc.gt.0) call freezePairs1(sim) 
+        ! Freezing distances between pairs of atoms
 
         call flush(130)
         call flush(131)
@@ -232,15 +277,19 @@ contains
         !     the forces are calculated by deriv
 
         if(sim%excn>0) then
-            call do_sqm_davidson_update(sim,sim%naesmd%cmdqt,sim%naesmd%vmdqt,sim%naesmd%vgs, &
+            call do_sqm_davidson_update(sim,0,sim%naesmd%cmdqt,sim%naesmd%vmdqt,sim%naesmd%vgs, &
                 statelimit=sim%excn+1)
         else
-            call do_sqm_davidson_update(sim,sim%naesmd%cmdqt,sim%naesmd%vmdqt,sim%naesmd%vgs, &
+            call do_sqm_davidson_update(sim,0,sim%naesmd%cmdqt,sim%naesmd%vmdqt,sim%naesmd%vgs, &
                 statelimit=sim%qmmm%state_of_interest)
         end if
 
         call cpu_time(t_start)
-        call deriv(sim,sim%naesmd%ihop)
+        if((sim%naesmd%dynam_type.eq.'mf').or.(sim%naesmd%dynam_type.eq.'aimc')) then
+              call deriv_MF(sim,0)
+        else
+              call deriv(sim,sim%naesmd%ihop)
+        endif
         call cpu_time(t_finish)
         sim%time_deriv_took=sim%time_deriv_took+t_finish-t_start
  
@@ -263,10 +312,27 @@ contains
             end if
         end do
 
+        !Freezing nuclear normal modes
+        if (sim%naesmd%nmc.gt.0) call freeze(sim)
+        !Freezing nuclear normal modes
+
+        !Freezing distances between pairs of atoms
+        if (sim%naesmd%npc.gt.0) call freezePairs2(sim)
+        !Freezing distances between pairs of atoms
+
         !remove translation/rotation
         call rescaleveloc(sim%naesmd%rx,sim%naesmd%ry,sim%naesmd%rz, &
 		sim%naesmd%vx,sim%naesmd%vy,sim%naesmd%vz,sim%naesmd%massmdqt,sim%naesmd%natom)
 
+        ! fix atoms
+        if(sim%naesmd%fix.ne.0) then
+          do i=1,sim%naesmd%fix
+             sim%naesmd%vx(i)=0.0d0
+             sim%naesmd%vy(i)=0.0d0
+             sim%naesmd%vz(i)=0.0d0
+          enddo
+        endif
+        ! fix atoms
 
         call flush(133)
         !

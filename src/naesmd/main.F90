@@ -22,7 +22,6 @@ program MD_Geometry
     use communism
     use naesmd_module!,only: allocate_naesmd_module2
     use md_module
-    use rksuite_90, only:setup, range_integrate, rk_comm_real_1d
     use cosmo_C, only : cosmo_C_structure
     implicit none
     !
@@ -33,9 +32,11 @@ program MD_Geometry
     !  Newtonian (usual velocity-Verlet), Langevin thermostat velocity-Verlet,
     !  or Berendsen thermostat (all molecules collide with heat bath at
     !  once) algorithms.
-
+    !
     !  input.ceon file with CEO and MDQT parameters,
     !  as well as initial coordinates, velocities, and quantum coefficients;
+    !
+    !  reastart.out instead for restarting
     !
     !--------------------------------------------------------------------
 

@@ -96,7 +96,7 @@ subroutine deriv(sim,state) ! , xyz_in)
             !calculate vacuum derivative for term 1
             call dcart1(simpoint%qnml,simpoint%qparams,simpoint%rij,simpoint%qmpi, simpoint%qm2,  &
                         simpoint%dav, simpoint%qmmm, dxyz1,&
-		simpoint%qm2%den_matrix,simpoint%dav%rhoTZ,simpoint%qmmm%qm_coords)
+            simpoint%qm2%den_matrix,simpoint%dav%rhoTZ,simpoint%qmmm%qm_coords)
             !add solvent part (symmetric only b/c symmetric matrix)
             if(simpoint%cosmo%solvent_model.gt.0) then
                 if((simpoint%cosmo%potential_type.eq.3).and.(simpoint%cosmo%ceps.gt.1.0)) then !simpoint%cosmo%ceps.gt.1.0 because of singularity in cosmo subroutines
@@ -104,7 +104,7 @@ subroutine deriv(sim,state) ! , xyz_in)
                     call diegrd2(simpoint%qparams,simpoint%qnml,simpoint%cosmo,simpoint%qmmm,dxyz1_test,density2,charges2,acharges2) !derivative
                 elseif(simpoint%cosmo%potential_type.eq.2) then
                     call rcnfldgrad2(simpoint%qparams,simpoint%qnml,simpoint%cosmo,simpoint%qm2,simpoint%qmmm,dxyz1_test,&
-			simpoint%qm2%den_matrix,simpoint%dav%rhoTZ,simpoint%dav%nb,.true.)
+                    simpoint%qm2%den_matrix,simpoint%dav%rhoTZ,simpoint%dav%nb,.true.)
                 endif
                 dxyz1=dxyz1+dxyz1_test
             endif
@@ -173,7 +173,7 @@ subroutine deriv(sim,state) ! , xyz_in)
                     call diegrd2(simpoint%qparams,simpoint%qnml,simpoint%cosmo,simpoint%qmmm,dxyz1_test,density2,charges2,acharges2) !derivative
                 elseif(simpoint%cosmo%potential_type.eq.2) then
                     call rcnfldgrad2(simpoint%qparams,simpoint%qnml,simpoint%cosmo,simpoint%qm2,simpoint%qmmm,dxyz1_test,&
-			simpoint%dav%rhoTZ,simpoint%dav%rhoT,simpoint%dav%nb,.false.)
+                    simpoint%dav%rhoTZ,simpoint%dav%rhoT,simpoint%dav%nb,.false.)
                 endif
                 dxyz1=dxyz1+0.5*dxyz1_test
                 
@@ -192,7 +192,7 @@ subroutine deriv(sim,state) ! , xyz_in)
                 simpoint%dav%rhoT=0; simpoint%dav%rhoTZ=0;
                 call calc_rhotz(simpoint%qparams,simpoint%qnml,simpoint%qmpi,&
                     simpoint%cosmo,simpoint%qm2,simpoint%dav,simpoint%qmmm,&
-		    simpoint%qmmm%state_of_interest,simpoint%dav%rhoT,simpoint%cosmo%doZ);                !rhoT will be rhoTZ_k
+                simpoint%qmmm%state_of_interest,simpoint%dav%rhoT,simpoint%cosmo%doZ);                !rhoT will be rhoTZ_k
                 call mo2sitef(simpoint%dav%Nb,simpoint%dav%vhf,simpoint%dav%rhoT,simpoint%dav%tz_scratch(1), &
                     simpoint%dav%tz_scratch(simpoint%dav%Nb**2+1))
                 simpoint%dav%rhoT=0;
@@ -205,7 +205,7 @@ subroutine deriv(sim,state) ! , xyz_in)
                     call diegrd2(simpoint%qparams,simpoint%qnml,simpoint%cosmo,simpoint%qmmm,dxyz1_test,density2,charges2,acharges2) !derivative
                 elseif(simpoint%cosmo%potential_type.eq.2) then
                     call rcnfldgrad2(simpoint%qparams,simpoint%qnml,simpoint%cosmo,simpoint%qm2,simpoint%qmmm,dxyz1_test,&
-			simpoint%dav%rhoT,simpoint%dav%rhoTZ,simpoint%dav%nb,.false.)
+                    simpoint%dav%rhoT,simpoint%dav%rhoTZ,simpoint%dav%nb,.false.)
                 endif
                 dxyz1=dxyz1+dxyz1_test
    
@@ -225,7 +225,7 @@ subroutine deriv(sim,state) ! , xyz_in)
                                  density2,charges2,acharges2) !derivative
                 elseif(simpoint%cosmo%potential_type.eq.2) then
                     call rcnfldgrad2(simpoint%qparams,simpoint%qnml,simpoint%cosmo,simpoint%qm2,simpoint%qmmm,dxyz1_test,&
-			simpoint%dav%rhoT,simpoint%qm2%den_matrix,simpoint%dav%nb,.true.)
+                  simpoint%dav%rhoT,simpoint%qm2%den_matrix,simpoint%dav%nb,.true.)
                 endif
                 dxyz1=dxyz1+dxyz1_test
 
@@ -260,7 +260,7 @@ subroutine deriv(sim,state) ! , xyz_in)
                 end do
             end do
 
-            call do_sqm_davidson_update(simpoint,vgs=Escf_left,rx=simpoint%qmmm%qm_coords(1,:)&
+            call do_sqm_davidson_update(simpoint,0,vgs=Escf_left,rx=simpoint%qmmm%qm_coords(1,:)&
                 ,ry=simpoint%qmmm%qm_coords(2,:),rz=simpoint%qmmm%qm_coords(3,:))
             !Note: rx=___ etc. might already be uncessary because qm_coords might be used in the subroutine
             E_ES_left=sim%naesmd%Omega(ihop)
@@ -272,7 +272,7 @@ subroutine deriv(sim,state) ! , xyz_in)
                 end do
             end do
 
-            call do_sqm_davidson_update(simpoint,vgs=Escf_right,rx=simpoint%qmmm%qm_coords(1,:)&
+            call do_sqm_davidson_update(simpoint,0,vgs=Escf_right,rx=simpoint%qmmm%qm_coords(1,:)&
                 ,ry=simpoint%qmmm%qm_coords(2,:),rz=simpoint%qmmm%qm_coords(3,:))
             E_ES_right=sim%naesmd%Omega(ihop)
 
@@ -283,7 +283,7 @@ subroutine deriv(sim,state) ! , xyz_in)
                 end do
             end do
 
-            call do_sqm_davidson_update(simpoint,rx=simpoint%qmmm%qm_coords(1,:)&
+            call do_sqm_davidson_update(simpoint,0,rx=simpoint%qmmm%qm_coords(1,:)&
                 ,ry=simpoint%qmmm%qm_coords(2,:),rz=simpoint%qmmm%qm_coords(3,:))
 
             !Calculate derivative
@@ -337,4 +337,79 @@ subroutine deriv(sim,state) ! , xyz_in)
     simpoint%deriv_forces=dxyz_gs+dxyz !incorporating into sim type
     return
 end subroutine deriv
+!
+! Subroutine for analytic and numerical derivatives of ALL ground and excited states
+! Used for Mean-Field Propagation
+subroutine deriv_MF(sim,restart_flag)
+    use communism 
+    use AIMC_type_module, only: AIMC_type
+
+    implicit none
+    interface 
+        subroutine deriv(sim,state)
+            use communism !for numerical derivatives
+            use qm2_davidson_module
+            use qmmm_module
+            use constants, only : KCAL_TO_EV, EV_TO_KCAL
+            use naesmd_constants
+            type(simulation_t),target ::sim
+            integer,intent(in),optional::state
+        end subroutine deriv
+    end interface
+
+    type(simulation_t),target ::sim !communism module
+    type(simulation_t),pointer::simpoint
+
+
+    type(naesmd_structure),pointer::namd
+    type(AIMC_type),pointer::aimc
+    _REAL_ vtemp(sim%excN),vgstemp
+    _REAL_ NACR(sim%naesmd%natom*3)
+    integer, intent(in) :: restart_flag !Flag for restarting (1) or not (0)
+    integer ::state, state1, state2, n, i, j ! excited state where derivatives are calculated
+    simpoint=>sim
+    namd=>sim%naesmd
+    aimc=>sim%aimc
+    n=simpoint%excN  
+
+    do state=1, n
+    call deriv(sim,state)
+    simpoint%deriv_forces_state(state,:)=simpoint%deriv_forces(:)
+    enddo
+
+    simpoint%deriv_forces=0.0
+    do state=1, n
+    simpoint%deriv_forces(:)=simpoint%deriv_forces(:) + namd%yg(state)**2.0d0*simpoint%deriv_forces_state(state,:)
+    enddo
+
+    if(namd%dynam_type.eq.'aimc') then
+        aimc%FM(:)=simpoint%deriv_forces(:)
+        aimc%imax=maxloc(abs(namd%yg(1:simpoint%excN)),1)
+        aimc%Fmax(:)=simpoint%deriv_forces_state(aimc%imax,:)
+    endif  
+
+        call do_sqm_davidson_update(simpoint,0,vmdqt=vtemp,vgs=vgstemp)
+    do state1=1, n
+    do state2=state1+1, n
+        call nacR_analytic_wrap(simpoint, state1, state2, NACR)
+        NACR=sim%naesmd%sgn(state1,state2)*NACR
+        if((sim%naesmd%dynam_type.eq.'aimc'.or.sim%naesmd%dynam_type.eq.'mf'.or.sim%lprint.gt.1).and.restart_flag==0) then
+            if(sim%naesmd%icontw.eq.sim%naesmd%nstepw.or.sim%naesmd%tfemto.eq.0.0d0) then
+                write(sim%outfile_6,451) sim%naesmd%tfemto, state1, state2, (NACR(3*j-2),NACR(3*j-1),NACR(3*j),j=1,sim%naesmd%natom)
+                call flush(sim%outfile_6)
+            endif
+        endif
+        simpoint%deriv_forces(:)=simpoint%deriv_forces(:) + 2.0*namd%yg(state1)*namd%yg(state2) &
+                    *cos(namd%yg(state2+n)-namd%yg(state1+n))*NACR(:)*(namd%vmdqt(state1)-namd%vmdqt(state2))*feVmdqt
+    enddo
+    enddo
+
+        if(namd%dynam_type.eq.'aimc') then
+                aimc%FE(:)=simpoint%deriv_forces(:)-aimc%FM(:)
+        endif  
+
+
+    return
+451     FORMAT(F18.10,I5,I5,10000(1X,F18.10))
+end subroutine deriv_MF
 !

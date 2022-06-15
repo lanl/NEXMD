@@ -126,6 +126,17 @@ subroutine qm2_print_info(qmmm_nml, qm2_struct, qmmm_struct)
      write (6,'("| QMMM: Ref: Q.T.WANG and R.A.BRYCE, JCTC, 5, 2206, (2009)")') 
   end if
 
+  ! ---------------------------------
+  ! Information on peptide correction
+  ! ---------------------------------
+  if (qmmm_nml%peptide_corr) then
+     write (6,'(''QMMM: MOLECULAR MECHANICS CORRECTION APPLIED TO PEPTIDE LINKAGES'')')
+     write (6,'(''QMMM: '',i5,'' PEPTIDE LINKAGES HAVE BEEN FOUND:'')') qm2_struct%n_peptide_links
+     do i = 1, qm2_struct%n_peptide_links
+        write(6,'(''QMMM:    '',i4,'' - '',i4,'' - '',i4,'' - '',i4)') qm2_struct%peptide_links(1,i), &
+             qm2_struct%peptide_links(2,i), qm2_struct%peptide_links(3,i), qm2_struct%peptide_links(4,i)
+     end do
+  end if
 
 #ifdef SQM
   ! ---------------------------------------

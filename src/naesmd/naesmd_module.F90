@@ -25,8 +25,11 @@ module naesmd_module
     type naesmd_structure
 	    !data from main.f90
             integer crosstot
-            integer,allocatable :: cross(:)
+            integer, allocatable :: cross(:)
             _REAL_, dimension(:), allocatable :: yg, ygprime
+            _REAL_, dimension(:), allocatable :: yg_new, ygprime_new
+            _REAL_ :: pha !Nuclear phase for MCE (gamma)
+            _REAL_, dimension(:,:), allocatable :: sgn
             integer lprint
 	    
             !common data from apc.f90
@@ -39,7 +42,7 @@ module naesmd_module
             _REAL_ E0
             integer Na,Nm
 	    !sizes variables
-	    integer natom,npot,ihop,nquantumstep,nstep,nquantumreal
+	    integer natom,npot,ihop,nquantumstep,nstep,nstep0,nquantumreal
 	    integer nstepcross,iredpot,nstates
 	    integer icontw,nstepw,icontini
 	    integer istepheat,iconttemperature,icontpdb,icont,nstepcoord
@@ -49,8 +52,21 @@ module naesmd_module
 	    integer uumdqtflag
 	    integer iview,jend,decorhop
 	    integer iseedmdqt,conthop,conthop2
-	    _REAL_ temp0,tempf,tempi,tao
-	    integer,allocatable :: iordenhop(:),iorden(:), dbtorden(:)
+            integer fix
+            integer nmc !number of normal modes to freeze
+            integer, allocatable ::  mc(:) !indexes for freezing normal modes
+            _REAL_ masatotal !total mass for freezing normal modes
+            _REAL_,allocatable :: enm(:,:) !Normal modes read from fort.34 file 
+            _REAL_,allocatable :: xbf0(:), ybf0(:), zbf0(:) !Equilibrium positions for freezing normal modes, read from tempA
+            _REAL_,allocatable :: massqrt(:)
+            _REAL_,allocatable :: w(:) !Gaussian widths for MCE
+            _REAL_ temp0,tempf,tempi,tao
+            integer npc !number of pairs of atoms to freeze the distance between them
+            integer, allocatable :: dtc(:,:) !indexes of pairs of atoms to freeze distances between them
+            integer printTdipole !to print transition dipole moments in separate files
+            integer printTDM !to print the complete TDM
+            _REAL_ :: dpt !to drop trajectory when S0/S1 gap is lower than 'dpt' (eV)
+            integer,allocatable :: iordenhop(:),iorden(:)
 	    integer,allocatable:: atomtype(:) !atom types currently max 1000
 	    integer,allocatable:: lowvaluestep(:)
 	    _REAL_,allocatable:: lowvalue(:)
@@ -100,7 +116,7 @@ module naesmd_module
 	    _REAL_ tfemto
 	    _REAL_ tfemtoquantum
 	    _REAL_ nqold
-	    _REAL_ kinini,vini,etotini
+	    _REAL_ kinini,vini,etotini,vmfini
 	    _REAL_ vgs
 	    _REAL_ friction
 	    _REAL_,allocatable:: pfric(:),vfric(:),afric(:)
@@ -109,11 +125,13 @@ module naesmd_module
 	    character*4 state,prep
 	    character*6 ensemble
 	    character*200 cardini
+	    character*10 dynam_type 
 	    character*4 ktbig(0:9999)
 	    character*200 txtinput(1000)
 	    _REAL_ cadiabhop
 	    _REAL_,allocatable:: scprreal(:,:)
-	  
+            integer ifxd(1:1000)
+  
 
 	end type naesmd_structure
 contains
@@ -131,7 +149,7 @@ contains
         type(naesmd_structure), intent(inout) :: naesmd_struct
         write(6,*)'Allocating naesmd_module variables',Na,Nexc
         if(Nexc.ne.0) then
-                allocate(naesmd_struct%iordenhop(Nexc),naesmd_struct%iorden(Nexc),naesmd_struct%dbtorden(Nexc))
+                allocate(naesmd_struct%iordenhop(Nexc),naesmd_struct%iorden(Nexc))
                 allocate(naesmd_struct%lowvaluestep(Nexc))
                 allocate(naesmd_struct%lowvalue(Nexc))
                 allocate(naesmd_struct%vmdqt(Nexc))
@@ -151,6 +169,14 @@ contains
                 allocate(naesmd_struct%bcoeffcadiab(Nexc,Nexc))
                 allocate(naesmd_struct%scpr(Nexc,Nexc))
                 allocate(naesmd_struct%scprreal(Nexc,Nexc))
+        endif
+        if(naesmd_struct%nmc.gt.0) then
+            allocate(naesmd_struct%mc(naesmd_struct%nmc)) !Allocating array for indexes of normal modes to freeze
+            allocate(naesmd_struct%enm(3*Na,3*Na)) !Allocating normal modes
+            allocate(naesmd_struct%xbf0(Na),naesmd_struct%ybf0(Na),naesmd_struct%zbf0(Na))
+            allocate(naesmd_struct%massqrt(Na))
+        elseif(naesmd_struct%npc.gt.0) then
+            allocate(naesmd_struct%dtc(naesmd_struct%npc,2))
         endif
         allocate(naesmd_struct%rx(Na),naesmd_struct%ry(Na),naesmd_struct%rz(Na))
         allocate(naesmd_struct%pfric(Na),naesmd_struct%vfric(Na),naesmd_struct%afric(Na))

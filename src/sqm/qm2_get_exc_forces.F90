@@ -157,6 +157,39 @@ subroutine qm2_get_exc_forces(qm2_params,qmmm_nml, qm2_rij_eqns, qmmm_mpi,qm2_st
       endif
    end if
 
+   if(qmmm_nml%peptide_corr) then
+!  NOW ADD IN MOLECULAR-MECHANICS CORRECTION TO THE H-N-C=O TORSION            
+     if (qmmm_nml%qmtheory%PM3 .OR. qmmm_nml%qmtheory%PDDGPM3 .OR. qmmm_nml%qmtheory%PM3CARB1 &
+         .OR. qmmm_nml%qmtheory%PM3ZNB .OR. qmmm_nml%qmtheory%PDDGPM3_08) then
+       htype = 7.1853D0                                                      
+     elseif (qmmm_nml%qmtheory%AM1 .OR. qmmm_nml%qmtheory%RM1) then
+       htype = 3.3191D0                                                      
+     else !Assume MNDO
+       htype = 6.1737D0                                                      
+     end if
+!Parallel
+     do I=qmmm_mpi%mytaskid+1,qm2_struct%n_peptide_links,qmmm_mpi%numthreads !1,n_peptide_links
+       do J=1,4                                    
+         do K=1,3                                
+           xyz_in(K,qm2_struct%peptide_links(J,I))= &
+                          xyz_in(K,qm2_struct%peptide_links(J,I))-delAdj
+           call qm2_dihed(xyz_in,qm2_struct%peptide_links(1,I), &
+                          qm2_struct%peptide_links(2,I),qm2_struct%peptide_links(3,I), &
+                          qm2_struct%peptide_links(4,I),ANGLE)
+           REFH=HTYPE*SIN(ANGLE)**2         
+           xyz_in(K,qm2_struct%peptide_links(J,I))= &
+                          xyz_in(K,qm2_struct%peptide_links(J,I))+delAdj*2.D0
+           call qm2_dihed(xyz_in,qm2_struct%peptide_links(1,I),qm2_struct%peptide_links(2,I), &
+                          qm2_struct%peptide_links(3,I),qm2_struct%peptide_links(4,I),ANGLE)
+           xyz_in(K,qm2_struct%peptide_links(J,I))= &
+                          xyz_in(K,qm2_struct%peptide_links(J,I))-delAdj
+           HEAT=HTYPE*SIN(ANGLE)**2         
+           SUM=(REFH-HEAT)*TWOONEdelAdj
+           dxyzqm(K,qm2_struct%peptide_links(J,I))=dxyzqm(K,qm2_struct%peptide_links(J,I))-SUM 
+         end do
+       end do                                   
+     end do                                    
+   end if                                           
 
 end subroutine qm2_get_exc_forces
 
