@@ -534,7 +534,7 @@ subroutine check_files(Nsim,nstep0,id,id0)
         read(1,*) l
         close(1)
         call system("rm file.tmp")
-        if(trim(adjustl(dynam_type)).eq.'tully') then
+        if(trim(adjustl(dynam_type)).eq.'tsh') then
             l2 = steps
         else
             l2 = steps*excN
@@ -885,7 +885,7 @@ subroutine read_input_moldyn_block(file_name,nstep,dynam_type,excN,cs,outData,ou
 
 !Default values
     n_class_steps = 0
-    NAMD_type='tully'
+    NAMD_type='tsh'
     n_exc_states_propagate = 0
     exc_state_init = 0
     out_coords_steps = 1

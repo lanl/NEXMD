@@ -396,7 +396,7 @@ subroutine nexmd_sim_step(sim, imdqt, nuclear, Nsim)
                 sim%naesmd%yg(ii+sim%excN)=atan2(sim%naesmd%yg_new(ii+sim%excN),sim%naesmd%yg_new(ii))+sim%naesmd%yg_new(ii+2*sim%excN)
             enddo
             call verlet2(sim)
-            if(sim%naesmd%dynam_type.eq.'tully') then
+            if(sim%naesmd%dynam_type.eq.'tsh') then
                     !--------------------------------------------------------------------
                     ! analyze the hopping
                     !--------------------------------------------------------------------
@@ -658,7 +658,7 @@ end subroutine finish_sim
         nstates=2 !do 2 states higher by default for iredpot
         deltared=1 !do 1 eV higher in energy for iredpot
         ifixed=0 ! do not use fixed atoms
-        NAMD_type='tully' ! 'tully' for SH, 'mf' for EHR, 'aimc' for cloning
+        NAMD_type='tsh' ! 'tsh' for SH, 'mf' for EHR, 'aimc' for cloning
         AIMC_dclone_1=1.5
         AIMC_dclone_2=0.2617
         AIMC_dclone_3=0.005
@@ -778,9 +778,9 @@ end subroutine finish_sim
             STOP;
         endif
         if((NAMD_type.eq.'mf').or.(NAMD_type.eq.'aimc')) sim%md%imdtype=-1
-        if((sim%ibo.eq.0).AND.NAMD_type.ne.'tully') then
+        if((sim%ibo.eq.0).AND.NAMD_type.ne.'tsh') then
             if((NAMD_type.ne.'mf').AND.(NAMD_type.ne.'aimc')) then
-               write(6,*) 'only Surface hopping-"NAMD_type=tully",Ehrenfest-"NAMD_type=mf"'
+               write(6,*) 'only Surface hopping-"NAMD_type=tsh",Ehrenfest-"NAMD_type=mf"'
                write(6,*) 'and Ab-Initio Multiple Cloning- "NAMD_type=aimc" are allowed'
                stop
             endif
