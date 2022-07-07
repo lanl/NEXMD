@@ -410,12 +410,13 @@ end function overlap_d2x
 function overlap_d2x_CG( x_i, p_i, alpha_i, &
                          x_j, p_j, alpha_j, &
                          prefactor         ) result ( d2x_S_ij )
+implicit none
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! the expectation of the d^2/dx^2  between two complex gaussians
 _REAL_, intent(in) :: x_i, p_i, alpha_i, &
                                     x_j, p_j, alpha_j
 logical,optional                 :: prefactor   ! pre calculated overlap
-double complex            :: d2x_S_ij
+double complex            :: d2x_S_ij, overlap_CG
 
 double complex :: S_ij
 _REAL_ :: P_ij, delta_x
@@ -445,12 +446,13 @@ end function overlap_d2x_CG
 function overlap_dx_CG( x_i, p_i, alpha_i, &
                         x_j, p_j, alpha_j, &
                         prefactor        ) result (dx_S_ij )
+implicit none
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! the expection of d/dx between two complex gaussians 
 _REAL_, intent(in) ::  x_i, p_i, alpha_i,&
                                      x_j, p_j, alpha_j
 logical,optional                 ::  prefactor
-double complex            ::  dx_S_ij
+double complex            ::  dx_S_ij, overlap_CG
 
 _REAL_ :: P_ij, delta_x
 
@@ -478,13 +480,14 @@ end function overlap_dx_CG
 function overlap_dp_CG( x_i, p_i, alpha_i, &
                         x_j, p_j, alpha_j, &
                         prefactor        ) result (dp_S_ij )
+implicit none
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! the expection of d/dp between two complex gaussians 
 ! right acting
 _REAL_, intent(in) ::  x_i, p_i, alpha_i,&
                                      x_j, p_j, alpha_j
 logical,optional                 ::  prefactor ! pre calculated overlap
-double complex            ::  dp_S_ij
+double complex            ::  dp_S_ij, overlap_CG
 
 _REAL_ :: delta_x, delta_p
 

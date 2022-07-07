@@ -113,6 +113,9 @@ subroutine simulations(Nsim,Nsim_max,restart_flag)
             allocate(indexes(1))
             indexes(1) = -1
         endif
+    else
+        allocate(indexes(1))
+        indexes(1) = -1
     endif
     Nsim = Nsim - dps
 
