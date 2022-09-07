@@ -54,7 +54,7 @@
 
 &moldyn
    !***** General Parameters
-   natoms=15, ! Number of atoms 
+   natoms=12, ! Number of atoms 
    ! (must be equal to number of atoms in system)
    rnd_seed=1, ! Seed for the random number generator
    bo_dynamics_flag=0, ! (0) Non-BO or (1) BO [1]
@@ -68,7 +68,6 @@
    n_quant_steps=0, ! Number of quantum steps for each classical step [4]
    moldyn_deriv_flag=1, ! (0) None, (1) Analytical, or (2) Numerical [1]
    num_deriv_step=1.0d-5, ! Displacement for numerical derivatives, A [1.0d-3]
-   rk_tolerance=1.0d-6, ! Tolerance for the Runge-Kutta propagator [1.0d-7]
 
    !***** Non-Adiabatic Parameters
    decoher_type=0, ! Type of decoherence: Reinitialize (0) Never, 
