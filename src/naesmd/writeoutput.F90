@@ -63,7 +63,7 @@ contains
         end if
 
         if(sim%naesmd%state.eq.'exct') then
-            if(sim%naesmd%dynam_type.eq.'tully') then
+            if(sim%naesmd%dynam_type.eq.'tsh') then
               sim%naesmd%vini=sim%naesmd%vmdqt(sim%naesmd%ihop)
               sim%naesmd%etotini=sim%naesmd%kin+sim%naesmd%vmdqt(sim%naesmd%ihop)
               write(sim%outfile_1,889) sim%naesmd%tfemto,sim%naesmd%kin*feVmdqt,sim%naesmd%kin*feVmdqt-sim%naesmd%kinini*feVmdqt, &
@@ -136,7 +136,7 @@ contains
                     write(sim%outfile_25,999) n, sim%naesmd%tfemto, (-sim%deriv_forces_state(n,1+3*(k-1)) &
                         ,-sim%deriv_forces_state(n,2+3*(k-1)),-sim%deriv_forces_state(n,3+3*(k-1)),k=1,sim%naesmd%natom)
                 end do
-            elseif(sim%naesmd%dynam_type.eq.'tully') then
+            elseif(sim%naesmd%dynam_type.eq.'tsh') then
                 write(sim%outfile_25,999) sim%naesmd%ihop, sim%naesmd%tfemto, (-sim%deriv_forces(1+3*(k-1)) &
                         ,-sim%deriv_forces(2+3*(k-1)),-sim%deriv_forces(3+3*(k-1)),k=1,sim%naesmd%natom)
             endif
@@ -341,7 +341,7 @@ contains
         end if
 
         if(sim%naesmd%state.eq.'exct') then
-          if(sim%naesmd%dynam_type.eq.'tully') then
+          if(sim%naesmd%dynam_type.eq.'tsh') then
             if(ibo.eq.1) then
                 write(sim%outfile_1,889) sim%naesmd%tfemto,sim%naesmd%kin*feVmdqt,&
                     sim%naesmd%kin*feVmdqt-sim%naesmd%kinini*feVmdqt, &
@@ -421,7 +421,7 @@ contains
                     write(sim%outfile_25,999) n, sim%naesmd%tfemto, (-sim%deriv_forces_state(n,1+3*(k-1)) &
                         ,-sim%deriv_forces_state(n,2+3*(k-1)),-sim%deriv_forces_state(n,3+3*(k-1)),k=1,sim%naesmd%natom)
                 end do
-            elseif(sim%naesmd%dynam_type.eq.'tully') then
+            elseif(sim%naesmd%dynam_type.eq.'tsh') then
                 write(sim%outfile_25,999) sim%naesmd%ihop, sim%naesmd%tfemto, (-sim%deriv_forces(1+3*(k-1)) &
                         ,-sim%deriv_forces(2+3*(k-1)),-sim%deriv_forces(3+3*(k-1)),k=1,sim%naesmd%natom)
             endif

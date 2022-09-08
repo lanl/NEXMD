@@ -65,7 +65,7 @@ contains
                 deltaRm(k)%p(:sim%naesmd%natom)=xstep%Rm(k,1:sim%naesmd%natom) &
                     -xstep%R(k,1:sim%naesmd%natom)
             end do
-            if(sim%naesmd%dynam_type.eq.'tully') then
+            if(sim%naesmd%dynam_type.eq.'tsh') then
               call nacT_analytic(sim,sim%naesmd%cadiabnew,xstep)
             elseif(sim%naesmd%dynam_type.eq.'aimc'.or.sim%naesmd%dynam_type.eq.'mf') then
               do j=1,sim%excN
@@ -246,7 +246,7 @@ contains
             end do
 
             call new_xstep(sim,xx,yy,zz,xxp,yyp,zzp,xxm,yym,zzm, xstep)
-            if(sim%naesmd%dynam_type.eq.'tully') then
+            if(sim%naesmd%dynam_type.eq.'tsh') then
               call nacT_analytic(sim,sim%naesmd%cadiab,xstep)
             elseif(sim%naesmd%dynam_type.eq.'aimc'.or.sim%naesmd%dynam_type.eq.'mf') then
               do j=1,sim%excN
@@ -366,7 +366,7 @@ contains
                 -xstep%R( k,:sim%naesmd%natom)
         end do
 
-        if(sim%naesmd%dynam_type.eq.'tully') then
+        if(sim%naesmd%dynam_type.eq.'tsh') then
           call nacT_analytic(sim,sim%naesmd%cadiab,xstep)
         elseif(sim%naesmd%dynam_type.eq.'aimc'.or.sim%naesmd%dynam_type.eq.'mf') then
           do j=1,sim%excN
