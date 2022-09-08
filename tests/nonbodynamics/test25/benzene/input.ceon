@@ -86,7 +86,7 @@
    nstates=3, !How many states to reduce
    dotrivial=1, ! Do unavoided (trivial) crossing routine (1) or not (0) [1]
    quant_step_reduction_factor=2.5d-2, ! Quantum step reduction factor [2.5d-2]
-   NAMD_type='tully', ! Type of molecular dynamics ('tully','mf' or 'aimc') ['tully']
+   NAMD_type='tsh', ! Type of molecular dynamics ('tsh','mf' or 'aimc') ['tsh']
    AIMC_dclone_2=0.01,
    nclones0=0, ! Clones count for 'aimc' (must be declared here for restarting 'aimc') [0]
 
