@@ -393,7 +393,7 @@ subroutine deriv_MF(sim,restart_flag)
     do state2=state1+1, n
         call nacR_analytic_wrap(simpoint, state1, state2, NACR)
         NACR=sim%naesmd%sgn(state1,state2)*NACR
-        if((sim%naesmd%dynam_type.eq.'aimc'.or.sim%naesmd%dynam_type.eq.'mf'.or.sim%lprint.gt.1).and.restart_flag==0) then
+        if((sim%naesmd%dynam_type.eq.'aimc'.or.sim%naesmd%dynam_type.eq.'mf'.or.sim%lprint.ge.1).and.restart_flag==0) then
             if(sim%naesmd%icontw.eq.sim%naesmd%nstepw.or.sim%naesmd%tfemto.eq.0.0d0) then
                 write(sim%outfile_6,451) sim%naesmd%tfemto, state1, state2, (NACR(3*j-2),NACR(3*j-1),NACR(3*j),j=1,sim%naesmd%natom)
                 call flush(sim%outfile_6)

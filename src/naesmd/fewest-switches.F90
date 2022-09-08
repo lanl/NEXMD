@@ -71,9 +71,6 @@ contains
         if(icheck.ne.0.and.cross(sim%naesmd%ihop).ne.2) then
             ini=0
             ! adjustment of velocities
-            !if(sim%naesmd%conthop2.gt.0) then
-            !    if(sim%naesmd%ihopprev.ne.icheck) sim%naesmd%conthop2=0
-            !end if
             if(sim%naesmd%conthop2.eq.0) then
                 call veladjustment(sim, lprint,Na,icheck,ini)
                 if(lprint.ge.2) then
@@ -109,8 +106,6 @@ contains
                  if(sim%naesmd%iredpot.eq.1) then
                    if((sim%naesmd%ihop+sim%naesmd%nstates).lt.sim%excN) then
                       sim%excN=sim%naesmd%ihop+sim%naesmd%nstates
-                      write(sim%outfile_23,887) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN
-                      call flush(sim%outfile_23)
                    endif
                  endif
                  if(sim%naesmd%iredpot.eq.2) then
@@ -121,8 +116,6 @@ contains
                       endif
                    enddo
                    sim%excN=excNtemp
-                   write(sim%outfile_23,887) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN
-                   call flush(sim%outfile_23)
                  endif
 ! after Josiah
                  if(sim%naesmd%iredpot.eq.3) then
@@ -146,10 +139,6 @@ contains
                    call indexx(sim%naesmd%natom,sim%naesmd%cicoeffao3,indx)
                    sim%naesmd%deltared=0.0d0
                    do jj=1,sim%naesmd%natom
-                      write(sim%outfile_24,*) ipn,sim%naesmd%atomtype(indx(jj)),sim%naesmd%cicoeffao3(indx(jj))
-                   enddo
-                   call flush(sim%outfile_24)
-                   do jj=1,sim%naesmd%natom
                       if(indx(jj).ge.(sim%naesmd%natom-ipn)) then
                         sim%naesmd%deltared = sim%naesmd%deltared + &
 			0.5d0*sim%naesmd%massmdqt(jj)*(sim%naesmd%vx(jj)**2 &
@@ -163,9 +152,6 @@ contains
                      endif
                    enddo
                    sim%excN=excNtemp
-                   write(sim%outfile_23,884) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN, &
-				ipn,sim%naesmd%deltared*feVmdqt,kavant*feVmdqt
-                   call flush(sim%outfile_23)
                  endif
 ! end after josiah
 ! after kirill
@@ -196,8 +182,6 @@ contains
                if(sim%naesmd%iredpot.eq.1) then
                    if((ihopavant+sim%naesmd%nstates).lt.sim%excN) then
                       sim%excN=ihopavant+sim%naesmd%nstates
-                      write(sim%outfile_23,887) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN
-                      call flush(sim%outfile_23)
                    endif
                endif
                if(sim%naesmd%iredpot.eq.2) then
@@ -208,8 +192,6 @@ contains
                      endif
                   enddo
                   sim%excN=excNtemp
-                  write(sim%outfile_23,887) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN
-                  call flush(sim%outfile_23)
                endif
 ! after Josiah
                if(sim%naesmd%iredpot.eq.3) then
@@ -232,10 +214,6 @@ contains
                   ipn=int(pn)+1
                   call indexx(sim%naesmd%natom,sim%naesmd%cicoeffao3,indx)
                   sim%naesmd%deltared=0.0d0
-              do jj=1,sim%naesmd%natom
-                write(sim%outfile_24,*) ipn,sim%naesmd%atomtype(indx(jj)),sim%naesmd%cicoeffao3(indx(jj))
-             enddo
-              call flush(sim%outfile_24)
                   do jj=1,sim%naesmd%natom
                      if(indx(jj).ge.(sim%naesmd%natom-ipn)) then
                         sim%naesmd%deltared = sim%naesmd%deltared + 0.5d0*sim%naesmd%massmdqt(jj)*&
@@ -249,9 +227,6 @@ contains
                      endif
                   enddo
                   sim%excN=excNtemp
-                  write(sim%outfile_23,884) sim%naesmd%tfemto,ihopavant,sim%naesmd%ihop,sim%excN,ipn,&
-                                sim%naesmd%deltared*feVmdqt,kavant*feVmdqt
-                  call flush(sim%outfile_23)
                endif
 !###############################################3       
             endif

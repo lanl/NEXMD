@@ -96,14 +96,6 @@ contains
         sim%outfile_29=31*10000+sim%id + alldrops
         open(sim%outfile_29,file=trim(filename),status=file_status,access=file_access)
 
-        sim%outfile_23=34*10000+sim%id + alldrops
-        write (filename, "(a3,i4.4,a4)") "34_", sim%id + alldrops, ".out"
-        OPEN(sim%outfile_23,FILE=trim(filename) ,action='write',STATUS=file_status,ACCESS=file_access)
-
-        sim%outfile_24=110*10000+sim%id + alldrops
-        write (filename, "(a4,i4.4,a4)") "110_", sim%id + alldrops, ".out"
-        OPEN(sim%outfile_24,FILE=trim(filename) ,action='write',STATUS=file_status,ACCESS=file_access) 
-
         sim%outfile_20=202*10000+sim%id + alldrops
         write (filename, "(a9,i4.4,a4)") "velocity_", sim%id + alldrops, ".out"
         OPEN(sim%outfile_20,FILE=trim(filename) ,action='write',STATUS=file_status,ACCESS=file_access)
@@ -116,16 +108,13 @@ contains
         write (filename, "(a7,i4.4,a4)") "coords_", sim%id + alldrops, ".xyz"
         OPEN(sim%outfile_22,file=trim(filename) ,action='write',STATUS=file_status,ACCESS=file_access)
 
-        sim%outfile_25=204*10000+sim%id + alldrops
-        write (filename, "(a13,i4.4,a4)") "state_forces_", sim%id + alldrops, ".out"
-        if(sim%naesmd%dynam_type.eq.'aimc'.or. &
-           sim%naesmd%dynam_type.eq.'mf') OPEN(sim%outfile_25,FILE=trim(filename), action='write', &
-             STATUS=file_status,ACCESS=file_access)
-
-        write (filename, "(a15,i4.4,a4)") "config_weights_", sim%id + alldrops, ".out"
-        sim%outfile_26=205*10000+sim%id + alldrops
-        if(sim%naesmd%dynam_type.eq.'aimc') OPEN(sim%outfile_26,FILE=trim(filename), action='write', &
-             STATUS=file_status,ACCESS=file_access)
+        if(lprint.ge.3) then
+            sim%outfile_25=204*10000+sim%id + alldrops
+            write (filename, "(a13,i4.4,a4)") "gradients_", sim%id + alldrops, ".out"
+            if(sim%naesmd%dynam_type.eq.'aimc'.or. &
+            sim%naesmd%dynam_type.eq.'mf') OPEN(sim%outfile_25,FILE=trim(filename), action='write', &
+                 STATUS=file_status,ACCESS=file_access)
+        endif
 
         if(lprint.ge.0) then
             !
@@ -222,11 +211,6 @@ contains
                 open(sim%outfile_15,file=trim(filename),status=file_status,access=file_access)
         endif
         if((lprint.ge.3).or.(sim%naesmd%dynam_type.eq.'aimc')) then
-                write (filename, "(A7,I4.4,A4)") "forces_", sim%id + alldrops, ".out"
-                sim%outfile_12=85*10000+sim%id + alldrops
-                open(sim%outfile_12,file=trim(filename),status=file_status,access=file_access)
-        endif
-        if((lprint.ge.3).or.(sim%naesmd%dynam_type.eq.'aimc')) then
             if (imdtype.ne.0.and.ibo.ne.1) then
                 write (filename, "(A8,I4.4,A4)") "coeff-q_", sim%id + alldrops, ".out"
                 sim%outfile_16=94*10000+sim%id + alldrops
@@ -304,7 +288,6 @@ contains
         sim%outfile_9=105
         sim%outfile_10=33
         sim%outfile_11=100
-        sim%outfile_12=85
         sim%outfile_13=84
         sim%outfile_14=83
         sim%outfile_15=101
@@ -315,20 +298,14 @@ contains
         sim%outfile_20=202
         sim%outfile_21=203
         sim%outfile_22=9
-        sim%outfile_23=34
-        sim%outfile_24=110
         sim%outfile_25=204
-        sim%outfile_26=205
         sim%outfile_28=207
         sim%outfile_29=208 
 
-        OPEN(sim%outfile_23,FILE='34.out' ,action='write',STATUS=file_status,ACCESS=file_access)
-        OPEN(sim%outfile_24,FILE='110.out' ,action='write',STATUS=file_status,ACCESS=file_access)
-       
         OPEN(sim%outfile_20,FILE='velocity.out' ,action='write',STATUS=file_status,ACCESS=file_access)
         if(ibo==0) OPEN(sim%outfile_21,FILE='coefficient.out' ,action='write',STATUS=file_status,ACCESS=file_access)
         OPEN(sim%outfile_22,file='coords.xyz' ,action='write',STATUS=file_status,ACCESS=file_access)
-        OPEN(sim%outfile_25,file='state_forces.out' ,action='write',STATUS=file_status,ACCESS=file_access)
+        if(lprint.ge.3) OPEN(sim%outfile_25,file='gradients.out' ,action='write',STATUS=file_status,ACCESS=file_access)
 
         ! xyz.out: time(fs), (atomic_number(i), xyz-coordinates(i)(Amstrong), i=1,number_of_atoms)
         ! veloc.out: time(fs), (atomic_number(i), xyz-veloc(i)(Amstrong/ps), i=1,number_of_atoms)
@@ -436,8 +413,6 @@ contains
             if (imdtype.ne.0.and.ibo.ne.1) OPEN(94, FILE= 'coeff-q.out',   &
                 status=file_status, access=file_access)
             OPEN(91, FILE= 'cm.out', status=file_status, &
-                access=file_access)
-            OPEN(85, FILE= 'forces.out', status=file_status, &
                 access=file_access)
         endif
 

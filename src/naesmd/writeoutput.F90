@@ -129,30 +129,20 @@ contains
             call flush(sim%outfile_5)
         endif
 
-        !State dependent forces needed for Multiconfigurational post-processing
-        if(sim%naesmd%dynam_type.eq.'aimc'.or.sim%naesmd%dynam_type.eq.'mf') then
-            write (sim%outfile_25,449) 'FINAL HEAT OF FORMATION =   ', (sim%naesmd%kin+sim%naesmd%vgs)*feVmdqt, &
-                '  time = ',sim%naesmd%tfemto
-            do n=1,sim%excN
-            do k=1,sim%naesmd%natom
-                write(sim%outfile_25,999) sim%naesmd%atomtype(k),sim%deriv_forces_state(n,1+3*(k-1)) &
-                    ,sim%deriv_forces_state(n,2+3*(k-1)),sim%deriv_forces_state(n,3+3*(k-1))
-            end do
-            end do
-            if(sim%naesmd%dynam_type.eq.'aimc') write(sim%outfile_26,*) '  time = ',sim%naesmd%tfemto, ' weight = ', sim%aimc%Weight 
+        !Gradients
+        if(lprint.ge.3) then
+            if(sim%naesmd%dynam_type.eq.'aimc'.or.sim%naesmd%dynam_type.eq.'mf') then
+                do n=1,sim%excN
+                    write(sim%outfile_25,999) n, sim%naesmd%tfemto, (-sim%deriv_forces_state(n,1+3*(k-1)) &
+                        ,-sim%deriv_forces_state(n,2+3*(k-1)),-sim%deriv_forces_state(n,3+3*(k-1)),k=1,sim%naesmd%natom)
+                end do
+            elseif(sim%naesmd%dynam_type.eq.'tully') then
+                write(sim%outfile_25,999) sim%naesmd%ihop, sim%naesmd%tfemto, (-sim%deriv_forces(1+3*(k-1)) &
+                        ,-sim%deriv_forces(2+3*(k-1)),-sim%deriv_forces(3+3*(k-1)),k=1,sim%naesmd%natom)
+            endif
+            call flush(sim%outfile_25)
         endif
-        call flush(sim%outfile_25)
-        if (sim%naesmd%dynam_type.eq.'aimc') call flush(sim%outfile_26)
-        !Old Force writing code
-        if((lprint.ge.3).or.(sim%naesmd%dynam_type.eq.'aimc')) then
-            write (sim%outfile_12,449) 'FINAL HEAT OF FORMATION =   ', (sim%naesmd%kin+sim%naesmd%vgs)*feVmdqt, &
-                '  time = ',sim%naesmd%tfemto
-            do k=1,sim%naesmd%natom
-                write(sim%outfile_12,999) sim%naesmd%atomtype(k),sim%deriv_forces(1+3*(k-1)) &
-                    ,sim%deriv_forces(2+3*(k-1)),sim%deriv_forces(3+3*(k-1))
-            end do
-            call flush(sim%outfile_12)
-        endif
+
         if(lprint.ge.3) then
             ! Check the position of the center of mass
             xcm=0.0d0
@@ -424,29 +414,20 @@ contains
         call flush(sim%outfile_2)
         !
         !
-        !State dependent forces needed for Multiconfigurational post-processing
-        if(sim%naesmd%dynam_type.eq.'aimc'.or.sim%naesmd%dynam_type.eq.'mf') then
-            write (sim%outfile_25,449) 'FINAL HEAT OF FORMATION =   ', (sim%naesmd%kin+sim%naesmd%vgs)*feVmdqt, &
-                '  time = ',sim%naesmd%tfemto
-            do n=1,sim%excN
-            do k=1,sim%naesmd%natom
-                write(sim%outfile_25,999) sim%naesmd%atomtype(k),sim%deriv_forces_state(n,1+3*(k-1)) &
-                    ,sim%deriv_forces_state(n,2+3*(k-1)),sim%deriv_forces_state(n,3+3*(k-1))
-            end do
-            end do
-            if(sim%naesmd%dynam_type.eq.'aimc') write(sim%outfile_26,*) '  time = ',sim%naesmd%tfemto, ' weight = ', sim%aimc%Weight 
+        !Gradients
+        if(lprint.ge.3) then
+            if(sim%naesmd%dynam_type.eq.'aimc'.or.sim%naesmd%dynam_type.eq.'mf') then
+                do n=1,sim%excN
+                    write(sim%outfile_25,999) n, sim%naesmd%tfemto, (-sim%deriv_forces_state(n,1+3*(k-1)) &
+                        ,-sim%deriv_forces_state(n,2+3*(k-1)),-sim%deriv_forces_state(n,3+3*(k-1)),k=1,sim%naesmd%natom)
+                end do
+            elseif(sim%naesmd%dynam_type.eq.'tully') then
+                write(sim%outfile_25,999) sim%naesmd%ihop, sim%naesmd%tfemto, (-sim%deriv_forces(1+3*(k-1)) &
+                        ,-sim%deriv_forces(2+3*(k-1)),-sim%deriv_forces(3+3*(k-1)),k=1,sim%naesmd%natom)
+            endif
+            call flush(sim%outfile_25)
         endif
-        call flush(sim%outfile_25)
-        if(sim%naesmd%dynam_type.eq.'aimc') call flush(sim%outfile_26)
-        if((lprint.ge.3).or.(sim%naesmd%dynam_type.eq.'aimc')) then
-            write (sim%outfile_12,449) 'FINAL HEAT OF FORMATION =   ', (sim%naesmd%kin+sim%naesmd%vgs)*feVmdqt, &
-                '  time = ',sim%naesmd%tfemto
-            do k=1,sim%naesmd%natom
-                write(sim%outfile_12,999) sim%naesmd%atomtype(k),sim%deriv_forces(1+3*(k-1)) &
-                    ,sim%deriv_forces(2+3*(k-1)),sim%deriv_forces(3+3*(k-1))
-            end do
-            call flush(sim%outfile_12)
-        endif
+
         if(lprint.ge.3) then
             ! Check the position of the center of mass
             xcm=0.0d0

@@ -33,11 +33,11 @@ module communism
         integer                        :: itime1
         integer :: outfile_1,outfile_2,outfile_3,outfile_4
         integer :: outfile_5,outfile_6,outfile_7,outfile_8
-        integer :: outfile_9,outfile_10,outfile_11,outfile_12
+        integer :: outfile_9,outfile_10,outfile_11
         integer :: outfile_13,outfile_14,outfile_15,outfile_16
         integer :: outfile_17,outfile_18,outfile_19,outfile_20
-        integer :: outfile_21,outfile_22,outfile_23,outfile_24
-        integer :: outfile_25,outfile_26, outfile_27, outfile_28
+        integer :: outfile_21,outfile_22
+        integer :: outfile_25,outfile_27, outfile_28
         integer :: outfile_29
         character*150, allocatable, dimension(:) :: input_line !input lines for restart
         _REAL_                         :: escf

@@ -238,7 +238,6 @@ subroutine clone_sim(sim1, sim2)
     sim2%outfile_9=sim1%outfile_9
     sim2%outfile_10=sim1%outfile_10
     sim2%outfile_11=sim1%outfile_11
-    sim2%outfile_12=sim1%outfile_12
     sim2%outfile_13=sim1%outfile_13
     sim2%outfile_14=sim1%outfile_14
     sim2%outfile_15=sim1%outfile_15
@@ -249,10 +248,7 @@ subroutine clone_sim(sim1, sim2)
     sim2%outfile_20=sim1%outfile_20
     sim2%outfile_21=sim1%outfile_21
     sim2%outfile_22=sim1%outfile_22
-    sim2%outfile_23=sim1%outfile_23
-    sim2%outfile_24=sim1%outfile_24
     sim2%outfile_25=sim1%outfile_25
-    sim2%outfile_26=sim1%outfile_26
     sim2%outfile_27=sim1%outfile_27
     sim2%outfile_28=sim1%outfile_28
     sim2%outfile_29=sim1%outfile_29

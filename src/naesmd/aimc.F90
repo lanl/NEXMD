@@ -13,14 +13,12 @@ public :: AIMC_clone_check, AIMC_clone
 contains
 logical function AIMC_clone_check(sim)
         implicit none
-        !This subroutined determines if a "cloning" of the simulation should take place i
+        !This subroutined determines if a "cloning" of the simulation should take place
         !in accorfance with the AIMC18 cloning criterions
         !PCCP AIMC18 paper Section 2.6 
         type(simulation_t), pointer :: sim
         integer :: i,j,k,l,n
         _REAL_ :: Wn, thetan, ratio, FM2, Fmax2, FE2
-        logical itsopen 
-        inquire(unit=666, opened=itsopen) 
 
         AIMC_clone_check=.false.
 
@@ -60,12 +58,7 @@ logical function AIMC_clone_check(sim)
         ratio=ratio+abs(2.0*sim%naesmd%yg(i)/sim%naesmd%yg(sim%aimc%imax)* &
                      dcos(sim%naesmd%yg(i+sim%excN)-sim%naesmd%yg(sim%aimc%imax+sim%excN))*sim%naesmd%cadiab(sim%aimc%imax,i))
         enddo
-      if ( itsopen ) then
-           write(666,889) sim%naesmd%tfemto, Wn, thetan, ratio, FE2, FM2
-      else
-           open(666,file='criterion_test.txt',status='replace', access='sequential')
-           write(666,889) sim%naesmd%tfemto, Wn, thetan, ratio
-       end if
+
         if(Wn.lt.sim%aimc%delta_clone_1) then
          return 
         endif
@@ -140,8 +133,6 @@ old_sim%naesmd%yg_new(max_pop)=0.0
 old_sim%naesmd%yg_new(old_sim%excN+1:2*old_sim%excN)=old_sim%naesmd%yg_new(old_sim%excN+1:2*old_sim%excN)/sqrt(1.0-new_sim%naesmd%yg(max_pop)**2)
 old_sim%naesmd%yg_new(old_sim%excN+max_pop)=0.0
 
-old_sim%aimc%Weight=old_sim%aimc%Weight*sqrt(1.0-new_sim%naesmd%yg(max_pop)**2)
-
 do i=1,old_sim%excN
     if(i.eq.max_pop) then
         new_sim%naesmd%yg_new(i)=new_sim%naesmd%yg_new(i)/abs(new_sim%naesmd%yg(max_pop))
@@ -151,8 +142,6 @@ do i=1,old_sim%excN
         new_sim%naesmd%yg_new(i+old_sim%excN)=0.0
     endif
 enddo
-
-new_sim%aimc%Weight=new_sim%aimc%Weight*new_sim%naesmd%yg(max_pop)
 
 new_sim%naesmd%yg(1:old_sim%excN)=0.0
 new_sim%naesmd%yg(max_pop)=1.0 !since new_sim yg is 1 for single state, it won't flag another clone
