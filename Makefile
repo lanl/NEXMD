@@ -148,7 +148,6 @@ OBJNAESMD = \
         $(OBJDIR)/$(NAESMDDIR)/md_module.o\
         $(OBJDIR)/$(NAESMDDIR)/naesmd_constants.o\
         $(OBJDIR)/$(NAESMDDIR)/aimc_type.o \
-        $(OBJDIR)/$(NAESMDDIR)/quantum-prop.o \
         $(OBJDIR)/$(NAESMDDIR)/communism.o \
         $(OBJDIR)/$(NAESMDDIR)/additional-subroutines.o \
 	$(OBJDIR)/$(NAESMDDIR)/random.o \
