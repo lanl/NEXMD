@@ -36,6 +36,7 @@
    integer i,j,lprint
    integer iseed,ip,ih,j0,Mx0,imin,one,iloops
    integer kflag,nd,nd1,nd1_old,j1
+   integer :: iter = 0, max_iter = 200 ! max iteration for Davidson when not converged
 
    integer Lt,Mb
 !
@@ -203,6 +204,15 @@
       close(qm2ds%modes_unit)
       close(qm2ds%ee_unit)
    end if
+
+   if(kflag == 1) iter = iter + 1
+   if(iter > max_iter) then
+      write(6, *) '***********************************'
+      write(6, *) 'Could not go further ',j0,' vectors'
+      write(6, *) 'program stops here after', max_iter,' iterations '
+      write(6, *) '***********************************'
+      stop
+   endif
 
    goto 10
    end if
@@ -609,9 +619,14 @@
    allocate(dtmp(4*nd1))
    call dsyev ('v','u',nd1,rayvR,nd,raye,dtmp,4*nd1,info) 
         !Eigenvalues of ray1 in raye and eigenvectors in rayvR
-   write(6,*)'info000',info
-   write(6,*)'info Nrpa,nd,nd1',qm2ds%Nrpa,nd,nd1
-   write(6,*)'info shapes',shape(rayvR),shape(raye),shape(xi)
+
+   if(info /= 0) then
+      write(6, *)'DSYEV return code',info
+      if(lprint.gt.2) then
+          write(6,*)'info Nrpa, nd, nd1',qm2ds%Nrpa,nd,nd1
+          write(6,*)'info shapes',shape(rayvR),shape(raye),shape(xi)
+      end if
+   end if
  
    do j=1,nd1
       raye1(j)=Sign(Sqrt(Abs(raye(j))),raye(j)) !make raye1 sqrt(eigenvalues) with same sign as eigenvalues
@@ -633,8 +648,10 @@
 
 
 ! find eigenvalues and eigenvectors of ray
-   write(6,*)'info0',info
    call dsyev ('v','u',nd1,rayv,nd,raye,dtmp,4*nd1,info)
+   if(lprint > 2 .and. info /= 0) then
+       write(6,*)'DSYEV return code',info
+   end if
    do j=1,nd1
       raye(j) = Sign(Sqrt(Abs(raye(j))),raye(j))
    enddo
@@ -653,8 +670,7 @@
    end do
 
    if(lprint.gt.2) then 
-      write(6,*)'info',info
-      write(6,910) (raye(i),i=1,j1)
+      write(6, 910) (raye(i),i=1,j1)
    end if 
 
    if(raye(1).le.0.1) goto 100           ! RPA bad behavior
