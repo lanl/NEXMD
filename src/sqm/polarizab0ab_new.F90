@@ -97,8 +97,6 @@ subroutine polarizab(qm2_params,qmmm_nml,qm2_struct,qm2ds,qmmm_struct)
       print *
       print *, '!!!!!!-----End INPUT-----!!!!!!'
 
-      print *, 'WARNING, the units output from this POL calculation are in &
-                unknown units and are only for relative magnitude (FIXME)'
 100   format(I5,'     ',3F12.6,2i4)
 110   format(I5,'     ',F12.6,i4)
 120   format(' Modes factors Av,S,Px,Py,Pz     ',5i4)
@@ -111,27 +109,25 @@ if(1==1) then
         call get_dipole_matrix(qm2_params,qmmm_nml,qm2_struct,qmmm_struct,qmmm_struct%qm_coords, dip)
         call unpacking(qm2ds%Nb,dip(1,:),temp1,'s')
         do j=1,qm2ds%Mx
-           muax(j)=ddot(qm2ds%Nb**2,temp1,one,qm2ds%v2(:,j),one)*sqrt(2.0)
+           muax(j)=ddot(qm2ds%Nb**2,temp1,one,qm2ds%v2(:,j),one)*sqrt(2.0)/BOHRS_TO_A
         enddo
         call unpacking(qm2ds%Nb,dip(2,:),temp1,'s')
         do j=1,qm2ds%Mx
-           muay(j)=ddot(qm2ds%Nb**2,temp1,one,qm2ds%v2(:,j),one)*sqrt(2.0)
+           muay(j)=ddot(qm2ds%Nb**2,temp1,one,qm2ds%v2(:,j),one)*sqrt(2.0)/BOHRS_TO_A
         enddo
         call unpacking(qm2ds%Nb,dip(3,:),temp1,'s')
         do j=1,qm2ds%Mx
-           muaz(j)=ddot(qm2ds%Nb**2,temp1,one,qm2ds%v2(:,j),one)*sqrt(2.0)
+           muaz(j)=ddot(qm2ds%Nb**2,temp1,one,qm2ds%v2(:,j),one)*sqrt(2.0)/BOHRS_TO_A
         enddo
 !  Print mu_alpha
       print *
-      print *, 'mu_alpha'
-      print *, 'i e(i) fx(i) fy(i) fz(i) f(i)'
+      print *, 'Energies (eV) and mu_alpha (AU)'
+      print *, 'i e(i) mux(i) muy(i) muz(i), f(i)'
       do i=1,qm2ds%Mx
          f=sqrt(muax(i)**2+muay(i)**2+muaz(i)**2)
-         write(6,130) i, qm2ds%e0(i), 0.918*2*qm2ds%e0(i)*muax(i)**2/21.0, &
-         0.918*2*qm2ds%e0(i)*muay(i)**2/21.0, &
-         0.918*2*qm2ds%e0(i)*muaz(i)**2/21.0, 0.918*2*qm2ds%e0(i)*f**2/21.0
+         write(6,130) i, qm2ds%e0(i), muax(i), muay(i), muaz(i), f
       enddo
-130   format(I5,5F12.4)
+130   format(I5,5F16.8)
 
 !     Zero all nonlinear couplings matrices
       do i=-qm2ds%Mx,qm2ds%Mx
@@ -173,7 +169,7 @@ if(1==1) then
              call dgemm ('N','N',qm2ds%Nb,qm2ds%Nb,qm2ds%Nb,f1,temp3,qm2ds%Nb,temp1,qm2ds%Nb,f0,temp4,qm2ds%Nb)
              do i=-qm2ds%Mx,qm2ds%Mx
                 if (i.ne.0) then
-                   temp1=qm2ds%v2(:,abs(i))
+                   temp2=qm2ds%v2(:,abs(i))
                    if (i.lt.0) call transp1(qm2ds%Nb,temp2)
                    tr=ddot(qm2ds%Nb**2,temp4,one,temp2,one)
                    muaby(j,i)=muaby(j,i)+tr
@@ -209,22 +205,20 @@ if(1==1) then
        print *, 'Computed mu_alpha_beta, time',time11, 'sec'
        open (qm2ds%muab_unit,file=trim(qm2ds%muab_out))
       print *
-      print *, 'mu_alpha_beta'
-      print *, 'j i e(ji) fabx(ji) faby(ji) fabz(ji) fab(ji)'
+      print *, 'Energies (eV) and mu_alpha_beta (AU)'
+      print *, 'j i e(ji) muabx(ji) muaby(ji) muabz(ji) muab(ji)'
       do j=-1,-qm2ds%Mx,-1
-         do i=abs(j),qm2ds%Mx
+         do i=abs(j)+1,qm2ds%Mx
             f=sqrt(muabx(j,i)**2+muaby(j,i)**2+muabz(j,i)**2)
-            write(6,140) abs(j),i,qm2ds%e0(i)-qm2ds%e0(-j),0.918*2*(qm2ds%e0(i)-qm2ds%e0(-j))*muabx(j,i)**2/21.0, &
-            0.918*2*(qm2ds%e0(i)-qm2ds%e0(-j))*muaby(j,i)**2/21.0, &
-            0.918*2*(qm2ds%e0(i)-qm2ds%e0(-j))*muabz(j,i)**2/21.0,0.918*2*(qm2ds%e0(i)-qm2ds%e0(-j))*f**2/21.0
-            write(qm2ds%muab_unit,140) abs(j),i,qm2ds%e0(i)-qm2ds%e0(-j),0.918*2*(qm2ds%e0(i)-qm2ds%e0(-j))*muabx(j,i)**2/21.0, &
-            0.918*2*(qm2ds%e0(i)-qm2ds%e0(-j))*muaby(j,i)**2/21.0, &
-            0.918*2*(qm2ds%e0(i)-qm2ds%e0(-j))*muabz(j,i)**2/21.0,0.918*2*(qm2ds%e0(i)-qm2ds%e0(-j))*f**2/21.0
+            write(6,140) abs(j),i,qm2ds%e0(i)-qm2ds%e0(-j),muabx(j,i)/BOHRS_TO_A, &
+            muaby(j,i)/BOHRS_TO_A, muabz(j,i)/BOHRS_TO_A, f**2
+            write(qm2ds%muab_unit,140) abs(j), i, qm2ds%e0(i)-qm2ds%e0(-j), &
+            muabx(j,i)/BOHRS_TO_A, muaby(j,i)/BOHRS_TO_A, muabz(j,i)/BOHRS_TO_A, f**2
          enddo
       enddo
       close(qm2ds%muab_unit)
 
-140   format(2I5,5F12.4)
+140   format(2I5,5F16.8)
 
       open (qm2ds%ceo_unit,file=trim(qm2ds%ceo_out))
       j=-qmmm_struct%state_of_interest
