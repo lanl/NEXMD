@@ -566,10 +566,9 @@ contains
           
             if (sim%qnml%verbosity<5) then
                 sim%dav%verbosity=0 !don't print output from scf calculations
-                sim%qnml%verbosity=0
             endif
             call naesmd2qmmm_r(sim)
-            call xmin(sim%naesmd%natom, sim%qmmm%qm_coords, xmin_iter, maxcyc, grms_tol, ntpr,sim)
+            call xmin(sim%naesmd%natom, sim%qmmm%qm_coords, xmin_iter, maxcyc, grms_tol, ntpr, sim, sim%qnml%verbosity)
         else
             write(6,*) "You must run dynamics (n_class_steps > 0) or geometry optimization &
                 (maxcyc > 0). Running both simultaneously is not possible."            
@@ -585,7 +584,7 @@ contains
     !-----------------------------------------------------------------------
 #include "xmin.h" 
     !includes return_flag definitions for select_case statement shared with XminC
-    subroutine xmin(natom, x, xmin_iter, maxiter, grms_tol, ntpr,sim_pass )
+    subroutine xmin(natom, x, xmin_iter, maxiter, grms_tol, ntpr, sim_pass, verbosity)
           
         use qm2_davidson_module
         use constants, only : zero, AU_TO_EV
@@ -638,6 +637,7 @@ contains
         integer, intent(in) :: natom, maxiter, ntpr
         _REAL_,  intent(inout) :: x(natom*3) !coordinates
         integer, intent(inout) :: xmin_iter
+        integer, intent(in) :: verbosity
         _REAL_,  intent(in)  :: grms_tol
           
         ! ------ local variables --------------------
@@ -695,6 +695,8 @@ contains
         ftol_wolfe = 0.0001
         gtol_wolfe = 0.9
           
+        if (verbosity > 1) open(500,file='coords_opt.xyz',status='replace')
+
         ! keep xminC() from thinking that atoms are frozen:
         fg(1:3*natom) = 1.d0
           
@@ -768,6 +770,16 @@ contains
                             end if
                             write(6,'(a,i5,f16.6,a,f16.6,a)') 'xmin ', xmin_iter, energy,' eV', grms, ' eV/A'
                         end if
+
+                        if (verbosity > 1) then
+                        !write intermediate steps
+                        write(500,*) natom
+                        write(500,*) 'optimization step ', xmin_iter
+                          do i=1,natom !NAESMD format
+                            write(500,100) sim_pass%qmmm%iqm_atomic_numbers(i),x(3*(i-1)+1),x(3*(i-1)+2),x(3*(i-1)+3)
+                          end do
+                        endif
+
                         call qmmm2naesmd_r(sim_pass);
                         if((sim_pass%cosmo%solvent_model.eq.4).or.(sim_pass%cosmo%solvent_model.eq.5)) then
                             call calc_cosmo_4(sim_pass)
@@ -810,6 +822,7 @@ contains
             end select
         end do
           
+        if (verbosity > 1) close(500)
         if ( is_error ) then
             write(6,'(a,i4)') '  XMIN ERROR: Status is ', status_flag
             call mexit(6,1)
