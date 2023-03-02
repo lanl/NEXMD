@@ -352,7 +352,7 @@ contains
         integer win,i,j
         character(*), parameter :: fmt1 = "(F10.4,1X,F10.4,1X,I3,1X,I3,1X,I3,4(1X,F18.10))"
 
-        if(sim%dotrivial.eq.1.and.conthop.eq.0) then
+        if(sim%dotrivial.eq.1.and.sim%naesmd%conthop.eq.0) then
             call checkcrossing(sim,sim%naesmd%cross,sim%lprint)
             else
                write(6,*)'WARNING:TRIVIAL UNAVOIDED CROSSING DETECTION IS OFF'

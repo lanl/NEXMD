@@ -316,7 +316,7 @@ contains
                 eapres=eapres+sim%naesmd%kin
                 do j=1,sim%excN
                     if(j.ne.sim%naesmd%ihop) then
-                        if(j.lt.sim%naesmd%iorden(j)) then
+                        if(j.lt.sim%naesmd%iorden(j).and.sim%naesmd%conthop2.ne.1) then
                             if(cross(j).ne.0) then
                                 write(sim%outfile_3,887) sim%naesmd%tfemto,cross(j),j,sim%naesmd%iorden(j),eavant,eapres
                                 call flush(sim%outfile_3)
