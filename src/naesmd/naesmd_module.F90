@@ -65,7 +65,7 @@ module naesmd_module
             integer, allocatable :: dtc(:,:) !indexes of pairs of atoms to freeze distances between them
             integer printTdipole !to print transition dipole moments in separate files
             integer printTDM !to print the complete TDM
-            _REAL_ :: dpt !to drop trajectory when S0/S1 gap is lower than 'dpt' (eV)
+            _REAL_ :: S0_S1_threshold !to drop trajectory when S0/S1 gap is lower than 'S0_S1_threshold' (eV)
             integer,allocatable :: iordenhop(:),iorden(:)
 	    integer,allocatable:: atomtype(:) !atom types currently max 1000
 	    integer,allocatable:: lowvaluestep(:)

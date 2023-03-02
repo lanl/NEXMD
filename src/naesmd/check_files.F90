@@ -869,7 +869,7 @@ subroutine read_input_moldyn_block(file_name,nstep,dynam_type,excN,cs,outData,ou
     integer :: printTdipole
     _REAL_ :: AIMC_dclone_1,AIMC_dclone_2,AIMC_dclone_3,AIMC_max_clone,AIMC_force_pop_min
     integer nclones0
-    _REAL_ :: dpt 
+    _REAL_ :: S0_S1_threshold  
     character(100) :: NAMD_type
     namelist /moldyn/ natoms,bo_dynamics_flag,NAMD_type,exc_state_init, &
         n_exc_states_propagate,out_count_init,time_init, &
@@ -881,7 +881,7 @@ subroutine read_input_moldyn_block(file_name,nstep,dynam_type,excN,cs,outData,ou
         therm_friction,rnd_seed,out_data_cube,verbosity,moldyn_deriv_flag, &
         quant_step_reduction_factor,decoher_e0,decoher_c,decoher_type,dotrivial,&
         iredpot,nstates,deltared,ifixed,AIMC_dclone_1,AIMC_dclone_2,AIMC_dclone_3,&
-        AIMC_max_clone,AIMC_force_pop_min,nmc,npc,printTdipole,nclones0,dpt
+        AIMC_max_clone,AIMC_force_pop_min,nmc,npc,printTdipole,nclones0,S0_S1_threshold 
 
 !Default values
     n_class_steps = 0

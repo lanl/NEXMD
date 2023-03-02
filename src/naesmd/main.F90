@@ -166,7 +166,7 @@ subroutine simulations(Nsim,Nsim_max,restart_flag)
          enddo
 !Dropping trajectories at S0/S1 conincal intersection
          do i = 1, Nsim
-            if (sims(i)%sim%excN.gt.0.and.(sims(i)%sim%naesmd%vmdqt(1)-sims(i)%sim%naesmd%vgs)*feVmdqt.lt.sims(i)%sim%naesmd%dpt) then
+            if (sims(i)%sim%excN.gt.0.and.(sims(i)%sim%naesmd%vmdqt(1)-sims(i)%sim%naesmd%vgs)*feVmdqt.lt.sims(i)%sim%naesmd%S0_S1_threshold) then
                 call dropout(sims,nuclear,i,Nsim,drops,Nsim_max)
             endif
          enddo
@@ -534,7 +534,7 @@ end subroutine finish_sim
             integer :: nmc, npc
             integer :: printTdipole
             integer :: printTDM
-            _REAL_ :: dpt
+            _REAL_ :: S0_S1_threshold
             namelist /moldyn/ natoms,bo_dynamics_flag,NAMD_type,exc_state_init, &
                 n_exc_states_propagate,out_count_init,time_init, &
                 time_step,n_class_steps,n_quant_steps, &
@@ -545,7 +545,7 @@ end subroutine finish_sim
                 therm_friction,rnd_seed,out_data_cube,verbosity,moldyn_deriv_flag, &
                 quant_step_reduction_factor,decoher_e0,decoher_c,decoher_type,dotrivial,&
                 iredpot,nstates,deltared,ifixed,AIMC_dclone_1,AIMC_dclone_2,AIMC_dclone_3,&
-                AIMC_max_clone,AIMC_force_pop_min,nmc,npc,printTdipole,printTDM,nclones0,dpt
+                AIMC_max_clone,AIMC_force_pop_min,nmc,npc,printTdipole,printTDM,nclones0,S0_S1_threshold
         !dtnact is the incremental time to be used at nact calculation
         sim%naesmd%dtnact=0.002d0
 
@@ -672,7 +672,7 @@ end subroutine finish_sim
         npc=0 ! number of pairs of atoms to freeze the distance between them
         printTdipole=0 !to print transition dipole moments in separate files
         printTDM=0 !to print complete TDM
-        dpt = 0.2d0 !for dropping trajectory when S0/S1 gap is lower than "dpt" (eV)
+        S0_S1_threshold=0.2d0 !for dropping trajectory when S0/S1 gap is lower than "S0_S1_threshold" (eV)
 
         filename = ''
         if(Nsim.eq.1.and.restart_flag.eq.0) then
@@ -860,7 +860,7 @@ end subroutine finish_sim
         sim%naesmd%npc=npc
         sim%naesmd%printTdipole=printTdipole
         sim%naesmd%printTDM=printTDM
-        sim%naesmd%dpt=dpt
+        sim%naesmd%S0_S1_threshold=S0_S1_threshold
         sim%naesmd%deltared=sim%naesmd%deltared/feVmdqt !for reducing number of potentials   
 
         write(6,*) '!!!!!!-----MD INPUT-----!!!!!!'
