@@ -219,7 +219,7 @@ subroutine check_files(Nsim,nstep0,id,id0)
 
 !Checking coeff-q.out file
         if(cs.gt.0) then
-        if(lprint.gt.3) then
+        if(lprint.gt.3.or.trim(adjustl(dynam_type)).eq.'aimc') then
         if(trim(adjustl(dynam_type)).eq.'aimc') then
             write (filename, "(a8,i4.4,a4)") "coeff-q_", id, ".out"
             call system("grep -c $ "//trim(adjustl(filename))//" > file.tmp")
@@ -316,38 +316,6 @@ subroutine check_files(Nsim,nstep0,id,id0)
             call system('mv energy-ev.out_tmp energy-ev.out')
         endif
 !            print *, 'energy-ev.out is ready for restart!'
-    endif
-    endif
-
-!Checking forces.out
-    if(lprint.gt.3) then
-    if(trim(adjustl(dynam_type)).eq.'aimc') then
-        write (filename, "(a7,i4.4,a4)") "forces_", id, ".out"
-        call system("grep -c $ "//trim(adjustl(filename))//" > file.tmp")
-    else
-        call system("grep -c $ forces.out > file.tmp")
-    endif
-    open(1,file='file.tmp')
-    read(1,*) l
-    close(1)
-    call system("rm file.tmp")
-    write(strl, '(I10)') (natoms+1)*steps
-    if(l.eq.(natoms+1)*steps) then
-!            print *, 'forces.out is ready for restart!'
-    elseif(l.lt.(natoms+1)*steps) then
-        print *, 'forces.out file is incomplete, edit restart file and relaunch'
-        STOP;
-    elseif(l.gt.(natoms+1)*steps) then
-!            print *, 'Cutting exceding lines from forces.out'
-        if(trim(adjustl(dynam_type)).eq.'aimc') then
-            write (filename, "(a7,i4.4,a4)") "forces_", id, ".out"
-            call system('head -n '//trim(adjustl(strl))//' '//filename//' > forces.out_tmp')
-            call system('mv forces.out_tmp '//filename)
-        else
-            call system('head -n '//trim(adjustl(strl))//' forces.out > forces.out_tmp')
-            call system('mv forces.out_tmp forces.out')
-        endif
-!            print *, 'forces.out is ready for restart!'
     endif
     endif
 
@@ -626,39 +594,42 @@ subroutine check_files(Nsim,nstep0,id,id0)
 !                print *, 'nacr.out is ready for restart!'
             endif
             endif
-!Checking state_forces.out file
+
+!Checking dradients.out file
+        if(lprint.gt.2) then
             if(trim(adjustl(dynam_type)).eq.'aimc') then
-                write (filename, "(a13,i4.4,a4)") "state_forces_", id, ".out"
+                write (filename, "(a13,i4.4,a4)") "gradients_", id, ".out"
                 call system("grep -c $ "//trim(adjustl(filename))//" > file.tmp")
             else
-                call system("grep -c $ state_forces.out > file.tmp")
+                call system("grep -c $ gradients.out > file.tmp")
             endif
             open(1,file='file.tmp')
             read(1,*) l
             close(1)
             call system("rm file.tmp")
-            write(strl, '(I10)') (natoms*excN+1)*steps
-            if(l.eq.(natoms*excN+1)*steps) then
-!                print *, 'state_forces.out is ready for restart!'
-            elseif(l.lt.(natoms*excN+1)*steps) then
-                print *, 'state_forces.out file is incomplete, edit restart file and relaunch'
+            write(strl, '(I10)') (excN)*steps
+            if(l.eq.(excN)*steps) then
+!                print *, 'gradients.out is ready for restart!'
+            elseif(l.lt.(excN)*steps) then
+                print *, 'gradients.out file is incomplete, edit restart file and relaunch'
                 STOP;
-            elseif(l.gt.(natoms*excN+1)*steps) then
-!                print *, 'Cutting exceding lines from state_forces.out'
+            elseif(l.gt.(excN)*steps) then
+!                print *, 'Cutting exceding lines from gradients.out'
                 if(trim(adjustl(dynam_type)).eq.'aimc') then
-                    write (filename, "(a13,i4.4,a4)") "state_forces_", id, ".out"
-                    call system('head -n '//trim(adjustl(strl))//' '//filename//' > state_forces.out_tmp')
-                    call system('mv state_forces.out_tmp '//filename)
+                    write (filename, "(a13,i4.4,a4)") "gradients_", id, ".out"
+                    call system('head -n '//trim(adjustl(strl))//' '//filename//' > gradients.out_tmp')
+                    call system('mv gradients.out_tmp '//filename)
                 else
-                    call system('head -n '//trim(adjustl(strl))//' state_forces.out > state_forces.out_tmp')
-                    call system('mv state_forces.out_tmp state_forces.out')
+                    call system('head -n '//trim(adjustl(strl))//' gradients.out > gradients.out_tmp')
+                    call system('mv gradients.out_tmp gradients.out')
                 endif
-!                print *, 'state_forces.out is ready for restart!'
+!                print *, 'gradients.out is ready for restart!'
             endif
             endif
         endif
+        endif
     endif
-
+ 
 !Checking MCE files:
     if(trim(adjustl(dynam_type)).eq.'aimc'.and.id0.eq.0) then
 !Checking pop.dat file

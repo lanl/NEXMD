@@ -120,8 +120,7 @@ contains
                write(sim%outfile_8,999) sim%naesmd%ihop,sim%naesmd%tfemto,(yg(j)**2,j=1,sim%excN),ntot 
             end if
 
-            if(lprint.ge.3.and.ibo.ne.1) then
-                !write(sim%outfile_16,889) sim%naesmd%tfemto,(dsin(yg(j+sim%excN)),j=1,sim%excN)
+            if((lprint.ge.3.and.ibo.ne.1).or.(sim%naesmd%dynam_type.eq.'aimc')) then
                 write(sim%outfile_16,889) sim%naesmd%tfemto,(dmod(yg(j+sim%excN),TWOPI),j=1,sim%excN)
                 call flush(sim%outfile_16)
             end if
@@ -399,7 +398,7 @@ contains
                 write(sim%outfile_8,999) sim%naesmd%ihop,sim%naesmd%tfemto,(yg(j)**2,j=1,sim%excN),ntot
             end if
 
-            if(lprint.ge.3.and.ibo.ne.1) then
+            if((lprint.ge.3.and.ibo.ne.1).or.(sim%naesmd%dynam_type.eq.'aimc')) then
                 write(sim%outfile_16,889) sim%naesmd%tfemto,(dmod(yg(j+sim%excN),TWOPI),j=1,sim%excN)
                 call flush(sim%outfile_16)
             end if
@@ -622,7 +621,7 @@ contains
         do i=1,simpoint%naesmd%natom
             write(unitcard,"(I4,3F16.10)")  simpoint%naesmd%atomtype(i),simpoint%naesmd%rx(i)*convl,simpoint%naesmd%ry(i)*convl,sim%naesmd%rz(i)*convl
         enddo
-        write(unitcard,'(A)') '&endcoord\n'
+        write(unitcard,'(A)') '&endcoord'
         write(unitcard,'(A)') '&veloc'
         do i=1,simpoint%naesmd%natom
             write(unitcard,"(3F16.10)") simpoint%naesmd%vx(i)*convl/convt,simpoint%naesmd%vy(i)*convl/convt,simpoint%naesmd%vz(i)*convl/convt
