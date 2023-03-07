@@ -70,6 +70,7 @@ subroutine sqm_energy(qmewald, qmmm_opnq, qm2_rij_eqns,qmmm_mpi,qm_gb, qmmm_scra
     _REAL_,intent(in)::intdiel,extdiel,Arad
     _REAL_,intent(inout)::scf_mchg(qmmm_struct%nquant_nlink)
     _REAL_,intent(inout)::time_sqm_took,time_davidson_took
+    _REAL_ ,allocatable, dimension(:,:) :: density_matrix_unpacked
     integer, intent(in) :: printTdipole,outfile_28
     _REAL_, intent(in) :: tfemto
 
@@ -192,6 +193,12 @@ subroutine sqm_energy(qmewald, qmmm_opnq, qm2_rij_eqns,qmmm_mpi,qm_gb, qmmm_scra
     !=============================
 
     if(qmmm_nml%printcharges.and.qmmm_mpi%commqmmm_master) then
+        allocate(density_matrix_unpacked(qm2_struct%norbs,qm2_struct%norbs))
+        call unpacking(qm2_struct%norbs,qm2_struct%den_matrix,density_matrix_unpacked,'s')
+        do i=1,qmmm_struct%nquant_nlink
+               call qm2_calc_mulliken(qm2_params,qm2_struct,i,scf_mchg(i),density_matrix_unpacked);
+        end do
+        deallocate(density_matrix_unpacked);
         write (6,*)
         write (6,'("QMMM: Mulliken Charges")')
         call qm2_print_charges(qmmm_nml,qmmm_mpi, qmmm_struct, 0,1,qmmm_nml%dftb_chg,qmmm_struct%nquant_nlink, &

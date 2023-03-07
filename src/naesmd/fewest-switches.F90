@@ -650,5 +650,5 @@ subroutine indexx(n,arr,indx)
       goto 1
 
       return
-      end
+      end subroutine indexx
  end module

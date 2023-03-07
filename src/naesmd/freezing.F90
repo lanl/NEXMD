@@ -655,6 +655,6 @@ contains
          end if
       end do
       return
-      end 
+      end subroutine jacobi 
 
 end module
