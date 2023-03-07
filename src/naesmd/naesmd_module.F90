@@ -66,7 +66,7 @@ module naesmd_module
             integer printTdipole !to print transition dipole moments in separate files
             integer printTDM !to print the complete TDM
             _REAL_ :: S0_S1_threshold !to drop trajectory when S0/S1 gap is lower than 'S0_S1_threshold' (eV)
-            integer,allocatable :: iordenhop(:),iorden(:)
+            integer,allocatable :: iordenhop(:),iorden(:),torden(:)
 	    integer,allocatable:: atomtype(:) !atom types currently max 1000
 	    integer,allocatable:: lowvaluestep(:)
 	    _REAL_,allocatable:: lowvalue(:)
@@ -149,7 +149,7 @@ contains
         type(naesmd_structure), intent(inout) :: naesmd_struct
         write(6,*)'Allocating naesmd_module variables',Na,Nexc
         if(Nexc.ne.0) then
-                allocate(naesmd_struct%iordenhop(Nexc),naesmd_struct%iorden(Nexc))
+                allocate(naesmd_struct%iordenhop(Nexc),naesmd_struct%iorden(Nexc),naesmd_struct%torden(Nexc))
                 allocate(naesmd_struct%lowvaluestep(Nexc))
                 allocate(naesmd_struct%lowvalue(Nexc))
                 allocate(naesmd_struct%vmdqt(Nexc))

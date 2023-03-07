@@ -273,7 +273,7 @@ contains
         call flush(sim%outfile_1)
 
         if(sim%naesmd%state.eq.'exct'.and.lprint.ge.2) then
-            write(sim%outfile_11,688) sim%naesmd%tfemto,(sim%naesmd%iorden(j),j=1,sim%excN)
+            write(sim%outfile_11,688) sim%naesmd%tfemto,(sim%naesmd%torden(j),j=1,sim%excN)
             call flush(sim%outfile_11)
         end if
 
@@ -446,7 +446,7 @@ contains
         end if
 
         if(sim%naesmd%state.eq.'exct'.and.lprint.ge.2) then
-            write(sim%outfile_11,688) sim%naesmd%tfemto,(sim%naesmd%iorden(j),j=1,sim%excN),cross
+            write(sim%outfile_11,688) sim%naesmd%tfemto,(sim%naesmd%torden(j),j=1,sim%excN),cross
             call flush(sim%outfile_11)
         end if
 

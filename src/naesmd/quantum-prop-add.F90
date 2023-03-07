@@ -20,6 +20,7 @@ contains
         !in F77. Should be updated to have an allocatable option.
         integer ascpr(260,260),z
         integer iordenapc(260)
+        integer, dimension(sim%excN) :: ordenAux
 
         !--------------------------------------------------------------------
         !
@@ -30,6 +31,10 @@ contains
         !  to identity matrix
         !
         !--------------------------------------------------------------------
+        do i=1,sim%excN
+           ordenAux(i) = 0
+        enddo
+
         if (sim%excN>260) then
             write(6,*)'Error:quantum propagator does not yet handle more than 260 states'
         endif
@@ -81,6 +86,12 @@ contains
         do i=1,sim%excN
             sim%naesmd%iordenhop(i)=sim%naesmd%iorden(i)
             if(sim%naesmd%iorden(i).ne.i) then
+                if(i.lt.sim%naesmd%iorden(i)) then
+                    ordenAux(i) = sim%naesmd%torden(i)
+                    ordenAux(sim%naesmd%iorden(i)) = sim%naesmd%torden(sim%naesmd%iorden(i))
+                    sim%naesmd%torden(i) = ordenAux(sim%naesmd%iorden(i))
+                    sim%naesmd%torden(sim%naesmd%iorden(i)) = ordenAux(i)
+                endif
                 if(i.lt.sim%naesmd%iorden(i).or.i.eq.sim%naesmd%ihop) then
                     if(dabs(sim%naesmd%scpr(i,sim%naesmd%iorden(i))).lt.0.9d0) then
                         cross(i)=1

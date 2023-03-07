@@ -312,6 +312,7 @@ subroutine initiate_sim(sim,Nsim,Nsim_max,restart_flag,nuclear,tr_number)
     !
     do i=1,sim%excN
         sim%naesmd%iorden(i)=i
+        sim%naesmd%torden(i)=i
         sim%naesmd%iordenhop(i)=0
     end do
      
