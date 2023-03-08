@@ -186,7 +186,7 @@ subroutine check_files(Nsim,nstep0,id,id0)
         endif
 
 !Checking coeff-n.out file
-        if(cs.gt.0) then
+        if(cs.gt.0.and.lprint.gt.0) then
         if(trim(adjustl(dynam_type)).eq.'aimc') then
             write (filename, "(a8,i4.4,a4)") "coeff-n_", id, ".out"
             call system("grep -c $ "//trim(adjustl(filename))//" > file.tmp")

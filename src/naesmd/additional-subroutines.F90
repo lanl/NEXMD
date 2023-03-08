@@ -383,7 +383,10 @@ contains
                 endif
             end if
         end if
-
+        if(sim%naesmd%dynam_type.ne.'tsh') then
+            if (imdtype.ne.0.and.ibo.ne.1) OPEN(29, FILE= 'nacr.out',   &   
+                status=file_status, access=file_access)
+        endif
         if(lprint.ge.1) then
             write(6,*)'LPRINT:',lprint,imdtype
             if (sim%excN.gt.0) OPEN(96, FILE= 'pes.out',  &

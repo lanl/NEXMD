@@ -723,8 +723,7 @@ end subroutine finish_sim
         call int_legal_range('moldyn: (therm_type ) ', therm_type,0,2)
         call int_legal_range('moldyn: (number of atoms ) ', natoms,0,999999999)
         call int_legal_range('moldyn: (bo_dynamics_flag ) ', bo_dynamics_flag,0,1)
-
-        call int_legal_range('moldyn: (exc_state_init ) ', exc_state_init,0,999999999)
+        if (NAMD_type.eq.'tsh') call int_legal_range('moldyn: (exc_state_init ) ', exc_state_init,0,999999999)
         call int_legal_range('moldyn: (n_exc_states_propagate ) ', n_exc_states_propagate,0,999999999)
 
         call float_legal_range('moldyn: (initial time ) ',time_init,0.0d0,1.0d21)
