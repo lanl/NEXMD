@@ -30,6 +30,7 @@ subroutine check_files(Nsim,nstep0,id,id0)
     integer cs
     integer outData,outDataCoords,natoms,printTdipole
     integer stepClone
+    integer bo_flag
     double precision timeClone
     integer dbl
     _REAL_ dt
@@ -67,7 +68,7 @@ subroutine check_files(Nsim,nstep0,id,id0)
 
 !Reading steps from input
     call read_input_moldyn_block("input.ceon",inputSteps,dynam_type,excN,cs,&
-        outData,outDataCoords,natoms,printTdipole,dt,lprint,nq,nclones0,ired) 
+        outData,outDataCoords,natoms,printTdipole,dt,lprint,nq,nclones0,ired,bo_flag) 
 !Checking synchronization
     if(trim(adjustl(dynam_type)).eq.'aimc'.and.Nsim.gt.1) call check_synchronization(Nsim)
     nstep0=inputSteps
@@ -101,12 +102,12 @@ subroutine check_files(Nsim,nstep0,id,id0)
 !Reading steps from restart
     if(Nsim.eq.1) then
         call read_input_moldyn_block("restart.out",restartSteps,dynam_type,excN,cs,&
-            outData,outDataCoords,natoms,printTdipole,dt,lprint,nq,nclones0,ired)
+            outData,outDataCoords,natoms,printTdipole,dt,lprint,nq,nclones0,ired,bo_flag)
     else
         filename = ''
         write (filename, "(a8,i4.4,a4)") "restart_", id, ".out"
         call read_input_moldyn_block(filename(1:16),restartSteps,dynam_type,excN,cs,&
-            outData,outDataCoords,natoms,printTdipole,dt,lprint,nq,nclones0,ired)
+            outData,outDataCoords,natoms,printTdipole,dt,lprint,nq,nclones0,ired,bo_flag)
         write (filename, "(a8,i4.4,a4)") "coeff-n_", id, ".out"
         call system('head -1 '//trim(adjustl(filename))//' > file.tmp')
         open(1,file='file.tmp')
@@ -129,7 +130,7 @@ subroutine check_files(Nsim,nstep0,id,id0)
  
     if(excN.gt.0) then
 !Checking coefficient.out file
-        if(cs.gt.0) then
+        if(cs.gt.0.and.bo_flag.eq.0) then
         if(ired.eq.0) then
         if(trim(adjustl(dynam_type)).eq.'aimc') then
             write (filename, "(a12,i4.4,a4)") "coefficient_", id, ".out"
@@ -186,7 +187,7 @@ subroutine check_files(Nsim,nstep0,id,id0)
         endif
 
 !Checking coeff-n.out file
-        if(cs.gt.0.and.lprint.gt.0) then
+        if(cs.gt.0.and.lprint.gt.0.and.bo_flag.eq.0) then
         if(trim(adjustl(dynam_type)).eq.'aimc') then
             write (filename, "(a8,i4.4,a4)") "coeff-n_", id, ".out"
             call system("grep -c $ "//trim(adjustl(filename))//" > file.tmp")
@@ -218,7 +219,7 @@ subroutine check_files(Nsim,nstep0,id,id0)
         endif
 
 !Checking coeff-q.out file
-        if(cs.gt.0) then
+        if(cs.gt.0.and.bo_flag.eq.0) then
         if(lprint.gt.3.or.trim(adjustl(dynam_type)).eq.'aimc') then
         if(trim(adjustl(dynam_type)).eq.'aimc') then
             write (filename, "(a8,i4.4,a4)") "coeff-q_", id, ".out"
@@ -321,7 +322,7 @@ subroutine check_files(Nsim,nstep0,id,id0)
 
     if(excN.gt.0) then
 !Checking nact.out
-        if(cs.gt.0) then
+        if(cs.gt.0.and.bo_flag.eq.0) then
         if(lprint.gt.1) then
         if(trim(adjustl(dynam_type)).eq.'aimc') then
             write (filename, "(a5,i4.4,a4)") "nact_", id, ".out"
@@ -387,7 +388,7 @@ subroutine check_files(Nsim,nstep0,id,id0)
         endif
 
 !Checking order.out file
-        if(cs.gt.0) then
+        if(cs.gt.0.and.bo_flag.eq.0) then
         if(lprint.gt.2) then
         if(trim(adjustl(dynam_type)).eq.'aimc') then
             write (filename, "(a6,i4.4,a4)") "order_", id, ".out"
@@ -563,7 +564,7 @@ subroutine check_files(Nsim,nstep0,id,id0)
     if(excN.gt.0) then
         if(trim(adjustl(dynam_type)).eq.'aimc'.or.trim(adjustl(dynam_type)).eq.'mf') then
 !Checking nacr.out file
-            if(cs.gt.0) then
+            if(cs.gt.0.and.bo_flag.eq.0) then
             if(lprint.gt.1) then
             if(trim(adjustl(dynam_type)).eq.'aimc') then
                 write (filename, "(a5,i4.4,a4)") "nacr_", id, ".out"
@@ -595,8 +596,8 @@ subroutine check_files(Nsim,nstep0,id,id0)
             endif
             endif
 
-!Checking dradients.out file
-        if(lprint.gt.2) then
+!Checking gradients.out file
+        if(lprint.gt.2.and.bo_flag.eq.0) then
             if(trim(adjustl(dynam_type)).eq.'aimc') then
                 write (filename, "(a13,i4.4,a4)") "gradients_", id, ".out"
                 call system("grep -c $ "//trim(adjustl(filename))//" > file.tmp")
@@ -797,7 +798,7 @@ end subroutine get_electronic_overlaps_n_lines
 !--------------------------------------------------------------------!
 !This subroutine reads the number of classical steps in an input.ceon!
 !--------------------------------------------------------------------!
-subroutine read_input_moldyn_block(file_name,nstep,dynam_type,excN,cs,outData,outDataCoords,natom,p,dt,lprint,nq,nclones00,ired)
+subroutine read_input_moldyn_block(file_name,nstep,dynam_type,excN,cs,outData,outDataCoords,natom,p,dt,lprint,nq,nclones00,ired,bo_flag)
 
     implicit none
 
@@ -816,6 +817,7 @@ subroutine read_input_moldyn_block(file_name,nstep,dynam_type,excN,cs,outData,ou
     integer, intent(out) :: nq
     integer, intent(out) :: nclones00
     integer, intent(out) :: ired
+    integer, intent(out) :: bo_flag
 
 !Variables of the moldyn namelist
     integer natoms
@@ -867,6 +869,7 @@ subroutine read_input_moldyn_block(file_name,nstep,dynam_type,excN,cs,outData,ou
     n_quant_steps = 1
     nclones0=0
     ired=0
+    bo_dynamics_flag=1
 
 !Reading &moldyn
     open(1,file=trim(adjustl(file_name)),status='old')
@@ -885,6 +888,7 @@ subroutine read_input_moldyn_block(file_name,nstep,dynam_type,excN,cs,outData,ou
     nq=n_quant_steps
     nclones00=nclones0
     ired=iredpot
+    bo_flag=bo_dynamics_flag
 
 endsubroutine read_input_moldyn_block
 
@@ -979,6 +983,7 @@ subroutine check_synchronization(Nsim)
     integer nq
     integer nclones0
     integer ired
+    integer bo_flag
     integer dps
     _REAL_ junk_time
     integer, allocatable :: indexes(:)
@@ -1006,7 +1011,7 @@ subroutine check_synchronization(Nsim)
     endif
 
     call read_input_moldyn_block('input.ceon',maxSteps,dynam_type,excN,cs,&
-                    outData,outDataCoords,natoms,printTdipole,dt,lprint,nq,nclones0,ired)
+                    outData,outDataCoords,natoms,printTdipole,dt,lprint,nq,nclones0,ired,bo_flag)
     steps = 0
     j = 0
     do i = 1, Nsim + dps
@@ -1014,7 +1019,7 @@ subroutine check_synchronization(Nsim)
             j = j + 1
             write (filename, "(a8,i4.4,a4)") "restart_", i-1, ".out"
             call read_input_moldyn_block(filename,step,dynam_type,excN,cs,&
-                outData,outDataCoords,natoms,printTdipole,dt,lprint,nq,nclones0,ired)
+                outData,outDataCoords,natoms,printTdipole,dt,lprint,nq,nclones0,ired,bo_flag)
             steps(j) = step
         endif
     enddo
@@ -1032,7 +1037,7 @@ subroutine check_synchronization(Nsim)
                         write (filename, "(a8,i4.4,a4)") "restart_", i-1, ".out"
                         call get_b1(filename,b1,b1lines)
                         call read_input_moldyn_block(filename,steps(i),dynam_type,excN,cs,&
-                            outData,outDataCoords,natoms,printTdipole,dt,lprint,nq,nclones0,ired)
+                            outData,outDataCoords,natoms,printTdipole,dt,lprint,nq,nclones0,ired,bo_flag)
                         write (filename, "(a7,i4.4,a4)") "coords_", i-1, ".xyz"
                         call get_coords(filename,maxSteps-maxval(steps),atoms,coords,natoms,dt)
                         write (filename, "(a9,i4.4,a4)") "velocity_", i-1, ".out"
