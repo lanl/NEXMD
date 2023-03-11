@@ -391,17 +391,34 @@ contains
             write(6,*)'LPRINT:',lprint,imdtype
             if (sim%excN.gt.0) OPEN(96, FILE= 'pes.out',  &
                 status=file_status, access=file_access)
+
+            print *, 'Victor 395'
+
             if (imdtype.ne.0.)  &
                 OPEN(89, FILE= 'transition-densities.out', &
                 status=file_status, access=file_access)
-            if (imdtype.ne.0.and.ibo.ne.1) OPEN(29, FILE= 'nacr.out',   &
+
+            print *, 'Victor 401', ibo, file_access
+
+            if (imdtype.ne.0.and.ibo.ne.1.and.sim%naesmd%dynam_type.eq.'tsh') OPEN(29, FILE= 'nacr.out',   &
                 status=file_status, access=file_access)
+
+            print *, 'Victor 406'
+
             if (imdtype.ne.0.and.ibo.ne.1) OPEN(93, FILE= 'nact.out',   &
                 status=file_status, access=file_access)
+
+            print *, 'Victor 411'
+
             if (imdtype.ne.0.and.ibo.ne.1) OPEN(95, FILE= 'coeff-n.out', &
                 status=file_status, access=file_access)
+
+            print *, 'Victor 416'
+
 !BTN: removed file coeff-n-before.out. grep this line to undo
         endif
+
+        print *, 'Victor 405'
 
         if(lprint.ge.2) then
             if (imdtype.ne.0..and.ibo.ne.1) OPEN(33,FILE='hops-trial.out', &
@@ -412,12 +429,16 @@ contains
                 access=file_access)
         endif
 
+        print *, 'Victor 417'
+
         if(lprint.ge.3) then
             if (imdtype.ne.0.and.ibo.ne.1) OPEN(94, FILE= 'coeff-q.out',   &
                 status=file_status, access=file_access)
             OPEN(91, FILE= 'cm.out', status=file_status, &
                 access=file_access)
         endif
+
+        print *, 'Victor 422'
 
         return
     end SUBROUTINE
