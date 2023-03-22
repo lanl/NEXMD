@@ -803,7 +803,7 @@ subroutine read_input_moldyn_block(file_name,nstep,dynam_type,excN,cs,outData,ou
     implicit none
 
 !Passed in
-    character*150, intent(in) :: file_name
+    character(*), intent(in) :: file_name
     integer, intent(out) :: nstep
     character*150, intent(out) :: dynam_type
     integer, intent(out) :: excN
@@ -1076,7 +1076,7 @@ subroutine get_b1(filename,b1,b1lines)
 
     implicit none
 
-    character*150, intent(in) :: filename
+    character(*), intent(in) :: filename
     character*150, dimension(200), intent(out) :: b1
     integer, intent(out) :: b1lines
 
@@ -1100,7 +1100,7 @@ subroutine get_coords(filename,step,atoms,coords,natoms,time_step)
 
     implicit none
 
-    character*150, intent(in) :: filename
+    character(*), intent(in) :: filename
     integer, intent(in) :: step
     integer, intent(out), dimension(natoms) :: atoms
     _REAL_, intent(out), dimension(natoms,3) :: coords
@@ -1197,7 +1197,7 @@ subroutine get_veloc(filename,step,veloc,natoms,time_step)
 
     implicit none
 
-    character*150, intent(in) :: filename
+    character(*), intent(in) :: filename
     integer, intent(in) :: step
     _REAL_, intent(out), dimension(natoms,3) :: veloc
     integer, intent(in) :: natoms
@@ -1268,7 +1268,7 @@ subroutine get_coeff(filename,step,coeff,excN,time_step)
 
     implicit none 
 
-    character*150, intent(in) :: filename
+    character(*), intent(in) :: filename
     integer, intent(in) :: step 
     integer, intent(in) :: excN
     _REAL_, intent(out), dimension(excN,2) :: coeff
@@ -1341,8 +1341,8 @@ subroutine write_new_restart(filename,b1,b1lines,atoms,coords,veloc,natoms,coeff
 
     implicit none
 
-    character*150, intent(in) :: filename
-    character*150, dimension(200), intent(in) :: b1
+    character(*), intent(in) :: filename
+    character(*), dimension(200), intent(in) :: b1
     integer, intent(in) :: b1lines
     integer, intent(in) :: natoms
     integer, intent(in), dimension(natoms) :: atoms
