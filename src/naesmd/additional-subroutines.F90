@@ -110,7 +110,7 @@ contains
 
         if(lprint.ge.3) then
             sim%outfile_25=204*10000+sim%id + alldrops
-            write (filename, "(a13,i4.4,a4)") "gradients_", sim%id + alldrops, ".out"
+            write (filename, "(a10,i4.4,a4)") "gradients_", sim%id + alldrops, ".out"
             if(sim%naesmd%dynam_type.eq.'aimc'.or. &
             sim%naesmd%dynam_type.eq.'mf') OPEN(sim%outfile_25,FILE=trim(filename), action='write', &
                  STATUS=file_status,ACCESS=file_access)
