@@ -199,7 +199,7 @@ subroutine simulations(Nsim,Nsim_max,restart_flag)
             endif
             if(sims(i)%sim%naesmd%icontw.ne.sims(i)%sim%naesmd%nstepw) then 
             else 
-               call writeoutput(sims(i)%sim,sims(i)%sim%ibo,sims(i)%sim%naesmd%yg,sims(i)%sim%naesmd%yg_new,sims(i)%sim%lprint,sims(i)%sim%naesmd%cross,Nsim)
+                call writeoutput(sims(i)%sim,sims(i)%sim%ibo,sims(i)%sim%naesmd%yg,sims(i)%sim%naesmd%yg_new,sims(i)%sim%lprint,sims(i)%sim%naesmd%cross,Nsim)
             end if
          enddo
 

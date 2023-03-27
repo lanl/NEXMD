@@ -19,7 +19,7 @@ subroutine update_nuclear(nuclear,sims,Nsim,w,wr)
     integer, intent(in) :: w  !for writing mce data
     integer, intent(in) :: wr !for writing restart (last files)
 
-    integer :: n,m,i,j,info
+    integer :: n,m,i,j, k, info, nexc
     _REAL_, dimension(3*sims(1)%sim%naesmd%natom) :: x1, x2 !vectors with positions
     _REAL_, dimension(3*sims(1)%sim%naesmd%natom) :: p1, p2 !vectors with momenta
     _REAL_, dimension(3*sims(1)%sim%naesmd%natom) :: mass !masses for each dimension
@@ -27,14 +27,15 @@ subroutine update_nuclear(nuclear,sims,Nsim,w,wr)
     double complex, dimension(Nsim,Nsim) :: sE_all !to store the complete electronic overlap
     double complex, dimension(Nsim,Nsim) :: sek !kinetic matrix elements
     double complex, dimension(Nsim,Nsim) :: Sinv !To invert the complete overlap matrix
-    double complex, dimension(sims(1)%sim%excN) :: a1, a2 !electronic amplitudes
-    double complex ek !to store excpectation value of the nuclear kinetic operator T
+    double complex, dimension(Nsim) :: tmp4 !Temporary array for matrix multiplication
+    double complex, dimension(sims(1)%sim%excN) :: a1, a2, tmp1, tmp3 !electronic amplitudes 
+    double complex ek,alpha,beta !to store excpectation value of the nuclear kinetic operator T
     double complex S_dot !to store the time derivative of the nuclear overlap
     double complex S_dotE !to store the time derivative of the electronic overlaps
     double complex, dimension(3*sims(1)%sim%naesmd%natom) :: Sdx, Sdp
     _REAL_, dimension(3*sims(1)%sim%naesmd%natom,sims(1)%sim%excN,sims(1)%sim%excN) :: grad12
     double complex, dimension(3*sims(1)%sim%naesmd%natom) :: gradtr, gradd
-    double complex, dimension(sims(1)%sim%excN,sims(1)%sim%excN) :: hen2
+    double complex, dimension(sims(1)%sim%excN,sims(1)%sim%excN) :: hen2,tmp2
     double complex, dimension(sims(1)%sim%excN,sims(1)%sim%excN) :: he12
     double complex, dimension(Nsim,Nsim) :: H
     double complex, dimension(Nsim,Nsim,sims(1)%sim%excN) :: AmpE_traj !To calculate populations
@@ -51,7 +52,16 @@ subroutine update_nuclear(nuclear,sims,Nsim,w,wr)
     S_dot = 0.0d0
     H = 0.0d0
     AmpE_traj = 0.0d0
-    
+    alpha = cmplx(1.0d0,0.0d0)
+    beta = cmplx(0.0d0,0.0d0)
+    tmp1 = 0.0d0
+    tmp2 = 0.0d0
+    tmp3 = 0.0d0
+    tmp4 = 0.0d0
+    nexc = sims(1)%sim%excN
+
+
+
     cloned = .false.
     do i=1,Nsim
         if(nuclear%cloned(i)) cloned =.true.
@@ -91,7 +101,14 @@ subroutine update_nuclear(nuclear,sims,Nsim,w,wr)
                                  3*sims(1)%sim%naesmd%natom,  &            !number of dimensions
                                  S(n,m), S_dot, ek, Sdx, Sdp,  &           !output
                                  mass, sims(1)%sim%naesmd%w)               !masses and widths
-            sE_all(n,m)=dot_product(a1,matmul(nuclear%sE(n,m,:,:),a2)) !Electronic overlap (including electronic amplitudes)
+            do i=1, nexc
+                do j=1, nexc
+                    tmp2(i,j) = cmplx(nuclear%sE(n,m,i,j),0.0d0)
+                enddo
+            enddo
+            call zgemm('N', 'N',  nexc, 1, nexc, alpha, tmp2, nexc, a2, nexc, beta, tmp1, nexc)
+
+            sE_all(n,m)=dot_product(a1,tmp1) !Electronic overlap (including electronic amplitudes)
             sek(n,m)=ek*sE_all(n,m) !MCE kinetic energy matrix
             do i=1,sims(n)%sim%excN
                 do j=1,sims(m)%sim%excN
@@ -99,7 +116,15 @@ subroutine update_nuclear(nuclear,sims,Nsim,w,wr)
                 enddo
             enddo
             do i=1,3*sims(1)%sim%naesmd%natom
-                gradtr(i)=dot_product(a1,matmul(nuclear%sE(n,m,:,:)*grad12(i,:,:),a2))
+                do j=1, nexc
+                    do k=1, nexc
+                        tmp2(j,k) = cmplx(nuclear%sE(n,m,j,k)*grad12(i,j,k),0.0d0)
+                    enddo
+                enddo
+
+                call zgemm('N', 'N', nexc, 1, nexc, alpha, tmp2, nexc, a2, nexc, beta, tmp1, nexc)
+
+                gradtr(i)=dot_product(a1,tmp1)
             enddo
 
             do i=1,sims(n)%sim%excN
@@ -108,7 +133,14 @@ subroutine update_nuclear(nuclear,sims,Nsim,w,wr)
                 enddo
             enddo
             do i=1,3*sims(1)%sim%naesmd%natom
-                gradd(i)=dot_product(a1,matmul(nuclear%sE(n,m,:,:)*grad12(i,:,:),a2))
+                do j=1, nexc
+                    do k=1, nexc
+                        tmp2(j,k) = cmplx(nuclear%sE(n,m,j,k)*grad12(i,j,k),0.0d0)
+                    enddo
+                enddo
+                call zgemm('N', 'N', nexc, 1, nexc, alpha, tmp2, nexc, a2, nexc, beta, tmp1, nexc)
+
+                gradd(i)=dot_product(a1,tmp1)
             enddo
             do i=1,sims(n)%sim%excN
                 do j=1,sims(m)%sim%excN
@@ -116,15 +148,32 @@ subroutine update_nuclear(nuclear,sims,Nsim,w,wr)
                 enddo
             enddo
             he12=nuclear%sE(n,m,:,:)*hen2
-            H(n,m)=ek*sE_all(n,m)+0.5d0*dot_product(a1,matmul(he12,a2))*S(n,m)+ &
+            call zgemm('N', 'N', nexc, 1, nexc, alpha ,he12, nexc, a2, nexc, beta, tmp1, nexc)
+            H(n,m)=ek*sE_all(n,m)+0.5d0*dot_product(a1,tmp1)*S(n,m)+ &
                    0.5d0*(0.0d0,0.25d0)*sum((p2-p1)*gradtr/sims(n)%sim%naesmd%w)*S(n,m)- &
                    0.25d0*sum((x1-x2)*gradd)*S(n,m)
-            S_dotE=-(0.d0,1.d0)*dot_product(a1,matmul(nuclear%sE(n,m,:,:),sims(m)%sim%naesmd%vmdqt*a2))
+            do j=1, nexc
+                do k=1, nexc
+                        tmp2(j,k) = cmplx(nuclear%sE(n,m,j,k),0.0d0)
+                enddo
+                tmp3(j) = a2(j)*cmplx(sims(m)%sim%naesmd%vmdqt(j),0.0d0)
+            enddo
+
+            call zgemm('N', 'N', nexc, 1, nexc, alpha, tmp2, nexc, tmp3, nexc, beta, tmp1, nexc)
+
+            S_dotE=-(0.d0,1.d0)*dot_product(a1,tmp1)
             S_dot = S_dot*sE_all(n,m)+S_dotE*S(n,m)
 
             H(n,m)=H(n,m)-(0.d0,1.d0)*S_dot
+            do i=1, nexc
+                do j=1, nexc
+                    tmp2(i,j) = cmplx(nuclear%sE(n,m,i,j),0.0d0)
+                enddo
+            enddo
 
-            AmpE_traj(n,m,:)=conjg(a1)*matmul(nuclear%sE(n,m,:,:),a2)
+            call zgemm('N', 'N', nexc, 1, nexc, alpha, tmp2, nexc, a2, nexc, beta, tmp1, nexc)
+
+            AmpE_traj(n,m,:)=conjg(a1)*tmp1
         enddo!m
     enddo!n
 
@@ -155,7 +204,7 @@ subroutine update_nuclear(nuclear,sims,Nsim,w,wr)
             nuclear%Heff_old(i,j)=nuclear%Heff(i,j)
         enddo
     enddo
-    nuclear%Heff=matmul(Sinv,H(1:Nsim,1:Nsim))
+    call zgemm('N', 'N',Nsim, Nsim, Nsim, alpha, Sinv, Nsim, H(1:Nsim,1:Nsim), Nsim, beta, nuclear%Heff(1:Nsim,1:Nsim), Nsim)
 
     if(cloned) then
         nuclear%Heff_old(1:Nsim,1:Nsim)=nuclear%Heff(1:Nsim,1:Nsim)
@@ -165,8 +214,10 @@ subroutine update_nuclear(nuclear,sims,Nsim,w,wr)
     call propagate_c(nuclear,sims,Nsim,cloned)
 
     do i=1,sims(1)%sim%excN
-        pop(i)=real(dot_product(nuclear%D(1:Nsim),matmul(S(1:Nsim,1:Nsim)* &
-               AmpE_traj(1:Nsim,1:Nsim,i),nuclear%D(1:Nsim))))
+        call zgemm('N', 'N', Nsim, 1, Nsim, alpha, S(1:Nsim,1:Nsim)*AmpE_traj(1:Nsim,1:Nsim,i), Nsim, nuclear%D(1:Nsim), &
+            Nsim, beta, tmp4, Nsim)
+
+        pop(i)=real(dot_product(nuclear%D(1:Nsim),tmp4))
     enddo
     nuclear%pop=pop
     nuclear%D=nuclear%D/sqrt(sum(pop)) !Renormalization (sum(pop) should be 1)
@@ -242,9 +293,10 @@ subroutine integrate_1step_c(tini,tfin,c,c_fin,nuclear,Nsim)
     _REAL_ dt
     _REAL_, dimension(4) :: pfac1
     _REAL_, dimension(4) :: pfac2
-    integer irk4, i
-    double complex, dimension(Nsim) :: krk4, krk4_aux
+    integer irk4, i, j
+    double complex, dimension(Nsim) :: krk4, krk4_aux, tmp1,tmp2
     _REAL_ :: tini_aux
+    double complex :: alpha, beta
     double complex, dimension(Nsim,Nsim) :: Heff_t
 
     dt = tfin - tini
@@ -256,6 +308,8 @@ subroutine integrate_1step_c(tini,tfin,c,c_fin,nuclear,Nsim)
     pfac2(2) = dt/3.d0
     pfac2(3) = dt/3.d0
     pfac2(4) = dt/6.d0
+    alpha = cmplx(1.0d0,0.0d0)
+    beta = cmplx(0.0d0,0.0d0)
 
     c_fin = c
     krk4 = 0.0d0
@@ -265,7 +319,12 @@ subroutine integrate_1step_c(tini,tfin,c,c_fin,nuclear,Nsim)
         tini_aux = tini + pfac1(irk4)
         call interpolate_Heff(tini,tini_aux,tfin,nuclear%Heff_old(1:Nsim,1:Nsim),Heff_t,nuclear%Heff(1:Nsim,1:Nsim),Nsim)
         krk4_aux = krk4
-        krk4 = (0.0d0,-1.0d0)*matmul(Heff_t,c+krk4_aux*pfac1(irk4))
+        do j = 1, Nsim
+                tmp2(j) = c(j)+krk4(j)*pfac1(irk4)
+        enddo
+        call zgemm('N', 'N', Nsim, 1,  Nsim, alpha, Heff_t, Nsim, tmp2, Nsim, beta, tmp1, Nsim)
+
+        krk4 = (0.0d0,-1.0d0)*tmp1
 !        ff = ff + pfac2(irk4) * krk4
         c_fin = c_fin + pfac2(irk4) * krk4
     enddo !irk4
