@@ -226,6 +226,8 @@ subroutine update_nuclear(nuclear,sims,Nsim,w,wr)
     if(w.eq.1) then
         write(nuclear%outfile_1,999) Nsim, sims(1)%sim%naesmd%tfemto, (pop(i),i=1,sims(1)%sim%excN), sum(pop)
         write(nuclear%outfile_2,999) Nsim, sims(1)%sim%naesmd%tfemto, nuclear%D(1:Nsim)
+        call flush(nuclear%outfile_1)
+        call flush(nuclear%outfile_2)
         do n=1,Nsim
             do m=n+1,Nsim
                 do i=1,sims(1)%sim%excN
@@ -236,6 +238,8 @@ subroutine update_nuclear(nuclear,sims,Nsim,w,wr)
             enddo
         write(sims(n)%sim%outfile_29,997) sims(n)%sim%naesmd%tfemto, sims(n)%sim%naesmd%pha 
         enddo
+        call flush(nuclear%outfile_3)
+        call flush(sims(n)%sim%outfile_29)
         if(wr.eq.1) then !Writing last files
             open(nuclear%outfile_4,file='Heff_last.out')
                 write(nuclear%outfile_4,*) sims(1)%sim%naesmd%tfemto
