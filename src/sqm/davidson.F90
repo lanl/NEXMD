@@ -613,9 +613,6 @@
 
    call dcopy(nd*nd,ray1,one,rayvR,one)
 
-
-   write(6,*)'info00',info 
-
    allocate(dtmp(4*nd1))
    call dsyev ('v','u',nd1,rayvR,nd,raye,dtmp,4*nd1,info) 
         !Eigenvalues of ray1 in raye and eigenvectors in rayvR
