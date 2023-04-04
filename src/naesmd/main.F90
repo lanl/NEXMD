@@ -1220,53 +1220,55 @@ end subroutine finish_sim
                 enddo
             enddo
         endif
-        !Initial defoult value for the nuclear phase (gamma)
-        sim%naesmd%pha = 0.0d0
-        !Gaussian widths for MCE (1/Bohr^2)
-        allocate(sim%naesmd%w(3*sim%naesmd%natom))
-        do i = 1, sim%naesmd%natom
-            if(sim%naesmd%atomtype(i).eq.1) then !H
-                sim%naesmd%w(3*i-2) = 4.7d0
-                sim%naesmd%w(3*i-1) = 4.7d0
-                sim%naesmd%w(3*i) = 4.7d0
-            elseif(sim%naesmd%atomtype(i).eq.5) then !B
-                sim%naesmd%w(3*i-2) = 15.2d0
-                sim%naesmd%w(3*i-1) = 15.2d0
-                sim%naesmd%w(3*i) = 15.2d0
-            elseif(sim%naesmd%atomtype(i).eq.6) then !C
-                sim%naesmd%w(3*i-2) = 22.7d0
-                sim%naesmd%w(3*i-1) = 22.7d0
-                sim%naesmd%w(3*i) = 22.7d0
-            elseif(sim%naesmd%atomtype(i).eq.7) then !N
-                sim%naesmd%w(3*i-2) = 19.0d0
-                sim%naesmd%w(3*i-1) = 19.0d0
-                sim%naesmd%w(3*i) = 19.0d0
-            elseif(sim%naesmd%atomtype(i).eq.8) then !O
-                sim%naesmd%w(3*i-2) = 12.2d0
-                sim%naesmd%w(3*i-1) = 12.2d0
-                sim%naesmd%w(3*i) = 12.2d0
-            elseif(sim%naesmd%atomtype(i).eq.9) then !F
-                sim%naesmd%w(3*i-2) = 8.5d0
-                sim%naesmd%w(3*i-1) = 8.5d0
-                sim%naesmd%w(3*i) = 8.5d0
-            elseif(sim%naesmd%atomtype(i).eq.12) then !Mg (Calculated for the Chlorophyll monomer)
-                sim%naesmd%w(3*i-2) = 10.3
-                sim%naesmd%w(3*i-1) = 10.3
-                sim%naesmd%w(3*i) = 10.3
-            elseif(sim%naesmd%atomtype(i).eq.16) then !S
-                sim%naesmd%w(3*i-2) = 16.7d0
-                sim%naesmd%w(3*i-1) = 16.7d0
-                sim%naesmd%w(3*i) = 16.7d0
-            elseif(sim%naesmd%atomtype(i).eq.17) then !Cl
-                sim%naesmd%w(3*i-2) = 7.4d0
-                sim%naesmd%w(3*i-1) = 7.4d0
-                sim%naesmd%w(3*i) = 7.4d0
-            else
-                print *, 'Fatal error, Gaussian width mising for atomic number: ', sim%naesmd%atomtype(i)
-                stop
-            endif
-        enddo
+        if(sim%naesmd%dynam_type.eq.'aimc') then
+            !Initial defoult value for the nuclear phase (gamma)
+            sim%naesmd%pha = 0.0d0
+            !Gaussian widths for MCE (1/Bohr^2)
+            allocate(sim%naesmd%w(3*sim%naesmd%natom))
+            do i = 1, sim%naesmd%natom
+                if(sim%naesmd%atomtype(i).eq.1) then !H
+                    sim%naesmd%w(3*i-2) = 4.7d0
+                    sim%naesmd%w(3*i-1) = 4.7d0
+                    sim%naesmd%w(3*i) = 4.7d0
+                elseif(sim%naesmd%atomtype(i).eq.5) then !B
+                    sim%naesmd%w(3*i-2) = 15.2d0
+                    sim%naesmd%w(3*i-1) = 15.2d0
+                    sim%naesmd%w(3*i) = 15.2d0
+                elseif(sim%naesmd%atomtype(i).eq.6) then !C
+                    sim%naesmd%w(3*i-2) = 22.7d0
+                    sim%naesmd%w(3*i-1) = 22.7d0
+                    sim%naesmd%w(3*i) = 22.7d0
+                elseif(sim%naesmd%atomtype(i).eq.7) then !N
+                    sim%naesmd%w(3*i-2) = 19.0d0
+                    sim%naesmd%w(3*i-1) = 19.0d0
+                    sim%naesmd%w(3*i) = 19.0d0
+                elseif(sim%naesmd%atomtype(i).eq.8) then !O
+                    sim%naesmd%w(3*i-2) = 12.2d0
+                    sim%naesmd%w(3*i-1) = 12.2d0
+                    sim%naesmd%w(3*i) = 12.2d0
+                elseif(sim%naesmd%atomtype(i).eq.9) then !F
+                    sim%naesmd%w(3*i-2) = 8.5d0
+                    sim%naesmd%w(3*i-1) = 8.5d0
+                    sim%naesmd%w(3*i) = 8.5d0
+                elseif(sim%naesmd%atomtype(i).eq.12) then !Mg (Calculated for the Chlorophyll monomer)
+                    sim%naesmd%w(3*i-2) = 10.3
+                    sim%naesmd%w(3*i-1) = 10.3
+                    sim%naesmd%w(3*i) = 10.3
+                elseif(sim%naesmd%atomtype(i).eq.16) then !S
+                    sim%naesmd%w(3*i-2) = 16.7d0
+                    sim%naesmd%w(3*i-1) = 16.7d0
+                    sim%naesmd%w(3*i) = 16.7d0
+                elseif(sim%naesmd%atomtype(i).eq.17) then !Cl
+                    sim%naesmd%w(3*i-2) = 7.4d0
+                    sim%naesmd%w(3*i-1) = 7.4d0
+                    sim%naesmd%w(3*i) = 7.4d0
+                else
+                    print *, 'Fatal error, Gaussian width mising for atomic number: ', sim%naesmd%atomtype(i)
+                    stop
+                endif
+            enddo
         if(restart_flag.eq.1) call read_aimc_for_restart(nuclear,Nsim,sim%excN)
+        endif
 
         do i=1,sim%excN
           do j=1, sim%excN
