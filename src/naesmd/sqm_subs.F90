@@ -946,6 +946,8 @@ subroutine sqm_read_and_alloc(qmmm_nml, qmmm_scratch, qmmm_div, qmmm_opnq, qmmm_
         endif
     endif
 
+    if(do_nm > 0) verbosity=1
+
     !AWG NEW
     call CheckRetiredQmTheoryInputOption(qmtheory)
     call set(qmmm_nml%qmtheory, qm_theory)

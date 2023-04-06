@@ -180,9 +180,6 @@ subroutine hessian_calc(sim,deltaX)
 
     call dsyevd('V','U',n,a,lda,w,work,lwork,iwork,liwork,info)
 
-!    print *, 'dsyevd for the Hessian diagonalization finished, info: ', info
-       
-
 !Writing data
     open(34, file='nma_modes.out') !Normal modes eigenvalues
     do i=1,3*simpoint%naesmd%natom

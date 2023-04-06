@@ -36,6 +36,7 @@ subroutine dav_wrap(qm2_params,qmmm_nml,qmmm_mpi, cosmo_c_struct, qm2_struct, qm
 
     !Vacuum, Linear Response Solvent have the single Davidson routine, Nonequilibrium State Specific
     !has iterative Davidson Wrapper, Equilibrium State Specific routine has scf and Davidson wrapper above this subroutine.
+
     if ((cosmo_c_struct%solvent_model.lt.2).or.(cosmo_c_struct%solvent_model.gt.3)) then
         call davidson(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct, qm2ds, qmmm_struct);
     elseif ((cosmo_c_struct%solvent_model.eq.2).or.(cosmo_c_struct%solvent_model.eq.3)) then

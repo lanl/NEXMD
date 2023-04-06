@@ -543,7 +543,9 @@ contains
                 modes (do_nm > 0). Running both simultaneously is not possible."
             STOP 0;
         elseif (do_nm.gt.0) then
-            print *, 'before call hessian', deltaX
+            sim%dav%minimization = .FALSE.
+            sim%Ncharge = ncharge
+            sim%dav%verbosity=0 !don't print output from scf calculations
             call hessian_calc(sim,deltaX)
         endif
         if (maxcyc < 1) then
@@ -575,7 +577,7 @@ contains
             STOP 0;
         end if
         return
-    end subroutine
+    end subroutine init_sqm
 
           
           

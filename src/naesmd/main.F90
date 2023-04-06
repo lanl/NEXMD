@@ -212,8 +212,8 @@ subroutine simulations(Nsim,Nsim_max,restart_flag)
                      sims(i)%sim%naesmd%icontpdb=sims(i)%sim%naesmd%icontpdb+1
                  endif
              endif
-         enddo
-     enddo
+        enddo
+    enddo
     do i=1, Nsim
         call finish_sim(sims(i)%sim,Nsim)
     enddo 
