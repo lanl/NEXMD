@@ -189,7 +189,6 @@
 111   format (i3,a,g24.16,2(' ',e8.2))
    call flush(6)
 
-   
 ! Write vectors only for BIG sizes in the case of crash/restart       	  
    
    if(qm2ds%mdflag.lt.0.and.qm2ds%Nb.gt.100) then
@@ -216,7 +215,7 @@
 
    goto 10
    end if
-       
+
 !
 !--------------------------------------------------------------------
 !

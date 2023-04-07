@@ -713,15 +713,12 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
                     *(2.0d0*nsshell(iqm_atomic)+1.0d0)) &
                     /((base_temp2**exponent_temp2) * sqrt(3.0d0))
 
-                qm2_params%multip_2c_elec_params(2,i)= &
-                    sqrt((4.0d0*nsshell(iqm_atomic)**2+6.0d0*nsshell(iqm_atomic) &
-                    +2.0d0)/20.0d0)/p_orb_exp_am1(iqm_atomic)
-
-                ! expression above sometimes (e.g., for hydrogen) gives Inf
-                ! because p_orb_exp_am1 vanishes !!!???
-                ! to correct for that: kav
                 if(p_orb_exp_am1(iqm_atomic)==0.d0) then
                     qm2_params%multip_2c_elec_params(2,i)=0.d0
+                else 
+                    qm2_params%multip_2c_elec_params(2,i)= &
+                    sqrt((4.0d0*nsshell(iqm_atomic)**2+6.0d0*nsshell(iqm_atomic) &
+                    +2.0d0)/20.0d0)/p_orb_exp_am1(iqm_atomic)
                 end if
             else
                 qm2_params%multip_2c_elec_params(1,i)= 0.0d0
