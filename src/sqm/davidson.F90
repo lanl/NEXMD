@@ -393,7 +393,7 @@
       end do
       !!NORMALIZE
       f2=ddot(M4,xi,one,xi,one) !xi.xi
-      f2=1.0D0/sqrt(abs(f2)) !normalization constant
+      f2=1.0D0/dsqrt(dabs(f2)) !normalization constant
 
       call dscal(M4,f2,xi,one) !normalize xi
      
@@ -403,8 +403,8 @@
          call daxpy(M4,f1,xi,one,vexp1(1,j),one) !vexp1=vexp1+xi.vexp1*xi
       end do
 
-      f2=ddot(M4,vexp(1,j),one,vexp1(1,j),one) !vexp.vexp1 but vexp=0 if started from 85??
-      f2=1.0D0/sqrt(abs(f2)) !normalization constant
+      f2=ddot(M4,vexp1(1,j),one,vexp1(1,j),one) !vexp.vexp1 but vexp=0 if started from 85??
+      if(f2.ne.0.0d0) f2=1.0D0/dsqrt(dabs(f2)) !normalization constant
       call dscal(M4,f2,vexp1(1,j),one) !normalize
 
       !!SAME AS ABOVE BUT WITH XI=X-Y
@@ -413,7 +413,7 @@
       end do
 
       f2=ddot(M4,xi,one,xi,one) !xi.xi
-      f2=1.0D0/sqrt(abs(f2)) 
+      f2=1.0D0/dsqrt(dabs(f2)) 
       call dscal(M4,f2,xi,one) !normalize xi
 
       do j=1,nd1   
@@ -421,8 +421,8 @@
          call daxpy(M4,f1,xi,one,vexp1(1,j),one)
       end do
 
-      f2=ddot(M4,vexp(1,j),one,vexp1(1,j),one)
-      f2=1.0D0/sqrt(abs(f2))
+      f2=ddot(M4,vexp1(1,j),one,vexp1(1,j),one)
+      if(f2.ne.0.0d0) f2=1.0D0/dsqrt(dabs(f2))
       call dscal(M4,f2,vexp1(1,j),one)
    end do
 
@@ -432,7 +432,7 @@
 
       !!NORMALIZE
       f2=ddot(M4,vexp1(1,j),one,vexp1(1,j),one)
-      f2=1/sqrt(abs(f2))
+      f2=1.0D0/dsqrt(dabs(f2))
       call dscal(M4,f2,vexp1(1,j),one)
 
       do i=1,j-1
@@ -450,7 +450,7 @@
       end do
 
       f2=ddot(M4,vexp1(1,j),one,vexp1(1,j),one) !!NORMALIZE AGAIN
-      f2=1/sqrt(abs(f2))
+      f2=1.0D0/dsqrt(dabs(f2))
       call dscal(M4,f2,vexp1(1,j),one)
    end do 
 
@@ -521,7 +521,7 @@
 12    continue
       do j=1,nd1
          f2=ddot(M4,vexp1(1,j),one,vexp1(1,j),one)
-         f2=1/sqrt(abs(f2))
+         f2=1.0D0/dsqrt(dabs(f2))
          call dscal(M4,f2,vexp1(1,j),one)
 
          do i=1,j-1
@@ -537,7 +537,7 @@
          end do
 
          f2=ddot(M4,vexp1(1,j),one,vexp1(1,j),one)
-         f2=1/sqrt(abs(f2))
+         f2=1.0D0/dsqrt(dabs(f2))
          call dscal(M4,f2,vexp1(1,j),one)
       end do
 
@@ -714,7 +714,7 @@
 
       f2=ddot(M4,v0(1,j),one,v0(1,j),one) &
          -ddot(M4,v0(1+M4,j),one,v0(1+M4,j),one)
-      f2=1/sqrt(abs(f2))
+      f2=1.0D0/dsqrt(dabs(f2))
       call dscal(2*M4,f2,v0(1,j),one)
 
    end do
@@ -770,7 +770,7 @@
          end do
 
          f4=ddot(M4,vexp1(1,nd1+m),one,vexp1(1,nd1+m),one)
-         f4=1/sqrt(abs(f4))
+         f4=1.0D0/dsqrt(dabs(f4))
          call dscal(M4,f4,vexp1(1,nd1+m),one)
 
          if(lprint.gt.3) then 
@@ -787,7 +787,7 @@
          end do
 
          f4=ddot(M4,vexp1(1,nd1+m),one,vexp1(1,nd1+m),one)
-         f4=1/sqrt(abs(f4))
+         f4=1.0D0/dsqrt(dabs(f4))
          call dscal(M4,f4,vexp1(1,nd1+m),one)
 
          if((nd1+m).eq.nd) goto 45
@@ -799,7 +799,7 @@
          end do
 
          f4=ddot(M4,vexp1(1,nd1+m),one,vexp1(1,nd1+m),one)
-         f4=1/sqrt(abs(f4))
+         f4=1.0D0/dsqrt(dabs(f4))
          call dscal(M4,f4,vexp1(1,nd1+m),one)
          if(lprint.gt.1) write(6,"(3i5,1x,2f14.9,2g10.3)") &
             j,n,m,raye(j-j0),f1,f2,f3
@@ -825,7 +825,7 @@
 
    do j=1+nd1,nd1+m
       f2=ddot(M4,vexp1(1,j),one,vexp1(1,j),one)
-      f2=1/sqrt(abs(f2))
+      f2=1.0D0/dsqrt(dabs(f2))
       call dscal(M4,f2,vexp1(1,j),one)
 
       do i=1,j-1
@@ -841,7 +841,7 @@
       end do
 
       f2=ddot(M4,vexp1(1,j),one,vexp1(1,j),one)
-      f2=1/sqrt(abs(f2))
+      f2=1.0D0/dsqrt(dabs(f2))
       call dscal(M4,f2,vexp1(1,j),one)
    end do
 !  Check
