@@ -57,7 +57,7 @@ module naesmd_module
             integer, allocatable ::  mc(:) !indexes for freezing normal modes
             _REAL_ masatotal !total mass for freezing normal modes
             _REAL_,allocatable :: enm(:,:) !Normal modes read from fort.34 file 
-            _REAL_,allocatable :: xbf0(:), ybf0(:), zbf0(:) !Equilibrium positions for freezing normal modes, read from tempA
+            _REAL_,allocatable :: xbf0(:), ybf0(:), zbf0(:) !Equilibrium positions for freezing normal modes, read from reference.xyz
             _REAL_,allocatable :: massqrt(:)
             _REAL_,allocatable :: w(:) !Gaussian widths for MCE
             _REAL_ temp0,tempf,tempi,tao

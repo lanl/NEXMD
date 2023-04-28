@@ -253,7 +253,7 @@ subroutine initiate_sim(sim,Nsim,Nsim_max,restart_flag,nuclear,tr_number)
     
     if(restart_flag.eq.1) then
         call check_files(Nsim,nstep0,tr_number,sim%id)
-        write(6,*), 'All files checked and ready for restart for trajectory: ', tr_number
+        write(6,*) 'All files checked and ready for restart for trajectory: ', tr_number
     endif
     call init_main(sim, inputfdes, Nsim, Nsim_max, restart_flag, nuclear, tr_number)
     if(restart_flag.eq.1) sim%naesmd%nstep0=nstep0
@@ -1138,9 +1138,11 @@ end subroutine finish_sim
             enddo
             close(34)
             !Reading equilibrium positions for normal mode freezing
-            open(34,file='tempA')
+            open(34,file='reference.xyz')
+            read(34,*)
+            read(34,*)
             do i=1,sim%naesmd%natom
-               read(34,*) j, sim%naesmd%xbf0(i), sim%naesmd%ybf0(i),&
+               read(34,*) txt, sim%naesmd%xbf0(i), sim%naesmd%ybf0(i),&
                           sim%naesmd%zbf0(i) 
                sim%naesmd%xbf0(i) = sim%naesmd%xbf0(i)/convl
                sim%naesmd%ybf0(i) = sim%naesmd%ybf0(i)/convl
