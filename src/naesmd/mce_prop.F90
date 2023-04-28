@@ -178,7 +178,7 @@ subroutine update_nuclear(nuclear,sims,Nsim,w,wr)
     enddo!n
 
 !debugging
-            write(nuclear%outfile_0,*) sims(1)%sim%naesmd%tfemto, (sims(i)%sim%aimc%nclones, n=1, Nsim)
+!            write(nuclear%outfile_0,*) sims(1)%sim%naesmd%tfemto, (sims(i)%sim%aimc%nclones, n=1, Nsim)
 !debugging
     
     Sinv(1:Nsim,1:Nsim)=S(1:Nsim,1:Nsim)*sE_all(1:Nsim,1:Nsim)!To invert the overlap matrix

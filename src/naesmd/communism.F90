@@ -85,7 +85,7 @@ module communism
         logical, dimension(:), allocatable :: cloned !Flag for clones
         _REAL_, dimension(:), allocatable :: pop !Electronic populations
         !Outputs:
-        integer :: outfile_0 !for debugging
+!        integer :: outfile_0 !for debugging
         integer :: outfile_1 !for populations
         integer :: outfile_2 !for nuclear coefficients
         integer :: outfile_3 !for electronic overlaps

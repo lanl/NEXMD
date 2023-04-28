@@ -244,8 +244,8 @@ contains
             file_status='old'
         end if
 
-        write(filename,"(A9)") "debug.dat"
-        open(nuclear%outfile_0,file=trim(filename),status=file_status,access=file_access)
+!        write(filename,"(A9)") "debug.dat"
+!        open(nuclear%outfile_0,file=trim(filename),status=file_status,access=file_access)
 
         write(filename, "(A7)") "pop.dat" 
         open(nuclear%outfile_1,file=trim(filename),status=file_status,access=file_access)

@@ -1193,7 +1193,7 @@ end subroutine finish_sim
         endif
         if(sim%naesmd%dynam_type.eq.'aimc'.and.sim%id.eq.0) then
             !Output files
-            nuclear%outfile_0=400 !for debugging
+!            nuclear%outfile_0=400 !for debugging
             nuclear%outfile_1=401 !for populations 
             nuclear%outfile_2=402 !for nuclear coefficients
             nuclear%outfile_3=403 !for electronic overlaps
