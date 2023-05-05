@@ -218,8 +218,8 @@ subroutine qm2_dhc2(qm2_params,qmmm_nml,qm2_rij_eqns,qm2_struct,qmmm_struct, &
       n_atomic_orbj = lastIndexAO_j-firstIndexAO_j+1
       
       linear=qm2_params%pascal_tri2(n_atomic_orbi+n_atomic_orbj)
-      F(1:linear)=0.0D0
-      H(1:linear)=0.0D0
+      F = 0.0d0
+      H = 0.0d0
 
 ! RCW: Caution, i and j reversed here.
 
@@ -319,15 +319,15 @@ subroutine qm2_dhc2(qm2_params,qmmm_nml,qm2_rij_eqns,qm2_struct,qmmm_struct, &
         ! elements back to their correct magnitude before calculating the energy with qm2_helect2().
         ! CML 6/27/12
 
-	F=F/2
- 
+	F=F/2.0d0
+
     ! 2-center 2-electron contribution to the Fock matrix      
     call W2Fock_atompair(W, F, P, n_atomic_orbj, n_atomic_orbi,  &
       firstIndexAO_j, firstIndexAO_i,qmmm_struct%W2Fock_atompair_initialized, qmmm_struct%w_index)
     call W2Fock_atompair(W, F, P, n_atomic_orbi, n_atomic_orbj,  &
       firstIndexAO_i, firstIndexAO_j,qmmm_struct%W2Fock_atompair_initialized, qmmm_struct%w_index)   
 
-	F=F*2
+	F=F*2.0d0
 
     EE=qm2_helect2(n_atomic_orbi+n_atomic_orbj-1,P,H,F)   ! CML 7/13/12
     ! SQM uses only RHF, so we need to multiply by 2 for the upper triangle.

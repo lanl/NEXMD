@@ -1,7 +1,7 @@
 FC = gfortran
 CC = gcc
 LINALG = -llapack -lblas
-FFLAG_GNU = -O3 -ffree-line-length-512
+FFLAG_GNU = -O2 -ffree-line-length-512
 GCC_GTEQ_10 := $(shell expr `gfortran -dumpfullversion -dumpversion | cut -f1 -d.` \>= 10)
 ifeq "$(GCC_GTEQ_10)" "1"
 	FFLAG_GNU += -mcmodel=small -fallow-argument-mismatch
@@ -395,7 +395,7 @@ pgi_GOTO:   nexmd.exe
 
 gnu:  FC = gfortran
 gnu:  CC = gcc
-gnu:  FFLAG = $(FFLAG_GNU)
+gnu:  FFLAG = $(FFLAG_GNU) -ffpe-summary='none'
 gnu:  LDFLAGS = $(FFLAG)
 gnu:  nexmd.exe
 
@@ -408,7 +408,7 @@ gnu_mkl: nexmd.exe
 
 gnu_debug:  FC = gfortran
 gnu_debug:  CC = gcc
-gnu_debug:  FFLAG = -g $(FFLAG_GNU)
+gnu_debug:  FFLAG = -g $(FFLAG_GNU) -ffpe-trap=invalid,zero,overflow,underflow
 gnu_debug:  LDFLAGS = $(FFLAG)
 gnu_debug:  nexmd.exe
 
