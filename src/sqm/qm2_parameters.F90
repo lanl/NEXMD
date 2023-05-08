@@ -8452,7 +8452,6 @@ subroutine SetUpUserParameter(name, target, temp)
     if (Upcase(temp%name)==name) then
       target=temp%value
     end if 
-      
 
 end subroutine SetUpUserParameter 
 

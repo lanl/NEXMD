@@ -41,8 +41,6 @@ program sqm
 
    character(len=strlen) :: string
 
-
-
    ! ==== Initialise first_call flags for QMMM ====
    qmmm_struct%qm_mm_first_call = .true.
    qmmm_struct%fock_first_call = .true.

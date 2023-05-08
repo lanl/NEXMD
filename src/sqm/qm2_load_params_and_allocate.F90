@@ -801,6 +801,7 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
             ! get the Slater orbital expansion coefficients
             qm2_params%s_orb_exp_by_type(i) = s_orb_exp_am1(qmmm_struct%qm_type_id(i))
             qm2_params%p_orb_exp_by_type(i) = p_orb_exp_am1(qmmm_struct%qm_type_id(i))
+            qm2_params%d_orb_exp_by_type(i) = 0.0d0
             qm2_params%NUM_FN(i) = NUM_FN_am1(qmmm_struct%qm_type_id(i))
             do j=1,4
                 qm2_params%FN1(j,i) = FN1_am1(j,qmmm_struct%qm_type_id(i))

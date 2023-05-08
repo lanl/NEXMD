@@ -390,7 +390,7 @@ contains
     REQUIRE(ier == 0) 
     allocate (self%d_orb_exp_by_type(qm_ntypes), stat=ier )
     REQUIRE(ier == 0)     
- 
+
     allocate (self%s_orb_exp_tail_by_type(qm_ntypes), stat=ier )
     REQUIRE(ier == 0) 
     allocate (self%p_orb_exp_tail_by_type(qm_ntypes), stat=ier )
