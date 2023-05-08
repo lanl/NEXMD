@@ -1189,6 +1189,7 @@ end subroutine finish_sim
             allocate(sim%naesmd%ygprime_new(3*sim%excN))
             allocate(sim%naesmd%cross(sim%excN))
             allocate(sim%naesmd%Omega(sim%excN))
+            sim%naesmd%Omega = 0.0d0
             allocate(sim%naesmd%sgn(sim%excN,sim%excN))
         endif
         if(sim%naesmd%dynam_type.eq.'aimc'.and.sim%id.eq.0) then
