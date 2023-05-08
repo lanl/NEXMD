@@ -1284,6 +1284,9 @@ end subroutine finish_sim
         !
         !--------------------------------------------------------------------
 
+        sim%naesmd%vx = 0.0d0
+        sim%naesmd%vy = 0.0d0
+        sim%naesmd%vz = 0.0d0
         rewind (inputfdes)
         do
             read(inputfdes,'(a)',err=29) txt
