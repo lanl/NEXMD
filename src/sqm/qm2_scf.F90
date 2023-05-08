@@ -283,8 +283,6 @@ subroutine qm2_scf(qmmm_opnq, qm2_params, qmewald, qmmm_nml, qm_gb, qmmm_mpi, qm
                 end if
                 if (qmmm_nml%verbosity > 4) then
                     !also print info in KJ/mol
-                    print *, 'Victor ', scf_energy, energy_diff, density_diff
-                    flush(6)
                     write(6,'("QMMM: KJ/mol  ",3G15.7)') scf_energy*4.184d0,energy_diff*4.184d0,density_diff*4.184d0
                 end if
             end if !(qmmm_nml%verbosity > 2)

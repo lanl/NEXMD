@@ -724,7 +724,7 @@ end subroutine finish_sim
         call float_legal_range('moldyn: (time step ) ',time_step,0.0d-6,1.0d21)
 
         call int_legal_range('moldyn: (classical steps ) ', n_class_steps,0,999999999)
-        call int_legal_range('moldyn: (quantum steps ) ', n_quant_steps,0,999999999)
+        call int_legal_range('moldyn: (quantum steps ) ', n_quant_steps,1,999999999)
 
         call int_legal_range('moldyn: (moldyn_deriv_flag ) ', moldyn_deriv_flag,0,2)
 
