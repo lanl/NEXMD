@@ -169,6 +169,9 @@ contains
                 allocate(naesmd_struct%bcoeffcadiab(Nexc,Nexc))
                 allocate(naesmd_struct%scpr(Nexc,Nexc))
                 allocate(naesmd_struct%scprreal(Nexc,Nexc))
+                naesmd_struct%cadiab = 0.0d0
+                naesmd_struct%cadiabnew = 0.0d0
+                naesmd_struct%cadiabmiddle = 0.0d0
         endif
         if(naesmd_struct%nmc.gt.0) then
             allocate(naesmd_struct%mc(naesmd_struct%nmc)) !Allocating array for indexes of normal modes to freeze
