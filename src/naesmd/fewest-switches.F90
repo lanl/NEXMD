@@ -74,7 +74,7 @@ contains
             if(sim%naesmd%conthop2.eq.0) then
                 call veladjustment(sim, lprint,Na,icheck,ini)
                 if(lprint.ge.2) then
-                    write(sim%outfile_10,*) sim%naesmd%tfemto,icheck,ini
+                    write(sim%outfile_10,*) sim%naesmd%tfemto,sim%naesmd%ihop, icheck,ini
                     call flush(sim%outfile_10)
                 end if
             else
