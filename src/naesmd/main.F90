@@ -228,7 +228,7 @@ subroutine initiate_sim(sim,Nsim,Nsim_max,restart_flag,nuclear,tr_number)
     type(simulation_t), pointer::sim
     type(MCE) :: nuclear
     character*30 datetime, machname*36
-    integer inputfdes, get_time
+    integer inputfdes
     integer i,j,k,l
     integer, intent(inout) :: Nsim
     integer, intent(in) :: Nsim_max
@@ -247,7 +247,7 @@ subroutine initiate_sim(sim,Nsim,Nsim_max,restart_flag,nuclear,tr_number)
     write (6,7) '| Computer: ',   machname,'|'
     write (6,*) '|________________________________________________|'
     write (6,*)
-    sim%itime1=get_time()
+    call cpu_time(sim%itime1) 
 
     filename = ''
     
@@ -432,7 +432,7 @@ subroutine finish_sim(sim,Nsim)
 
     type(simulation_t),pointer::sim
 
-    integer itime11,itime2,itime3,get_time
+    integer itime11,itime2,itime3
     integer, intent(in) :: Nsim
     _REAL_ time11,time12
     character*30 datetime
@@ -441,8 +441,8 @@ subroutine finish_sim(sim,Nsim)
     !! END of the Molecular dynamics with Quantum transition main loop
     !##########################################################
 
-    itime11=get_time()
-    time11=real(itime11-sim%itime1)/100
+    call cpu_time(time11)
+    time11=time11-sim%time1
     itime11=time11
     sim%itime1=MOD(itime11,60)
     itime11=itime11/60
