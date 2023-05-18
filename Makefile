@@ -366,14 +366,14 @@ ic_mkl: FC = ifort
 ic_mkl: CC = icc
 ic_mkl: MODOPT = -module 
 ic_mkl: LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
-ic_mkl: FFLAG= -O3 -I${MKLROOT}/include
-ic_mkl: CFLAG= -O3 -I${MKLROOT}/include -DMKL_LP64
+ic_mkl: FFLAG= -O2 -I${MKLROOT}/include
+ic_mkl: CFLAG= -O2 -I${MKLROOT}/include -DMKL_LP64
 ic_mkl: nexmd.exe
 
 pgi:   FC = pgf90
 pgi:   CC = pgcc
 pgi:   MODOPT = -module 
-pgi:   FFLAG = -O3 
+pgi:   FFLAG = -O2 
 pgi:   LDFLAGS = $(FFLAG)
 pgi:   nexmd.exe
 
@@ -381,16 +381,16 @@ pgi_mkl:   FC = pgf90
 pgi_mkl:   CC = pgcc
 pgi_mkl:   MODOPT = -module 
 pgi_mkl:   LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
-pgi_mkl:   FFLAG= -O3 -I${MKLROOT}/include
-pgi_mkl:   CFLAG= -O3 -I${MKLROOT}/include -DMKL_LP64
+pgi_mkl:   FFLAG= -O2 -I${MKLROOT}/include
+pgi_mkl:   CFLAG= -O2 -I${MKLROOT}/include -DMKL_LP64
 pgi_mkl:   nexmd.exe
 
 pgi_GOTO:   FC = pgf90
 pgi_GOTO:   CC = pgcc
 pgi_GOTO:   MODOPT = -module 
 pgi_GOTO:   LINALG =  -llapack ./lib/goto2r1.13/libgoto2_nehalem-r1.13.a -lpthread -lm
-pgi_GOTO:   FFLAG= -O3 -I${MKLROOT}/include
-pgi_GOTO:   CFLAG= -O3 -I${MKLROOT}/include -DMKL_LP64
+pgi_GOTO:   FFLAG= -O2 -I${MKLROOT}/include
+pgi_GOTO:   CFLAG= -O2 -I${MKLROOT}/include -DMKL_LP64
 pgi_GOTO:   nexmd.exe
 
 gnu:  FC = gfortran
@@ -403,7 +403,7 @@ gnu_mkl: FC = gfortran
 gnu_mkl: CC = gcc
 gnu_mkl: LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
 gnu_mkl: FFLAG= $(FFLAG_GNU) -I${MKLROOT}/include
-gnu_mkl: CFLAG= -O3 -I${MKLROOT}/include -DMKL_LP64
+gnu_mkl: CFLAG= -O2 -I${MKLROOT}/include -DMKL_LP64
 gnu_mkl: nexmd.exe
 
 gnu_debug:  FC = gfortran
@@ -415,7 +415,7 @@ gnu_debug:  nexmd.exe
 ic:   FC = ifort
 ic:   CC = icc
 ic:   MODOPT = -module 
-ic:   FFLAG = -O3 -mcmodel=medium
+ic:   FFLAG = -O2 -mcmodel=medium
 ic:   LDFLAGS = $(FFLAG)
 ic:   nexmd.exe
 
@@ -431,8 +431,8 @@ performance_ic: FC = ifort
 performance_ic: CC = icc
 performance_ic: MODOPT = -module 
 performance_ic: LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
-performance_ic: FFLAG= -O3 -g -I${MKLROOT}/include
-performance_ic: CFLAG= -O3 -g -I${MKLROOT}/include -DMKL_LP64
+performance_ic: FFLAG= -O2 -g -I${MKLROOT}/include
+performance_ic: CFLAG= -O2 -g -I${MKLROOT}/include -DMKL_LP64
 performance_ic: nexmd.exe
 
 LINK =  $(LINALG)
