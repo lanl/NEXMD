@@ -1,0 +1,12 @@
+aimc_dyn ---------------------------> aimc Dynamics
+exc_min ----------------------------> Minimization in the first excited state
+exc_nm -----------------------------> Calculation of normal modes corresponding to the first excited state
+gs_dyn -----------------------------> Ground state dynamics with the Langevin thermostat 
+gs_dyn_freeze_dist -----------------> Ground state dynamics freezing distances between atoms
+gs_dyn_freeze_nm -------------------> Ground stets dynamics freezing normal modes
+gs_min -----------------------------> Optimization in the ground state
+gs_nm ------------------------------> Calculation of normal modes in the ground state
+mf_dyn -----------------------------> Ehrenfest dynamics
+more_tests -------------------------> More tests
+nbo_dyn ----------------------------> Non-Born-Oppenheimer dynamics in the third excited state
+tsh_dyn ----------------------------> Trajectory surface hoping dynamics 
