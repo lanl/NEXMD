@@ -1,8 +1,5 @@
-FC = gfortran
-CC = gcc
-LINALG = -llapack -lblas
 # Flag for gfortran compiler
-FFLAG_GNU = -O2 -ffree-line-length-512
+FFLAG_GNU = -ffree-line-length-512
 # Special options for gfortran version -- >10 need to allow argument mismatch
 GCC_GTEQ_10 := $(shell expr `gfortran -dumpfullversion -dumpversion | cut -f1 -d.` \>= 10)
 ifeq "$(GCC_GTEQ_10)" "1"
@@ -22,15 +19,6 @@ LIBDIR = lib
 OBJDIR = obj
 SRCDIR = src
 MODDIR = mod
-LIB = lib 
-TD = tests
-SP = singlepoint
-BD = bodynamics
-GEO = geomopt
-BEN = benzene
-NITRO = nitromethane
-
-
 
 SQMINC = -I$(MODDIR)/$(SQMDIR)/
 AMOEBAINC = -I$(MODDIR)/$(AMOEBADIR)/
@@ -179,8 +167,8 @@ OBJNAESMD = \
         $(OBJDIR)/$(NAESMDDIR)/rescaleveloc.o\
         $(OBJDIR)/$(NAESMDDIR)/clone.o\
         $(OBJDIR)/$(NAESMDDIR)/aimc.o \
-		$(OBJDIR)/$(NAESMDDIR)/check_files.o \
-		$(OBJDIR)/$(NAESMDDIR)/mce_prop.o \
+	$(OBJDIR)/$(NAESMDDIR)/check_files.o \
+	$(OBJDIR)/$(NAESMDDIR)/mce_prop.o \
         $(OBJDIR)/$(NAESMDDIR)/dropout_module.o \
 	$(OBJDIR)/$(NAESMDDIR)/main.o 
 
@@ -340,16 +328,16 @@ $(OBJDIR)/$(DIRSFF)/$(DIRPUBPME)/$(DIRDRIVERSRC)/%.o: $(SRCDIR)/$(DIRSFF)/$(DIRP
 	$(FC) $(INC) $(FFLAG) -o $@ -c $<
 
 $(OBJDIR)/$(DIRSFF)/%.o: $(SRCDIR)/$(DIRSFF)/%.c
-	$(CC) $(INC) -DSQM -o $@ -c $<
+	$(CC) $(INC) $(CFLAG) -DSQM -o $@ -c $<
 
 $(OBJDIR)/$(LIBDIR)/%.o: $(SRCDIR)/$(LIBDIR)/%.c
-	$(CC) $(INC) $(FFLAG) -o $@ -c $<
+	$(CC) $(INC) $(CFLAG) -o $@ -c $<
 
 $(OBJDIR)/$(SANDERDIR)/%.o: $(SRCDIR)/$(SANDERDIR)/%.F90
 	$(FC) $(INC) $(FFLAG) $(SQMINC) ${MODOPT}$(MODDIR)/$(SANDERDIR)/ -o $@ -c $<
 
 $(OBJDIR)/$(SANDERDIR)/%.o: $(SRCDIR)/$(SANDERDIR)/%.c
-	$(CC) $(INC) $(FFLAG) -o $@ -c $<
+	$(CC) $(INC) $(CFLAG) -o $@ -c $<
 
 $(OBJDIR)/$(SQMDIR)/%.o: $(SRCDIR)/$(SQMDIR)/%.F90
 	$(FC) $(INC) $(FFLAG) -DSQM ${MODOPT}$(MODDIR)/$(SQMDIR)/ -o $@ -c $< 
@@ -370,31 +358,15 @@ ic_mkl: MODOPT = -module
 ic_mkl: LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
 ic_mkl: FFLAG= -O2 -I${MKLROOT}/include
 ic_mkl: CFLAG= -O2 -I${MKLROOT}/include -DMKL_LP64
+ic_mkl: LDFLAGS = $(FFLAG)
 ic_mkl: nexmd.exe
-
-gnu:  FC = gfortran
-gnu:  CC = gcc
-gnu:  FFLAG = $(FFLAG_GNU) -ffpe-summary='none'
-gnu:  LDFLAGS = $(FFLAG)
-gnu:  nexmd.exe
-
-gnu_mkl: FC = gfortran
-gnu_mkl: CC = gcc
-gnu_mkl: LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
-gnu_mkl: FFLAG= $(FFLAG_GNU) -I${MKLROOT}/include
-gnu_mkl: CFLAG= -O2 -I${MKLROOT}/include -DMKL_LP64
-gnu_mkl: nexmd.exe
-
-gnu_debug:  FC = gfortran
-gnu_debug:  CC = gcc
-gnu_debug:  FFLAG = -g $(FFLAG_GNU) -ffpe-trap=invalid,zero,overflow,underflow
-gnu_debug:  LDFLAGS = $(FFLAG)
-gnu_debug:  nexmd.exe
 
 ic:   FC = ifort
 ic:   CC = icc
 ic:   MODOPT = -module 
+ic:   LINALG = -llapack -lblas
 ic:   FFLAG = -O2 -mcmodel=medium
+ic:   CFLAG = -O2 -mcmodel=medium
 ic:   LDFLAGS = $(FFLAG)
 ic:   nexmd.exe
 
@@ -404,20 +376,55 @@ debug_ic: MODOPT = -module
 debug_ic: LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
 debug_ic: FFLAG= -g -I${MKLROOT}/include
 debug_ic: CFLAG= -g -I${MKLROOT}/include -DMKL_LP64
+debug_ic: LDFLAGS = $(FFLAG)
 debug_ic: nexmd.exe
 
-performance_ic: FC = ifort
-performance_ic: CC = icc
-performance_ic: MODOPT = -module 
-performance_ic: LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
-performance_ic: FFLAG= -O2 -g -I${MKLROOT}/include
-performance_ic: CFLAG= -O2 -g -I${MKLROOT}/include -DMKL_LP64
-performance_ic: nexmd.exe
+### archive performance_ic options used in previous work
+#performance_ic: FC = ifort
+#performance_ic: CC = icc
+#performance_ic: MODOPT = -module 
+#performance_ic: LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
+#performance_ic: FFLAG= -O2 -g -I${MKLROOT}/include
+#performance_ic: CFLAG= -O2 -g -I${MKLROOT}/include -DMKL_LP64
+#performance_ic: nexmd.exe
+
+gnu:  FC = gfortran
+gnu:  CC = gcc
+gnu:  LINALG = -llapack -lblas
+gnu:  FFLAG = -O2 $(FFLAG_GNU) -ffpe-summary='none'
+gnu:  CFLAG = -O2 
+gnu:  LDFLAGS = $(FFLAG)
+gnu:  nexmd.exe
+
+gnu_mkl: FC = gfortran
+gnu_mkl: CC = gcc
+gnu_mkl: LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
+gnu_mkl: FFLAG= -O2 $(FFLAG_GNU) -I${MKLROOT}/include
+gnu_mkl: CFLAG= -O2 -I${MKLROOT}/include -DMKL_LP64
+gnu_mkl: LDFLAGS = $(FFLAG)
+gnu_mkl: nexmd.exe
+
+gnu_debug:  FC = gfortran
+gnu_debug:  CC = gcc
+gnu_debug:  LINALG = -llapack -lblas
+gnu_debug:  FFLAG = -g $(FFLAG_GNU) -ffpe-trap=invalid,zero,overflow,underflow
+gnu_debug:  CFLAG = -g 
+gnu_debug:  LDFLAGS = $(FFLAG)
+gnu_debug:  nexmd.exe
+
+### custom field
+custom:  FC = 
+custom:  CC = 
+custom:  LINALG = 
+custom:  FFLAG = 
+custom:  CFLAG =
+custom:  LDFLAGS = $(FFLAG)
+custom:  nexmd.exe
 
 LINK =  $(LINALG)
 
 nexmd.exe: $(OBJSQM) $(OBJLIB) $(OBJNAESMD) $(OBJSFF)
-	$(FC) $(LDFLAGS) -o nexmd.exe $(OBJNAESMD) $(OBJSQM) $(OBJLIB) $(OBJSFF) -L/Users/cosadmin/nexmd-Develop/src/$(LIB) $(LINK) 
+	$(FC) $(LDFLAGS) -o nexmd.exe $(OBJNAESMD) $(OBJSQM) $(OBJLIB) $(OBJSFF) $(LINK) 
 		
 clean :
 	rm -f ob*/*.o obj/*/*.o  mod/*.mod *.mod mod/*/*.mod rm lib/*.a
