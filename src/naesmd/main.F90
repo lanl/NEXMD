@@ -247,7 +247,7 @@ subroutine initiate_sim(sim,Nsim,Nsim_max,restart_flag,nuclear,tr_number)
     write (6,7) '| Computer: ',   machname,'|'
     write (6,*) '|________________________________________________|'
     write (6,*)
-    call cpu_time(sim%itime1) 
+    call cpu_time(sim%time1) 
 
     filename = ''
     

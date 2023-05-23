@@ -31,6 +31,7 @@ module communism
         integer                        :: cohertype
         integer                        :: lprint
         integer                        :: itime1
+        _REAL_                         :: time1
         integer :: outfile_1,outfile_2,outfile_3,outfile_4
         integer :: outfile_5,outfile_6,outfile_7,outfile_8
         integer :: outfile_9,outfile_10,outfile_11
