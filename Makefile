@@ -1,7 +1,9 @@
 FC = gfortran
 CC = gcc
 LINALG = -llapack -lblas
+# Flag for gfortran compiler
 FFLAG_GNU = -O2 -ffree-line-length-512
+# Special options for gfortran version -- >10 need to allow argument mismatch
 GCC_GTEQ_10 := $(shell expr `gfortran -dumpfullversion -dumpversion | cut -f1 -d.` \>= 10)
 ifeq "$(GCC_GTEQ_10)" "1"
 	FFLAG_GNU += -mcmodel=small -fallow-argument-mismatch
@@ -370,29 +372,6 @@ ic_mkl: FFLAG= -O2 -I${MKLROOT}/include
 ic_mkl: CFLAG= -O2 -I${MKLROOT}/include -DMKL_LP64
 ic_mkl: nexmd.exe
 
-pgi:   FC = pgf90
-pgi:   CC = pgcc
-pgi:   MODOPT = -module 
-pgi:   FFLAG = -O2 
-pgi:   LDFLAGS = $(FFLAG)
-pgi:   nexmd.exe
-
-pgi_mkl:   FC = pgf90
-pgi_mkl:   CC = pgcc
-pgi_mkl:   MODOPT = -module 
-pgi_mkl:   LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm -ldl
-pgi_mkl:   FFLAG= -O2 -I${MKLROOT}/include
-pgi_mkl:   CFLAG= -O2 -I${MKLROOT}/include -DMKL_LP64
-pgi_mkl:   nexmd.exe
-
-pgi_GOTO:   FC = pgf90
-pgi_GOTO:   CC = pgcc
-pgi_GOTO:   MODOPT = -module 
-pgi_GOTO:   LINALG =  -llapack ./lib/goto2r1.13/libgoto2_nehalem-r1.13.a -lpthread -lm
-pgi_GOTO:   FFLAG= -O2 -I${MKLROOT}/include
-pgi_GOTO:   CFLAG= -O2 -I${MKLROOT}/include -DMKL_LP64
-pgi_GOTO:   nexmd.exe
-
 gnu:  FC = gfortran
 gnu:  CC = gcc
 gnu:  FFLAG = $(FFLAG_GNU) -ffpe-summary='none'
@@ -434,115 +413,6 @@ performance_ic: LINALG =  -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_
 performance_ic: FFLAG= -O2 -g -I${MKLROOT}/include
 performance_ic: CFLAG= -O2 -g -I${MKLROOT}/include -DMKL_LP64
 performance_ic: nexmd.exe
-
-LINK =  $(LINALG)
-
-test: test.c
-	$(CC) -o test.out test.c
-	cp $(TD)/$(GEO)/test1/$(NITRO)/input.ceon input.ceon
-	cp $(TD)/$(GEO)/test1/$(NITRO)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(GEO)/test1/$(NITRO)
-	cp $(TD)/$(GEO)/test1/$(BEN)/input.ceon input.ceon
-	cp $(TD)/$(GEO)/test1/$(BEN)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(GEO)/test1/$(BEN)
-	cp $(TD)/$(GEO)/test2/$(NITRO)/input.ceon input.ceon
-	cp $(TD)/$(GEO)/test2/$(NITRO)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(GEO)/test2/$(NITRO)
-	cp $(TD)/$(GEO)/test2/$(BEN)/input.ceon input.ceon
-	cp $(TD)/$(GEO)/test2/$(BEN)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(GEO)/test2/$(BEN)
-	cp $(TD)/$(GEO)/test3/$(NITRO)/input.ceon input.ceon
-	cp $(TD)/$(GEO)/test3/$(NITRO)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(GEO)/test3/$(NITRO)
-	cp $(TD)/$(GEO)/test3/$(BEN)/input.ceon input.ceon
-	cp $(TD)/$(GEO)/test3/$(BEN)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(GEO)/test3/$(BEN)
-	cp $(TD)/$(SP)/test4/$(NITRO)/input.ceon input.ceon
-	cp $(TD)/$(SP)/test4/$(NITRO)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(SP)/test4/$(NITRO)
-	cp $(TD)/$(SP)/test4/$(BEN)/input.ceon input.ceon
-	cp $(TD)/$(SP)/test4/$(BEN)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(SP)/test4/$(BEN)
-	cp $(TD)/$(SP)/test12/$(NITRO)/input.ceon input.ceon
-	cp $(TD)/$(SP)/test12/$(NITRO)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(SP)/test12/$(NITRO)
-	cp $(TD)/$(SP)/test12/$(BEN)/input.ceon input.ceon
-	cp $(TD)/$(SP)/test12/$(BEN)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(SP)/test12/$(BEN)
-	cp $(TD)/$(BD)/test11/$(NITRO)/input.ceon input.ceon
-	cp $(TD)/$(BD)/test11/$(NITRO)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(BD)/test11/$(NITRO)
-	cp $(TD)/$(BD)/test11/$(BEN)/input.ceon input.ceon
-	cp $(TD)/$(BD)/test11/$(BEN)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(BD)/test11/$(BEN)
-	cp $(TD)/$(BD)/test10/$(NITRO)/input.ceon input.ceon
-	cp $(TD)/$(BD)/test10/$(NITRO)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(BD)/test10/$(NITRO)
-	cp $(TD)/$(BD)/test10/$(BEN)/input.ceon input.ceon
-	cp $(TD)/$(BD)/test10/$(BEN)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(BD)/test10/$(BEN)
-	cp $(TD)/$(BD)/test9/$(NITRO)/input.ceon input.ceon
-	cp $(TD)/$(BD)/test9/$(NITRO)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(BD)/test9/$(NITRO)
-	cp $(TD)/$(BD)/test9/$(BEN)/input.ceon input.ceon
-	cp $(TD)/$(BD)/test9/$(BEN)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(BD)/test9/$(BEN)
-	cp $(TD)/$(BD)/test8/$(NITRO)/input.ceon input.ceon
-	cp $(TD)/$(BD)/test8/$(NITRO)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(BD)/test8/$(NITRO)
-	cp $(TD)/$(BD)/test8/$(BEN)/input.ceon input.ceon
-	cp $(TD)/$(BD)/test8/$(BEN)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(BD)/test8/$(BEN)
-	cp $(TD)/$(BD)/test7/$(NITRO)/input.ceon input.ceon
-	cp $(TD)/$(BD)/test7/$(NITRO)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(BD)/test7/$(NITRO)
-	cp $(TD)/$(BD)/test7/$(BEN)/input.ceon input.ceon
-	cp $(TD)/$(BD)/test7/$(BEN)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(BD)/test7/$(BEN)
-	cp $(TD)/$(BD)/test6/$(NITRO)/input.ceon input.ceon
-	cp $(TD)/$(BD)/test6/$(NITRO)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(BD)/test6/$(NITRO)
-	cp $(TD)/$(BD)/test6/$(BEN)/input.ceon input.ceon
-	cp $(TD)/$(BD)/test6/$(BEN)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(BD)/test6/$(BEN)
-	cp $(TD)/$(BD)/test5/$(NITRO)/input.ceon input.ceon
-	cp $(TD)/$(BD)/test5/$(NITRO)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(BD)/test5/$(NITRO)
-	cp $(TD)/$(BD)/test5/$(BEN)/input.ceon input.ceon
-	cp $(TD)/$(BD)/test5/$(BEN)/output output
-	./nexmd.exe > testoutput
-	./test.out $(TD)/$(BD)/test5/$(BEN)
-	rm -r *.out
-	rm -r output
-	rm -r testoutput
-	rm -r *xyz
-
-
-
-
 
 LINK =  $(LINALG)
 
