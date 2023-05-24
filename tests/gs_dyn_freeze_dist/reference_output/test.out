@@ -1,0 +1,575 @@
+
+ |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|
+ | MD execution started at    Wed May 24 11:54:42 AM EDT 202 |
+ | Computer:  Linux mirador x86_64                |
+ |________________________________________________|
+
+ rnd_seed=      272184
+ !!!!!!-----MD INPUT-----!!!!!!
+
+ Ground state MD,      imdtype=           0
+ Initial count for out files              0
+ MD using Langevin 
+ Printing transition dipole moments:            1
+ Starting time, fs           0.0000000000000000     
+ Time step, fs                        0.50000000000000000     
+ Number of classical steps (CS)           40
+ Quantum steps/per CS                    4
+ Displacement for deriv. [A]      1.0000000000000000E-003
+ Langevin thermostat dynamics, therm_type=           1
+ Freezing a total of            2 distances between atoms
+ Temperature, K                  300.00000000000000     
+ Bath relaxation constant       0.40000000000000002     
+ Equilibrated dynamics
+ Number of steps per degree K           100
+ Number of steps to write data            1
+ Number of steps to write coords          20
+ Friction coefficient [1/ps]      20.000000000000000     
+ Seed for random generator          272184
+ NAESMD verbosity,            3
+ MD will use analytic deriv,  ideriv=           1
+ Cartesian coordinates are used
+ Allocating initial naesmd_module variables
+ Allocating md_module initial variables
+ Allocating variables
+ Allocating naesmd_module variables          12           0
+ Allocating md_module variables          12
+ Pairs of atoms to freeze:
+           1           2
+           4           5
+  Finish reading coordinates 
+ Rescaling velocity
+
+ Initial Geometry
+    6       -35.894866    9.288626   10.054420
+    6       -36.369609    8.136872    9.487425
+    6       -34.536331    9.569570    9.955502
+    6       -35.492308    7.159723    8.983842
+    6       -33.712643    8.697458    9.304412
+    6       -34.183340    7.494548    8.762036
+    1       -36.585465    9.939934   10.537961
+    1       -37.450824    8.064607    9.436016
+    1       -34.070057   10.502494   10.500065
+    1       -35.950748    6.201235    8.765212
+    1       -33.438373    6.826374    8.246956
+    1       -32.654911    8.872607    9.123019
+ LPRINT:           3           0
+ nstep successful
+
+--------------------------------------------------------------------------------
+  QM CALCULATION INFO
+--------------------------------------------------------------------------------
+
+| QMMM: Citation for AMBER QMMM Run:
+| QMMM: R.C. Walker, M.F. Crowley and D.A. Case, J. COMP. CHEM. 29:1019, 2008
+
+QMMM: SINGLET STATE CALCULATION
+QMMM: RHF CALCULATION, NO. OF DOUBLY OCCUPIED LEVELS = 15
+
+| QMMM: *** Selected Hamiltonian *** 
+| QMMM: AM1         
+
+| QMMM: *** Parameter sets in use ***
+| QMMM: C : M.J.S.DEWAR et al. JACS, 107, 3902, (1985)
+| QMMM: H : M.J.S.DEWAR et al. JACS, 107, 3902, (1985)
+
+| QMMM: *** SCF convergence criteria ***
+| QMMM: Energy change                :  0.2D-04 kcal/mol
+| QMMM: Error matrix |FP-PF|         :  0.1D+00 au
+| QMMM: Density matrix change        :  0.2D-03
+| QMMM: Maximum number of SCF cycles :     3000
+
+| QMMM: *** Diagonalization Routine Information ***
+| QMMM: Pseudo diagonalizations are allowed.
+| QMMM: Auto diagonalization routine selection is disabled.
+| QMMM: Using internal diagonalization routine (diag_routine=1).
+
+  QMMM: QM Region Cartesian Coordinates (*=link atom) 
+  QMMM: QM_NO.   MM_NO.  ATOM         X         Y         Z
+  QMMM:     1        1      C      -35.8949    9.2886   10.0544
+  QMMM:     2        2      C      -36.3696    8.1369    9.4874
+  QMMM:     3        3      C      -34.5363    9.5696    9.9555
+  QMMM:     4        4      C      -35.4923    7.1597    8.9838
+  QMMM:     5        5      C      -33.7126    8.6975    9.3044
+  QMMM:     6        6      C      -34.1833    7.4945    8.7620
+  QMMM:     7        7      H      -36.5855    9.9399   10.5380
+  QMMM:     8        8      H      -37.4508    8.0646    9.4360
+  QMMM:     9        9      H      -34.0701   10.5025   10.5001
+  QMMM:    10       10      H      -35.9507    6.2012    8.7652
+  QMMM:    11       11      H      -33.4384    6.8264    8.2470
+  QMMM:    12       12      H      -32.6549    8.8726    9.1230
+
+--------------------------------------------------------------------------------
+  RESULTS
+--------------------------------------------------------------------------------
+
+QMMM: Allocating qmmmrijdata array as     11 x      0
+QMMM: to hold min npairs of          0 and nquant per thread of       12
+QMMM: SCF Converged to 0.2306E-04 in:    13 Cycles 
+QMMM:
+QMMM: SCF Energy =       31.80245884 KCal/mol,       133.06148779 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3266.61559510 eV (   -75331.42223869 KCal/mol)
+QMMM: QM core - QM core energy =      2416.70337482 eV (    55731.59652665 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2416.70337482 eV (    55731.59652665 KCal/mol)
+QMMM:             Total energy =      -849.91222029 eV (   -19599.82571204 KCal/mol)
+ Begin classical propagation step #           1  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:     7 Cycles 
+QMMM:
+QMMM: SCF Energy =       31.53623833 KCal/mol,       131.94762115 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3265.16781025 eV (   -75298.03487213 KCal/mol)
+QMMM: QM core - QM core energy =      2415.24404577 eV (    55697.94293957 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2415.24404577 eV (    55697.94293957 KCal/mol)
+QMMM:             Total energy =      -849.92376448 eV (   -19600.09193256 KCal/mol)
+ Begin classical propagation step #           2  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:     7 Cycles 
+QMMM:
+QMMM: SCF Energy =       31.15530390 KCal/mol,       130.35379153 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3263.56372122 eV (   -75261.04297512 KCal/mol)
+QMMM: QM core - QM core energy =      2413.62343819 eV (    55660.57010814 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2413.62343819 eV (    55660.57010814 KCal/mol)
+QMMM:             Total energy =      -849.94028303 eV (   -19600.47286698 KCal/mol)
+ Begin classical propagation step #           3  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:     8 Cycles 
+QMMM:
+QMMM: SCF Energy =       30.87733489 KCal/mol,       129.19076920 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3262.14551979 eV (   -75228.33783183 KCal/mol)
+QMMM: QM core - QM core energy =      2412.19318312 eV (    55627.58699584 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2412.19318312 eV (    55627.58699584 KCal/mol)
+QMMM:             Total energy =      -849.95233667 eV (   -19600.75083599 KCal/mol)
+ Begin classical propagation step #           4  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:    10 Cycles 
+QMMM:
+QMMM: SCF Energy =       30.81551090 KCal/mol,       128.93209759 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3261.01681438 eV (   -75202.30875640 KCal/mol)
+QMMM: QM core - QM core energy =      2411.06179682 eV (    55601.49609641 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2411.06179682 eV (    55601.49609641 KCal/mol)
+QMMM:             Total energy =      -849.95501756 eV (   -19600.81265999 KCal/mol)
+ Begin classical propagation step #           5  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:     8 Cycles 
+QMMM:
+QMMM: SCF Energy =       31.17470480 KCal/mol,       130.43496488 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3259.88069666 eV (   -75176.10874566 KCal/mol)
+QMMM: QM core - QM core energy =      2409.94125491 eV (    55575.65527958 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2409.94125491 eV (    55575.65527958 KCal/mol)
+QMMM:             Total energy =      -849.93944175 eV (   -19600.45346609 KCal/mol)
+ Begin classical propagation step #           6  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:     8 Cycles 
+QMMM:
+QMMM: SCF Energy =       31.99007249 KCal/mol,       133.84646331 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3258.71500023 eV (   -75149.22662024 KCal/mol)
+QMMM: QM core - QM core energy =      2408.81091548 eV (    55549.58852184 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2408.81091548 eV (    55549.58852184 KCal/mol)
+QMMM:             Total energy =      -849.90408475 eV (   -19599.63809839 KCal/mol)
+ Begin classical propagation step #           7  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:     8 Cycles 
+QMMM:
+QMMM: SCF Energy =       33.01645428 KCal/mol,       138.14084469 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3257.70999943 eV (   -75126.05029677 KCal/mol)
+QMMM: QM core - QM core energy =      2407.85042193 eV (    55527.43858016 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2407.85042193 eV (    55527.43858016 KCal/mol)
+QMMM:             Total energy =      -849.85957749 eV (   -19598.61171661 KCal/mol)
+ Begin classical propagation step #           8  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:    10 Cycles 
+QMMM:
+QMMM: SCF Energy =       33.89183637 KCal/mol,       141.80344338 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3256.75769866 eV (   -75104.08928885 KCal/mol)
+QMMM: QM core - QM core energy =      2406.93608058 eV (    55506.35295434 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2406.93608058 eV (    55506.35295434 KCal/mol)
+QMMM:             Total energy =      -849.82161808 eV (   -19597.73633451 KCal/mol)
+ Begin classical propagation step #           9  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:     8 Cycles 
+QMMM:
+QMMM: SCF Energy =       34.18172901 KCal/mol,       143.01635417 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3255.90908756 eV (   -75084.51946827 KCal/mol)
+QMMM: QM core - QM core energy =      2406.10004017 eV (    55487.07302639 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2406.10004017 eV (    55487.07302639 KCal/mol)
+QMMM:             Total energy =      -849.80904739 eV (   -19597.44644188 KCal/mol)
+ Begin classical propagation step #          10  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:    10 Cycles 
+QMMM:
+QMMM: SCF Energy =       33.57687767 KCal/mol,       140.48565615 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3255.07438587 eV (   -75065.27041252 KCal/mol)
+QMMM: QM core - QM core energy =      2405.23911016 eV (    55467.21911930 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2405.23911016 eV (    55467.21911930 KCal/mol)
+QMMM:             Total energy =      -849.83527571 eV (   -19598.05129322 KCal/mol)
+ Begin classical propagation step #          11  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:     9 Cycles 
+QMMM:
+QMMM: SCF Energy =       32.51167462 KCal/mol,       136.02884660 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3254.09345623 eV (   -75042.64919419 KCal/mol)
+QMMM: QM core - QM core energy =      2404.21198985 eV (    55443.53269793 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2404.21198985 eV (    55443.53269793 KCal/mol)
+QMMM:             Total energy =      -849.88146638 eV (   -19599.11649627 KCal/mol)
+ Begin classical propagation step #          12  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:    10 Cycles 
+QMMM:
+QMMM: SCF Energy =       31.23843857 KCal/mol,       130.70162699 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3252.86721316 eV (   -75014.37080276 KCal/mol)
+QMMM: QM core - QM core energy =      2402.93053512 eV (    55413.98107045 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2402.93053512 eV (    55413.98107045 KCal/mol)
+QMMM:             Total energy =      -849.93667804 eV (   -19600.38973231 KCal/mol)
+ Begin classical propagation step #          13  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:    10 Cycles 
+QMMM:
+QMMM: SCF Energy =       30.18603258 KCal/mol,       126.29836030 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3251.46521695 eV (   -74982.03936799 KCal/mol)
+QMMM: QM core - QM core energy =      2401.48290316 eV (    55380.59722968 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2401.48290316 eV (    55380.59722968 KCal/mol)
+QMMM:             Total energy =      -849.98231379 eV (   -19601.44213831 KCal/mol)
+ Begin classical propagation step #          14  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:    10 Cycles 
+QMMM:
+QMMM: SCF Energy =       29.72739759 KCal/mol,       124.37943154 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3250.13069502 eV (   -74951.26395786 KCal/mol)
+QMMM: QM core - QM core energy =      2400.12849333 eV (    55349.36318457 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2400.12849333 eV (    55349.36318457 KCal/mol)
+QMMM:             Total energy =      -850.00220170 eV (   -19601.90077329 KCal/mol)
+ Begin classical propagation step #          15  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:    10 Cycles 
+QMMM:
+QMMM: SCF Energy =       29.86804553 KCal/mol,       124.96790249 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3249.10145748 eV (   -74927.52871092 KCal/mol)
+QMMM: QM core - QM core energy =      2399.10535474 eV (    55325.76858556 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2399.10535474 eV (    55325.76858556 KCal/mol)
+QMMM:             Total energy =      -849.99610274 eV (   -19601.76012536 KCal/mol)
+ Begin classical propagation step #          16  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:     8 Cycles 
+QMMM:
+QMMM: SCF Energy =       30.54046645 KCal/mol,       127.78131161 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3248.33992464 eV (   -74909.96700220 KCal/mol)
+QMMM: QM core - QM core energy =      2398.37298026 eV (    55308.87929776 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2398.37298026 eV (    55308.87929776 KCal/mol)
+QMMM:             Total energy =      -849.96694438 eV (   -19601.08770444 KCal/mol)
+ Begin classical propagation step #          17  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:     7 Cycles 
+QMMM:
+QMMM: SCF Energy =       31.51613231 KCal/mol,       131.86349757 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3247.65269206 eV (   -74894.11873169 KCal/mol)
+QMMM: QM core - QM core energy =      2397.72805573 eV (    55294.00669311 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2397.72805573 eV (    55294.00669311 KCal/mol)
+QMMM:             Total energy =      -849.92463634 eV (   -19600.11203858 KCal/mol)
+ Begin classical propagation step #          18  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:     7 Cycles 
+QMMM:
+QMMM: SCF Energy =       32.35083857 KCal/mol,       135.35590856 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3246.92501624 eV (   -74877.33779943 KCal/mol)
+QMMM: QM core - QM core energy =      2397.03657548 eV (    55278.06046711 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2397.03657548 eV (    55278.06046711 KCal/mol)
+QMMM:             Total energy =      -849.88844076 eV (   -19599.27733232 KCal/mol)
+ Begin classical propagation step #          19  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:     7 Cycles 
+QMMM:
+QMMM: SCF Energy =       32.75127391 KCal/mol,       137.03133005 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3246.03743206 eV (   -74856.86922080 KCal/mol)
+QMMM: QM core - QM core energy =      2396.16635548 eV (    55257.99232383 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2396.16635548 eV (    55257.99232383 KCal/mol)
+QMMM:             Total energy =      -849.87107658 eV (   -19598.87689697 KCal/mol)
+ Begin classical propagation step #          20  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:     7 Cycles 
+QMMM:
+QMMM: SCF Energy =       32.65817130 KCal/mol,       136.64178873 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3245.17713779 eV (   -74837.02997450 KCal/mol)
+QMMM: QM core - QM core energy =      2395.30202398 eV (    55238.05997491 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2395.30202398 eV (    55238.05997491 KCal/mol)
+QMMM:             Total energy =      -849.87511381 eV (   -19598.96999958 KCal/mol)
+ Restart written for tr            0  at    10.000000000000000      fs
+ Begin classical propagation step #          21  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:     7 Cycles 
+QMMM:
+QMMM: SCF Energy =       32.13441742 KCal/mol,       134.45040249 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3244.46912353 eV (   -74820.70245762 KCal/mol)
+QMMM: QM core - QM core energy =      2394.57129804 eV (    55221.20870416 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2394.57129804 eV (    55221.20870416 KCal/mol)
+QMMM:             Total energy =      -849.89782548 eV (   -19599.49375346 KCal/mol)
+ Begin classical propagation step #          22  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:     7 Cycles 
+QMMM:
+QMMM: SCF Energy =       31.33293199 KCal/mol,       131.09698746 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3243.87227531 eV (   -74806.93854101 KCal/mol)
+QMMM: QM core - QM core energy =      2393.93969481 eV (    55206.64330212 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2393.93969481 eV (    55206.64330212 KCal/mol)
+QMMM:             Total energy =      -849.93258050 eV (   -19600.29523889 KCal/mol)
+ Begin classical propagation step #          23  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:     7 Cycles 
+QMMM:
+QMMM: SCF Energy =       30.40330395 KCal/mol,       127.20742372 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3243.16853769 eV (   -74790.70964771 KCal/mol)
+QMMM: QM core - QM core energy =      2393.19564550 eV (    55189.48478077 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2393.19564550 eV (    55189.48478077 KCal/mol)
+QMMM:             Total energy =      -849.97289220 eV (   -19601.22486694 KCal/mol)
+ Begin classical propagation step #          24  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:     7 Cycles 
+QMMM:
+QMMM: SCF Energy =       29.59021432 KCal/mol,       123.80545673 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3242.68922701 eV (   -74779.65626401 KCal/mol)
+QMMM: QM core - QM core energy =      2392.68107660 eV (    55177.61830745 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2392.68107660 eV (    55177.61830745 KCal/mol)
+QMMM:             Total energy =      -850.00815041 eV (   -19602.03795656 KCal/mol)
+ Begin classical propagation step #          25  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:     8 Cycles 
+QMMM:
+QMMM: SCF Energy =       29.08290268 KCal/mol,       121.68286479 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3242.72582538 eV (   -74780.50025908 KCal/mol)
+QMMM: QM core - QM core energy =      2392.69567629 eV (    55177.95499087 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2392.69567629 eV (    55177.95499087 KCal/mol)
+QMMM:             Total energy =      -850.03014909 eV (   -19602.54526821 KCal/mol)
+ Begin classical propagation step #          26  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:    10 Cycles 
+QMMM:
+QMMM: SCF Energy =       28.96693635 KCal/mol,       121.19766169 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3243.27652965 eV (   -74793.20005026 KCal/mol)
+QMMM: QM core - QM core energy =      2393.24135188 eV (    55190.53881573 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2393.24135188 eV (    55190.53881573 KCal/mol)
+QMMM:             Total energy =      -850.03517777 eV (   -19602.66123453 KCal/mol)
+ Begin classical propagation step #          27  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:    10 Cycles 
+QMMM:
+QMMM: SCF Energy =       29.21603052 KCal/mol,       122.23987170 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3244.27975548 eV (   -74816.33544110 KCal/mol)
+QMMM: QM core - QM core energy =      2394.25537924 eV (    55213.92330074 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2394.25537924 eV (    55213.92330074 KCal/mol)
+QMMM:             Total energy =      -850.02437624 eV (   -19602.41214036 KCal/mol)
+ Begin classical propagation step #          28  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:    10 Cycles 
+QMMM:
+QMMM: SCF Energy =       29.52215756 KCal/mol,       123.52070723 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3245.81217202 eV (   -74851.67449894 KCal/mol)
+QMMM: QM core - QM core energy =      2395.80107045 eV (    55249.56848561 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2395.80107045 eV (    55249.56848561 KCal/mol)
+QMMM:             Total energy =      -850.01110157 eV (   -19602.10601333 KCal/mol)
+ Begin classical propagation step #          29  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:    10 Cycles 
+QMMM:
+QMMM: SCF Energy =       29.74391469 KCal/mol,       124.44853908 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3247.73169718 eV (   -74895.94066878 KCal/mol)
+QMMM: QM core - QM core energy =      2397.73021172 eV (    55294.05641259 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2397.73021172 eV (    55294.05641259 KCal/mol)
+QMMM:             Total energy =      -850.00148546 eV (   -19601.88425619 KCal/mol)
+ Begin classical propagation step #          30  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:    10 Cycles 
+QMMM:
+QMMM: SCF Energy =       29.67314978 KCal/mol,       124.15245869 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3249.84154742 eV (   -74944.59592499 KCal/mol)
+QMMM: QM core - QM core energy =      2399.83699336 eV (    55342.64090388 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2399.83699336 eV (    55342.64090388 KCal/mol)
+QMMM:             Total energy =      -850.00455406 eV (   -19601.95502110 KCal/mol)
+ Begin classical propagation step #          31  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:    10 Cycles 
+QMMM:
+QMMM: SCF Energy =       29.22467475 KCal/mol,       122.27603915 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3252.18777547 eV (   -74998.70229002 KCal/mol)
+QMMM: QM core - QM core energy =      2402.16377407 eV (    55396.29879388 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2402.16377407 eV (    55396.29879388 KCal/mol)
+QMMM:             Total energy =      -850.02400139 eV (   -19602.40349614 KCal/mol)
+ Begin classical propagation step #          32  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:    10 Cycles 
+QMMM:
+QMMM: SCF Energy =       28.48080653 KCal/mol,       119.16369452 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3254.49738381 eV (   -75051.96416811 KCal/mol)
+QMMM: QM core - QM core energy =      2404.44112587 eV (    55448.81680376 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2404.44112587 eV (    55448.81680376 KCal/mol)
+QMMM:             Total energy =      -850.05625794 eV (   -19603.14736436 KCal/mol)
+ Begin classical propagation step #          33  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:    10 Cycles 
+QMMM:
+QMMM: SCF Energy =       27.63419584 KCal/mol,       115.62147539 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3256.43065262 eV (   -75096.54727998 KCal/mol)
+QMMM: QM core - QM core energy =      2406.33768288 eV (    55492.55330493 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2406.33768288 eV (    55492.55330493 KCal/mol)
+QMMM:             Total energy =      -850.09296973 eV (   -19603.99397505 KCal/mol)
+ Begin classical propagation step #          34  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:    10 Cycles 
+QMMM:
+QMMM: SCF Energy =       26.85133582 KCal/mol,       112.34598909 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3258.25805733 eV (   -75138.68906007 KCal/mol)
+QMMM: QM core - QM core energy =      2408.13114024 eV (    55533.91222501 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2408.13114024 eV (    55533.91222501 KCal/mol)
+QMMM:             Total energy =      -850.12691709 eV (   -19604.77683506 KCal/mol)
+ Begin classical propagation step #          35  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:    10 Cycles 
+QMMM:
+QMMM: SCF Energy =       26.35492353 KCal/mol,       110.26900006 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3260.04336761 eV (   -75179.86010042 KCal/mol)
+QMMM: QM core - QM core energy =      2409.89492446 eV (    55574.58685307 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2409.89492446 eV (    55574.58685307 KCal/mol)
+QMMM:             Total energy =      -850.14844314 eV (   -19605.27324735 KCal/mol)
+ Begin classical propagation step #          36  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:    10 Cycles 
+QMMM:
+QMMM: SCF Energy =       26.24327695 KCal/mol,       109.80187074 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3261.83284482 eV (   -75221.12723434 KCal/mol)
+QMMM: QM core - QM core energy =      2411.67956031 eV (    55615.74234040 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2411.67956031 eV (    55615.74234040 KCal/mol)
+QMMM:             Total energy =      -850.15328450 eV (   -19605.38489394 KCal/mol)
+ Begin classical propagation step #          37  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:    10 Cycles 
+QMMM:
+QMMM: SCF Energy =       26.59266111 KCal/mol,       111.26369410 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3263.76228616 eV (   -75265.62208103 KCal/mol)
+QMMM: QM core - QM core energy =      2413.62415209 eV (    55660.58657126 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2413.62415209 eV (    55660.58657126 KCal/mol)
+QMMM:             Total energy =      -850.13813407 eV (   -19605.03550977 KCal/mol)
+ Begin classical propagation step #          38  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:     9 Cycles 
+QMMM:
+QMMM: SCF Energy =       27.27008838 KCal/mol,       114.09804980 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3265.49010747 eV (   -75305.46736829 KCal/mol)
+QMMM: QM core - QM core energy =      2415.38134885 eV (    55701.10928579 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2415.38134885 eV (    55701.10928579 KCal/mol)
+QMMM:             Total energy =      -850.10875862 eV (   -19604.35808250 KCal/mol)
+ Begin classical propagation step #          39  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:     8 Cycles 
+QMMM:
+QMMM: SCF Energy =       28.04614912 KCal/mol,       117.34508793 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3267.08176880 eV (   -75342.17267019 KCal/mol)
+QMMM: QM core - QM core energy =      2417.00666270 eV (    55738.59064843 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2417.00666270 eV (    55738.59064843 KCal/mol)
+QMMM:             Total energy =      -850.07510610 eV (   -19603.58202176 KCal/mol)
+ Begin classical propagation step #          40  sim #:            0
+QMMM: SCF Converged to 0.2306E-04 in:     7 Cycles 
+QMMM:
+QMMM: SCF Energy =       28.85253064 KCal/mol,       120.71898818 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM:
+QMMM:        Electronic energy =     -3268.57523315 eV (   -75376.61345176 KCal/mol)
+QMMM: QM core - QM core energy =      2418.53509438 eV (    55773.83781151 KCal/mol)
+QMMM: QM core - MM atom energy =         0.00000000 eV (        0.00000000 KCal/mol)
+QMMM: Total core - core energy =      2418.53509438 eV (    55773.83781151 KCal/mol)
+QMMM:             Total energy =      -850.04013877 eV (   -19602.77564025 KCal/mol)
+ Restart written for tr            0  at    20.000000000000000      fs
+
+ |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|
+ | MD normal termination at   Wed May 24 11:54:42 AM EDT 202 |
+ | MD total CPU time          0.23698     seconds |
+ |      0 days  0 hours  0 minutes  0 seconds     |
+
+  SQM (ground sim%naesmd%state) took overall [s]:
+       0.105    
+  Davidson (excited states) took overall [s]:
+        0.00    
+  deriv (adiabatic forces) took overall [s]:
+       0.101    
+  nacT (NA derivatives) took overall [s]:
+        0.00    
+ |________________________________________________|
+
