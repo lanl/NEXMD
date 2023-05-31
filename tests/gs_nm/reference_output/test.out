@@ -1,0 +1,410 @@
+
+ |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|
+ | MD execution started at    Wed May 24 11:56:49 AM EDT 202 |
+ | Computer:  Linux mirador x86_64                |
+ |________________________________________________|
+
+ rnd_seed=      272184
+ !!!!!!-----MD INPUT-----!!!!!!
+
+ Ground state MD,      imdtype=           0
+ Initial count for out files              0
+ MD using Langevin 
+ Printing transition dipole moments:            1
+ Starting time, fs           0.0000000000000000     
+ Time step, fs                        0.50000000000000000     
+ Number of classical steps (CS)            0
+ Quantum steps/per CS                    4
+ Displacement for deriv. [A]      1.0000000000000000E-003
+ Langevin thermostat dynamics, therm_type=           1
+ MD without freezing
+ Temperature, K                  300.00000000000000     
+ Bath relaxation constant       0.40000000000000002     
+ Equilibrated dynamics
+ Number of steps per degree K           100
+ Number of steps to write data            1
+ Number of steps to write coords          20
+ Friction coefficient [1/ps]      20.000000000000000     
+ Seed for random generator          272184
+ NAESMD verbosity,            3
+ MD will use analytic deriv,  ideriv=           1
+ Cartesian coordinates are used
+ Allocating initial naesmd_module variables
+ Allocating md_module initial variables
+ Allocating variables
+ Allocating naesmd_module variables          12           0
+ Allocating md_module variables          12
+  Finish reading coordinates 
+ Rescaling velocity
+
+ Initial Geometry
+    6       -35.881492    9.309259   10.049513
+    6       -36.391050    8.116636    9.535431
+    6       -34.518510    9.587190    9.946842
+    6       -35.537822    7.203694    8.915288
+    6       -33.665988    8.676537    9.321862
+    6       -34.174961    7.483188    8.809840
+    1       -36.554347   10.031904   10.533321
+    1       -37.464795    7.895182    9.621641
+    1       -34.115915   10.523117   10.360426
+    1       -35.939484    6.265002    8.506758
+    1       -33.501754    6.761445    8.325141
+    1       -32.593357    8.900893    9.230802
+ LPRINT:           3           0
+ Calculating nuclear normal modes, deltaX =    1.0000000000000000E-004
+
+--------------------------------------------------------------------------------
+  QM CALCULATION INFO
+--------------------------------------------------------------------------------
+
+| QMMM: Citation for AMBER QMMM Run:
+| QMMM: R.C. Walker, M.F. Crowley and D.A. Case, J. COMP. CHEM. 29:1019, 2008
+
+QMMM: SINGLET STATE CALCULATION
+QMMM: RHF CALCULATION, NO. OF DOUBLY OCCUPIED LEVELS = 15
+
+| QMMM: *** Selected Hamiltonian *** 
+| QMMM: AM1         
+
+| QMMM: *** Parameter sets in use ***
+| QMMM: C : M.J.S.DEWAR et al. JACS, 107, 3902, (1985)
+| QMMM: H : M.J.S.DEWAR et al. JACS, 107, 3902, (1985)
+
+| QMMM: *** SCF convergence criteria ***
+| QMMM: Energy change                :  0.2D-04 kcal/mol
+| QMMM: Error matrix |FP-PF|         :  0.1D+00 au
+| QMMM: Density matrix change        :  0.2D-03
+| QMMM: Maximum number of SCF cycles :     3000
+
+| QMMM: *** Diagonalization Routine Information ***
+| QMMM: Pseudo diagonalizations are allowed.
+| QMMM: Auto diagonalization routine selection is disabled.
+| QMMM: Using internal diagonalization routine (diag_routine=1).
+
+  QMMM: QM Region Cartesian Coordinates (*=link atom) 
+  QMMM: QM_NO.   MM_NO.  ATOM         X         Y         Z
+  QMMM:     1        1      C      -35.8814    9.3093   10.0495
+  QMMM:     2        2      C      -36.3911    8.1166    9.5354
+  QMMM:     3        3      C      -34.5185    9.5872    9.9468
+  QMMM:     4        4      C      -35.5378    7.2037    8.9153
+  QMMM:     5        5      C      -33.6660    8.6765    9.3219
+  QMMM:     6        6      C      -34.1750    7.4832    8.8098
+  QMMM:     7        7      H      -36.5543   10.0319   10.5333
+  QMMM:     8        8      H      -37.4648    7.8952    9.6216
+  QMMM:     9        9      H      -34.1159   10.5231   10.3604
+  QMMM:    10       10      H      -35.9395    6.2650    8.5068
+  QMMM:    11       11      H      -33.5018    6.7614    8.3251
+  QMMM:    12       12      H      -32.5934    8.9009    9.2308
+
+--------------------------------------------------------------------------------
+  RESULTS
+--------------------------------------------------------------------------------
+
+QMMM: SCF Converged to 0.2306E-04 in:    10 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94114340 KCal/mol,        91.80174398 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94113814 KCal/mol,        91.80172198 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94112320 KCal/mol,        91.80165949 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94112536 KCal/mol,        91.80166849 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94112772 KCal/mol,        91.80167838 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94113486 KCal/mol,        91.80170827 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94113653 KCal/mol,        91.80171524 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94114185 KCal/mol,        91.80173749 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94112667 KCal/mol,        91.80167398 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94113189 KCal/mol,        91.80169581 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94112475 KCal/mol,        91.80166594 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94113131 KCal/mol,        91.80169339 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94111270 KCal/mol,        91.80161555 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94113304 KCal/mol,        91.80170064 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94115568 KCal/mol,        91.80179535 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94115651 KCal/mol,        91.80179885 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94113304 KCal/mol,        91.80170066 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94110248 KCal/mol,        91.80157276 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94112915 KCal/mol,        91.80168435 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94112901 KCal/mol,        91.80168376 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94113560 KCal/mol,        91.80171133 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94113970 KCal/mol,        91.80172849 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94113724 KCal/mol,        91.80171819 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94112254 KCal/mol,        91.80165671 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94113302 KCal/mol,        91.80170056 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94110660 KCal/mol,        91.80159003 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94109674 KCal/mol,        91.80154874 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94113532 KCal/mol,        91.80171019 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94116004 KCal/mol,        91.80181362 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94116127 KCal/mol,        91.80181876 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94115848 KCal/mol,        91.80180706 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94115195 KCal/mol,        91.80177975 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94114122 KCal/mol,        91.80173488 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94111041 KCal/mol,        91.80160597 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94111393 KCal/mol,        91.80162067 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94111682 KCal/mol,        91.80163276 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94113583 KCal/mol,        91.80171231 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94114200 KCal/mol,        91.80173814 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94109358 KCal/mol,        91.80153554 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94111892 KCal/mol,        91.80164158 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94111291 KCal/mol,        91.80161643 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94115934 KCal/mol,        91.80181068 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94112683 KCal/mol,        91.80167466 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94111576 KCal/mol,        91.80162835 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94114933 KCal/mol,        91.80176880 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94113180 KCal/mol,        91.80169544 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94113646 KCal/mol,        91.80171495 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94110229 KCal/mol,        91.80157199 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94112420 KCal/mol,        91.80166365 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94110742 KCal/mol,        91.80159344 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94116049 KCal/mol,        91.80181549 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94112880 KCal/mol,        91.80168288 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94114952 KCal/mol,        91.80176957 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94109207 KCal/mol,        91.80152921 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94112440 KCal/mol,        91.80166447 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94113377 KCal/mol,        91.80170368 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94110127 KCal/mol,        91.80156770 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94112859 KCal/mol,        91.80168203 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94112319 KCal/mol,        91.80165944 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94115127 KCal/mol,        91.80177690 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94112798 KCal/mol,        91.80167949 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94112031 KCal/mol,        91.80164737 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94115708 KCal/mol,        91.80180123 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94112667 KCal/mol,        91.80167399 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94113459 KCal/mol,        91.80170712 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94109584 KCal/mol,        91.80154500 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94111958 KCal/mol,        91.80164433 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94114256 KCal/mol,        91.80174049 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94109040 KCal/mol,        91.80152222 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94113904 KCal/mol,        91.80172573 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94110966 KCal/mol,        91.80160284 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94116123 KCal/mol,        91.80181860 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+QMMM:
+QMMM: SCF Energy =       21.94112541 KCal/mol,        91.80166873 KJ/mol
+QMMM: SCF Energy = Heat of formation
+
+ |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|
+ | MD normal termination at   Wed May 24 11:56:49 AM EDT 202 |
+ | MD total CPU time          0.40996     seconds |
+ |      0 days  0 hours  0 minutes  0 seconds     |
+
+  SQM (ground sim%naesmd%state) took overall [s]:
+       0.113    
+  Davidson (excited states) took overall [s]:
+        0.00    
+  deriv (adiabatic forces) took overall [s]:
+       0.439E-02
+  nacT (NA derivatives) took overall [s]:
+        0.00    
+ |________________________________________________|
+

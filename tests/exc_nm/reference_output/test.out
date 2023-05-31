@@ -1,0 +1,2980 @@
+
+ |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|
+ | MD execution started at    Wed May 24 11:50:46 AM EDT 202 |
+ | Computer:  Linux mirador x86_64                |
+ |________________________________________________|
+
+ rnd_seed=      272184
+ !!!!!!-----MD INPUT-----!!!!!!
+
+ Excited state MD,      state=           1
+ Number of states to propagate           2
+ Initial count for out files              0
+ MD using Langevin 
+ Starting time, fs           0.0000000000000000     
+ Time step, fs                        0.50000000000000000     
+ Number of classical steps (CS)            0
+ Quantum steps/per CS                    4
+ Displacement for deriv. [A]      1.0000000000000000E-003
+ Langevin thermostat dynamics, therm_type=           1
+ MD without freezing
+ Temperature, K                  300.00000000000000     
+ Bath relaxation constant       0.40000000000000002     
+ Equilibrated dynamics
+ Number of steps per degree K           100
+ Number of steps to write data            1
+ Number of steps to write coords          20
+ Friction coefficient [1/ps]      20.000000000000000     
+ Seed for random generator          272184
+ NAESMD verbosity,            3
+ MD will use analytic deriv,  ideriv=           1
+ Cartesian coordinates are used
+ Allocating initial naesmd_module variables
+ Allocating md_module initial variables
+ Allocating variables
+ Allocating naesmd_module variables          12           2
+ Allocating md_module variables          12
+  Finish reading coordinates 
+ Rescaling velocity
+
+ Initial Geometry
+    6       -35.888267    9.313800   10.064172
+    6       -36.404665    8.116217    9.531997
+    6       -34.515899    9.605248    9.939110
+    6       -35.541638    7.190158    8.914180
+    6       -33.650758    8.673529    9.332871
+    6       -34.167971    7.478645    8.795549
+    1       -36.555459   10.020064   10.575247
+    1       -37.479701    7.904270    9.599581
+    1       -34.120823   10.557837   10.315210
+    1       -35.940001    6.244652    8.523336
+    1       -33.500615    6.771478    8.285913
+    1       -32.573680    8.878148    9.279702
+ LPRINT:           3           1
+ Calculating nuclear normal modes, deltaX =    1.0000000000000000E-004
+
+--------------------------------------------------------------------------------
+  QM CALCULATION INFO
+--------------------------------------------------------------------------------
+
+| QMMM: Citation for AMBER QMMM Run:
+| QMMM: R.C. Walker, M.F. Crowley and D.A. Case, J. COMP. CHEM. 29:1019, 2008
+
+QMMM: SINGLET STATE CALCULATION
+QMMM: RHF CALCULATION, NO. OF DOUBLY OCCUPIED LEVELS = 15
+
+| QMMM: *** Selected Hamiltonian *** 
+| QMMM: AM1         
+
+| QMMM: *** Parameter sets in use ***
+| QMMM: C : M.J.S.DEWAR et al. JACS, 107, 3902, (1985)
+| QMMM: H : M.J.S.DEWAR et al. JACS, 107, 3902, (1985)
+
+| QMMM: *** SCF convergence criteria ***
+| QMMM: Energy change                :  0.2D-04 kcal/mol
+| QMMM: Error matrix |FP-PF|         :  0.1D+00 au
+| QMMM: Density matrix change        :  0.2D-03
+| QMMM: Maximum number of SCF cycles :     3000
+
+| QMMM: *** Diagonalization Routine Information ***
+| QMMM: Pseudo diagonalizations are allowed.
+| QMMM: Auto diagonalization routine selection is disabled.
+| QMMM: Using internal diagonalization routine (diag_routine=1).
+
+  QMMM: QM Region Cartesian Coordinates (*=link atom) 
+  QMMM: QM_NO.   MM_NO.  ATOM         X         Y         Z
+  QMMM:     1        1      C      -35.8882    9.3138   10.0642
+  QMMM:     2        2      C      -36.4047    8.1162    9.5320
+  QMMM:     3        3      C      -34.5159    9.6052    9.9391
+  QMMM:     4        4      C      -35.5416    7.1902    8.9142
+  QMMM:     5        5      C      -33.6508    8.6735    9.3329
+  QMMM:     6        6      C      -34.1680    7.4786    8.7955
+  QMMM:     7        7      H      -36.5555   10.0201   10.5752
+  QMMM:     8        8      H      -37.4797    7.9043    9.5996
+  QMMM:     9        9      H      -34.1208   10.5578   10.3152
+  QMMM:    10       10      H      -35.9400    6.2447    8.5233
+  QMMM:    11       11      H      -33.5006    6.7715    8.2859
+  QMMM:    12       12      H      -32.5737    8.8781    9.2797
+
+--------------------------------------------------------------------------------
+  RESULTS
+--------------------------------------------------------------------------------
+
+QMMM: SCF Converged to 0.2306E-04 in:    10 Cycles 
+ Davidson not converged, expansion=          15
+ Davidson not converged, expansion=          15
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899285116632041     0.21E-06 0.10E-05
+  2 +++    4.133055768906879     0.31E-06 0.10E-05
+  3 +++    5.779886472575996     0.85E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89928511663204        0.277113692902011E-10    0.176225847903993E-08    0.365345249758572E-09    0.215531509808871E-08
+   2     4.13305576890688        0.330215607504001E-05    0.218261144714162E-04    0.843709679893556E-04    0.109499238535812E-03
+   3     5.77988647257600        0.328914960044254        0.982638325577276E-01    0.700156337905700E-01    0.497194426392551    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89928511663204        0.170316819830855E-04    0.135819882614570E-03    0.618415375594211E-04    0.225614944723218E-07
+   2     4.13305576890688       -0.571063243598050E-02    0.146816079930989E-01   -0.288656888257300E-01    0.108138892746577E-02
+   3     5.77988647257600        -1.52406398973705        0.833025388317462        0.703167679474760         3.51114712785258    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29022427452992       -31.247577964210816     
+ Total energies of excited states (eV,AU)
+           1  -846.39093915789783       -31.104281931623113     
+           2  -846.15716850562308       -31.095691021750039     
+           3  -844.51033780195394       -31.035171131790509     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.4253451E-04 -0.1258255E-03  0.3325570E-03  0.3580997E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899285     -0.4033916E-04 -0.9563863E-04 -0.1065934E-04  0.1043437E-03
+   2   4.133056      0.4609584E-04  0.1278400E-04  0.6917027E-04  0.8409984E-04
+   3   5.779886      0.6616327E-03  0.1430341E-02 -0.1017767E-02  0.1876029E-02
+QMMM:
+QMMM: SCF Energy =       23.08530889 KCal/mol,        96.58893240 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899166357598051     0.29E-06 0.10E-05
+  2 +++    4.132944469020590     0.39E-06 0.10E-05
+  3 +++    5.779829757201271     0.98E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89916635759805        0.753857608830527E-10    0.150092672559057E-08    0.283351236512533E-09    0.185966372298616E-08
+   2     4.13294446902059        0.305788077705496E-05    0.213605884392510E-04    0.846137613629662E-04    0.109032230579272E-03
+   3     5.77982975720127        0.328928446639092        0.982797839012425E-01    0.700144810290362E-01    0.497222711569371    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89916635759805        0.280918164005757E-04    0.125347277424522E-03    0.544625179563951E-04    0.194672559685744E-07
+   2     4.13294446902059       -0.549542812105499E-02    0.145243887213663E-01   -0.289075814523420E-01    0.107680586338682E-02
+   3     5.77982975720127        -1.52410271291287        0.833097086233409        0.703165340781318         3.51138133107507    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29010429594700       -31.247573555080830     
+ Total energies of excited states (eV,AU)
+           1  -846.39093793834900       -31.104281886805538     
+           2  -846.15715982692643       -31.095690702813936     
+           3  -844.51027453874576       -31.035168806911340     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6185225E-04 -0.1460040E-03  0.3390095E-03  0.3742597E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899166     -0.3980239E-04 -0.9756647E-04 -0.1203330E-04  0.1060578E-03
+   2   4.132944      0.4664026E-04  0.1084071E-04  0.6803529E-04  0.8319637E-04
+   3   5.779830      0.6618311E-03  0.1429464E-02 -0.1018740E-02  0.1875958E-02
+QMMM:
+QMMM: SCF Energy =       23.08807572 KCal/mol,        96.60050880 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899169561224508     0.29E-06 0.10E-05
+  2 +++    4.132952581223053     0.40E-06 0.10E-05
+  3 +++    5.779767431358707     0.57E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89916956122451        0.328640559082658E-09    0.114046912497798E-08    0.156451188267438E-09    0.162556087232808E-08
+   2     4.13295258122305        0.305329782940963E-05    0.216863277929433E-04    0.852428451641881E-04    0.109982470786541E-03
+   3     5.77976743135871        0.328921420235478        0.982745113972078E-01    0.700305975065137E-01    0.497226529139200    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89916956122451        0.586537200500109E-04    0.109263912567152E-03    0.404691809291195E-04    0.170166160702610E-07
+   2     4.13295258122305       -0.549130309724727E-02    0.146347005374226E-01   -0.290148145804427E-01    0.108618833466334E-02
+   3     5.77976743135871        -1.52409465170315        0.833079230677500        0.703250057857387         3.51144615581277    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29010809345027       -31.247573694636451     
+ Total energies of excited states (eV,AU)
+           1  -846.39093853222573       -31.104281908630096     
+           2  -846.15715551222718       -31.095690544251720     
+           3  -844.51034066209161       -31.035171236898591     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.5918164E-04 -0.1176313E-03  0.3142393E-03  0.3407139E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899170     -0.4024681E-04 -0.1000760E-03 -0.1327862E-04  0.1086800E-03
+   2   4.132953      0.4790532E-04  0.4919717E-05  0.6622226E-04  0.8188108E-04
+   3   5.779767      0.6711246E-03  0.1443892E-02 -0.9953394E-03  0.1877747E-02
+QMMM:
+QMMM: SCF Energy =       23.08798814 KCal/mol,        96.60014239 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899165759045494     0.31E-06 0.10E-05
+  2 +++    4.132945474138497     0.68E-06 0.10E-05
+  3 +++    5.779771621553717     0.80E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89916575904549        0.100678870356555E-08    0.657380793358044E-09    0.337148127161948E-10    0.169788430963979E-08
+   2     4.13294547413850        0.279595773254375E-05    0.215278260310017E-04    0.849435087350842E-04    0.109267292498630E-03
+   3     5.77977162155372        0.328913057370915        0.982833101769705E-01    0.700197614334789E-01    0.497216128981365    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89916575904549        0.102660732896665E-03    0.829552160911708E-04    0.187864866896042E-04    0.177737260377519E-07
+   2     4.13294547413850       -0.525480380153781E-02    0.145811336984176E-01   -0.289638508696799E-01    0.107912708012484E-02
+   3     5.77977162155372        -1.52407472398095        0.833116221753501        0.703195392713391         3.51137016355979    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29010521481223       -31.247573588848493     
+ Total energies of excited states (eV,AU)
+           1  -846.39093945576678       -31.104281942569592     
+           2  -846.15715974067371       -31.095690699644209     
+           3  -844.51033359325857       -31.035170977123862     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.8451196E-04 -0.1175366E-03  0.3403551E-03  0.3698631E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899166     -0.4864787E-04 -0.1056044E-03 -0.1539304E-04  0.1172854E-03
+   2   4.132945      0.3997182E-04 -0.9824201E-06  0.6457908E-04  0.7595505E-04
+   3   5.779772      0.6630939E-03  0.1439398E-02 -0.9947115E-03  0.1871099E-02
+QMMM:
+QMMM: SCF Energy =       23.08805453 KCal/mol,        96.60042014 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899285007728957     0.27E-06 0.10E-05
+  2 +++    4.133056967521029     0.61E-06 0.10E-05
+  3 +++    5.779821633881018     0.73E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89928500772896        0.877432925806006E-09    0.779962913171800E-09    0.539217290332890E-10    0.171131756801110E-08
+   2     4.13305696752103        0.301516019983148E-05    0.219951346756135E-04    0.846786912427421E-04    0.109688986118187E-03
+   3     5.77982163388102        0.328894874288998        0.982688496702117E-01    0.700203098659419E-01    0.497184033825152    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89928500772896        0.958375087906137E-04    0.903577751277067E-04    0.237580316887277E-04    0.179137996869427E-07
+   2     4.13305696752103       -0.545683148832849E-02    0.147383429992274E-01   -0.289182771254133E-01    0.108326251615709E-02
+   3     5.77982163388102        -1.52402600251435        0.833051326764796        0.703195104245606         3.51111312399945    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29022530915336       -31.247578002232512     
+ Total energies of excited states (eV,AU)
+           1  -846.39094030142439       -31.104281973646923     
+           2  -846.15716834163231       -31.095691015723492     
+           3  -844.51040367527230       -31.035173552589423     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6862413E-04 -0.9449643E-04  0.3353879E-03  0.3551393E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899285     -0.5343022E-04 -0.1070630E-03 -0.1515130E-04  0.1206103E-03
+   2   4.133057      0.3532312E-04 -0.2309103E-05  0.6465798E-04  0.7371370E-04
+   3   5.779822      0.6590027E-03  0.1438375E-02 -0.9939551E-03  0.1868463E-02
+QMMM:
+QMMM: SCF Energy =       23.08528503 KCal/mol,        96.58883257 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899281740338442     0.36E-06 0.10E-05
+  2 +++    4.133048740587491     0.56E-06 0.10E-05
+  3 +++    5.779882674852543     0.96E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89928174033844        0.415888937150747E-09    0.107092118578730E-08    0.132148202840420E-09    0.161895832577846E-08
+   2     4.13304874058749        0.301865806401414E-05    0.216703860110149E-04    0.840359725382263E-04    0.108725016613255E-03
+   3     5.77988267485254        0.328908609799124        0.982784250211175E-01    0.700078555169094E-01    0.497194890337151    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89928174033844        0.659807759157229E-04    0.105878429188078E-03    0.371928419873910E-04    0.169470120528747E-07
+   2     4.13304874058749       -0.546000121914226E-02    0.146291503259336E-01   -0.288083506257158E-01    0.107374471834598E-02
+   3     5.77988267485254        -1.52404977807807        0.833087513054897        0.703128850749972         3.51115271122478    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29022180771608       -31.247577873557113     
+ Total energies of excited states (eV,AU)
+           1  -846.39094006737764       -31.104281965045868     
+           2  -846.15717306712861       -31.095691189382212     
+           3  -844.51033913286358       -31.035171180700519     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.7161664E-04 -0.1225491E-03  0.3603238E-03  0.3872731E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899282     -0.5280423E-04 -0.1032297E-03 -0.1350073E-04  0.1167344E-03
+   2   4.133049      0.3543916E-04  0.2202996E-05  0.6634668E-04  0.7525071E-04
+   3   5.779883      0.6559077E-03  0.1443754E-02 -0.9899786E-03  0.1869411E-02
+QMMM:
+QMMM: SCF Energy =       23.08536578 KCal/mol,        96.58917042 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899325800883609     0.29E-06 0.10E-05
+  2 +++    4.133091573859977     0.49E-06 0.10E-05
+  3 +++    5.779920471415015     0.80E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89932580088361        0.150694290412686E-09    0.129632320759418E-08    0.215004410814506E-09    0.166202190882137E-08
+   2     4.13309157385998        0.285164187543448E-05    0.215321795334346E-04    0.848075875751775E-04    0.109191408984047E-03
+   3     5.77992047141502        0.328903024963362        0.982832220856945E-01    0.700214694359494E-01    0.497207716485006    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89932580088361        0.397168392962042E-04    0.116488466684472E-03    0.474405773230713E-04    0.173975985709261E-07
+   2     4.13309157385998       -0.530677922522007E-02    0.145823502306369E-01   -0.289401570299984E-01    0.107833953291515E-02
+   3     5.77992047141502        -1.52403185584989        0.833105120738359        0.703194914398056         3.51122032748103    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29026499253450       -31.247579460569337     
+ Total energies of excited states (eV,AU)
+           1  -846.39093919165089       -31.104281932863515     
+           2  -846.15717341867457       -31.095691202301285     
+           3  -844.51034452111946       -31.035171378715198     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.5039494E-04 -0.1197557E-03  0.3369098E-03  0.3610946E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899326     -0.5096040E-04 -0.1038470E-03 -0.1331104E-04  0.1164403E-03
+   2   4.133092      0.3712878E-04  0.1860865E-05  0.6627782E-04  0.7599183E-04
+   3   5.779920      0.6564042E-03  0.1443558E-02 -0.9929521E-03  0.1871011E-02
+QMMM:
+QMMM: SCF Energy =       23.08436989 KCal/mol,        96.58500363 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899241586342542     0.24E-06 0.10E-05
+  2 +++    4.133016864362220     0.61E-06 0.10E-05
+  3 +++    5.779778562450686     0.79E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89924158634254        0.911408321996609E-09    0.783053976823709E-09    0.541739969499768E-10    0.174863629577030E-08
+   2     4.13301686436222        0.320863328566402E-05    0.222683559676778E-04    0.842006167736813E-04    0.109677606027023E-03
+   3     5.77977856245069        0.328893823100988        0.982785308660772E-01    0.700141332581109E-01    0.497186487225176    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89924158634254        0.976759098629519E-04    0.905371502049671E-04    0.238136743292860E-04    0.183046500198536E-07
+   2     4.13301686436222       -0.562921058897769E-02    0.148296715130245E-01   -0.288366688430101E-01    0.108316063900070E-02
+   3     5.77977856245069        -1.52402924559605        0.833095464931638        0.703166708573733         3.51115661516814    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29017955439440       -31.247576320776748     
+ Total energies of excited states (eV,AU)
+           1  -846.39093796805184       -31.104281887897095     
+           2  -846.15716269003212       -31.095690808031090     
+           3  -844.51040099194370       -31.035173453978953     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.7009363E-04 -0.1427149E-03  0.3386989E-03  0.3741626E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899242     -0.5080262E-04 -0.9627740E-04 -0.1046250E-04  0.1093605E-03
+   2   4.133017      0.3787797E-04  0.8342640E-05  0.6921508E-04  0.7934147E-04
+   3   5.779779      0.6610421E-03  0.1445961E-02 -0.9895937E-03  0.1872719E-02
+QMMM:
+QMMM: SCF Energy =       23.08634018 KCal/mol,        96.59324732 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899227742999032     0.35E-06 0.10E-05
+  2 +++    4.132999350775309     0.55E-06 0.10E-05
+  3 +++    5.779821369615881     0.82E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922774299903        0.574159829299196E-09    0.101934192613669E-08    0.110172270278472E-09    0.170367402571436E-08
+   2     4.13299935077531        0.317314078195791E-05    0.219088004823398E-04    0.836418981507748E-04    0.108723839415073E-03
+   3     5.77982136961588        0.328899556797783        0.982697995002867E-01    0.700241684072522E-01    0.497193524705322    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922774299903        0.775261368556936E-04    0.103297945799360E-03    0.339600163686112E-04    0.178340502138915E-07
+   2     4.13299935077531       -0.559800193498076E-02    0.147094919882065E-01   -0.287408967085066E-01    0.107374592382420E-02
+   3     5.77982136961588        -1.52403688617107        0.833055371781375        0.703214495200213         3.51118030912350    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016750635810       -31.247575878019745     
+ Total energies of excited states (eV,AU)
+           1  -846.39093976335903       -31.104281953873393     
+           2  -846.15716815558278       -31.095691008886298     
+           3  -844.51034613674221       -31.035171438088216     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6673473E-04 -0.1222092E-03  0.3096085E-03  0.3394791E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899228     -0.4924570E-04 -0.9458474E-04 -0.9086276E-05  0.1070232E-03
+   2   4.132999      0.3884225E-04  0.1021191E-04  0.7047604E-04  0.8111643E-04
+   3   5.779821      0.6583070E-03  0.1449428E-02 -0.9890198E-03  0.1874132E-02
+QMMM:
+QMMM: SCF Energy =       23.08661802 KCal/mol,        96.59440980 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899126176973997     0.24E-06 0.10E-05
+  2 +++    4.132909639784150     0.40E-06 0.10E-05
+  3 +++    5.779717546113243     0.73E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89912617697400        0.741683554590666E-09    0.913019596472338E-09    0.812537728325468E-10    0.173595692389555E-08
+   2     4.13290963978415        0.322956408769578E-05    0.218376690408037E-04    0.843604085670767E-04    0.109427641695576E-03
+   3     5.77971754611324        0.328921878145624        0.982687443043557E-01    0.700157465696959E-01    0.497206369019675    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89912617697400        0.881143663512144E-04    0.977636589370178E-04    0.291648109434926E-04    0.181724607635992E-07
+   2     4.13290963978415       -0.564761445186108E-02    0.146857532599480E-01   -0.288643927030997E-01    0.108072006392770E-02
+   3     5.77971754611324        -1.52410228987926        0.833058381390419        0.703178521631218         3.51133409010349    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29006448516975       -31.247572092062288     
+ Total energies of excited states (eV,AU)
+           1  -846.39093830819570       -31.104281900397147     
+           2  -846.15715484538555       -31.095690519745752     
+           3  -844.51034693905649       -31.035171467572713     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.8281436E-04 -0.1231899E-03  0.3356228E-03  0.3669832E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899126     -0.4554001E-04 -0.9673208E-04 -0.1150822E-04  0.1075334E-03
+   2   4.132910      0.4278215E-04  0.7934775E-05  0.6824772E-04  0.8093840E-04
+   3   5.779718      0.6654263E-03  0.1446937E-02 -0.9895774E-03  0.1875015E-02
+QMMM:
+QMMM: SCF Energy =       23.08899379 KCal/mol,        96.60435003 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899209813302228     0.32E-06 0.10E-05
+  2 +++    4.132984322723699     0.42E-06 0.10E-05
+  3 +++    5.779869471247277     0.77E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89920981330223        0.712422916386642E-10    0.147984963670733E-08    0.275515366632480E-09    0.182660729497847E-08
+   2     4.13298432272370        0.286801772018665E-05    0.210970055825105E-04    0.850516932503515E-04    0.109016716553049E-03
+   3     5.77986947124728        0.328935305187335        0.982744116198777E-01    0.700240309207944E-01    0.497233747728007    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89920981330223        0.273087411167863E-04    0.124463364041612E-03    0.537038786824322E-04    0.191210029154759E-07
+   2     4.13298432272370       -0.532206382572229E-02    0.144344277930584E-01   -0.289821530478971E-01    0.107664226436981E-02
+   3     5.77986947124728         1.52411336631200       -0.833071453999550       -0.703210878675668         3.51143514072762    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29015003001950       -31.247575235776381     
+ Total energies of excited states (eV,AU)
+           1  -846.39094021671724       -31.104281970533997     
+           2  -846.15716570729580       -31.095690918913444     
+           3  -844.51028055877225       -31.035169028143152     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6094579E-04 -0.9772981E-04  0.3356405E-03  0.3548522E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899210     -0.4327504E-04 -0.1066436E-03 -0.1594990E-04  0.1161895E-03
+   2   4.132984      0.4446487E-04 -0.8291101E-06  0.6372029E-04  0.7770513E-04
+   3   5.779869      0.6641076E-03  0.1442269E-02 -0.9948941E-03  0.1873765E-02
+QMMM:
+QMMM: SCF Energy =       23.08702104 KCal/mol,        96.59609605 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899223562948841     0.30E-06 0.10E-05
+  2 +++    4.133001892961521     0.43E-06 0.10E-05
+  3 +++    5.779828329747405     0.71E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922356294884        0.212888537285126E-09    0.119369025960524E-08    0.181952230777537E-09    0.158853102766790E-08
+   2     4.13300189296152        0.290131769569477E-05    0.214486581547163E-04    0.856327568936665E-04    0.109982732744078E-03
+   3     5.77982832974740        0.328930267884731        0.982832873785808E-01    0.700141671878817E-01    0.497227722451194    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922356294884        0.472071860186565E-04    0.111783524661309E-03    0.436426051054447E-04    0.166287517778953E-07
+   2     4.13300189296152       -0.535285998571444E-02    0.145541988435011E-01   -0.290809241286803E-01    0.108617796218089E-02
+   3     5.77982832974740         1.52410712051878       -0.833112038099370       -0.703163851634749         3.51141758508796    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016241533145       -31.247575690928034     
+ Total energies of excited states (eV,AU)
+           1  -846.39093885238265       -31.104281920395643     
+           2  -846.15716052236996       -31.095690728371004     
+           3  -844.51033408558408       -31.035170995216486     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6406682E-04 -0.1179482E-03  0.3649425E-03  0.3888436E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899224     -0.4429645E-04 -0.1088235E-03 -0.1766241E-04  0.1188137E-03
+   2   4.133002      0.4404233E-04 -0.3182694E-05  0.6212450E-04  0.7621883E-04
+   3   5.779828      0.6677510E-03  0.1438277E-02 -0.9959557E-03  0.1872554E-02
+QMMM:
+QMMM: SCF Energy =       23.08673543 KCal/mol,        96.59490102 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899190992180932     0.29E-06 0.10E-05
+  2 +++    4.132968694596400     0.55E-06 0.10E-05
+  3 +++    5.779812917605293     0.82E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89919099218093        0.392322964986676E-09    0.973225850643970E-09    0.119447699027828E-09    0.148499651465847E-08
+   2     4.13296869459640        0.263102818731701E-05    0.212197711442905E-04    0.854288794789044E-04    0.109279678810512E-03
+   3     5.77981291760529        0.328905985500740        0.982897220690994E-01    0.700228249061382E-01    0.497218532475978    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89919099218093       -0.640848915162738E-04   -0.100934725474776E-03   -0.353608488779036E-04    0.155450817606868E-07
+   2     4.13296869459640        0.509744718815423E-02   -0.144763919243382E-01    0.290464017243581E-01    0.107924334411586E-02
+   3     5.77981291760529         1.52405289492055       -0.833140420732063       -0.703208263305464         3.51136204875439    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29013006622063       -31.247574502120571     
+ Total energies of excited states (eV,AU)
+           1  -846.39093907403969       -31.104281928541386     
+           2  -846.15716137162417       -31.095690759580510     
+           3  -844.51031714861529       -31.035170372794589     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.4243773E-04 -0.1157231E-03  0.3388075E-03  0.3605320E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899191     -0.3952942E-04 -0.1072841E-03 -0.1778321E-04  0.1157095E-03
+   2   4.132969      0.4877516E-04 -0.1963834E-05  0.6218940E-04  0.7905943E-04
+   3   5.779813      0.6673181E-03  0.1439606E-02 -0.9957451E-03  0.1873309E-02
+QMMM:
+QMMM: SCF Energy =       23.08748143 KCal/mol,        96.59802230 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899133483696415     0.30E-06 0.10E-05
+  2 +++    4.132917938942708     0.51E-06 0.10E-05
+  3 +++    5.779692181283728     0.80E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89913348369642        0.944848334184217E-10    0.145225362583547E-08    0.263127762175243E-09    0.180986622142913E-08
+   2     4.13291793894271        0.312495403659438E-05    0.220744531277037E-04    0.844814120612400E-04    0.109680819225538E-03
+   3     5.77969218128373        0.328900172501260        0.982752532132765E-01    0.700162445712843E-01    0.497191670285821    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89913348369642       -0.314498111310933E-04   -0.123298622750015E-03   -0.524832024144723E-04    0.189461275279104E-07
+   2     4.13291793894271        0.555538891905867E-02   -0.147651419939847E-01    0.288850572999064E-01    0.108321829936341E-02
+   3     5.77969218128373         1.52405534532009       -0.833087798121627       -0.703182565371487         3.51124569522029    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29007204470781       -31.247572369870085     
+ Total energies of excited states (eV,AU)
+           1  -846.39093856101135       -31.104281909687948     
+           2  -846.15715410576513       -31.095690492565211     
+           3  -844.51037986342408       -31.035172677520460     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6400286E-04 -0.1357923E-03  0.3413400E-03  0.3728926E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899133     -0.4479290E-04 -0.1063651E-03 -0.1595521E-04  0.1165097E-03
+   2   4.132918      0.4308735E-04 -0.5796775E-06  0.6353999E-04  0.7677360E-04
+   3   5.779692      0.6642563E-03  0.1437488E-02 -0.9954015E-03  0.1870410E-02
+QMMM:
+QMMM: SCF Energy =       23.08881946 KCal/mol,        96.60362063 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899200332210529     0.35E-06 0.10E-05
+  2 +++    4.132973723506583     0.49E-06 0.10E-05
+  3 +++    5.779814069028312     0.76E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89920033221053        0.447273258000329E-09    0.107761355422530E-08    0.130372925374352E-09    0.165525973759999E-08
+   2     4.13297372350658        0.315160873019147E-05    0.218316388347005E-04    0.837385175549543E-04    0.108721765119846E-03
+   3     5.77981406902831        0.328908199981193        0.982708576729410E-01    0.700193851502464E-01    0.497198442804380    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89920033221053       -0.684257764891153E-04   -0.106209848811570E-03   -0.369425588007305E-04    0.173273715234604E-07
+   2     4.13297372350658        0.557899365825704E-02   -0.146836116345666E-01    0.287575811786853E-01    0.107373209612232E-02
+   3     5.77981406902831         1.52405787372782       -0.833060383080371       -0.703190921076801         3.51121947581462    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29014070423273       -31.247574893060165     
+ Total energies of excited states (eV,AU)
+           1  -846.39094037202221       -31.104281976241346     
+           2  -846.15716698072617       -31.095690965711132     
+           3  -844.51032663520436       -31.035170721420183     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6712003E-04 -0.1150468E-03  0.3123706E-03  0.3395825E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899200     -0.5000373E-04 -0.1031839E-03 -0.1352845E-04  0.1154569E-03
+   2   4.132974      0.3839276E-04  0.2257056E-05  0.6633349E-04  0.7667613E-04
+   3   5.779814      0.6619190E-03  0.1444076E-02 -0.9938377E-03  0.1873821E-02
+QMMM:
+QMMM: SCF Energy =       23.08723611 KCal/mol,        96.59699587 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899260083178623     0.24E-06 0.10E-05
+  2 +++    4.133032230063951     0.37E-06 0.10E-05
+  3 +++    5.779840815725257     0.83E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89926008317862        0.314031711583130E-09    0.127368513536497E-08    0.180550558169776E-09    0.176826740511787E-08
+   2     4.13303223006395        0.346872458161296E-05    0.221329055393194E-04    0.838569885080865E-04    0.109458618629019E-03
+   3     5.77984081572526        0.328925576613510        0.982635506786678E-01    0.700154960057481E-01    0.497204623297926    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89926008317862       -0.573345876728649E-04   -0.115467823751293E-03   -0.434739756859698E-04    0.185100598274214E-07
+   2     4.13303223006395        0.585290608329498E-02   -0.147844734479307E-01    0.287777130178609E-01    0.108099393129080E-02
+   3     5.77984081572526         1.52409460568975       -0.833027483669327       -0.703169764854664         3.51124687384680    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29019941159368       -31.247577050515098     
+ Total energies of excited states (eV,AU)
+           1  -846.39093932841502       -31.104281937889503     
+           2  -846.15716718152976       -31.095690973090523     
+           3  -844.51035859586841       -31.035171895952491     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.8997122E-04 -0.1210520E-03  0.3370917E-03  0.3692956E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899260     -0.5506949E-04 -0.9985944E-04 -0.1077074E-04  0.1145450E-03
+   2   4.133032      0.3315486E-04  0.5484435E-05  0.6870760E-04  0.7648568E-04
+   3   5.779841      0.6596668E-03  0.1445595E-02 -0.9908879E-03  0.1872635E-02
+QMMM:
+QMMM: SCF Energy =       23.08588226 KCal/mol,        96.59133136 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899317761686783     0.26E-06 0.10E-05
+  2 +++    4.133083296556655     0.39E-06 0.10E-05
+  3 +++    5.779958322877850     0.74E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89931776168678        0.820101728146892E-09    0.809409413762329E-09    0.614202816545584E-10    0.169093142356378E-08
+   2     4.13308329655665        0.294757710134297E-05    0.212841339755544E-04    0.847941807001705E-04    0.109025891777068E-03
+   3     5.77995832287785        0.328930000173311        0.982778222094158E-01    0.700221291848702E-01    0.497229951567597    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89931776168678       -0.926532359730605E-04   -0.920472576058932E-04   -0.253561101789652E-04    0.177002520924531E-07
+   2     4.13308329655665        0.539531182960856E-02   -0.144981288579081E-01    0.289378984025440E-01    0.107670709407518E-02
+   3     5.77995832287785         1.52408936137446       -0.833079506370104       -0.703195924638736         3.51135435381719    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29025752064581       -31.247579185982595     
+ Total energies of excited states (eV,AU)
+           1  -846.39093975895901       -31.104281953711695     
+           2  -846.15717422408920       -31.095691231899714     
+           3  -844.51029919776795       -31.035169713113358     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6703270E-04 -0.1039101E-03  0.3334127E-03  0.3556048E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899318     -0.4881631E-04 -0.9795987E-04 -0.1128708E-04  0.1100298E-03
+   2   4.133083      0.3974090E-04  0.6752444E-05  0.6859795E-04  0.7956515E-04
+   3   5.779958      0.6625720E-03  0.1449595E-02 -0.9901744E-03  0.1876372E-02
+QMMM:
+QMMM: SCF Energy =       23.08454220 KCal/mol,        96.58572457 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899250943836073     0.30E-06 0.10E-05
+  2 +++    4.133027547352277     0.46E-06 0.10E-05
+  3 +++    5.779835948859348     0.75E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89925094383607        0.300813032296628E-09    0.113449829484516E-08    0.158606143753103E-09    0.159391747089489E-08
+   2     4.13302754735228        0.292189315714352E-05    0.215250485009545E-04    0.855406448849580E-04    0.109987586543056E-03
+   3     5.77983594885935        0.328921745669781        0.982821981797511E-01    0.700189989936634E-01    0.497222942843196    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89925094383607       -0.561149749237249E-04   -0.108976378954817E-03   -0.407465133567757E-04    0.166850199315280E-07
+   2     4.13302754735228        0.537179039198223E-02   -0.145800482691103E-01    0.290651890732135E-01    0.108621915540663E-02
+   3     5.77983594885935         1.52408637189264       -0.833106872602626       -0.703187651048654         3.51137920275393    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29018921635634       -31.247576675847171     
+ Total energies of excited states (eV,AU)
+           1  -846.39093827252032       -31.104281899086100     
+           2  -846.15716166900404       -31.095690770509012     
+           3  -844.51035326749695       -31.035171700138523     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6371620E-04 -0.1250285E-03  0.3622260E-03  0.3884579E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899251     -0.4341118E-04 -0.1005478E-03 -0.1341609E-04  0.1103376E-03
+   2   4.133028      0.4460849E-04  0.4467373E-05  0.6608164E-04  0.7985397E-04
+   3   5.779836      0.6647198E-03  0.1443349E-02 -0.9914845E-03  0.1873006E-02
+QMMM:
+QMMM: SCF Energy =       23.08611737 KCal/mol,        96.59231507 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899260551635757     0.28E-06 0.10E-05
+  2 +++    4.133033564430717     0.44E-06 0.10E-05
+  3 +++    5.779848996544260     0.84E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89926055163576        0.327242903259600E-09    0.122122036699493E-08    0.169905875915112E-09    0.171836914616964E-08
+   2     4.13303356443072        0.345785656208637E-05    0.221238992055064E-04    0.839659859001130E-04    0.109547741667706E-03
+   3     5.77984899654426        0.328928386791478        0.982660265531634E-01    0.700161175984574E-01    0.497210530943098    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89926055163576       -0.585281818098415E-04   -0.113064673695775E-03   -0.421729628776938E-04    0.179877273017812E-07
+   2     4.13303356443072        0.584372894294962E-02   -0.147814627027912E-01    0.287964049449942E-01    0.108187374534876E-02
+   3     5.77984899654426         1.52410003762283       -0.833037388651297       -0.703172388557008         3.51128362360186    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29019961742642       -31.247577058079308     
+ Total energies of excited states (eV,AU)
+           1  -846.39093906579069       -31.104281928238240     
+           2  -846.15716605299576       -31.095690931617678     
+           3  -844.51035062088215       -31.035171602877259     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.4089864E-04 -0.1190634E-03  0.3377638E-03  0.3604625E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899261     -0.3823612E-04 -0.1039474E-03 -0.1607930E-04  0.1119179E-03
+   2   4.133034      0.4971297E-04  0.1423417E-05  0.6349554E-04  0.8065413E-04
+   3   5.779849      0.6672156E-03  0.1442014E-02 -0.9942073E-03  0.1874307E-02
+QMMM:
+QMMM: SCF Energy =       23.08587751 KCal/mol,        96.59131150 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899316594865942     0.30E-06 0.10E-05
+  2 +++    4.133082424252026     0.45E-06 0.10E-05
+  3 +++    5.779957241750129     0.76E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89931659486594        0.825639004659494E-09    0.803185936565623E-09    0.604883394738293E-10    0.168931328069895E-08
+   2     4.13308242425203        0.294710269134381E-05    0.212845614082948E-04    0.848128158592057E-04    0.109044479958844E-03
+   3     5.77995724175013        0.328930444602929        0.982784038815039E-01    0.700221583282961E-01    0.497231006812729    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89931659486594       -0.929655181452497E-04   -0.916927168751981E-04   -0.251630119924942E-04    0.176833190645044E-07
+   2     4.13308242425203        0.539487819604346E-02   -0.144982759644721E-01    0.289410811129838E-01    0.107689089268044E-02
+   3     5.77995724175013         1.52409053353996       -0.833082049632733       -0.703196136740478         3.51136246257312    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29025653986355       -31.247579149939522     
+ Total energies of excited states (eV,AU)
+           1  -846.39093994499763       -31.104281960548487     
+           2  -846.15717411561150       -31.095691227913235     
+           3  -844.51029929811341       -31.035169716800986     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6372605E-04 -0.1368205E-03  0.3416039E-03  0.3734623E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899317     -0.4495483E-04 -0.1043272E-03 -0.1593318E-04  0.1147126E-03
+   2   4.133082      0.4339971E-04  0.2477978E-06  0.6400126E-04  0.7732889E-04
+   3   5.779957      0.6643056E-03  0.1437042E-02 -0.9947061E-03  0.1869714E-02
+QMMM:
+QMMM: SCF Energy =       23.08456482 KCal/mol,        96.58581921 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899253500835686     0.33E-06 0.10E-05
+  2 +++    4.133029654700017     0.50E-06 0.10E-05
+  3 +++    5.779838920112793     0.80E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89925350083569        0.299855716867971E-09    0.113272191421869E-08    0.158275681056796E-09    0.159085331214346E-08
+   2     4.13302965470002        0.292037115527490E-05    0.215237397371613E-04    0.855462895564203E-04    0.109990400448856E-03
+   3     5.77983892011279        0.328921858759039        0.982822872915483E-01    0.700192263329982E-01    0.497223372383586    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89925350083569       -0.560255945026529E-04   -0.108890993028119E-03   -0.407040293234692E-04    0.166529336051914E-07
+   2     4.13302965470002        0.537038976909313E-02   -0.145796012981497E-01    0.290661406267365E-01    0.108624639121821E-02
+   3     5.77983892011279         1.52408624215169       -0.833107036150104       -0.703188611865977         3.51138043105686    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29019148771886       -31.247576759318175     
+ Total energies of excited states (eV,AU)
+           1  -846.39093798688316       -31.104281888589135     
+           2  -846.15716183301879       -31.095690776536443     
+           3  -844.51035256760611       -31.035171674418020     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6744033E-04 -0.1146173E-03  0.3129255E-03  0.3400113E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899254     -0.5002068E-04 -0.1033997E-03 -0.1345752E-04  0.1156489E-03
+   2   4.133030      0.3837984E-04  0.2168204E-05  0.6642097E-04  0.7674280E-04
+   3   5.779839      0.6616404E-03  0.1444417E-02 -0.9937658E-03  0.1873948E-02
+QMMM:
+QMMM: SCF Energy =       23.08606499 KCal/mol,        96.59209591 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899191066839637     0.25E-06 0.10E-05
+  2 +++    4.132968728459114     0.48E-06 0.10E-05
+  3 +++    5.779809764112294     0.82E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89919106683964        0.432833323591677E-09    0.948410433725950E-09    0.110768294022092E-09    0.149201205133972E-08
+   2     4.13296872845911        0.263093806275035E-05    0.212269799499206E-04    0.854234874354463E-04    0.109281405448117E-03
+   3     5.77980976411229        0.328904290533271        0.982891109667769E-01    0.700230231082136E-01    0.497216424608262    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89919106683964       -0.673122532609982E-04   -0.996395931449599E-04   -0.340519131849859E-04    0.156185207527237E-07
+   2     4.13296872845911        0.509735986126082E-02   -0.144788506246699E-01    0.290454849251267E-01    0.107926038750246E-02
+   3     5.77980976411229         1.52404938369124       -0.833138058044237       -0.703209450369866         3.51134907878085    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29012987525857       -31.247574495102850     
+ Total energies of excited states (eV,AU)
+           1  -846.39093880841892       -31.104281918780003     
+           2  -846.15716114679947       -31.095690751318358     
+           3  -844.51032011114626       -31.035170481665556     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.8989815E-04 -0.1210697E-03  0.3368717E-03  0.3690828E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899191     -0.5516778E-04 -0.9961821E-04 -0.1078031E-04  0.1143831E-03
+   2   4.132969      0.3331647E-04  0.5433144E-05  0.6900118E-04  0.7681581E-04
+   3   5.779810      0.6592958E-03  0.1445542E-02 -0.9909795E-03  0.1872513E-02
+QMMM:
+QMMM: SCF Energy =       23.08748583 KCal/mol,        96.59804072 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899134693575291     0.25E-06 0.10E-05
+  2 +++    4.132919060361726     0.45E-06 0.10E-05
+  3 +++    5.779694345712102     0.77E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89913469357529        0.993467750105863E-10    0.144336585943771E-08    0.259533651937884E-09    0.180224628638618E-08
+   2     4.13291906036173        0.312392548477151E-05    0.220747520565001E-04    0.844855482172003E-04    0.109684225758472E-03
+   3     5.77969434571210        0.328899975744366        0.982750374101347E-01    0.700163493762324E-01    0.497191362530733    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89913469357529       -0.322488186658595E-04   -0.122920731959180E-03   -0.521235230695735E-04    0.188663543079084E-07
+   2     4.13291906036173        0.555447383593475E-02   -0.147652399640820E-01    0.288857604693208E-01    0.108325164868198E-02
+   3     5.77969434571210         1.52405460408420       -0.833086727439508       -0.703182959989427         3.51124220688560    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29007302709988       -31.247572405972313     
+ Total energies of excited states (eV,AU)
+           1  -846.39093833352456       -31.104281901327965     
+           2  -846.15715396673818       -31.095690487456068     
+           3  -844.51037868138781       -31.035172634081444     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6705140E-04 -0.1033175E-03  0.3329716E-03  0.3550218E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899135     -0.4841635E-04 -0.9922857E-04 -0.1091565E-04  0.1109487E-03
+   2   4.132919      0.3964995E-04  0.6628979E-05  0.6850165E-04  0.7942630E-04
+   3   5.779694      0.6621796E-03  0.1450489E-02 -0.9904807E-03  0.1877086E-02
+QMMM:
+QMMM: SCF Energy =       23.08879681 KCal/mol,        96.60352584 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899197778686375     0.31E-06 0.10E-05
+  2 +++    4.132971673620374     0.45E-06 0.10E-05
+  3 +++    5.779811356979943     0.71E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89919777868638        0.452873517080623E-09    0.107571738455136E-08    0.129641555479255E-09    0.165823245711124E-08
+   2     4.13297167362037        0.315299292840395E-05    0.218333716854826E-04    0.837382536588923E-04    0.108724618272779E-03
+   3     5.77981135697994        0.328908145265990        0.982708517584621E-01    0.700191748032137E-01    0.497198171827666    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89919777868638       -0.688528422487900E-04   -0.106116398948981E-03   -0.368388044007610E-04    0.173585015213136E-07
+   2     4.13297167362037        0.558022006493754E-02   -0.146841980084443E-01    0.287575429965323E-01    0.107376080632174E-02
+   3     5.77981135697994         1.52405810452635       -0.833060553458832       -0.703190029817168         3.51121920973586    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29013842608856       -31.247574809339941     
+ Total energies of excited states (eV,AU)
+           1  -846.39094064740220       -31.104281986361368     
+           2  -846.15716675246824       -31.095690957322809     
+           3  -844.51032706910860       -31.035170737365863     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6334470E-04 -0.1255128E-03  0.3616444E-03  0.3880112E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899198     -0.4334764E-04 -0.1001584E-03 -0.1338956E-04  0.1099545E-03
+   2   4.132972      0.4467378E-04  0.4711692E-05  0.6608074E-04  0.7990376E-04
+   3   5.779811      0.6648403E-03  0.1443110E-02 -0.9914253E-03  0.1872833E-02
+QMMM:
+QMMM: SCF Energy =       23.08728864 KCal/mol,        96.59721568 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899125530103293     0.27E-06 0.10E-05
+  2 +++    4.132908941181861     0.44E-06 0.10E-05
+  3 +++    5.779720373659668     0.75E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89912553010329        0.693106714260212E-09    0.934893497840733E-09    0.874671866713979E-10    0.171546739877234E-08
+   2     4.13290894118186        0.323021928732218E-05    0.218302578833462E-04    0.843648093482653E-04    0.109425286518934E-03
+   3     5.77972037365967        0.328923917476948        0.982688833778652E-01    0.700157118755683E-01    0.497208512730382    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89912553010329       -0.851799707763359E-04   -0.989278346804152E-04   -0.302593791241383E-04    0.179579739209913E-07
+   2     4.13290894118186        0.564818778165144E-02   -0.146832623012071E-01    0.288651480090106E-01    0.108069698660494E-02
+   3     5.77972037365967         1.52410664181460       -0.833058767103531       -0.703178175408096         3.51134751144169    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29006364236557       -31.247572061089816     
+ Total energies of excited states (eV,AU)
+           1  -846.39093811226223       -31.104281893196728     
+           2  -846.15715470118369       -31.095690514446432     
+           3  -844.51034326870592       -31.035171332689867     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.4654188E-04 -0.1205493E-03  0.3380926E-03  0.3619460E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899126     -0.4700054E-04 -0.1024264E-03 -0.1391719E-04  0.1135514E-03
+   2   4.132909      0.4124101E-04  0.2373343E-05  0.6577975E-04  0.7767515E-04
+   3   5.779720      0.6607020E-03  0.1442084E-02 -0.9937813E-03  0.1871826E-02
+QMMM:
+QMMM: SCF Energy =       23.08901323 KCal/mol,        96.60443135 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899210713879562     0.27E-06 0.10E-05
+  2 +++    4.132985141319364     0.36E-06 0.10E-05
+  3 +++    5.779871094651310     0.73E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89921071387956        0.684350939677874E-10    0.148460096681461E-08    0.276508455474212E-09    0.182954451625661E-08
+   2     4.13298514131936        0.286817109571195E-05    0.210956794435011E-04    0.850532216454765E-04    0.109017072184690E-03
+   3     5.77987109465131        0.328935885396815        0.982745308316339E-01    0.700239613816335E-01    0.497234377610082    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89921071387956       -0.267653005067191E-04   -0.124662995812643E-03   -0.538005726110678E-04    0.191517454494768E-07
+   2     4.13298514131936        0.532220560311282E-02   -0.144339726888560E-01    0.289824105839452E-01    0.107664556332082E-02
+   3     5.77987109465131        -1.52411449646374        0.833071842284673        0.703210430748692         3.51143860265225    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29015067795444       -31.247575259587542     
+ Total energies of excited states (eV,AU)
+           1  -846.39093996407485       -31.104281961249562     
+           2  -846.15716553663503       -31.095690912641778     
+           3  -844.51027958330315       -31.035168992295336     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6930358E-04 -0.1430018E-03  0.3389855E-03  0.3743844E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899211     -0.4931131E-04 -0.9722215E-04 -0.1011900E-04  0.1094813E-03
+   2   4.132985      0.3900610E-04  0.8412044E-05  0.6925891E-04  0.7993144E-04
+   3   5.779871      0.6613095E-03  0.1446711E-02 -0.9904704E-03  0.1873855E-02
+QMMM:
+QMMM: SCF Energy =       23.08700610 KCal/mol,        96.59603353 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899221123764443     0.27E-06 0.10E-05
+  2 +++    4.132999937662157     0.41E-06 0.10E-05
+  3 +++    5.779825939640179     0.78E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922112376444        0.215469883056591E-09    0.119428144399523E-08    0.180849120789624E-09    0.159060044784145E-08
+   2     4.13299993766216        0.290337878166661E-05    0.214521940060440E-04    0.856287573786339E-04    0.109984330166345E-03
+   3     5.77982593964018        0.328930367788781        0.982836421628142E-01    0.700138063576290E-01    0.497227816309224    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922112376444       -0.474925400973352E-04   -0.111811237037222E-03   -0.435101229952338E-04    0.166504248957512E-07
+   2     4.13299993766216        0.535476224134622E-02   -0.145554018805244E-01    0.290802518810170E-01    0.108619425202832E-02
+   3     5.77982593964018        -1.52410766710163        0.833113714044073        0.703162185081297         3.51141969997459    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016036301891       -31.247575615506967     
+ Total energies of excited states (eV,AU)
+           1  -846.39093923925452       -31.104281934612917     
+           2  -846.15716042535678       -31.095690724805838     
+           3  -844.51033442337871       -31.035171007630204     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6736081E-04 -0.1220687E-03  0.3096036E-03  0.3395477E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899221     -0.4913430E-04 -0.9499762E-04 -0.8953733E-05  0.1073261E-03
+   2   4.133000      0.3888867E-04  0.1011728E-04  0.7057268E-04  0.8121078E-04
+   3   5.779826      0.6584071E-03  0.1449784E-02 -0.9893932E-03  0.1874639E-02
+QMMM:
+QMMM: SCF Energy =       23.08678275 KCal/mol,        96.59509904 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899325382521853     0.25E-06 0.10E-05
+  2 +++    4.133092014467182     0.43E-06 0.10E-05
+  3 +++    5.779933582739984     0.79E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89932538252185        0.126425564617459E-09    0.131959812197835E-08    0.225223727604530E-09    0.167124741420034E-08
+   2     4.13309201446718        0.284681208939985E-05    0.215185335222954E-04    0.849181136908755E-04    0.109283459302571E-03
+   3     5.77993358273998        0.328907879407923        0.982846411544181E-01    0.700225184128703E-01    0.497215038975211    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89932538252185       -0.363784134859714E-04   -0.117529570320567E-03   -0.485549347726997E-04    0.174941705582746E-07
+   2     4.13309201446718        0.530228302917786E-02   -0.145777279416306E-01    0.289590075829684E-01    0.107924847745213E-02
+   3     5.77993358273998        -1.52404137419636        0.833110190213913        0.703199384008340         3.51126407297029    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29026583533368       -31.247579491541625     
+ Total energies of excited states (eV,AU)
+           1  -846.39094045281183       -31.104281979210310     
+           2  -846.15717382086655       -31.095691217081562     
+           3  -844.51033225259368       -31.035170927855354     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.8264925E-04 -0.1229396E-03  0.3350807E-03  0.3663661E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899325     -0.4512753E-04 -0.9758585E-04 -0.1119485E-04  0.1080963E-03
+   2   4.133092      0.4292899E-04  0.7879016E-05  0.6833740E-04  0.8108624E-04
+   3   5.779934      0.6652827E-03  0.1447788E-02 -0.9899856E-03  0.1875837E-02
+QMMM:
+QMMM: SCF Energy =       23.08435046 KCal/mol,        96.58492231 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899240558805126     0.29E-06 0.10E-05
+  2 +++    4.133016109815444     0.66E-06 0.10E-05
+  3 +++    5.779779656519156     0.84E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89924055880513        0.905780424423122E-09    0.785732334492907E-09    0.551789142621341E-10    0.174669167317816E-08
+   2     4.13301610981544        0.320788865961997E-05    0.222673839942349E-04    0.842232257948301E-04    0.109698498448685E-03
+   3     5.77977965651916        0.328894384161651        0.982786666076268E-01    0.700143688321507E-01    0.497187419601428    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89924055880513       -0.973738839468038E-04   -0.906918666052222E-04   -0.240335321739290E-04    0.182842986119803E-07
+   2     4.13301610981544        0.562855788071766E-02   -0.148293492189941E-01    0.288405427364670E-01    0.108336716740945E-02
+   3     5.77977965651916        -1.52403040127412        0.833095961414572        0.703167824980445         3.51116253502075    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29017890416981       -31.247576296881444     
+ Total energies of excited states (eV,AU)
+           1  -846.39093834536470       -31.104281901763084     
+           2  -846.15716279435435       -31.095690811864859     
+           3  -844.51039924765064       -31.035173389877386     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6124075E-04 -0.9755785E-04  0.3353798E-03  0.3546091E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899241     -0.4382109E-04 -0.1055673E-03 -0.1631984E-04  0.1154603E-03
+   2   4.133016      0.4426549E-04 -0.8113755E-06  0.6361582E-04  0.7750526E-04
+   3   5.779780      0.6648408E-03  0.1441248E-02 -0.9943481E-03  0.1872949E-02
+QMMM:
+QMMM: SCF Energy =       23.08635518 KCal/mol,        96.59331006 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899230170669597     0.38E-06 0.10E-05
+  2 +++    4.133001341396523     0.57E-06 0.10E-05
+  3 +++    5.779824213980350     0.76E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89923017066960        0.567286892366098E-09    0.102075622575138E-08    0.111541639051173E-09    0.169958475716865E-08
+   2     4.13300134139652        0.317093197576980E-05    0.219051809521042E-04    0.836513140765662E-04    0.108727427004440E-03
+   3     5.77982421398035        0.328899626683881        0.982694778941953E-01    0.700245549875158E-01    0.497193659565592    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89923017066960       -0.770607055054004E-04   -0.103369549840278E-03   -0.341704042920462E-04    0.177912326966537E-07
+   2     4.13300134139652        0.559605187867628E-02   -0.147082733259973E-01    0.287425074839599E-01    0.107378083732657E-02
+   3     5.77982421398035        -1.52403667308400        0.833053803635276        0.703216263271508         3.51117953358570    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016956064061       -31.247575953513206     
+ Total energies of excited states (eV,AU)
+           1  -846.39093938997098       -31.104281940151640     
+           2  -846.15716821924411       -31.095691011225810     
+           3  -844.51034534666030       -31.035171409053252     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6337805E-04 -0.1181157E-03  0.3649228E-03  0.3887631E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899230     -0.4418911E-04 -0.1083863E-03 -0.1778361E-04  0.1183914E-03
+   2   4.133001      0.4420987E-04 -0.3072388E-05  0.6202432E-04  0.7622971E-04
+   3   5.779824      0.6679165E-03  0.1437834E-02 -0.9956745E-03  0.1872124E-02
+QMMM:
+QMMM: SCF Energy =       23.08657065 KCal/mol,        96.59421159 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899166582771691     0.24E-06 0.10E-05
+  2 +++    4.132945489590087     0.57E-06 0.10E-05
+  3 +++    5.779760648218736     0.79E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89916658277169        0.106877878794213E-08    0.641867455571873E-09    0.300304603933672E-10    0.174067670390737E-08
+   2     4.13294548959009        0.279843858495690E-05    0.215389532508056E-04    0.848430141021245E-04    0.109180405937887E-03
+   3     5.77976064821874        0.328907551413473        0.982817577469589E-01    0.700187318770404E-01    0.497208041037473    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89916658277169       -0.105774032205101E-03   -0.819705455769316E-04   -0.177303023952684E-04    0.182216798541332E-07
+   2     4.13294548959009        0.525713456767784E-02   -0.145849015044541E-01    0.289467125255837E-01    0.107826898179608E-02
+   3     5.77976064821874        -1.52406341430705        0.833110432862953        0.703190890403778         3.51131971252121    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29010448242707       -31.247573561933844     
+ Total energies of excited states (eV,AU)
+           1  -846.39093789965534       -31.104281885383571     
+           2  -846.15715899283703       -31.095690672161727     
+           3  -844.51034383420836       -31.035171353471689     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.4386536E-04 -0.1198101E-03  0.3362304E-03  0.3596241E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899167     -0.4208377E-04 -0.9935051E-04 -0.1391678E-04  0.1087899E-03
+   2   4.132945      0.4636203E-04  0.5046220E-05  0.6608259E-04  0.8088146E-04
+   3   5.779761      0.6684545E-03  0.1443866E-02 -0.9927256E-03  0.1875389E-02
+QMMM:
+QMMM: SCF Energy =       23.08807142 KCal/mol,        96.60049081 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899285287881673     0.27E-06 0.10E-05
+  2 +++    4.133057029680924     0.60E-06 0.10E-05
+  3 +++    5.779821016538364     0.72E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89928528788167        0.873995090581510E-09    0.782097854458109E-09    0.544458661488716E-10    0.171053881118849E-08
+   2     4.13305702968092        0.301453279370276E-05    0.219949217446557E-04    0.846605389969319E-04    0.109669993535290E-03
+   3     5.77982101653836        0.328893853985323        0.982683336814588E-01    0.700202422614199E-01    0.497182429928202    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89928528788167       -0.956495725154781E-04   -0.904813525711870E-04   -0.238732195693186E-04    0.179056464981100E-07
+   2     4.13305702968092        0.545626367852107E-02   -0.147382715485963E-01    0.289151771918488E-01    0.108307493360572E-02
+   3     5.77982101653836        -1.52402371997237        0.833049184163566        0.703194802332639         3.51110217230165    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29022452472145       -31.247577973405182     
+ Total energies of excited states (eV,AU)
+           1  -846.39093923683981       -31.104281934524177     
+           2  -846.15716749504054       -31.095690984611828     
+           3  -844.51040350818312       -31.035173546449009     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6193684E-04 -0.1452299E-03  0.3393255E-03  0.3742588E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899285     -0.3963688E-04 -0.9614378E-04 -0.1245160E-04  0.1047366E-03
+   2   4.133057      0.4841811E-04  0.8556752E-05  0.6744896E-04  0.8346792E-04
+   3   5.779821      0.6691944E-03  0.1447603E-02 -0.9915591E-03  0.1877915E-02
+QMMM:
+QMMM: SCF Energy =       23.08530312 KCal/mol,        96.58890826 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899281638885070     0.34E-06 0.10E-05
+  2 +++    4.133048604828303     0.55E-06 0.10E-05
+  3 +++    5.779882307933638     0.80E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89928163888507        0.429743532220992E-09    0.105634658613577E-08    0.128368440199213E-09    0.161445855855598E-08
+   2     4.13304860482830        0.301763663902506E-05    0.216683860983016E-04    0.840344159892820E-04    0.108720438726609E-03
+   3     5.77988230793364        0.328908240877600        0.982780494716351E-01    0.700079676695738E-01    0.497194258018808    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89928163888507       -0.670707888961466E-04   -0.105155491248899E-03   -0.366570804033773E-04    0.168999096066484E-07
+   2     4.13304860482830        0.545907747883673E-02   -0.146284755044046E-01    0.288080842975369E-01    0.107369954339690E-02
+   3     5.77988230793364        -1.52404897172476        0.833085947765626        0.703129436274413         3.51114846873544    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29022154311133       -31.247577863833072     
+ Total energies of excited states (eV,AU)
+           1  -846.39093990422623       -31.104281959050166     
+           2  -846.15717293828300       -31.095691184647226     
+           3  -844.51033923517764       -31.035171184460488     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.5914521E-04 -0.1175945E-03  0.3141456E-03  0.3406084E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899282     -0.4040323E-04 -0.1003811E-03 -0.1342417E-04  0.1090366E-03
+   2   4.133049      0.4778293E-04  0.4570567E-05  0.6610159E-04  0.8169161E-04
+   3   5.779882      0.6707928E-03  0.1443343E-02 -0.9955014E-03  0.1877292E-02
+QMMM:
+QMMM: SCF Energy =       23.08537188 KCal/mol,        96.58919595 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899285545836745     0.29E-06 0.10E-05
+  2 +++    4.133055767499969     0.43E-06 0.10E-05
+  3 +++    5.779876775918968     0.76E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89928554583675        0.466778819425383E-10    0.166731078368095E-08    0.330664177193479E-09    0.204465284281697E-08
+   2     4.13305576749997        0.328661442990063E-05    0.218305615531993E-04    0.843253842884376E-04    0.109442560271538E-03
+   3     5.77987677591897        0.328917023293879        0.982698277238424E-01    0.700185952670451E-01    0.497205446284767    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89928554583675       -0.221046729200068E-04   -0.132110337484799E-03   -0.588331492781056E-04    0.214030972892277E-07
+   2     4.13305576749997        0.569717800048958E-02   -0.146831036119190E-01    0.288578900419681E-01    0.108082918652193E-02
+   3     5.77987677591897        -1.52407004831028        0.833051498536431        0.703183140235486         3.51123084008174    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29022499980010       -31.247577990863995     
+ Total energies of excited states (eV,AU)
+           1  -846.39093945396337       -31.104281942503317     
+           2  -846.15716923230013       -31.095691048454917     
+           3  -844.51034822388112       -31.035171514789130     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.8448687E-04 -0.1174683E-03  0.3403315E-03  0.3698140E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899286     -0.4812935E-04 -0.1070965E-03 -0.1493991E-04  0.1183608E-03
+   2   4.133056      0.3987203E-04 -0.1038652E-05  0.6441421E-04  0.7576311E-04
+   3   5.779877      0.6625896E-03  0.1440557E-02 -0.9951403E-03  0.1872040E-02
+QMMM:
+QMMM: SCF Energy =       23.08529217 KCal/mol,        96.58886242 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899166152317871     0.28E-06 0.10E-05
+  2 +++    4.132944187753501     0.39E-06 0.10E-05
+  3 +++    5.779826639181945     0.75E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89916615231787        0.823161482088590E-10    0.147984049314675E-08    0.274675222228631E-09    0.183683186358424E-08
+   2     4.13294418775350        0.305735621247290E-05    0.213646576671308E-04    0.845908937387899E-04    0.109012907618394E-03
+   3     5.77982663918194        0.328935102985228        0.982844228615919E-01    0.700179751128776E-01    0.497237500959697    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89916615231787       -0.293547030662825E-04   -0.124463676365846E-03   -0.536222352621934E-04    0.192282494411258E-07
+   2     4.13294418775350        0.549495693082820E-02   -0.145257726099506E-01    0.289036759059566E-01    0.107661510246423E-02
+   3     5.77982663918194        -1.52411854515864        0.833116972466678        0.703183076023218         3.51148766791402    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29010508281408       -31.247573583997653     
+ Total energies of excited states (eV,AU)
+           1  -846.39093893049619       -31.104281923266260     
+           2  -846.15716089506054       -31.095690742067127     
+           3  -844.51027844363216       -31.035168950413215     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6862840E-04 -0.9455075E-04  0.3354655E-03  0.3552278E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899166     -0.5302490E-04 -0.1080385E-03 -0.1481371E-04  0.1212576E-03
+   2   4.132944      0.3534439E-04 -0.2296733E-05  0.6462895E-04  0.7369804E-04
+   3   5.779827      0.6585703E-03  0.1439189E-02 -0.9943429E-03  0.1869144E-02
+QMMM:
+QMMM: SCF Energy =       23.08805757 KCal/mol,        96.60043288 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899169661573502     0.31E-06 0.10E-05
+  2 +++    4.132952645900603     0.42E-06 0.10E-05
+  3 +++    5.779767194507333     0.73E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89916966157350        0.317679417126481E-09    0.115396946058984E-08    0.160123040105915E-09    0.163177191782224E-08
+   2     4.13295264590060        0.305379132324459E-05    0.216877636158073E-04    0.852366742333166E-04    0.109978229172369E-03
+   3     5.77976719450733        0.328921491931977        0.982749377684051E-01    0.700304015611642E-01    0.497226831261546    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89916966157350       -0.576672862638964E-04   -0.109908715875211E-03   -0.409413246008564E-04    0.170816337904528E-07
+   2     4.13295264590060        0.549174680639067E-02   -0.146351848868993E-01    0.290137641089388E-01    0.108614642742837E-02
+   3     5.77976719450733        -1.52409484903831        0.833081054932883        0.703249088420546         3.51144843331751    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29010835907093       -31.247573704397826     
+ Total energies of excited states (eV,AU)
+           1  -846.39093869749740       -31.104281914703716     
+           2  -846.15715571317037       -31.095690551636245     
+           3  -844.51034116456356       -31.035171255364087     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.7164185E-04 -0.1224883E-03  0.3604402E-03  0.3873669E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899170     -0.5279610E-04 -0.1033187E-03 -0.1351298E-04  0.1168108E-03
+   2   4.132953      0.3543222E-04  0.2170139E-05  0.6630930E-04  0.7521353E-04
+   3   5.779767      0.6560841E-03  0.1443995E-02 -0.9899048E-03  0.1869620E-02
+QMMM:
+QMMM: SCF Energy =       23.08798202 KCal/mol,        96.60011676 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899224020898532     0.24E-06 0.10E-05
+  2 +++    4.132999311544272     0.41E-06 0.10E-05
+  3 +++    5.779825680621428     0.68E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922402089853        0.355731343558091E-09    0.117887505580311E-08    0.158460978631486E-09    0.169306737799269E-08
+   2     4.13299931154427        0.303270700171629E-05    0.216726538197406E-04    0.846818616815678E-04    0.109387222503025E-03
+   3     5.77982568062143        0.328917560659460        0.982768384797364E-01    0.700199333816071E-01    0.497214332520803    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922402089853       -0.610229242009628E-04   -0.111087664928237E-03   -0.407280029624318E-04    0.177230368025525E-07
+   2     4.13299931154427        0.547272471204134E-02   -0.146300032609064E-01    0.289190201924938E-01    0.108029744008178E-02
+   3     5.77982568062143        -1.52407802987472        0.833084896072326        0.703192967607571         3.51132463490338    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016394871223       -31.247575747278717     
+ Total energies of excited states (eV,AU)
+           1  -846.39093992781375       -31.104281959916992     
+           2  -846.15716463716797       -31.095690879586986     
+           3  -844.51033826809078       -31.035171148920714     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.8511528E-04 -0.1316160E-03  0.3331868E-03  0.3682130E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899224     -0.5106017E-04 -0.9911007E-04 -0.1156986E-04  0.1120884E-03
+   2   4.132999      0.3722908E-04  0.6115080E-05  0.6809415E-04  0.7784737E-04
+   3   5.779826      0.6609514E-03  0.1446056E-02 -0.9910461E-03  0.1873528E-02
+QMMM:
+QMMM: SCF Energy =       23.08670006 KCal/mol,        96.59475307 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899227855082949     0.25E-06 0.10E-05
+  2 +++    4.133003294751092     0.40E-06 0.10E-05
+  3 +++    5.779834439315534     0.71E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922785508295        0.348898063412010E-09    0.111292698266081E-08    0.147272934342149E-09    0.160909798041497E-08
+   2     4.13300329475109        0.304370287976218E-05    0.216972966298873E-04    0.846371574205056E-04    0.109378156930155E-03
+   3     5.77983443931553        0.328914752465475        0.982759145404560E-01    0.700194672914603E-01    0.497210134297391    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922785508295       -0.604339546934987E-04   -0.107935689751020E-03   -0.392638792308734E-04    0.168440282141810E-07
+   2     4.13300329475109        0.548263449565675E-02   -0.146383113393253E-01    0.289113719570652E-01    0.108020686831976E-02
+   3     5.77983443931553        -1.52407036903241        0.833080348762578        0.703190094385663         3.51128966609909    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016782296276       -31.247575889654748     
+ Total energies of excited states (eV,AU)
+           1  -846.39093996787983       -31.104281961389393     
+           2  -846.15716452821164       -31.095690875582918     
+           3  -844.51033338364721       -31.035170969420790     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.5528658E-04 -0.9908279E-04  0.3365289E-03  0.3551418E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899228     -0.4615302E-04 -0.1044685E-03 -0.1477132E-04  0.1151606E-03
+   2   4.133003      0.4201482E-04  0.8606662E-06  0.6495627E-04  0.7736474E-04
+   3   5.779834      0.6626103E-03  0.1444536E-02 -0.9925721E-03  0.1873749E-02
+QMMM:
+QMMM: SCF Energy =       23.08661072 KCal/mol,        96.59437926 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899221798477651     0.26E-06 0.10E-05
+  2 +++    4.132996208789307     0.42E-06 0.10E-05
+  3 +++    5.779801953563161     0.75E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922179847765        0.292027380124277E-09    0.114090768782858E-08    0.160116176306930E-09    0.159305124425979E-08
+   2     4.13299620878931        0.302085175251613E-05    0.216534040523228E-04    0.846500563118464E-04    0.109324312116685E-03
+   3     5.77980195356316        0.328914593378731        0.982766106614755E-01    0.700185521089492E-01    0.497209756149156    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922179847765       -0.552896522809825E-04   -0.109284187009843E-03   -0.409401733901255E-04    0.166760769769678E-07
+   2     4.13299620878931        0.546201948886985E-02   -0.146235100829820E-01    0.289135997378207E-01    0.107967695384277E-02
+   3     5.77980195356316        -1.52407428351875        0.833085640446191        0.703187475029525         3.51130673103924    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016042312969       -31.247575617715995     
+ Total energies of excited states (eV,AU)
+           1  -846.39093862465199       -31.104281912026696     
+           2  -846.15716421434036       -31.095690864048365     
+           3  -844.51035846956654       -31.035171891310984     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6061430E-04 -0.1194279E-03  0.3647990E-03  0.3886070E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899222     -0.4526932E-04 -0.1055671E-03 -0.1588152E-04  0.1159567E-03
+   2   4.132996      0.4290428E-04 -0.1752787E-06  0.6381053E-04  0.7689338E-04
+   3   5.779802      0.6663012E-03  0.1438285E-02 -0.9948878E-03  0.1871476E-02
+QMMM:
+QMMM: SCF Energy =       23.08678137 KCal/mol,        96.59509324 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899226543071577     0.24E-06 0.10E-05
+  2 +++    4.133001693701481     0.40E-06 0.10E-05
+  3 +++    5.779828047901444     0.70E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922654307158        0.371284225760269E-09    0.104371760348791E-08    0.133586159046303E-09    0.154858798829448E-08
+   2     4.13300169370148        0.303995470185415E-05    0.216826882100940E-04    0.846320121920488E-04    0.109354655103997E-03
+   3     5.77982804790144        0.328914576288848        0.982762807034396E-01    0.700192739249602E-01    0.497210130917248    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922654307158       -0.623426210847940E-04   -0.104525754832647E-03   -0.373949140836346E-04    0.162106154263792E-07
+   2     4.13300169370148        0.547925871288387E-02   -0.146333854812464E-01    0.289104987590876E-01    0.107997518518467E-02
+   3     5.77982804790144        -1.52407080353204        0.833082361351046        0.703189512214439         3.51129352506141    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016610781628       -31.247575826624299     
+ Total energies of excited states (eV,AU)
+           1  -846.39093956474471       -31.104281946574456     
+           2  -846.15716441411485       -31.095690871389937     
+           3  -844.51033805991483       -31.035171141270393     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.4723187E-04 -0.1089764E-03  0.3420251E-03  0.3620606E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899227     -0.4477329E-04 -0.1055943E-03 -0.1586046E-04  0.1157858E-03
+   2   4.133002      0.4340250E-04 -0.2922720E-06  0.6388796E-04  0.7723687E-04
+   3   5.779828      0.6631636E-03  0.1440367E-02 -0.9944625E-03  0.1871737E-02
+QMMM:
+QMMM: SCF Energy =       23.08665027 KCal/mol,        96.59454474 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899223312476584     0.25E-06 0.10E-05
+  2 +++    4.132997985787819     0.41E-06 0.10E-05
+  3 +++    5.779816228837450     0.67E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922331247658        0.393146488594361E-09    0.109921499952158E-08    0.141077236632467E-09    0.163343872474841E-08
+   2     4.13299798578782        0.302796694488742E-05    0.216594192889288E-04    0.846459315080989E-04    0.109333317741915E-03
+   3     5.77981622883745        0.328915561987070        0.982771655607855E-01    0.700190928745640E-01    0.497211820422420    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922331247658       -0.641518505539791E-04   -0.107268772567815E-03   -0.384291218409853E-04    0.170988469031749E-07
+   2     4.13299798578782        0.546844704021115E-02   -0.146255379766447E-01    0.289128890668209E-01    0.107976542832816E-02
+   3     5.77981622883745        -1.52407464549118        0.833086963567473        0.703189322057277         3.51131263655050    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016222998689       -31.247575684116750     
+ Total energies of excited states (eV,AU)
+           1  -846.39093891751031       -31.104281922789038     
+           2  -846.15716424419907       -31.095690865145652     
+           3  -844.51034600114940       -31.035171433105276     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.7566467E-04 -0.1411563E-03  0.3380751E-03  0.3740923E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899223     -0.4782239E-04 -0.9937684E-04 -0.1221503E-04  0.1109592E-03
+   2   4.132998      0.4045004E-04  0.5752169E-05  0.6742298E-04  0.7883623E-04
+   3   5.779816      0.6632091E-03  0.1442716E-02 -0.9926670E-03  0.1872609E-02
+QMMM:
+QMMM: SCF Energy =       23.08673970 KCal/mol,        96.59491891 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899229461205619     0.26E-06 0.10E-05
+  2 +++    4.133005084783627     0.42E-06 0.10E-05
+  3 +++    5.779848176711504     0.65E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922946120562        0.460107194889910E-09    0.107053947372176E-08    0.128694156094092E-09    0.165934082470577E-08
+   2     4.13300508478363        0.305061819465083E-05    0.217031956949127E-04    0.846262559117242E-04    0.109380069801288E-03
+   3     5.77984817671150        0.328915399361812        0.982764693961619E-01    0.700198726981052E-01    0.497211741456079    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922946120562       -0.694002696791481E-04   -0.105860267859336E-03   -0.367038024691837E-04    0.173699628584858E-07
+   2     4.13300508478363        0.548885806590988E-02   -0.146402979670794E-01    0.289095037028113E-01    0.108022529177543E-02
+   3     5.77984817671150        -1.52407005658322        0.833081710476780        0.703191294422486         3.51129267025607    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016970434077       -31.247575958794087     
+ Total energies of excited states (eV,AU)
+           1  -846.39094024313511       -31.104281971504832     
+           2  -846.15716461955719       -31.095690878939802     
+           3  -844.51032152762923       -31.035170533720326     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.7017461E-04 -0.1207129E-03  0.3097517E-03  0.3397678E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899229     -0.4825667E-04 -0.9806784E-04 -0.1100041E-04  0.1098500E-03
+   2   4.133005      0.4000137E-04  0.6983024E-05  0.6865902E-04  0.7976800E-04
+   3   5.779848      0.6599726E-03  0.1449167E-02 -0.9903032E-03  0.1875193E-02
+QMMM:
+QMMM: SCF Energy =       23.08656733 KCal/mol,        96.59419773 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899226100397406     0.24E-06 0.10E-05
+  2 +++    4.133001152445736     0.41E-06 0.10E-05
+  3 +++    5.779831427057871     0.68E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922610039741        0.459858444025957E-09    0.995153021810713E-09    0.115295906678333E-09    0.157030737251500E-08
+   2     4.13300115244574        0.303647354346480E-05    0.216774722342010E-04    0.846456806419026E-04    0.109359626419568E-03
+   3     5.77983142705787        0.328915718067674        0.982764147175574E-01    0.700192531398135E-01    0.497211385925044    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922610039741       -0.693815368748519E-04   -0.102064982628687E-03   -0.347407169973220E-04    0.164379757555987E-07
+   2     4.13300115244574        0.547612092746332E-02   -0.146316262337595E-01    0.289128351456982E-01    0.108002442281896E-02
+   3     5.77983142705787        -1.52407300330221        0.833082685836409        0.703189202285369         3.51130033504575    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016529689397       -31.247575796823465     
+ Total energies of excited states (eV,AU)
+           1  -846.39093919649656       -31.104281933041591     
+           2  -846.15716414444819       -31.095690861479877     
+           3  -844.51033386983613       -31.035170987287898     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.9744549E-04 -0.1170582E-03  0.3372517E-03  0.3700500E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899226     -0.5307437E-04 -0.1020035E-03 -0.1235717E-04  0.1156474E-03
+   2   4.133001      0.3533095E-04  0.3124096E-05  0.6732622E-04  0.7609767E-04
+   3   5.779831      0.6584142E-03  0.1443838E-02 -0.9910199E-03  0.1870909E-02
+QMMM:
+QMMM: SCF Energy =       23.08666897 KCal/mol,        96.59462299 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899223532568663     0.25E-06 0.10E-05
+  2 +++    4.132998308143796     0.41E-06 0.10E-05
+  3 +++    5.779815892046468     0.69E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922353256866        0.389269350601259E-09    0.107964722801207E-08    0.136372762547366E-09    0.160528934116069E-08
+   2     4.13299830814380        0.304179834977824E-05    0.216793031027926E-04    0.846146650940112E-04    0.109335766546582E-03
+   3     5.77981589204647        0.328915560117391        0.982761104207565E-01    0.700193478295566E-01    0.497211018367704    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922353256866       -0.638347381482551E-04   -0.106309704986596E-03   -0.377829440410551E-04    0.168041780292028E-07
+   2     4.13299830814380        0.548092221486108E-02   -0.146322491455793E-01    0.289075475418989E-01    0.107978952827080E-02
+   3     5.77981589204647        -1.52407468556353        0.833082515662394        0.703190622777507         3.51130717704017    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016288321691       -31.247575708122501     
+ Total energies of excited states (eV,AU)
+           1  -846.39093935064830       -31.104281938706560     
+           2  -846.15716457507312       -31.095690877305046     
+           3  -844.51034699117042       -31.035171469487864     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.7013877E-04 -0.1069333E-03  0.3296449E-03  0.3535816E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899224     -0.4897426E-04 -0.1013591E-03 -0.1260524E-04  0.1132741E-03
+   2   4.132998      0.3932614E-04  0.3845394E-05  0.6704584E-04  0.7782337E-04
+   3   5.779816      0.6628671E-03  0.1446388E-02 -0.9917698E-03  0.1874844E-02
+QMMM:
+QMMM: SCF Energy =       23.08672464 KCal/mol,        96.59485588 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899229522819928     0.26E-06 0.10E-05
+  2 +++    4.133005002798582     0.42E-06 0.10E-05
+  3 +++    5.779847637120632     0.69E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922952281993        0.460051671730412E-09    0.102971587128803E-08    0.120549729515369E-09    0.161031727253382E-08
+   2     4.13300500279858        0.302457852642039E-05    0.216667977815759E-04    0.846895566231164E-04    0.109380932931113E-03
+   3     5.77984763712063        0.328915558880149        0.982770102134428E-01    0.700188456194313E-01    0.497211414713023    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922952281993       -0.693960815865872E-04   -0.103822228286102E-03   -0.355234193350346E-04    0.168567845471165E-07
+   2     4.13300500279858        0.546538183658409E-02   -0.146280165129432E-01    0.289203141693575E-01    0.108023383737694E-02
+   3     5.77984763712063        -1.52407049729865        0.833084041593106        0.703186169885906         3.51129069061207    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016913400847       -31.247575937834771     
+ Total energies of excited states (eV,AU)
+           1  -846.39093961118851       -31.104281948281233     
+           2  -846.15716413120992       -31.095690860993379     
+           3  -844.51032149688785       -31.035170532590602     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6690773E-04 -0.1276546E-03  0.3593809E-03  0.3872041E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899230     -0.4730452E-04 -0.1026620E-03 -0.1418773E-04  0.1139232E-03
+   2   4.133005      0.4091662E-04  0.2462488E-05  0.6554736E-04  0.7730905E-04
+   3   5.779848      0.6589378E-03  0.1442294E-02 -0.9912942E-03  0.1870047E-02
+QMMM:
+QMMM: SCF Energy =       23.08658049 KCal/mol,        96.59425276 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899225441336073     0.24E-06 0.10E-05
+  2 +++    4.133000341106043     0.40E-06 0.10E-05
+  3 +++    5.779819485090215     0.70E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922544133607        0.300010134428415E-09    0.122865315164052E-08    0.175983642231764E-09    0.170464692830070E-08
+   2     4.13300034110604        0.303496704376414E-05    0.216805080030138E-04    0.846360394475752E-04    0.109351514494353E-03
+   3     5.77981948509021        0.328913957843871        0.982765912284355E-01    0.700190782069508E-01    0.497209627279257    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922544133607       -0.560402201130880E-04   -0.113408738381771E-03   -0.429208209882201E-04    0.178442450859712E-07
+   2     4.13300034110604        0.547476284966178E-02   -0.146326521593768E-01    0.289111913418291E-01    0.107994452228121E-02
+   3     5.77981948509021        -1.52407049966166        0.833084294608374        0.703189050322649         3.51129517035574    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016458667638       -31.247575770723458     
+ Total energies of excited states (eV,AU)
+           1  -846.39093914534033       -31.104281931161633     
+           2  -846.15716424557036       -31.095690865196044     
+           3  -844.51034510158615       -31.035171400046949     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.3407076E-04 -0.1237813E-03  0.3367943E-03  0.3604345E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899225     -0.4034392E-04 -0.1016292E-03 -0.1450236E-04  0.1103016E-03
+   2   4.133000      0.4765349E-04  0.3686336E-05  0.6516729E-04  0.8081596E-04
+   3   5.779819      0.6664032E-03  0.1444128E-02 -0.9936190E-03  0.1875334E-02
+QMMM:
+QMMM: SCF Energy =       23.08668535 KCal/mol,        96.59469152 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899227809755429     0.25E-06 0.10E-05
+  2 +++    4.133003028191836     0.41E-06 0.10E-05
+  3 +++    5.779834319622541     0.69E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922780975543        0.355375899469247E-09    0.113243979822637E-08    0.151732100737820E-09    0.163954779843344E-08
+   2     4.13300302819184        0.302959277928237E-05    0.216774683205226E-04    0.846612506820294E-04    0.109368311781834E-03
+   3     5.77983431962254        0.328914307492413        0.982769470364882E-01    0.700190252904712E-01    0.497210279819373    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922780975543       -0.609924001246502E-04   -0.108877790658333E-03   -0.398538675460335E-04    0.171627769299821E-07
+   2     4.13300302819184        0.546991161846188E-02   -0.146316215927020E-01    0.289154876288488E-01    0.108010970835992E-02
+   3     5.77983431962254        -1.52406935389182        0.833084733587525        0.703187882203912         3.51129076648725    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016728323950       -31.247575869820288     
+ Total energies of excited states (eV,AU)
+           1  -846.39093947348408       -31.104281943220691     
+           2  -846.15716425504763       -31.095690865544327     
+           3  -844.51033296361697       -31.035170953984970     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6077926E-04 -0.1332811E-03  0.3448428E-03  0.3746658E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899228     -0.4438042E-04 -0.1022753E-03 -0.1427274E-04  0.1123992E-03
+   2   4.133003      0.4373553E-04  0.2962181E-05  0.6542511E-04  0.7875288E-04
+   3   5.779834      0.6631703E-03  0.1441211E-02 -0.9932914E-03  0.1871767E-02
+QMMM:
+QMMM: SCF Energy =       23.08662317 KCal/mol,        96.59443133 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899221770762713     0.26E-06 0.10E-05
+  2 +++    4.132996294558117     0.42E-06 0.10E-05
+  3 +++    5.779802404744176     0.71E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922177076271        0.292454952944150E-09    0.118358562604095E-08    0.169367257579609E-09    0.164540783656471E-08
+   2     4.13299629455812        0.304680949450495E-05    0.216896911488272E-04    0.845850495464366E-04    0.109321550189769E-03
+   3     5.77980240474418        0.328914348322857        0.982760591985127E-01    0.700195390793429E-01    0.497209946600713    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922177076271       -0.553301139329475E-04   -0.111309418824753E-03   -0.421062729851250E-04    0.172241464516350E-07
+   2     4.13299629455812        0.548543640644126E-02   -0.146357579497418E-01    0.289024952480980E-01    0.107964965489887E-02
+   3     5.77980240474418        -1.52407365628151        0.833083270565764        0.703192403575374         3.51130780191395    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016105789105       -31.247575641043039     
+ Total energies of excited states (eV,AU)
+           1  -846.39093928712839       -31.104281936372246     
+           2  -846.15716476333296       -31.095690884223462     
+           3  -844.51035865314691       -31.035171898057438     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6391301E-04 -0.1124878E-03  0.3151667E-03  0.3406882E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899222     -0.4606805E-04 -0.1009169E-03 -0.1266281E-04  0.1116550E-03
+   2   4.132996      0.4213247E-04  0.4397979E-05  0.6694902E-04  0.7922537E-04
+   3   5.779802      0.6674097E-03  0.1445250E-02 -0.9938589E-03  0.1876683E-02
+QMMM:
+QMMM: SCF Energy =       23.08676673 KCal/mol,        96.59503200 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899226467505613     0.24E-06 0.10E-05
+  2 +++    4.133001633866811     0.40E-06 0.10E-05
+  3 +++    5.779827968693194     0.69E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922646750561        0.399949421293986E-09    0.106154387044061E-08    0.132234027568367E-09    0.159372731930296E-08
+   2     4.13300163386681        0.303767793184883E-05    0.216774296998216E-04    0.846380433168193E-04    0.109353150948490E-03
+   3     5.77982796869319        0.328915560979301        0.982762594760573E-01    0.700191576080159E-01    0.497210978063375    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922646750561       -0.647044796317709E-04   -0.105414605056904E-03   -0.372051813194242E-04    0.166831341607325E-07
+   2     4.13300163386681        0.547720652646663E-02   -0.146316110268931E-01    0.289115290733742E-01    0.107996034593643E-02
+   3     5.77982796869319        -1.52407309532261        0.833082277087781        0.703188932958676         3.51129955571958    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016660671596       -31.247575844958519     
+ Total energies of excited states (eV,AU)
+           1  -846.39094013921033       -31.104281967685669     
+           2  -846.15716497284916       -31.095690891923038     
+           3  -844.51033863802274       -31.035171162515461     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.7704400E-04 -0.1135993E-03  0.3426056E-03  0.3690788E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899226     -0.4692838E-04 -0.1026630E-03 -0.1373383E-04  0.1137128E-03
+   2   4.133002      0.4131721E-04  0.2565369E-05  0.6595941E-04  0.7787385E-04
+   3   5.779828      0.6659280E-03  0.1443653E-02 -0.9928236E-03  0.1874378E-02
+QMMM:
+QMMM: SCF Energy =       23.08663877 KCal/mol,        96.59449661 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899223798717027     0.24E-06 0.10E-05
+  2 +++    4.132998452038112     0.40E-06 0.10E-05
+  3 +++    5.779813677181370     0.71E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922379871703        0.551331122193458E-09    0.980937869361918E-09    0.105006647987705E-09    0.163727563954308E-08
+   2     4.13299845203811        0.303768310163573E-05    0.216752455219382E-04    0.846236871899001E-04    0.109336615813474E-03
+   3     5.77981367718137        0.328914850549014        0.982763864621796E-01    0.700191936065707E-01    0.497210430617764    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922379871703       -0.759693158777567E-04   -0.101333422625616E-03   -0.331543378503269E-04    0.171390096142498E-07
+   2     4.13299845203811        0.547721329560154E-02   -0.146308795130962E-01    0.289090881409739E-01    0.107979787795485E-02
+   3     5.77981367718137        -1.52407333363988        0.833083845279163        0.703189983095056         3.51130437190251    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016278131940       -31.247575704377837     
+ Total energies of excited states (eV,AU)
+           1  -846.39093898260239       -31.104281925181127     
+           2  -846.15716432928127       -31.095690868272364     
+           3  -844.51034910413807       -31.035171547137963     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.7156333E-04 -0.8996727E-04  0.3379333E-03  0.3569514E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899224     -0.5078827E-04 -0.1064012E-03 -0.1497298E-04  0.1188480E-03
+   2   4.132998      0.3760588E-04 -0.1264420E-05  0.6479753E-04  0.7493011E-04
+   3   5.779814      0.6596329E-03  0.1439755E-02 -0.9944371E-03  0.1870004E-02
+QMMM:
+QMMM: SCF Energy =       23.08672699 KCal/mol,        96.59486571 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899230229492932     0.27E-06 0.10E-05
+  2 +++    4.133005934648405     0.42E-06 0.10E-05
+  3 +++    5.779845973474895     0.71E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89923022949293        0.335470761819483E-09    0.116029180841750E-08    0.158885649532485E-09    0.165464821976946E-08
+   2     4.13300593464840        0.303352817743955E-05    0.216741932527232E-04    0.846744424702964E-04    0.109382163900459E-03
+   3     5.77984597347490        0.328915834782629        0.982768223594030E-01    0.700191942420803E-01    0.497211851384112    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89923022949293       -0.592596306705402E-04   -0.110208531629156E-03   -0.407825089211510E-04    0.173208373049673E-07
+   2     4.13300593464840        0.547346120984166E-02   -0.146305111218310E-01    0.289177301569905E-01    0.108024575073418E-02
+   3     5.77984597347490        -1.52407135585346        0.833083365278623        0.703188021661025         3.51129478504451    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29017093015909       -31.247576003842063     
+ Total energies of excited states (eV,AU)
+           1  -846.39094070066619       -31.104281988318785     
+           2  -846.15716499551070       -31.095690892755833     
+           3  -844.51032495668414       -31.035170659735723     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.7138857E-04 -0.1187827E-03  0.3630246E-03  0.3885775E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899230     -0.4789024E-04 -0.1040595E-03 -0.1454211E-04  0.1154701E-03
+   2   4.133006      0.4034136E-04  0.1368409E-05  0.6513931E-04  0.7663176E-04
+   3   5.779846      0.6632329E-03  0.1444755E-02 -0.9909728E-03  0.1873291E-02
+QMMM:
+QMMM: SCF Energy =       23.08653907 KCal/mol,        96.59407945 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899224854783497     0.24E-06 0.10E-05
+  2 +++    4.132999688221677     0.40E-06 0.10E-05
+  3 +++    5.779822045131075     0.69E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922485478350        0.348797075955304E-09    0.114928170465765E-08    0.155833150893515E-09    0.165391193150647E-08
+   2     4.13299968822168        0.303423588547580E-05    0.216785814663930E-04    0.846362575560544E-04    0.109349074907923E-03
+   3     5.77982204513108        0.328914326493343        0.982768295708976E-01    0.700192614546250E-01    0.497210417518865    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922485478350       -0.604252310980303E-04   -0.109684471989572E-03   -0.403888816886719E-04    0.173131537129430E-07
+   2     4.13299968822168        0.547410377579945E-02   -0.146320031696426E-01    0.289112308776489E-01    0.107992059976538E-02
+   3     5.77982204513108        -1.52407101623038        0.833085120316439        0.703189814752790         3.51129919577821    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016352624240       -31.247575731753244     
+ Total energies of excited states (eV,AU)
+           1  -846.39093867145891       -31.104281913746821     
+           2  -846.15716383802067       -31.095690850218876     
+           3  -844.51034148111137       -31.035171266997001     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.5387065E-04 -0.1260080E-03  0.3321513E-03  0.3593112E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899225     -0.4608394E-04 -0.1002764E-03 -0.1281650E-04  0.1111006E-03
+   2   4.133000      0.4210398E-04  0.4939613E-05  0.6682586E-04  0.7913811E-04
+   3   5.779822      0.6622152E-03  0.1445367E-02 -0.9918674E-03  0.1873877E-02
+QMMM:
+QMMM: SCF Energy =       23.08670981 KCal/mol,        96.59479383 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899227484644725     0.25E-06 0.10E-05
+  2 +++    4.133002837568401     0.41E-06 0.10E-05
+  3 +++    5.779836302855118     0.69E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922748464473        0.227273156658555E-09    0.123725146873895E-08    0.189096869202315E-09    0.165362149459982E-08
+   2     4.13300283756840        0.303379513567813E-05    0.216810235299664E-04    0.846505490103049E-04    0.109365367675949E-03
+   3     5.77983630285512        0.328915046184886        0.982766978096745E-01    0.700191976430601E-01    0.497210941637620    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922748464473       -0.487759602254471E-04   -0.113804843231697E-03   -0.444911800802928E-04    0.173101017438426E-07
+   2     4.13300283756840        0.547370409470475E-02   -0.146328217092458E-01    0.289136606954394E-01    0.108008068250196E-02
+   3     5.77983630285512        -1.52407080383015        0.833083534322527        0.703188627013246         3.51129423540756    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016716906654       -31.247575865624512     
+ Total energies of excited states (eV,AU)
+           1  -846.39093968442182       -31.104281950972506     
+           2  -846.15716433149817       -31.095690868353834     
+           3  -844.51033086621146       -31.035170876906768     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.5917240E-04 -0.1501559E-03  0.3366216E-03  0.3733125E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899227     -0.4244105E-04 -0.9690750E-04 -0.1175068E-04  0.1064443E-03
+   2   4.133003      0.4559074E-04  0.8394767E-05  0.6782031E-04  0.8214975E-04
+   3   5.779836      0.6673481E-03  0.1448258E-02 -0.9905798E-03  0.1877247E-02
+QMMM:
+QMMM: SCF Energy =       23.08662580 KCal/mol,        96.59444235 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899221049776382     0.25E-06 0.10E-05
+  2 +++    4.132995350819263     0.42E-06 0.10E-05
+  3 +++    5.779804004970253     0.68E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922104977638        0.409236083010556E-09    0.105148174450418E-08    0.129724030374057E-09    0.159044185788880E-08
+   2     4.13299535081926        0.303786155401604E-05    0.216821570057317E-04    0.845997491468943E-04    0.109319767706642E-03
+   3     5.77980400497025        0.328914075620438        0.982762545997939E-01    0.700191943025656E-01    0.497209524522798    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922104977638       -0.654514200880690E-04   -0.104913888213168E-03   -0.368504105615332E-04    0.166487650901036E-07
+   2     4.13299535081926        0.547737623100043E-02   -0.146332174571719E-01    0.289050098470718E-01    0.107963229778412E-02
+   3     5.77980400497025        -1.52407281349639        0.833083983444848        0.703190574966211         3.51130384903245    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29015922796998       -31.247575573794702     
+ Total energies of excited states (eV,AU)
+           1  -846.39093817819355       -31.104281895619657     
+           2  -846.15716387715077       -31.095690851656880     
+           3  -844.51035522299969       -31.035171772001899     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.5937550E-04 -0.1213568E-03  0.3115302E-03  0.3395644E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899221     -0.4544079E-04 -0.9941804E-04 -0.1226027E-04  0.1099960E-03
+   2   4.132995      0.4275220E-04  0.5592451E-05  0.6740304E-04  0.8001372E-04
+   3   5.779804      0.6633856E-03  0.1442915E-02 -0.9941631E-03  0.1873618E-02
+QMMM:
+QMMM: SCF Energy =       23.08680893 KCal/mol,        96.59520856 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899224607171013     0.24E-06 0.10E-05
+  2 +++    4.132999549431491     0.41E-06 0.10E-05
+  3 +++    5.779821670303468     0.69E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922460717101        0.339207859864813E-09    0.115331195665023E-08    0.157646940774942E-09    0.165016675728999E-08
+   2     4.13299954943149        0.303423067306836E-05    0.216789826050388E-04    0.846260922167848E-04    0.109339305494892E-03
+   3     5.77982167030347        0.328914675012173        0.982768612482445E-01    0.700193425651124E-01    0.497210878825530    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922460717101       -0.595888315353655E-04   -0.109876625580510E-03   -0.406232522737821E-04    0.172739503180091E-07
+   2     4.13299954943149        0.547409916582477E-02   -0.146321387893744E-01    0.289094951018803E-01    0.107982415427444E-02
+   3     5.77982167030347        -1.52407187310463        0.833085281592878        0.703190244842409         3.51130268123687    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016447740605       -31.247575766707850     
+ Total energies of excited states (eV,AU)
+           1  -846.39093987023500       -31.104281957801010     
+           2  -846.15716492797458       -31.095690890273929     
+           3  -844.51034280710257       -31.035171315726263     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.7695779E-04 -0.1141337E-03  0.3424652E-03  0.3690954E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899225     -0.4728079E-04 -0.1033279E-03 -0.1400975E-04  0.1144919E-03
+   2   4.133000      0.4092776E-04  0.1956278E-05  0.6567158E-04  0.7740585E-04
+   3   5.779822      0.6641854E-03  0.1442249E-02 -0.9933498E-03  0.1872957E-02
+QMMM:
+QMMM: SCF Energy =       23.08668787 KCal/mol,        96.59470206 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899227130508445     0.25E-06 0.10E-05
+  2 +++    4.133002424998362     0.42E-06 0.10E-05
+  3 +++    5.779835571432301     0.71E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922713050845        0.227037169503872E-09    0.123655891724283E-08    0.189100479809184E-09    0.165269656655589E-08
+   2     4.13300242499836        0.303411034908843E-05    0.216820347162867E-04    0.846476218668453E-04    0.109363766932220E-03
+   3     5.77983557143230        0.328915074176214        0.982766888318216E-01    0.700192027805629E-01    0.497210965788598    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922713050845       -0.487506328100447E-04   -0.113772992809959E-03   -0.444916068549440E-04    0.173004211728496E-07
+   2     4.13300242499836        0.547398872135297E-02   -0.146331636674273E-01    0.289131622294142E-01    0.108006498154364E-02
+   3     5.77983557143230        -1.52407096511444        0.833083548982512        0.703188697304021         3.51129485030628    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016692994310       -31.247575856836892     
+ Total energies of excited states (eV,AU)
+           1  -846.39093979943470       -31.104281955199149     
+           2  -846.15716450494472       -31.095690874727875     
+           3  -844.51033135851083       -31.035170894998430     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.7153651E-04 -0.8997834E-04  0.3379310E-03  0.3569467E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899227     -0.5075517E-04 -0.1069883E-03 -0.1495419E-04  0.1193575E-03
+   2   4.133002      0.3748973E-04 -0.1481462E-05  0.6469099E-04  0.7478368E-04
+   3   5.779836      0.6589965E-03  0.1439592E-02 -0.9947592E-03  0.1869826E-02
+QMMM:
+QMMM: SCF Energy =       23.08663131 KCal/mol,        96.59446542 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899221751789506     0.26E-06 0.10E-05
+  2 +++    4.132996208949937     0.42E-06 0.10E-05
+  3 +++    5.779805711444141     0.69E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922175178951        0.405564129807523E-09    0.105518278754193E-08    0.130891968346328E-09    0.159163888569578E-08
+   2     4.13299620894994        0.303728667767819E-05    0.216805309813212E-04    0.846018859038867E-04    0.109319703562886E-03
+   3     5.77980571144414        0.328914243791831        0.982762655889464E-01    0.700191843130850E-01    0.497209693693863    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922175178951       -0.651571145427333E-04   -0.105098356389450E-03   -0.370159222638568E-04    0.166612925923426E-07
+   2     4.13299620894994        0.547685737630011E-02   -0.146326672284985E-01    0.289053718744931E-01    0.107963144014305E-02
+   3     5.77980571144414        -1.52407297813054        0.833083907039107        0.703190420997229         3.51130400701751    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016136129121       -31.247575652192783     
+ Total energies of excited states (eV,AU)
+           1  -846.39093960950174       -31.104281948219246     
+           2  -846.15716515234124       -31.095690898519248     
+           3  -844.51035564984704       -31.035171787688242     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.7157972E-04 -0.1187285E-03  0.3629965E-03  0.3885699E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899222     -0.4809225E-04 -0.1040278E-03 -0.1466320E-04  0.1155407E-03
+   2   4.132996      0.4021086E-04  0.1216028E-05  0.6507668E-04  0.7650730E-04
+   3   5.779806      0.6630624E-03  0.1444318E-02 -0.9910275E-03  0.1872923E-02
+QMMM:
+QMMM: SCF Energy =       23.08675973 KCal/mol,        96.59500272 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899226299682849     0.24E-06 0.10E-05
+  2 +++    4.133001437728393     0.40E-06 0.10E-05
+  3 +++    5.779827603598430     0.69E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922629968285        0.394589508676065E-09    0.106193990508896E-08    0.132379884912284E-09    0.158890929867731E-08
+   2     4.13300143772839        0.303726713491994E-05    0.216779778090557E-04    0.846374110171619E-04    0.109352655961137E-03
+   3     5.77982760359843        0.328915541345997        0.982762554998557E-01    0.700191255939250E-01    0.497210922439778    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922629968285       -0.642694508176910E-04   -0.105434269227809E-03   -0.372256955746615E-04    0.166326998470270E-07
+   2     4.13300143772839        0.547683629199554E-02   -0.146317963515100E-01    0.289114217654980E-01    0.107995550874389E-02
+   3     5.77982760359843        -1.52407309797149        0.833082286546445        0.703188794412165         3.51129938470470    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016565502616       -31.247575809984575     
+ Total energies of excited states (eV,AU)
+           1  -846.39093935534333       -31.104281938879101     
+           2  -846.15716421729780       -31.095690864157049     
+           3  -844.51033805142777       -31.035171140958500     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.5386497E-04 -0.1259507E-03  0.3321105E-03  0.3592526E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899226     -0.4611411E-04 -0.1002423E-03 -0.1284120E-04  0.1110853E-03
+   2   4.133001      0.4210428E-04  0.4903930E-05  0.6682621E-04  0.7913634E-04
+   3   5.779828      0.6622685E-03  0.1445234E-02 -0.9918439E-03  0.1873781E-02
+QMMM:
+QMMM: SCF Energy =       23.08666072 KCal/mol,        96.59458843 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899224064635785     0.24E-06 0.10E-05
+  2 +++    4.132998790055494     0.40E-06 0.10E-05
+  3 +++    5.779814281427163     0.69E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922406463579        0.549825995066405E-09    0.981491492337794E-09    0.104990761304721E-09    0.163630824870892E-08
+   2     4.13299879005549        0.303725839822177E-05    0.216744453734950E-04    0.846241131237862E-04    0.109335816895503E-03
+   3     5.77981428142716        0.328914939660372        0.982763989323500E-01    0.700192040776647E-01    0.497210542670386    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922406463579       -0.758655447755695E-04   -0.101362010479420E-03   -0.331518286292619E-04    0.171288817939880E-07
+   2     4.13299879005549        0.547683016920755E-02   -0.146306088605832E-01    0.289091597123407E-01    0.107978989960734E-02
+   3     5.77981428142716        -1.52407346042839        0.833083854586629        0.703189998917492         3.51130479613268    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016302430591       -31.247575713307423     
+ Total energies of excited states (eV,AU)
+           1  -846.39093895967017       -31.104281924338384     
+           2  -846.15716423425044       -31.095690864780046     
+           3  -844.51034874287870       -31.035171533861931     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.5926267E-04 -0.1501385E-03  0.3366365E-03  0.3733334E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899224     -0.4262745E-04 -0.9656711E-04 -0.1188786E-04  0.1062244E-03
+   2   4.132999      0.4555253E-04  0.8361505E-05  0.6781432E-04  0.8212021E-04
+   3   5.779814      0.6674695E-03  0.1447922E-02 -0.9904305E-03  0.1876952E-02
+QMMM:
+QMMM: SCF Energy =       23.08672138 KCal/mol,        96.59484226 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899229507075689     0.27E-06 0.10E-05
+  2 +++    4.133005058442031     0.42E-06 0.10E-05
+  3 +++    5.779844249302148     0.71E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922950707569        0.338483066415860E-09    0.115649882832297E-08    0.157605765334589E-09    0.165258766007342E-08
+   2     4.13300505844203        0.303407510379296E-05    0.216758565996102E-04    0.846716985640641E-04    0.109381630267467E-03
+   3     5.77984424930215        0.328915701493178        0.982768117887994E-01    0.700192088125221E-01    0.497211722094499    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922950707569       -0.595250976589096E-04   -0.110028259177390E-03   -0.406179212596529E-04    0.172992705963649E-07
+   2     4.13300505844203        0.547395518343724E-02   -0.146310740580708E-01    0.289172646736533E-01    0.108024070964915E-02
+   3     5.77984424930215        -1.52407127436816        0.833083444733242        0.703188199708206         3.51129491945167    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016879373694       -31.247575925330025     
+ Total energies of excited states (eV,AU)
+           1  -846.39093928666125       -31.104281936355079     
+           2  -846.15716373529494       -31.095690846443777     
+           3  -844.51032454443475       -31.035170644585843     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.5921248E-04 -0.1213959E-03  0.3115692E-03  0.3395857E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899230     -0.4528741E-04 -0.9952528E-04 -0.1217666E-04  0.1100205E-03
+   2   4.133005      0.4283350E-04  0.5668543E-05  0.6742997E-04  0.8008521E-04
+   3   5.779844      0.6634063E-03  0.1443206E-02 -0.9941619E-03  0.1873849E-02
+QMMM:
+QMMM: SCF Energy =       23.08658833 KCal/mol,        96.59428559 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899226785300604     0.24E-06 0.10E-05
+  2 +++    4.133001872655764     0.40E-06 0.10E-05
+  3 +++    5.779828536580686     0.69E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922678530060        0.381951444607918E-09    0.105331453547488E-08    0.133950944807159E-09    0.156921692488996E-08
+   2     4.13300187265576        0.304027908413671E-05    0.216836494420727E-04    0.846390587360224E-04    0.109362987262232E-03
+   3     5.77982853658069        0.328914298059960        0.982762355729322E-01    0.700192344718123E-01    0.497209768104705    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922678530060       -0.632318478078729E-04   -0.105005206537010E-03   -0.374459355431663E-04    0.164265580657812E-07
+   2     4.13300187265576        0.547955092213629E-02   -0.146337095227906E-01    0.289117016662925E-01    0.108005742594639E-02
+   3     5.77982853658069        -1.52407009449667        0.833082134848501        0.703189284377380         3.51129066600600    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016617992238       -31.247575829274147     
+ Total energies of excited states (eV,AU)
+           1  -846.39093939462180       -31.104281940322554     
+           2  -846.15716430726661       -31.095690867463340     
+           3  -844.51033764334170       -31.035171125961618     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.8258086E-04 -0.1309971E-03  0.3327243E-03  0.3669950E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899227     -0.4893954E-04 -0.9842414E-04 -0.1122301E-04  0.1104914E-03
+   2   4.133002      0.3933656E-04  0.6663392E-05  0.6838831E-04  0.7917529E-04
+   3   5.779829      0.6632316E-03  0.1445312E-02 -0.9916417E-03  0.1874075E-02
+QMMM:
+QMMM: SCF Energy =       23.08664861 KCal/mol,        96.59453779 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899223397925626     0.24E-06 0.10E-05
+  2 +++    4.132998056940853     0.41E-06 0.10E-05
+  3 +++    5.779816354605063     0.68E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922339792563        0.400204562202671E-09    0.109557794520788E-08    0.140104952274676E-09    0.163588745968522E-08
+   2     4.13299805694085        0.302822366343057E-05    0.216596533144296E-04    0.846472001624683E-04    0.109335077140329E-03
+   3     5.77981635460506        0.328915475041813        0.982771392353676E-01    0.700190729081091E-01    0.497211687185289    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922339792563       -0.647251403773810E-04   -0.107091160276270E-03   -0.382964684340684E-04    0.171244799007109E-07
+   2     4.13299805694085        0.546867880247145E-02   -0.146256168634765E-01    0.289131054870983E-01    0.107978278538988E-02
+   3     5.77981635460506        -1.52407442747310        0.833086842924431        0.703189214146862         3.51131161922372    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016248196285       -31.247575693376692     
+ Total energies of excited states (eV,AU)
+           1  -846.39093908403720       -31.104281928908787     
+           2  -846.15716442502196       -31.095690871790769     
+           3  -844.51034612735782       -31.035171437743347     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.5515781E-04 -0.9875181E-04  0.3365143E-03  0.3550157E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899223     -0.4579155E-04 -0.1043517E-03 -0.1469601E-04  0.1149005E-03
+   2   4.132998      0.4238651E-04  0.9269344E-06  0.6502742E-04  0.7762758E-04
+   3   5.779816      0.6630705E-03  0.1444149E-02 -0.9927799E-03  0.1873724E-02
+QMMM:
+QMMM: SCF Energy =       23.08673389 KCal/mol,        96.59489459 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899229416456596     0.27E-06 0.10E-05
+  2 +++    4.133005027427187     0.42E-06 0.10E-05
+  3 +++    5.779847851617582     0.69E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922941645660        0.453614805083896E-09    0.107671256426220E-08    0.130792971265916E-09    0.166112034061202E-08
+   2     4.13300502742719        0.305010771719411E-05    0.217028587619992E-04    0.846275026284286E-04    0.109380469107622E-03
+   3     5.77984785161758        0.328915354673687        0.982764838178163E-01    0.700198602269208E-01    0.497211698718424    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922941645660       -0.689088906865148E-04   -0.106165042690742E-03   -0.370018851852069E-04    0.173885910124323E-07
+   2     4.13300502742719        0.548839884371308E-02   -0.146401844260140E-01    0.289097168504925E-01    0.108022925027102E-02
+   3     5.77984785161758        -1.52406999591075        0.833081795031180        0.703191251575942         3.51129256594070    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016952358597       -31.247575952151475     
+ Total energies of excited states (eV,AU)
+           1  -846.39094010712938       -31.104281966506719     
+           2  -846.15716449615877       -31.095690874404998     
+           3  -844.51032167196843       -31.035170539024691     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6034863E-04 -0.1195769E-03  0.3647568E-03  0.3885719E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899229     -0.4516724E-04 -0.1052863E-03 -0.1589563E-04  0.1156631E-03
+   2   4.133005      0.4305440E-04 -0.7824852E-07  0.6384010E-04  0.7700160E-04
+   3   5.779848      0.6666336E-03  0.1438163E-02 -0.9948584E-03  0.1871485E-02
+QMMM:
+QMMM: SCF Energy =       23.08657150 KCal/mol,        96.59421517 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899224765234600     0.24E-06 0.10E-05
+  2 +++    4.132999637551112     0.41E-06 0.10E-05
+  3 +++    5.779822286541299     0.68E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922476523460        0.374050219682295E-09    0.116582773789009E-08    0.154390244300927E-09    0.169426820187332E-08
+   2     4.13299963755111        0.303167777813492E-05    0.216741669737266E-04    0.846425122676889E-04    0.109348357019550E-03
+   3     5.77982228654130        0.328915321438334        0.982767932390502E-01    0.700191300828119E-01    0.497211244760196    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922476523460       -0.625744245430089E-04   -0.110471207053852E-03   -0.402014608169136E-04    0.177356036466377E-07
+   2     4.13299963755111        0.547179576568303E-02   -0.146305133980228E-01    0.289122993208738E-01    0.107991352321087E-02
+   3     5.77982228654130        -1.52407328950918        0.833084948927242        0.703189140396388         3.51130489109586    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016388071932       -31.247575744780026     
+ Total energies of excited states (eV,AU)
+           1  -846.39093911548468       -31.104281930064460     
+           2  -846.15716424316815       -31.095690865107766     
+           3  -844.51034159417804       -31.035171271152123     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.4729654E-04 -0.1090073E-03  0.3421504E-03  0.3621967E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899225     -0.4475154E-04 -0.1056319E-03 -0.1587055E-04  0.1158131E-03
+   2   4.133000      0.4340596E-04 -0.2898816E-06  0.6386650E-04  0.7722106E-04
+   3   5.779822      0.6632355E-03  0.1440347E-02 -0.9945729E-03  0.1871806E-02
+QMMM:
+QMMM: SCF Energy =       23.08670163 KCal/mol,        96.59475963 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899227942739637     0.25E-06 0.10E-05
+  2 +++    4.133003281057047     0.40E-06 0.10E-05
+  3 +++    5.779833817929346     0.70E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922794273964        0.345449522293779E-09    0.111676219555463E-08    0.148006523502485E-09    0.161021824135089E-08
+   2     4.13300328105705        0.304327848161089E-05    0.216970557974848E-04    0.846287185694561E-04    0.109369052848552E-03
+   3     5.77983381792935        0.328914362361604        0.982759303954396E-01    0.700193029043652E-01    0.497209595661408    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922794273964       -0.601345449007358E-04   -0.108121505008423E-03   -0.393615470281762E-04    0.168557547201565E-07
+   2     4.13300328105705        0.548225225634757E-02   -0.146382301232830E-01    0.289099306472221E-01    0.108011696097161E-02
+   3     5.77983381792935        -1.52406954715885        0.833080460745521        0.703189306733187         3.51128623975684    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016757139971       -31.247575880409979     
+ Total energies of excited states (eV,AU)
+           1  -846.39093962866002       -31.104281948923298     
+           2  -846.15716429034262       -31.095690866841394     
+           3  -844.51033375347038       -31.035170983011536     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.7553650E-04 -0.1413147E-03  0.3381340E-03  0.3741794E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899228     -0.4775809E-04 -0.9935526E-04 -0.1221508E-04  0.1109122E-03
+   2   4.133003      0.4049269E-04  0.5801554E-05  0.6740885E-04  0.7884967E-04
+   3   5.779834      0.6633224E-03  0.1442839E-02 -0.9927022E-03  0.1872762E-02
+QMMM:
+QMMM: SCF Energy =       23.08661652 KCal/mol,        96.59440353 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899221876912550     0.26E-06 0.10E-05
+  2 +++    4.132996270718221     0.42E-06 0.10E-05
+  3 +++    5.779802179707600     0.71E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922187691255        0.297711253149077E-09    0.113438550921255E-08    0.157720082969401E-09    0.158981684533103E-08
+   2     4.13299627071822        0.302132613622416E-05    0.216536228145502E-04    0.846470870344472E-04    0.109322035985222E-03
+   3     5.77980217970760        0.328914542013580        0.982765895432319E-01    0.700185242639010E-01    0.497209655820713    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922187691255       -0.558251236321334E-04   -0.108971368065268E-03   -0.406326892298485E-04    0.166422189206086E-07
+   2     4.13299627071822        0.546244829906970E-02   -0.146235838431829E-01    0.289130924143281E-01    0.107965445879809E-02
+   3     5.77980217970760        -1.52407413469877        0.833085534639135        0.703187321450669         3.51130588513175    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016060429149       -31.247575624373567     
+ Total energies of excited states (eV,AU)
+           1  -846.39093872737897       -31.104281915801842     
+           2  -846.15716433357329       -31.095690868430093     
+           3  -844.51035842458384       -31.035171889657903     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.7042770E-04 -0.1205305E-03  0.3098343E-03  0.3398308E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899222     -0.4826564E-04 -0.9831053E-04 -0.1096668E-04  0.1100673E-03
+   2   4.132996      0.3993821E-04  0.6918208E-05  0.6864452E-04  0.7971820E-04
+   3   5.779802      0.6598088E-03  0.1449210E-02 -0.9904159E-03  0.1875228E-02
+QMMM:
+QMMM: SCF Energy =       23.08677719 KCal/mol,        96.59507576 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899225146550878     0.24E-06 0.10E-05
+  2 +++    4.133000076562916     0.40E-06 0.10E-05
+  3 +++    5.779818578877379     0.69E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922514655088        0.293367225808679E-09    0.122029175768531E-08    0.174937867201405E-09    0.168859685069539E-08
+   2     4.13300007656292        0.303496741235789E-05    0.216791152546278E-04    0.846289665840080E-04    0.109343049250994E-03
+   3     5.77981857887738        0.328914134508021        0.982766564916736E-01    0.700191155793434E-01    0.497209906579038    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922514655088       -0.554163200781620E-04   -0.113022191759167E-03   -0.427931050414776E-04    0.176762342001421E-07
+   2     4.13300007656292        0.547476335732708E-02   -0.146321826218395E-01    0.289099842167662E-01    0.107986098951126E-02
+   3     5.77981857887738        -1.52407102843996        0.833084636533756        0.703189293110963         3.51129769330452    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016495837686       -31.247575784383194     
+ Total energies of excited states (eV,AU)
+           1  -846.39093981182600       -31.104281955654521     
+           2  -846.15716488181397       -31.095690888577558     
+           3  -844.51034637949954       -31.035171447009379     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.9750276E-04 -0.1169933E-03  0.3372580E-03  0.3700502E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899225     -0.5299031E-04 -0.1022289E-03 -0.1229150E-04  0.1158007E-03
+   2   4.133000      0.3532957E-04  0.3116673E-05  0.6731371E-04  0.7608566E-04
+   3   5.779819      0.6584795E-03  0.1444040E-02 -0.9911186E-03  0.1871139E-02
+QMMM:
+QMMM: SCF Energy =       23.08667678 KCal/mol,        96.59465565 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899228083309171     0.25E-06 0.10E-05
+  2 +++    4.133003382194856     0.40E-06 0.10E-05
+  3 +++    5.779834829537543     0.69E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922808330917        0.356289688504495E-09    0.112925570235392E-08    0.150836576324645E-09    0.163638196718307E-08
+   2     4.13300338219486        0.302888605219703E-05    0.216763813139955E-04    0.846609914104887E-04    0.109366258776681E-03
+   3     5.77983482953754        0.328914318323787        0.982770149009292E-01    0.700190496869753E-01    0.497210382911691    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922808330917       -0.610707634607426E-04   -0.108724612540278E-03   -0.397360831385534E-04    0.171296358249056E-07
+   2     4.13300338219486        0.546927335126142E-02   -0.146312541135831E-01    0.289154421142356E-01    0.108008934058877E-02
+   3     5.77983482953754        -1.52406931175707        0.833084984479143        0.703187973689932         3.51129118474644    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016840544500       -31.247575911060565     
+ Total energies of excited states (eV,AU)
+           1  -846.39094032213586       -31.104281974408057     
+           2  -846.15716502325017       -31.095690893775242     
+           3  -844.51033357590745       -31.035170976486221     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.7013780E-04 -0.1070389E-03  0.3296681E-03  0.3536350E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899228     -0.4893618E-04 -0.1013056E-03 -0.1261029E-04  0.1132104E-03
+   2   4.133003      0.3937218E-04  0.3894082E-05  0.6704741E-04  0.7785042E-04
+   3   5.779835      0.6629397E-03  0.1446552E-02 -0.9917665E-03  0.1874994E-02
+QMMM:
+QMMM: SCF Energy =       23.08659729 KCal/mol,        96.59432305 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899221095610503     0.26E-06 0.10E-05
+  2 +++    4.132995473135460     0.43E-06 0.10E-05
+  3 +++    5.779800760321766     0.71E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922109561050        0.287863305543779E-09    0.118778981346763E-08    0.170893051238205E-09    0.164654617024962E-08
+   2     4.13299547313546        0.304819697633300E-05    0.216912117457489E-04    0.845814679585797E-04    0.109320876680662E-03
+   3     5.77980076032177        0.328914369589382        0.982760046658557E-01    0.700195552234186E-01    0.497209929478656    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922109561050       -0.548940490086174E-04   -0.111506943057373E-03   -0.422955146372943E-04    0.172360655249942E-07
+   2     4.13299547313546        0.548668581167966E-02   -0.146362724289919E-01    0.289018862040008E-01    0.107964321796076E-02
+   3     5.77980076032177        -1.52407392236089        0.833083157940899        0.703192584674579         3.51130868000662    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29015914904721       -31.247575570894345     
+ Total energies of excited states (eV,AU)
+           1  -846.39093805343668       -31.104281891034930     
+           2  -846.15716367591176       -31.095690844261487     
+           3  -844.51035838872542       -31.035171888340130     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6695909E-04 -0.1274974E-03  0.3595094E-03  0.3872804E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899221     -0.4729113E-04 -0.1029608E-03 -0.1413750E-04  0.1141808E-03
+   2   4.132995      0.4082493E-04  0.2404443E-05  0.6551120E-04  0.7722806E-04
+   3   5.779801      0.6586919E-03  0.1442457E-02 -0.9913276E-03  0.1870103E-02
+QMMM:
+QMMM: SCF Energy =       23.08681075 KCal/mol,        96.59521618 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899225828527847     0.24E-06 0.10E-05
+  2 +++    4.133000972497867     0.41E-06 0.10E-05
+  3 +++    5.779830439424077     0.69E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922582852785        0.449564774953599E-09    0.988672857914797E-09    0.115640512860537E-09    0.155387814572893E-08
+   2     4.13300097249787        0.303647671692537E-05    0.216757187795579E-04    0.846374510175118E-04    0.109349646513995E-03
+   3     5.77983043942408        0.328916048188756        0.982764664567532E-01    0.700193296974198E-01    0.497211844342929    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922582852785       -0.686006113042794E-04   -0.101732133824299E-03   -0.347925974742698E-04    0.162659957627725E-07
+   2     4.13300097249787        0.547612390826073E-02   -0.146310347763600E-01    0.289114302245922E-01    0.107992590931715E-02
+   3     5.77983043942408        -1.52407389834486        0.833082976308153        0.703189646790622         3.51130417238407    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016492368964       -31.247575783108463     
+ Total energies of excited states (eV,AU)
+           1  -846.39093909516180       -31.104281929317608     
+           2  -846.15716395119182       -31.095690854377839     
+           3  -844.51033448426551       -31.035171009867753     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.3408705E-04 -0.1237951E-03  0.3368018E-03  0.3604478E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899226     -0.4045344E-04 -0.1014215E-03 -0.1456893E-04  0.1101592E-03
+   2   4.133001      0.4762636E-04  0.3683851E-05  0.6517714E-04  0.8080780E-04
+   3   5.779830      0.6662871E-03  0.1443901E-02 -0.9935433E-03  0.1875077E-02
+QMMM:
+QMMM: SCF Energy =       23.08667758 KCal/mol,        96.59465900 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899223115882223     0.25E-06 0.10E-05
+  2 +++    4.132997839313343     0.41E-06 0.10E-05
+  3 +++    5.779814912102906     0.70E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922311588222        0.385349498238623E-09    0.108000998725138E-08    0.137117290376528E-09    0.160247677586653E-08
+   2     4.13299783931334        0.304250377483273E-05    0.216796246694144E-04    0.846113704072186E-04    0.109333498851466E-03
+   3     5.77981491210291        0.328915655366858        0.982760682953365E-01    0.700193545057603E-01    0.497211078167955    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922311588222       -0.635125278076465E-04   -0.106327569088597E-03   -0.378859437704995E-04    0.167747378721889E-07
+   2     4.13299783931334        0.548155803069713E-02   -0.146323584943329E-01    0.289069863815907E-01    0.107976725521605E-02
+   3     5.77981491210291        -1.52407503543942        0.833082407737474        0.703190715912932         3.51130819467749    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016176178447       -31.247575666910635     
+ Total energies of excited states (eV,AU)
+           1  -846.39093864590222       -31.104281912807629     
+           2  -846.15716392247111       -31.095690853322370     
+           3  -844.51034684968158       -31.035171464288247     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6080229E-04 -0.1331584E-03  0.3448225E-03  0.3746073E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899223     -0.4442428E-04 -0.1023319E-03 -0.1426725E-04  0.1124673E-03
+   2   4.132998      0.4368287E-04  0.2911756E-05  0.6542335E-04  0.7872030E-04
+   3   5.779815      0.6630861E-03  0.1441041E-02 -0.9933006E-03  0.1871611E-02
+QMMM:
+QMMM: SCF Energy =       23.08675050 KCal/mol,        96.59496408 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899230163661342     0.26E-06 0.10E-05
+  2 +++    4.133005795737126     0.41E-06 0.10E-05
+  3 +++    5.779849163313457     0.69E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89923016366134        0.465198064690499E-09    0.102534751988909E-08    0.119267333118247E-09    0.160981291769783E-08
+   2     4.13300579573713        0.302319542384851E-05    0.216650739618000E-04    0.846922690568631E-04    0.109380538442512E-03
+   3     5.77984916331346        0.328915559878097        0.982770700016421E-01    0.700188375777995E-01    0.497211467457539    
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89923016366134       -0.697831478760620E-04   -0.103601763812282E-03   -0.353339638852804E-04    0.168515021963544E-07
+   2     4.13300579573713        0.546413154357320E-02   -0.146274331925427E-01    0.289207745206840E-01    0.108022973420402E-02
+   3     5.77984916331346        -1.52407029839217        0.833084185012590        0.703186036666009         3.51129013592134    
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29017104343484       -31.247576008004870     
+ Total energies of excited states (eV,AU)
+           1  -846.39094087977355       -31.104281994900855     
+           2  -846.15716524769766       -31.095690902023531     
+           3  -844.51032188012141       -31.035170546674170     
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6386902E-04 -0.1126402E-03  0.3150387E-03  0.3406119E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899230     -0.4608358E-04 -0.1006182E-03 -0.1271255E-04  0.1113971E-03
+   2   4.133006      0.4222200E-04  0.4456178E-05  0.6698546E-04  0.7930704E-04
+   3   5.779849      0.6676528E-03  0.1445086E-02 -0.9938274E-03  0.1876626E-02
+QMMM:
+QMMM: SCF Energy =       23.08653645 KCal/mol,        96.59406852 KJ/mol
+QMMM: SCF Energy = Heat of formation
+QMMM: SCF Converged to 0.2306E-04 in:     3 Cycles 
+  Restoring quirality in HF orbitals
+ @@@@ Davidson subroutine Found vectors           3
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899225819357032     0.24E-06 0.10E-05
+  2 +++    4.133000773144538     0.40E-06 0.10E-05
+  3 +++    5.779825410862532     0.68E-06 0.10E-05
+ -------------------------------------------------
+
+ Davidson not converged, expansion=          15
+ @@@@ Davidson subroutine Found vectors           4
+  i, e0(i), ferr(i), ftol0
+  1 +++    3.899225819357032     0.24E-06 0.10E-05
+  2 +++    4.133000773144538     0.40E-06 0.10E-05
+  3 +++    5.779825410862532     0.68E-06 0.10E-05
+  4 +++    3.899225832901874     0.37E-06 0.10E-05
+ -------------------------------------------------
+
+ Frequencies (eV) and Oscillator strengths (unitless)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922581935703        0.371458883705502E-09    0.110334402477755E-08    0.143254823217638E-09    0.161805773170069E-08
+   2     3.89922583290187        0.286328877547176E-05    0.204519344501392E-04    0.798548789717043E-04    0.103170102197315E-03
+   3     4.13300077314454        0.235198324661995        0.702749419766565E-01    0.500688293789559E-01    0.355542096017607    
+   4     5.77982541086253        0.559928885883173E-05    0.817613628735530E-04    0.118570946148902E-04    0.992177463472750E-04
+
+ Frequencies (eV) and Transition Dipole Moments (AU)
+        Omega            fx              fy              fz          ftotal
+   1     3.89922581935703        0.623572886228534E-04    0.107470018168452E-03    0.387245585062410E-04    0.169378276810245E-07
+   2     3.89922583290187        0.547475165094023E-02   -0.146318433838203E-01    0.289122956175221E-01    0.107998458432311E-02
+   3     4.13300077314454         1.52407174281596       -0.833083526926750       -0.703188918227799         3.51129749480519    
+   4     5.77982541086253       -0.628825462211677E-02   -0.240291132027468E-01   -0.915066855381946E-02    0.700675162484856E-03
+
+ Total energy of the ground state (eV,AU)
+           0  -850.29016511269901       -31.247575790054427     
+ Total energies of excited states (eV,AU)
+           1  -846.39093929334194       -31.104281936600589     
+           2  -846.39093927979718       -31.104281936102829     
+           3  -846.15716433955447       -31.095690868649896     
+           4   3.7993648165191859E-321   1.3833838083554903E-322
+ Ground State Molecular Dipole Moment (A.U.)
+                         dx              dy              dz          ftotal
+                     0.6518847E-04 -0.1196847E-03  0.3368817E-03  0.3634051E-03
+
+ Frequencies (eV) Unrelaxed Difference Dipole Moments (AU)
+        Omega            dx              dy              dz          ftotal
+   1   3.899226     -0.4662030E-04 -0.1006815E-03 -0.1268847E-04  0.1116746E-03
+   2   3.899226      0.4160791E-04  0.4508094E-05  0.6696129E-04  0.7896426E-04
+   3   4.133001      0.6643646E-03  0.1444890E-02 -0.9920652E-03  0.1874374E-02
+   4   5.779825     -0.3319100E-02 -0.7647400E-03 -0.1288960E-02  0.3641795E-02
+QMMM:
+QMMM: SCF Energy =       23.08667322 KCal/mol,        96.59464076 KJ/mol
+QMMM: SCF Energy = Heat of formation
+  Restoring quirality in cmdqt
+
+ |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|
+ | MD normal termination at   Wed May 24 11:50:47 AM EDT 202 |
+ | MD total CPU time          0.61747     seconds |
+ |      0 days  0 hours  0 minutes  0 seconds     |
+
+  SQM (ground sim%naesmd%state) took overall [s]:
+       0.504E-01
+  Davidson (excited states) took overall [s]:
+       0.492E-01
+  deriv (adiabatic forces) took overall [s]:
+       0.114E-01
+  nacT (NA derivatives) took overall [s]:
+        0.00    
+ |________________________________________________|
+
