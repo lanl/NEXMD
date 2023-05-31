@@ -176,9 +176,13 @@ CEO packages.
 
 ## Authors
 
-Walter Malone, Benjamin Nebgen, Alexander White, Yu Zhang, Huajing Song, Josiah
-Bjorgaard, Andrew Sifain, Beatriz Rodriguez-Hernandez, Sebastian
-Fernandez-Alberti, Adrian E. Roitberg, Tammie Nelson, Sergei Tretiak
+Walter Malone, Victor M. Freixas, Xinyang Li, Hassiel Negrin-Yuvero,
+Royle Pérez-Castillo, Dmitry V. Makhov, Dmitrii V. Shalashilin,
+Nikita Fedik, Maksim Kulichenko, Richard Messerly, Luke Nambi Mohanam,
+Sahar Sharifzadeh, Adolfo Bastida, Shaul Mukamel, Benjamin Nebgen,
+Alexander White, Yu Zhang, Huajing Song, Josiah Bjorgaard,
+Andrew Sifain, Beatriz Rodriguez-Hernandez, Sebastian Fernandez-Alberti,
+Adrian E. Roitberg, Tammie Nelson, Sergei Tretiak
 
 ## Acknowledgments
 
