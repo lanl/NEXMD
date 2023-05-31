@@ -134,6 +134,8 @@ subroutine fermi(ndim,nel,ev,occ,efermi)
 
 !! This can sometimes cause an infinite loop.
 !! The value of those variables should be adjustable.
+!!      ceps = dacc * chleft
+!!      eeps = dacc * max( abs(ef1), abs(ef2) )
 
       eeps = 1.0e-12
       ceps = 1.0e-12

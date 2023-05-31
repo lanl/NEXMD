@@ -1,0 +1,149 @@
+&qmmm
+   !***** Geometry Optimization
+   maxcyc=0, ! Number of cycles for geometry optimization [0]
+   ntpr=1, ! Print results every ntpr cycles [1]
+   grms_tol=1.0d-2, ! Tolerance in eV/A (derivatives) [1.0d-2]
+
+   !***** Normal Modes Analysis
+   do_nm=0, ! Flag for doing Normal Modes Analysis [0]
+   deltaX=1.0d-4, ! Displacement for the Hessian calculation, A [1.0d-4]
+
+   !***** Ground-State and Output Parameters
+   qm_theory='AM1', ! Integral type, check Amber's SQM for more options [AM1]
+   scfconv=1.0d-6, ! Ground-state SCF convergence criteria, eV [1.0d-6]
+   verbosity=2, ! QM/MM output verbosity (0-minimum, 5-maximum)
+   ! [1 for dynamics and optimization, 5 for others]
+   printdipole=1, ! (0) Unrelaxed transitions, (1) Unrelaxed transitions plus
+   ! total molecular, or (2) Unrelaxed/relaxed transitions plus
+   ! total molecular [1 for dynamics, 2 for optimization and single-point]
+   printbondorders=0, ! (0) No or (1) Yes [0]
+   ! *** UNDER DEVELOPMENT, DO NOT USE ***
+   density_predict=0, ! (0) None, (1) Reversible MD,
+   ! or (2) XL-BOMD [0] *** ALL ARE UNDER DEVELOPMENT, DO NOT USE ***
+   itrmax=3000, ! Max SCF iterations for ground state
+   ! (negative to ignore convergence) [300]
+
+   !***** Excited-State Parameters
+   exst_method=1, ! CIS (1) or RPA (2) [1]
+   dav_guess=1, ! Restart Davidson from (0) Scratch, (1) Previous,
+   ! or (2) XL-BOMD [1] *** (2) IS UNDER DEVELOPMENT, DO NOT USE ***
+   ftol0=1.0d-6, ! Acceptance tolerance (|emin-eold|) [1.0d-5]
+   ftol1=1.0d-6, ! Acceptance tolerance for residual norm [1.0d-5]
+   ! *** UNDER DEVELOPMENT, DO NOT USE ***
+   dav_maxcyc=200, ! Max cycles for Davidson diagonalization
+   ! (negative to ignore convergence) [100]
+   printcharges=0, ! Print (1) or do not print (0) Mulliken charges of QM atoms [0]
+   calcxdens=.false., ! Print (.true.) or do not print (.false.)
+   ! excited-to-excited transition dipole moments [.false.]
+
+   !***** Solvent Models and External Electric Fields
+   solvent_model=0, ! (0) None, (1) Linear response, (2) Vertical excitation,
+   ! or (3) State-specific  [0]
+   potential_type=1, ! (1) COSMO or (2) Onsager [1]
+   onsager_radius=2, ! Onsager radius, A (system dependent) [2]
+   ceps=10, ! Dielectric constant, unitless [10]
+   linmixparam=1, ! Linear mixing parameter for vertical excitation
+   ! or state-specific SCF calculation [1]
+   cosmo_scf_ftol=1.0d-5, ! Vertical excitation or state-specific
+   ! SCF tolerance, eV [1.0d-5]
+   doZ=.false., ! Use relaxed (.true.) or unrelaxed (.false) density for
+   ! vertical excitation or state-specific COSMO or Onsager [.false.]
+   index_of_refraction=100, ! Dielectric constant for linear response
+   ! solvent in excited-state, unitless [100] *** UNDER DEVELOPMENT, DO NOT USE ***
+   EF=0, ! (0) None or (1) Electric field in ground- and excited-state [0]
+   Ex=0, ! Electric field vector X, eV/A [0]
+   Ey=0, ! Electric field vector Y, eV/A [0]
+   Ez=0, ! Electric field vector Z, eV/A [0]
+&endqmmm
+
+&moldyn
+   !***** General Parameters
+   natoms=12, ! Number of atoms
+   ! (must be equal to the number of atoms in system)
+   rnd_seed=272184, ! seed for the random number generator
+   bo_dynamics_flag=0, ! (0) Non-BO or (1) BO [1]
+   exc_state_init= 4, ! Initial excited state (0 - ground state) [0]
+   n_exc_states_propagate=  4, ! Number of excited states [0]
+
+   !***** Dynamics Parameters
+   time_init=    20.00, ! Initial time, fs [0.0]
+   time_step=0.05, ! Time step, fs [0.1]
+   n_class_steps=      0, ! Number of classical steps [1]
+   n_quant_steps=4, ! Number of quantum steps for each classical step [4]
+   moldyn_deriv_flag=1, ! (0) None, (1) Analytical, or (2) Numerical [1]
+   num_deriv_step=1.0d-3, ! Displacement for numerical derivatives, A [1.0d-3]
+
+   !***** Non-Adiabatic Parameters
+   decoher_type=2, ! Type of decoherence: Reinitialize (0) Never,
+   ! (1) At successful hops, (2) At successful plus frustrated hops...
+   ! (3) Persico/Granucci, or (4) Truhlar [2]
+   ! *** (3) AND (4) ARE UNDER DEVELOPMENT, DO NOT USE ***
+   decoher_e0=0.0, ! Decoherence parameter E0, Hartrees [0.1]
+   ! (only for decoher_type = 3 or 4) *** UNDER DEVELOPMENT, DO NOT USE ***
+   decoher_c=0.0, ! Decoherence parameter C, unitless [0.1]
+   ! (only for decoher_type = 3 or 4) *** UNDER DEVELOPMENT, DO NOT USE ***
+   iredpot=1, !For state reduction
+   nstates=3, !How many states to reduce
+   dotrivial=1, ! Do unavoided (trivial) crossing routine (1) or not (0) [1]
+   quant_step_reduction_factor=2.5d-2, ! Quantum step reduction factor [2.5d-2]
+   NAMD_type='aimc', ! Type of molecular dynamics ('tsh','mf' or 'aimc') ['tsh']
+   AIMC_dclone_2=0.01,
+   nclones0= 1, ! Clones count for 'aimc' (must be declared here for restarting 'aimc') [0
+
+   !***** Thermostat Parameters
+   therm_type=0, ! Thermostat type: (0) Newtonian, (1) Langevin,
+   ! or (2) Berendsen [1] *** (2) IS UNDER DEVELOPMENT, DO NOT USE ***
+   therm_temperature=300, ! Thermostat temperature, K [300]
+   therm_friction=20, ! Thermostat friction coefficient, 1/ps [20]
+   berendsen_relax_const=0.4, ! Bath relaxation constant for Berendsen
+   ! thermostat, ps [0.4] *** UNDER DEVELOPMENT, DO NOT USE ***
+   heating=0, ! Equilibrated (0) or heating (1) [0]
+   ! *** UNDER DEVELOPMENT, DO NOT USE ***
+   heating_steps_per_degree=100, ! Number of steps per degree
+   ! during heating [100] *** UNDER DEVELOPMENT, DO NOT USE ***
+
+   !***** Output & Log Parameters
+   verbosity=3, ! NEXMD output verbosity (0-minimum, 3-maximum)
+   ! [2 for dynamics, 3 for optimization and single-point]
+   out_data_steps=1, ! Number of steps to write data [1]
+   out_coords_steps=20, ! Number of steps to write the restart file [10]
+   out_data_cube=0, ! Write (1) or do not write (0) view files to generate cubes [0]
+   out_count_init=0, ! Initial count for view files [0]
+   printTdipole=1, ! Flag for printing transition dipole moments [0]
+   nmc=0, ! Number of normal modes to freeze
+&endmoldyn
+
+&coord
+   6  -35.9056950937    9.2708531856   10.1699943940
+   6  -36.4237139978    8.1448530577    9.4265798758
+   6  -34.5347927988    9.5938862180    9.8726932656
+   6  -35.5140498629    7.1839791289    8.9939377931
+   6  -33.6561640440    8.6542574142    9.3258776682
+   6  -34.1706763168    7.5159854133    8.7717462562
+   1  -36.5035694047    9.7505293972   10.8712710649
+   1  -37.4403350995    8.0202169444    9.1239555917
+   1  -34.1320301892   10.6851911615    9.9991648810
+   1  -35.6256017031    6.0879325718    8.9437999756
+   1  -33.6669754590    6.8089395493    8.0744962364
+   1  -32.5897688159    8.8500548844    9.4381029799
+&endcoord
+&veloc
+    5.7966024272  -12.2235756583    0.0990554289
+    3.9913578208    3.5046322705   -6.2915663710
+   -1.9057784319   -2.2896693466   -7.6288629259
+    2.8301915125    3.1805462213    6.6236036708
+   -2.7510817667    3.2877183504    7.0019145082
+   -9.0598347633    5.2548919963    2.8166951265
+   -4.2308995727  -17.8554557086   11.5421594795
+   -0.0935980657    3.2757846134   -2.9724451218
+   17.1788650142   15.6348764385  -26.2733121568
+    4.8855239994   16.7495608689    1.4245930751
+   -6.7171075204    2.6825833635  -16.9856017271
+    2.1718185376  -29.0697355609    1.7857039669
+&endveloc
+&coeff
+    0.0044687928    5.4780911290
+    0.0111510650    1.2592342261
+    0.2241891178    4.0468313886
+    0.9744609496    3.8352939503
+&endcoeff

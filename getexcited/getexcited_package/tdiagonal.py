@@ -51,43 +51,43 @@ cwd = os.getcwd()
 def tdiagonal(header):
 
 
-    print 'Calculating occupation of excitation as a function of time according to transition densities.'
+    print('Calculating occupation of excitation as a function of time according to transition densities.')
 
     ## Type of calculation and directory check ##
-    dynq = input('Calculate occupation along one trajectory or an ensemble of trajectories?\nAnswer one [1] or ensemble [0]: ')
+    dynq = eval(input('Calculate occupation along one trajectory or an ensemble of trajectories?\nAnswer one [1] or ensemble [0]: '))
     if dynq not in [1,0]:
-        print 'Answer must be 1 or 0.'
+        print('Answer must be 1 or 0.')
         sys.exit()
     if dynq == 0: ## ensemble
-        NEXMDir = raw_input('Ensemble directory [e.g. NEXMD]: ')
+        NEXMDir = input('Ensemble directory [e.g. NEXMD]: ')
         if not os.path.exists(NEXMDir):
-            print 'Path %s does not exist.' % (NEXMDir)
+            print('Path %s does not exist.' % (NEXMDir))
             sys.exit()
         ## Check if NEXMD folders exist ##
         NEXMDs = glob.glob('%s/NEXMD*/' % (NEXMDir))
         NEXMDs.sort()
         if len(NEXMDs) == 0:
-            print 'There are no NEXMD folders in %s.' % (NEXMDir)
+            print('There are no NEXMD folders in %s.' % (NEXMDir))
             sys.exit()
         ## Determine mean or all ##
-        typeq = input('Output mean occupation in time, at all time-steps and trajectories, or up to some user-defined time?\nAnswer mean [0], all [1], or user-defined [2]: ')
+        typeq = eval(input('Output mean occupation in time, at all time-steps and trajectories, or up to some user-defined time?\nAnswer mean [0], all [1], or user-defined [2]: '))
         if typeq not in [0,1,2]:
-            print 'Answer must be 0, 1, or 2.'
+            print('Answer must be 0, 1, or 2.')
             sys.exit()
     if dynq == 1: ## single trajectory
-        typeq = input('Output occupation at all time-steps and trajectories, or up to some user-defined time?\nAnswer all [1], or user-defined [2]: ')
+        typeq = eval(input('Output occupation at all time-steps and trajectories, or up to some user-defined time?\nAnswer all [1], or user-defined [2]: '))
         if typeq not in [1,2]:
-            print 'Answer must be 1 or 2.'
+            print('Answer must be 1 or 2.')
             sys.exit()
-        NEXMDir = raw_input('Single trajectory directory: ')
+        NEXMDir = input('Single trajectory directory: ')
         if not os.path.exists(NEXMDir):
-            print 'Path %s does not exist.' % (NEXMDir)
+            print('Path %s does not exist.' % (NEXMDir))
             sys.exit()
     
     ## Number and type of coordinates ##
-    coordq = raw_input('Directory with an input.ceon file for coordinates, do not include input.ceon in the path: ')
+    coordq = input('Directory with an input.ceon file for coordinates, do not include input.ceon in the path: ')
     if not os.path.exists('%s/input.ceon' % (coordq)):
-        print 'Path %s/input.ceon does not exist.' % (coordq)
+        print('Path %s/input.ceon does not exist.' % (coordq))
         sys.exit()
     coords = open('%s/input.ceon' % (coordq),'r')
     coords = coords.readlines()
@@ -99,7 +99,7 @@ def tdiagonal(header):
             high = index
         index += 1
     natoms = (high - 1) - (low + 1) + 1
-    orbitals = np.array([])
+    orbitals = np.array([],dtype=np.int64)
     for line in coords[low + 1:high:1]:
         atype = np.int(line.split()[0])
         if atype == 1:
@@ -111,14 +111,14 @@ def tdiagonal(header):
     ## Indices to split the orbitals ##
     orbitals = np.cumsum(orbitals)
     ## Fragments of the molecule ##
-    fragq = raw_input('Directory with fragment file, include name of file in the path: ')
+    fragq = input('Directory with fragment file, include name of file in the path: ')
     if not os.path.exists(fragq):
-        print 'Path %s does not exist.' % (fragq)
+        print('Path %s does not exist.' % (fragq))
         sys.exit()
     frag = open('%s' % (fragq),'r')
     frag = frag.readlines()
-    barray = np.array([])
-    fragments = np.array([])
+    barray = np.array([],dtype=np.int64)
+    fragments = np.array([],dtype=np.int64)
     index = 0
     for line in frag:
         if 'break' in line:
@@ -127,18 +127,18 @@ def tdiagonal(header):
             fragments = np.append(fragments, np.int(line.split()[0])-1) ## - 1 for python indexing
         index += 1
     if len(fragments) != natoms:
-        print 'Number of atoms in the fragment file is not consistent with the coordinate file.'
+        print('Number of atoms in the fragment file is not consistent with the coordinate file.')
     fragments = np.split(fragments, barray)
     nfrag = len(fragments)
     ## Information from header ##
     if dynq == 0: ## ensemble
         if not os.path.exists('%s/header' % (NEXMDir)):
-            print 'Path %s/header does not exist.' % (NEXMDir)
+            print('Path %s/header does not exist.' % (NEXMDir))
             sys.exit()
         header = header('%s/header' % (NEXMDir))
     if dynq == 1: ## single trajectory
         if not os.path.exists('%s/input.ceon' % (NEXMDir)):
-            print 'Path %s/input.ceon does not exist.' % (NEXMDir)
+            print('Path %s/input.ceon does not exist.' % (NEXMDir))
             sys.exit()
         header = header('%s/input.ceon' % (NEXMDir))
 
@@ -147,7 +147,7 @@ def tdiagonal(header):
 
     ## Check output data ##
     if header.out_data_steps == 0:
-        print 'No data have been printed to files because out_data_steps = 0 in %s/header.' % (NEXMDir)
+        print('No data have been printed to files because out_data_steps = 0 in %s/header.' % (NEXMDir))
         sys.exit()
 
     ## Check state is set for BO dynamics ##
@@ -157,20 +157,20 @@ def tdiagonal(header):
     except AttributeError:
         state_set = 0
     if header.bo_dynamics_flag == 1 and state_set == 0:
-        print 'Dynamics are set to Born-Oppenheimer (bo_dynamics_flag = 1), but the initial state is not set.\nPlease check bo_dynamics_flag and exc_state_init in header.'
+        print('Dynamics are set to Born-Oppenheimer (bo_dynamics_flag = 1), but the initial state is not set.\nPlease check bo_dynamics_flag and exc_state_init in header.')
         sys.exit()
 
     ## Collection time ##
     if typeq == 0: ## mean occupation
         if dynq == 0: ## ensemble
-            tcoll = input('Calculate occupation up to what time in femtoseconds?\nNote that averaged results will only include trajectories that are complete up to this time: ')
+            tcoll = eval(input('Calculate occupation up to what time in femtoseconds?\nNote that averaged results will only include trajectories that are complete up to this time: '))
         if dynq == 1: ## single trajectory
-            tcoll = input('Calculate occupation up to what time in femtoseconds? ')
+            tcoll = eval(input('Calculate occupation up to what time in femtoseconds? '))
         if isinstance(tcoll, int) == False and isinstance(tcoll, float) == False:
-            print 'Time must be integer or float.'
+            print('Time must be integer or float.')
             sys.exit()
         if tcoll < 0:
-            print 'Time must be integer or float greater than zero.'
+            print('Time must be integer or float greater than zero.')
             sys.exit()
         tcoll = np.float(tcoll)
         nsteps = 1
@@ -182,12 +182,12 @@ def tdiagonal(header):
     if typeq == 1: ## all occupations
         tcoll = (header.n_class_steps - 1)*header.time_step
     if typeq == 2: ## all up to user-defined time
-        tcoll = input('Calculate occupation up to what time in femtoseconds? ')
+        tcoll = eval(input('Calculate occupation up to what time in femtoseconds? '))
         if isinstance(tcoll, int) == False and isinstance(tcoll, float) == False:
-            print 'Time must be integer or float.'
+            print('Time must be integer or float.')
             sys.exit()
         if tcoll < 0:
-            print 'Time must be integer or float greater than zero.'
+            print('Time must be integer or float greater than zero.')
             sys.exit()
         tcoll = np.float(tcoll)
         nsteps = 1
@@ -222,17 +222,17 @@ def tdiagonal(header):
             etraj = 0
             ## Determine completed number of time-steps ##
             if not os.path.exists('%s/energy-ev.out' % (NEXMDir)):
-                print 'Path %s/energy-ev.out does not exist.' % (NEXMDir)
+                print('Path %s/energy-ev.out does not exist.' % (NEXMDir))
                 sys.exit()
             tsteps = np.genfromtxt('%s/energy-ev.out' % (NEXMDir), usecols=[0], skip_header=1).size
             ## Determine if transition density file exists ##
             if not os.path.exists('%s/transition-densities.out' % (NEXMDir)):
-                print 'Path %s/transition-densities.out does not exist.' % (NEXMDir)
+                print('Path %s/transition-densities.out does not exist.' % (NEXMDir))
                 sys.exit()
             ## Check times ##
             times_td = np.around(np.genfromtxt('%s/transition-densities.out' % (NEXMDir),usecols=[0]), decimals = 3)
             if np.array_equal(times_td, times) == False:
-                print  'There is an inconsistency in time-step in %s/transition-densities.out.' % (NEXMDir)
+                print('There is an inconsistency in time-step in %s/transition-densities.out.' % (NEXMDir))
                 sys.exit()
             ## Collect data ##
             tds = np.genfromtxt('%s/transition-densities.out' % (NEXMDir),usecols=np.arange(1, norbits + 1))
@@ -277,15 +277,15 @@ def tdiagonal(header):
             ctraj += 1
             if tsteps == math.floor((header.n_class_steps)/(header.out_data_steps)):
                 etraj += 1
-            print '%s' % (NEXMDir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
+            print('%s' % (NEXMDir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step*header.out_data_steps))
             ttraj += 1
             ## Summary of results ##
             if ctraj == 0:
-                print 'No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll)
+                print('No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll))
             else:
-                print 'Total trajectories:', '%04d' % (ttraj)
-                print 'Completed trajectories:', '%04d' % (ctraj)
-                print 'Excellent trajectories:', '%04d' % (etraj)
+                print('Total trajectories:', '%04d' % (ttraj))
+                print('Completed trajectories:', '%04d' % (ctraj))
+                print('Excellent trajectories:', '%04d' % (etraj))
         
         ## User-defined time-steps - single adiabatic trajectory ##
         if typeq == 2:
@@ -298,17 +298,17 @@ def tdiagonal(header):
             etraj = 0
             ## Determine completed number of time-steps ##
             if not os.path.exists('%s/energy-ev.out' % (NEXMDir)):
-                print 'Path %s/energy-ev.out does not exist.' % (NEXMDir)
+                print('Path %s/energy-ev.out does not exist.' % (NEXMDir))
                 sys.exit()
             tsteps = np.genfromtxt('%s/energy-ev.out' % (NEXMDir), usecols=[0], skip_header=1).size
             ## Determine if transition density file exists ##
             if not os.path.exists('%s/transition-densities.out' % (NEXMDir)):
-                print 'Path %s/transition-densities.out does not exist.' % (NEXMDir)
+                print('Path %s/transition-densities.out does not exist.' % (NEXMDir))
                 sys.exit()
             ## Check times ##
             times_td = np.around(np.genfromtxt('%s/transition-densities.out' % (NEXMDir),usecols=[0]), decimals = 3)
             if len(times_td) != math.floor((header.n_class_steps)/(header.out_data_steps)):
-                print 'There is an inconsistency in time-step in %s/transition-densities.out.' % (NEXMDir)
+                print('There is an inconsistency in time-step in %s/transition-densities.out.' % (NEXMDir))
                 sys.exit()
             ## Compare completed time-steps to collection time-steps and collect data ##
             alength = round((tcoll/(header.time_step*header.out_data_steps)+1),0)
@@ -360,15 +360,15 @@ def tdiagonal(header):
                 ctraj += 1
                 if tsteps == math.floor((header.n_class_steps)/(header.out_data_steps)):
                     etraj += 1
-            print '%s' % (NEXMDir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
+            print('%s' % (NEXMDir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step*header.out_data_steps))
             ttraj += 1
             ## Summary of results ##
             if ctraj == 0:
-                print 'No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll)
+                print('No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll))
             else:
-                print 'Total trajectories:', '%04d' % (ttraj)
-                print 'Completed trajectories:', '%04d' % (ctraj)
-                print 'Excellent trajectories:', '%04d' % (etraj)
+                print('Total trajectories:', '%04d' % (ttraj))
+                print('Completed trajectories:', '%04d' % (ctraj))
+                print('Excellent trajectories:', '%04d' % (etraj))
 
     ## Single non-adiabatic trajectory ##
     if dynq == 1 and header.bo_dynamics_flag == 0:
@@ -383,12 +383,12 @@ def tdiagonal(header):
             etraj = 0
             ## Determine completed number of time-steps ##
             if not os.path.exists('%s/energy-ev.out' % (NEXMDir)):
-                print 'Path %s/energy-ev.out does not exist.' % (NEXMDir)
+                print('Path %s/energy-ev.out does not exist.' % (NEXMDir))
                 sys.exit()
             tsteps = np.genfromtxt('%s/energy-ev.out' % (NEXMDir), usecols=[0], skip_header=1).size
             ## Determine if coefficient files exist and open it ##
             if not os.path.exists('%s/coeff-n.out' % (NEXMDir)):
-                print 'Path %s/coeff-n.out does not exist.' % (NEXMDir)
+                print('Path %s/coeff-n.out does not exist.' % (NEXMDir))
                 sys.exit()
             hops = np.int_(np.genfromtxt('%s/coeff-n.out' % (NEXMDir),usecols=[0]))
             if np.where(linenums > hops.size)[0].size:
@@ -397,12 +397,12 @@ def tdiagonal(header):
                 hops = hops[linenums]
             ## Determine if transition density file exists ##
             if not os.path.exists('%s/transition-densities.out' % (NEXMDir)):
-                print 'Path %s/transition-densities.out does not exist.' % (NEXMDir)
+                print('Path %s/transition-densities.out does not exist.' % (NEXMDir))
                 sys.exit()
             ## Check times ##
             times_td = np.around(np.genfromtxt('%s/transition-densities.out' % (NEXMDir),usecols=[0]), decimals = 3)
             if np.array_equal(times_td, times) == False:
-                print 'There is an inconsistency in time-step in %s/transition-densities.out.' % (NEXMDir)
+                print('There is an inconsistency in time-step in %s/transition-densities.out.' % (NEXMDir))
                 sys.exit()
             ## Collect data ##
             tds = np.genfromtxt('%s/transition-densities.out' % (NEXMDir),usecols=np.arange(1, norbits + 1))
@@ -448,15 +448,15 @@ def tdiagonal(header):
             ctraj += 1
             if tsteps == math.floor((header.n_class_steps)/(header.out_data_steps)):
                 etraj += 1
-            print '%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
+            print('%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps))
             ttraj += 1
             ## Summary of results ##
             if ctraj == 0:
-                print 'No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll)
+                print('No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll))
             else:
-                print 'Total trajectories:', '%04d' % (ttraj)
-                print 'Completed trajectories:', '%04d' % (ctraj)
-                print 'Excellent trajectories:', '%04d' % (etraj)
+                print('Total trajectories:', '%04d' % (ttraj))
+                print('Completed trajectories:', '%04d' % (ctraj))
+                print('Excellent trajectories:', '%04d' % (etraj))
 
         ## User-defined time-steps - single non-adiabatic trajectory ##
         if typeq == 2:
@@ -469,12 +469,12 @@ def tdiagonal(header):
             etraj = 0
             ## Determine completed number of time-steps ##
             if not os.path.exists('%s/energy-ev.out' % (NEXMDir)):
-                print 'Path %s/energy-ev.out does not exist.' % (NEXMDir)
+                print('Path %s/energy-ev.out does not exist.' % (NEXMDir))
                 sys.exit()
             tsteps = np.genfromtxt('%s/energy-ev.out' % (NEXMDir), usecols=[0], skip_header=1).size
             ## Determine if coefficient files exist and open it ##
             if not os.path.exists('%s/coeff-n.out' % (NEXMDir)):
-                print 'Path %s/coeff-n.out does not exist.' % (NEXMDir)
+                print('Path %s/coeff-n.out does not exist.' % (NEXMDir))
                 sys.exit()
             hops = np.int_(np.genfromtxt('%s/coeff-n.out' % (NEXMDir),usecols=[0]))
             if np.where(linenums > hops.size)[0].size:
@@ -483,15 +483,15 @@ def tdiagonal(header):
                 hops = hops[linenums]
             ## Determine if transition density file exists ##
             if not os.path.exists('%s/transition-densities.out' % (NEXMDir)):
-                print 'Path %s/transition-densities.out does not exist.' % (NEXMDir)
+                print('Path %s/transition-densities.out does not exist.' % (NEXMDir))
                 sys.exit()
             ## Check times ##
             times_td = np.around(np.genfromtxt('%s/transition-densities.out' % (NEXMDir),usecols=[0]), decimals = 3)
             if len(times_td) != math.floor((header.n_class_steps)/(header.out_data_steps)):
-                print 'There is an inconsistency in time-step in %s/transition-densities.out.' % (NEXMDir)
+                print('There is an inconsistency in time-step in %s/transition-densities.out.' % (NEXMDir))
                 sys.exit()
             ## Compare completed time-steps to collection time-steps and collect data ##
-            alength = round((tcoll/(header.time_step*header.out_data_steps)+1),0)
+            alength = int(round((tcoll/(header.time_step*header.out_data_steps)+1),0))
             if tsteps >= tscol:
                 tds = np.genfromtxt('%s/transition-densities.out' % (NEXMDir),usecols=np.arange(1, norbits + 1))
                 tds = np.hsplit(tds,orbitals)[0:-1:1]
@@ -541,15 +541,15 @@ def tdiagonal(header):
                 ctraj += 1
                 if tsteps == math.floor((header.n_class_steps)/(header.out_data_steps)):
                     etraj += 1
-            print '%s' % (NEXMDir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
+            print('%s' % (NEXMDir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step*header.out_data_steps))
             ttraj += 1
             ## Summary of results ##
             if ctraj == 0:
-                print 'No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll)
+                print('No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll))
             else:
-                print 'Total trajectories:', '%04d' % (ttraj)
-                print 'Completed trajectories:', '%04d' % (ctraj)
-                print 'Excellent trajectories:', '%04d' % (etraj)
+                print('Total trajectories:', '%04d' % (ttraj))
+                print('Completed trajectories:', '%04d' % (ctraj))
+                print('Excellent trajectories:', '%04d' % (etraj))
 
     ## Adiabatic ensemble ##
     if dynq == 0 and header.bo_dynamics_flag == 1:
@@ -568,7 +568,7 @@ def tdiagonal(header):
             errflag = 0
             for NEXMD in NEXMDs:
                 if not os.path.exists('%s/dirlist1' % (NEXMD)):
-                    print 'Path %sdirlist1 does not exist.' % (NEXMD)
+                    print('Path %sdirlist1 does not exist.' % (NEXMD))
                     sys.exit()
                 dirlist1 = np.int_(np.genfromtxt('%s/dirlist1' % (NEXMD)))
                 if isinstance(dirlist1,int) == True:
@@ -576,21 +576,21 @@ def tdiagonal(header):
                 for dir in dirlist1:
                     ## Determine completed number of time-steps ##
                     if not os.path.exists('%s/%04d/energy-ev.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir)
+                        print('Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
                     tsteps = np.genfromtxt('%s/%04d/energy-ev.out' % (NEXMD,dir), usecols=[0], skip_header=1).size
                     ## Determine if transition density file exists ##
                     if not os.path.exists('%s/%04d/transition-densities.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/transition-densities.out does not exist.' % (NEXMD,dir)
+                        print('Path %s%04d/transition-densities.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
                     ## Check times ##
                     times_td = np.around(np.genfromtxt('%s/%04d/transition-densities.out' % (NEXMD,dir),usecols=[0]), decimals = 3)
                     if np.array_equal(times_td, times) == False:
-                        print >> error, 'There is an inconsistency in time-step in %s%04d/transition-densities.out.' % (NEXMD,dir)
+                        print('There is an inconsistency in time-step in %s%04d/transition-densities.out.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -637,17 +637,17 @@ def tdiagonal(header):
                     ctraj += 1
                     if tsteps == math.floor((header.n_class_steps)/(header.out_data_steps)):
                         etraj += 1
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
+                    print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps))
                     ttraj += 1
             ## Summary of results ##
             if ctraj == 0:
-                print 'No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll)
+                print('No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll))
             else:
-                print 'Total trajectories:', '%04d' % (ttraj)
-                print 'Completed trajectories:', '%04d' % (ctraj)
-                print 'Excellent trajectories:', '%04d' % (etraj)
+                print('Total trajectories:', '%04d' % (ttraj))
+                print('Completed trajectories:', '%04d' % (ctraj))
+                print('Excellent trajectories:', '%04d' % (etraj))
             if errflag == 1:
-                print 'One or more trajectories have experienced an error, check td_raw_ensemble.err.'
+                print('One or more trajectories have experienced an error, check td_raw_ensemble.err.')
             else:
                 os.remove('%s/td_raw_ensemble.err' % (cwd))
 
@@ -666,7 +666,7 @@ def tdiagonal(header):
             errflag = 0
             for NEXMD in NEXMDs:
                 if not os.path.exists('%s/dirlist1' % (NEXMD)):
-                    print 'path %sdirlist1 does not exist.' % (NEXMD)
+                    print('path %sdirlist1 does not exist.' % (NEXMD))
                     sys.exit()
                 dirlist1 = np.int_(np.genfromtxt('%s/dirlist1' % (NEXMD)))
                 if isinstance(dirlist1, int) == True:
@@ -676,21 +676,21 @@ def tdiagonal(header):
                     timearray = np.linspace(0,round(tcoll,2),alength)
                     ## Determine completed number of time-steps ##
                     if not os.path.exists('%s/%04d/energy-ev.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir)
+                        print('Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
                     tsteps = np.genfromtxt('%s/%04d/energy-ev.out' % (NEXMD,dir), usecols=[0], skip_header=1).size
                     ## Determine if transition density file exists ##
                     if not os.path.exists('%s/%04d/transition-densities.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/transition-densities.out does not exist.' % (NEXMD,dir)
+                        print('Path %s%04d/transition-densities.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
                     ## Check times ##
                     times_td = np.around(np.genfromtxt('%s/%04d/transition-densities.out' % (NEXMD,dir),usecols=[0]), decimals = 3)
                     if len(times_td) != math.floor((header.n_class_steps)/(header.out_data_steps)):
-                        print >> error, 'There is an inconsistency in time-step in %s%04d/transition-densities.out.' % (NEXMD,dir)
+                        print('There is an inconsistency in time-step in %s%04d/transition-densities.out.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -744,19 +744,19 @@ def tdiagonal(header):
                         if tsteps == math.floor((header.n_class_steps)/(header.out_data_steps)):
                             etraj += 1
                     else:
-                        print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step)*header.out_data_steps
+                        print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step)*header.out_data_steps, file=error)
                         errflag = 1
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
+                    print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step*header.out_data_steps))
                     ttraj += 1
             ## Summary of results ##
             if ctraj == 0:
-                print 'No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll)
+                print('No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll))
             else:
-                print 'Total trajectories:', '%04d' % (ttraj)
-                print 'Completed trajectories:', '%04d' % (ctraj)
-                print 'Excellent trajectories:', '%04d' % (etraj)
+                print('Total trajectories:', '%04d' % (ttraj))
+                print('Completed trajectories:', '%04d' % (ctraj))
+                print('Excellent trajectories:', '%04d' % (etraj))
             if errflag == 1:
-                print 'One or more trajectories have experienced an error, check td_raw_ensemble.err.'
+                print('One or more trajectories have experienced an error, check td_raw_ensemble.err.')
             else:
                 os.remove('%s/td_raw_ensemble.err' % (cwd))
 
@@ -779,7 +779,7 @@ def tdiagonal(header):
             errflag = 0
             for NEXMD in NEXMDs:
                 if not os.path.exists('%s/dirlist1' % (NEXMD)):
-                    print 'Path %sdirlist1 does not exist.' % (NEXMD)
+                    print('Path %sdirlist1 does not exist.' % (NEXMD))
                     sys.exit()
                 dirlist1 = np.int_(np.genfromtxt('%s/dirlist1' % (NEXMD)))
                 if isinstance(dirlist1, int) == True:
@@ -787,14 +787,14 @@ def tdiagonal(header):
                 for dir in dirlist1:
                     ## Determine completed number of time-steps ##
                     if not os.path.exists('%s/%04d/energy-ev.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir)
+                        print('Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
                     tsteps = np.genfromtxt('%s/%04d/energy-ev.out' % (NEXMD,dir), usecols=[0], skip_header=1).size
                     ## Determine if transition density files exist ##
                     if not os.path.exists('%s/%04d/transition-densities.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/transition-densities.out does not exist.' % (NEXMD,dir)
+                        print('Path %s%04d/transition-densities.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -802,7 +802,7 @@ def tdiagonal(header):
                     if tsteps >= tscol:
                         times_td = np.around(np.genfromtxt('%s/%04d/transition-densities.out' % (NEXMD,dir),usecols=[0]), decimals = 3)
                         if len(times_td) != math.floor((header.n_class_steps)/(header.out_data_steps)):
-                            print >> error, 'There is an inconsistency in time-step in %s%04d/transition-densities.out.' % (NEXMD,dir)
+                            print('There is an inconsistency in time-step in %s%04d/transition-densities.out.' % (NEXMD,dir), file=error)
                             errflag = 1
                             ttraj += 1
                             continue
@@ -827,13 +827,13 @@ def tdiagonal(header):
                         if tsteps == math.floor((header.n_class_steps)/(header.out_data_steps)):
                             etraj += 1
                     else:
-                        print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
+                        print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step*header.out_data_steps), file=error)
                         errflag = 1
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
+                    print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step*header.out_data_steps))
                     ttraj += 1
             ## Summary of results ##
             if ctraj == 0:
-                print 'No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll)
+                print('No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll))
             else:
                 ## Average occupation ##
                 final_occ = final_occ/ctraj
@@ -849,16 +849,16 @@ def tdiagonal(header):
                         frag_occ[index, findex] = np.sum(line[np.int_(fragment)])
                         findex += 1
                     index += 1
-                print 'Total trajectories:', '%04d' % (ttraj)
-                print 'Completed trajectories:', '%04d' % (ctraj)
-                print 'Excellent trajectories:', '%04d' % (etraj)
-                print >> output, 'Total trajectories:', '%04d' % (ttraj)
-                print >> output, 'Completed trajectories:', '%04d' % (ctraj)
-                print >> output, 'Excellent trajectories:', '%04d' % (etraj)
+                print('Total trajectories:', '%04d' % (ttraj))
+                print('Completed trajectories:', '%04d' % (ctraj))
+                print('Excellent trajectories:', '%04d' % (etraj))
+                print('Total trajectories:', '%04d' % (ttraj), file=output)
+                print('Completed trajectories:', '%04d' % (ctraj), file=output)
+                print('Excellent trajectories:', '%04d' % (etraj), file=output)
                 for tstep in np.arange(tscol):
-                    print >> output, '%0*.2f' % (len(str((header.n_class_steps))) + 2, tstep*header.time_step*header.out_data_steps), ' '.join(str('%.3f' % (x)) for x in frag_occ[tstep]), '%.3f' % (np.sum(frag_occ[tstep])), '%.3f' % (final_exciton_com[tstep])
+                    print('%0*.2f' % (len(str((header.n_class_steps))) + 2, tstep*header.time_step*header.out_data_steps), ' '.join(str('%.3f' % (x)) for x in frag_occ[tstep]), '%.3f' % (np.sum(frag_occ[tstep])), '%.3f' % (final_exciton_com[tstep]), file=output)
             if errflag == 1:
-                print 'One or more trajectories have experienced an error, check td_mean_ensemble.err'
+                print('One or more trajectories have experienced an error, check td_mean_ensemble.err')
             else:
                 os.remove('%s/td_mean_ensemble.err' % (cwd))
                 
@@ -880,7 +880,7 @@ def tdiagonal(header):
             errflag = 0
             for NEXMD in NEXMDs:
                 if not os.path.exists('%s/dirlist1' % (NEXMD)):
-                    print 'Path %sdirlist1 does not exist.' % (NEXMD)
+                    print('Path %sdirlist1 does not exist.' % (NEXMD))
                     sys.exit()
                 dirlist1 = np.int_(np.genfromtxt('%s/dirlist1' % (NEXMD)))
                 if isinstance(dirlist1,int) == True:
@@ -888,14 +888,14 @@ def tdiagonal(header):
                 for dir in dirlist1:
                     ## Determine completed number of time-steps ##
                     if not os.path.exists('%s/%04d/energy-ev.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir)
+                        print('Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
                     tsteps = np.genfromtxt('%s/%04d/energy-ev.out' % (NEXMD,dir), usecols=[0], skip_header=1).size
                     ## Determine if coefficient files exist and open them ##
                     if not os.path.exists('%s/%04d/coeff-n.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/coeff-n.out does not exist.' % (NEXMD,dir)
+                        print('Path %s%04d/coeff-n.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -906,14 +906,14 @@ def tdiagonal(header):
                         hops = hops[linenums]
                     ## Determine if transition density file exists ##
                     if not os.path.exists('%s/%04d/transition-densities.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/transition-densities.out does not exist.' % (NEXMD,dir)
+                        print('Path %s%04d/transition-densities.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
                     ## Check times ##
                     times_td = np.around(np.genfromtxt('%s/%04d/transition-densities.out' % (NEXMD,dir),usecols=[0]), decimals = 3)
                     if np.array_equal(times_td, times) == False:
-                        print >> error, 'There is an inconsistency in time-step in %s%04d/transition-densities.out.' % (NEXMD,dir)
+                        print('There is an inconsistency in time-step in %s%04d/transition-densities.out.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -961,17 +961,17 @@ def tdiagonal(header):
                     ctraj += 1
                     if tsteps == math.floor((header.n_class_steps)/(header.out_data_steps)):
                         etraj += 1
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
+                    print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps))
                     ttraj += 1
             ## Summary of results ##
             if ctraj == 0:
-                print 'No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll)
+                print('No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll))
             else:
-                print 'Total trajectories:', '%04d' % (ttraj)
-                print 'Completed trajectories:', '%04d' % (ctraj)
-                print 'Excellent trajectories:', '%04d' % (etraj)
+                print('Total trajectories:', '%04d' % (ttraj))
+                print('Completed trajectories:', '%04d' % (ctraj))
+                print('Excellent trajectories:', '%04d' % (etraj))
             if errflag == 1:
-                print 'One or more trajectories have experienced an error, check td_raw_ensemble.err.'
+                print('One or more trajectories have experienced an error, check td_raw_ensemble.err.')
             else:
                 os.remove('%s/td_raw_ensemble.err' % (cwd))
 
@@ -991,7 +991,7 @@ def tdiagonal(header):
             errflag = 0
             for NEXMD in NEXMDs:
                 if not os.path.exists('%s/dirlist1' % (NEXMD)):
-                    print 'Path %sdirlist1 does not exist.' % (NEXMD)
+                    print('Path %sdirlist1 does not exist.' % (NEXMD))
                     sys.exit()
                 dirlist1 = np.int_(np.genfromtxt('%s/dirlist1' % (NEXMD)))
                 if isinstance(dirlist1,int) == True:
@@ -999,14 +999,14 @@ def tdiagonal(header):
                 for dir in dirlist1:
                     ## Determine completed number of time-steps ##
                     if not os.path.exists('%s/%04d/energy-ev.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir)
+                        print('Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
                     tsteps = np.genfromtxt('%s/%04d/energy-ev.out' % (NEXMD,dir), usecols=[0], skip_header=1).size
                     ## Determine if coefficient files exist and open them ##
                     if not os.path.exists('%s/%04d/coeff-n.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/coeff-n.out does not exist.' % (NEXMD,dir)
+                        print('Path %s%04d/coeff-n.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -1017,14 +1017,14 @@ def tdiagonal(header):
                         hops = hops[linenums]
                     ## Determine if transition density file exists ##
                     if not os.path.exists('%s/%04d/transition-densities.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/transition-densities.out does not exist.' % (NEXMD,dir)
+                        print('Path %s%04d/transition-densities.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
                     ## Check times ##
                     times_td = np.around(np.genfromtxt('%s/%04d/transition-densities.out' % (NEXMD,dir),usecols=[0]), decimals = 3)
                     if len(times_td) != math.floor((header.n_class_steps)/(header.out_data_steps)):
-                        print >> error, 'There is an inconsistency in time-step in %s%04d/transition-densities.out.' % (NEXMD,dir)
+                        print('There is an inconsistency in time-step in %s%04d/transition-densities.out.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -1057,7 +1057,7 @@ def tdiagonal(header):
                                 findex += 1
                             index += 1
                         ## Output data ##
-                        alength = round((tcoll/(header.time_step*header.out_data_steps)+1),0)
+                        alength = int(round((tcoll/(header.time_step*header.out_data_steps)+1),0))
                         dir_name = []
                         dir_name.extend(['%s%04d' % (NEXMD,dir)] * int(alength))
                         dtype = [('dir_name', list),('times_td', float), ('hops', float)]
@@ -1081,19 +1081,19 @@ def tdiagonal(header):
                         if tsteps == math.floor((header.n_class_steps)/(header.out_data_steps)):
                             etraj += 1
                     else:
-                        print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
+                        print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step*header.out_data_steps), file=error)
                         errflag = 1
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
+                    print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step*header.out_data_steps))
                     ttraj += 1
             ## Summary of results ##
             if ctraj == 0:
-                print 'No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll)
+                print('No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll))
             else:
-                print 'Total trajectories:', '%04d' % (ttraj)
-                print 'Completed trajectories:', '%04d' % (ctraj)
-                print 'Excellent trajectories:', '%04d' % (etraj)
+                print('Total trajectories:', '%04d' % (ttraj))
+                print('Completed trajectories:', '%04d' % (ctraj))
+                print('Excellent trajectories:', '%04d' % (etraj))
             if errflag == 1:
-                print 'One of more trajectories have experienced an error, check td_raw_ensemble.err.'
+                print('One of more trajectories have experienced an error, check td_raw_ensemble.err.')
             else:
                 os.remove('%s/td_raw_ensemble.err' % (cwd))
         
@@ -1117,7 +1117,7 @@ def tdiagonal(header):
             errflag = 0
             for NEXMD in NEXMDs:
                 if not os.path.exists('%s/dirlist1' % (NEXMD)):
-                    print 'path %sdirlist1 does not exist.' % (NEXMD)
+                    print('path %sdirlist1 does not exist.' % (NEXMD))
                     sys.exit()
                 dirlist1 = np.int_(np.genfromtxt('%s/dirlist1' % (NEXMD)))
                 if isinstance(dirlist1, int) == True:
@@ -1125,14 +1125,14 @@ def tdiagonal(header):
                 for dir in dirlist1:
                     ## Determine completed number of time-steps ##
                     if not os.path.exists('%s/%04d/energy-ev.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir)
+                        print('Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
                     tsteps = np.genfromtxt('%s/%04d/energy-ev.out' % (NEXMD,dir), usecols=[0], skip_header=1).size
                     ## Determine if transition density files exist ##
                     if not os.path.exists('%s/%04d/transition-densities.out' % (NEXMD,dir)):
-                        print >> error, 'Path %s%04d/transition-densities.out does not exist.' % (NEXMD,dir)
+                        print('Path %s%04d/transition-densities.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -1140,7 +1140,7 @@ def tdiagonal(header):
                     if tsteps >= tscol:
                         times_td = np.around(np.genfromtxt('%s/%04d/transition-densities.out' % (NEXMD,dir),usecols=[0]), decimals = 3)
                         if len(times_td) != math.floor((header.n_class_steps)/(header.out_data_steps)):
-                            print >> error, 'There is an inconsistency in time-step in %s%04d/transition-densities.out.' % (NEXMD,dir)
+                            print('There is an inconsistency in time-step in %s%04d/transition-densities.out.' % (NEXMD,dir), file=error)
                             errflag = 1
                             ttraj += 1
                             continue
@@ -1165,13 +1165,13 @@ def tdiagonal(header):
                         if tsteps == math.floor((header.n_class_steps)/(header.out_data_steps)):
                             etraj += 1
                     else:
-                        print >> error, '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
+                        print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step*header.out_data_steps), file=error)
                         errflag = 1
-                    print '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step*header.out_data_steps)
+                    print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str(header.n_class_steps)) + 2, (tsteps - 1)*header.time_step*header.out_data_steps))
                     ttraj += 1
             ## Summary of results ##
             if ctraj == 0:
-                print 'No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll)
+                print('No trajectories completed within %0*.2f fs.' % (len(str(header.n_class_steps)), tcoll))
             else:
                 ## Average occupation ##
                 final_occ = final_occ/ctraj
@@ -1187,16 +1187,16 @@ def tdiagonal(header):
                         frag_occ[index, findex] = np.sum(line[np.int_(fragment)])
                         findex += 1
                     index += 1    
-                print 'Total trajectories:', '%04d' % (ttraj)
-                print 'Completed trajectories:', '%04d' % (ctraj)
-                print 'Excellent trajectories:', '%04d' % (etraj)
-                print >> output, 'Total trajectories:', '%04d' % (ttraj)
-                print >> output, 'Completed trajectories:', '%04d' % (ctraj)
-                print >> output, 'Excellent trajectories:', '%04d' % (etraj)
+                print('Total trajectories:', '%04d' % (ttraj))
+                print('Completed trajectories:', '%04d' % (ctraj))
+                print('Excellent trajectories:', '%04d' % (etraj))
+                print('Total trajectories:', '%04d' % (ttraj), file=output)
+                print('Completed trajectories:', '%04d' % (ctraj), file=output)
+                print('Excellent trajectories:', '%04d' % (etraj), file=output)
                 for tstep in np.arange(tscol):
-                    print >> output, '%0*.2f' % (len(str((header.n_class_steps))) + 2, tstep*header.time_step*header.out_data_steps), ' '.join(str('%.3f' % (x)) for x in frag_occ[tstep]), '%.3f' % (np.sum(frag_occ[tstep])), '%.3f' % (final_exciton_com[tstep])
+                    print('%0*.2f' % (len(str((header.n_class_steps))) + 2, tstep*header.time_step*header.out_data_steps), ' '.join(str('%.3f' % (x)) for x in frag_occ[tstep]), '%.3f' % (np.sum(frag_occ[tstep])), '%.3f' % (final_exciton_com[tstep]), file=output)
             if errflag == 1:
-                print 'One or more trajectories have experienced an error, check td_mean_ensemble.err'
+                print('One or more trajectories have experienced an error, check td_mean_ensemble.err')
             else:
                 os.remove('%s/td_mean_ensemble.err' % (cwd))
                 

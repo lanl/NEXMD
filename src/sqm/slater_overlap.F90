@@ -170,6 +170,9 @@ FUNCTION CalculateOverlap (NA,LA,MM,NB,LB,ALPHA,BETA,A,B)
       M      = ABS(MM) 
       NAB    = NA+NB+1 
       X      = 0.0D0 
+! *** FIND A AND B INTEGRALS.                                           
+!     P      = (ALPHA + BETA)*0.5                                       
+!     PT     = (ALPHA - BETA)*0.5                                       
 ! *** SECTION USED FOR OVERLAP INTEGRALS INVOLVING S FUNCTIONS.         
       IF((LA.GT.0).OR.(LB.GT.0)) GO TO 20 
       IADA   = IAD(NA+1) 

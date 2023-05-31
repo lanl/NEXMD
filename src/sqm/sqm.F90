@@ -41,8 +41,6 @@ program sqm
 
    character(len=strlen) :: string
 
-
-
    ! ==== Initialise first_call flags for QMMM ====
    qmmm_struct%qm_mm_first_call = .true.
    qmmm_struct%fock_first_call = .true.
@@ -180,6 +178,11 @@ program sqm
    
    write(6,*) 'Final Structure'
    call qm_print_coords(qmmm_nml,0,.true.)
+   if ( qmmm_nml%printbondorders ) then
+      write(6,*) ''
+      write(6,*) 'Bond Orders'
+      call qm2_print_bondorders(qm2_params,qm2_struct,qmmm_struct)
+   end if
 
    if (qmmm_nml%verbosity > 3) then
       ! Calculate and print also forces in final step

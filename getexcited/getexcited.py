@@ -72,7 +72,7 @@ pathtopack = 'Insert path to getexcited_package here, do not include "getexcited
 import sys
 import os
 if not os.path.exists(pathtopack):
-    print 'You must provide the path to getexcited_package in getexcited.py (pathtopack).'
+    print ('You must provide the path to getexcited_package in getexcited.py (pathtopack).')
     sys.exit()
 sys.dont_write_bytecode = True
 sys.path.append('%s' % (pathtopack))
@@ -94,8 +94,9 @@ from getexcited_package.tdiagonal import tdiagonal
 from getexcited_package.header import header
 
 funq = input('\nSelect a task from the following list:\n\n[1] Prepare input files for single-point calculations\n[2] Generate an optical spectrum from single-point calculations\n[3] Prepare input files for NEXMD\n[4] Prepare input files for adiabatic dynamics with geometries from NEXMD\n[5] Collect populations from NEXMD\n[6] Collect pess and nacts from NEXMD\n[7] Prepare restart input files for NEXMD\n[8] Clean out the directories of NEXMD trajectories that are incomplete\n[9] Access options for geometry analysis\n[10] Access options for dipole analysis\n[11] Access options for transition density analysis\n[12] Access code testing tools\n\nEnter the number corresponding to the desired task: ')
+funq = int(funq)
 if funq not in [1,2,3,4,5,6,7,8,9,10,11,12]:
-    print 'Answer must be 1 through 12.'
+    print('Answer must be 1 through 12.')
     sys.exit()
 if funq == 1:
     spcalc(header)
@@ -115,8 +116,9 @@ if funq == 8:
     cleandir(header)
 if funq == 9:
     advq = input('\nSelect a task from the following list:\n\n[1] Calculate dihedral angle\n[2] Calculate bond lengths\n[3] Calculate bond length alternation\n[4] Calculate angle between two bonds\n\nEnter the number corresponding to the desired task: ')
+    advq = int(advq)
     if advq not in [1,2,3,4]:
-        print 'Answer must be 1 through 4.'
+        print ('Answer must be 1 through 4.')
         sys.exit()
     if advq == 1:
         dihedral(header)
@@ -128,8 +130,9 @@ if funq == 9:
         angle(header)
 if funq == 10:
     advq = input('\nSelect a task from the following list:\n\n[1] Collect ground-state dipole moment\n[2] Collect transition dipole moment\n[3] Collect excited-state dipole moment\n\nEnter the number corresponding to the desired task: ')
+    advq = int(advq)
     if advq not in [1,2,3]:
-        print 'Answer must be 1 through 3.'
+        print ('Answer must be 1 through 3.')
         sys.exit()
     if advq == 1:
         dipole(pathtopack,header,0)
@@ -139,15 +142,17 @@ if funq == 10:
         dipole(pathtopack,header,2)
 if funq == 11:
     advq = input('\nSelect a task from the following list:\n\n[1] Analyze induced charge from diagonal elements of the transition density matrix\n\nEnter the number corresponding to the desired task: ')
+    advq = int(advq)
     if advq not in [1]:
-        print 'Answer must be 1.'
+        print ('Answer must be 1.')
         sys.exit()
     if advq == 1:
         tdiagonal(header)
 if funq == 12:
     advq = input('Select a task from the following list:\n\n[1] Collect timing data from trajectories\n\nEnter the number corresponding to the desired task: ')
-    if advq != 1:
-        print 'Answer must be 1.'
+    advq =int(advq)
+    if advq not in [1]:
+        print ('Answer must be 1.')
         sys.exit()
     if advq == 1:
         timing(pathtopack)

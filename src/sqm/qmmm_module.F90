@@ -769,6 +769,13 @@ contains
 
 
 
+       if (qmmm_nml%density_predict == 1) then
+          !We are using Niklasson et al density matrix prediction algorithm.
+          deallocate ( qm2_struct%md_den_mat_guess1, stat = ier )
+          REQUIRE(ier == 0)
+          deallocate ( qm2_struct%md_den_mat_guess2, stat = ier )
+          REQUIRE(ier == 0)
+       end if
 
        if (qmmm_nml%fock_predict == 1) then
           !We are using Pulay et al matrix prediction algorithm.

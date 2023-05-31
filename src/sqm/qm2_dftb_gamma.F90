@@ -52,6 +52,7 @@ subroutine gam12(r,uhub1,uhub2,gval)
 
   gval= 0.0
 
+  ! a1 = \tau_1 = 16/5 U_1 = 3.2 U_1
   a1= 3.2*uhub1
   a2= 3.2*uhub2
 

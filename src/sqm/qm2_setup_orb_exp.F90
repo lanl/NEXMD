@@ -55,6 +55,9 @@ subroutine qm2_setup_orb_exp(qm2_params,qmmm_struct)
 !STO-6G BY R.F. STEWART, J. CHEM. PHYS., 52 431-438, 1970
 
 !     SET-UP THE STEWART'S STO-6G EXPANSIONS
+!Initializating to avoid crashing with GNU
+     ALLZ = 0.0d0
+     ALLC = 0.0d0
 !                                      1S
      ALLZ(1,1,1) =2.310303149D01
      ALLZ(2,1,1) =4.235915534D00
@@ -305,7 +308,7 @@ subroutine qm2_setup_orb_exp(qm2_params,qmmm_struct)
          atom_orb_cc_d_by_type(j,i)=ALLC(j,NQN,3)
          atom_orb_zz_d_by_type(j,i)=ALLZ(j,NQN,3)*xi(3)
        end do
-       
+
      end do
 
 !Deallocate the original 2 parameter arrays here as they are no longer needed from this point on.
@@ -369,8 +372,9 @@ subroutine qm2_setup_orb_exp(qm2_params,qmmm_struct)
      !to avoid divide by zeros.
      do k=1,np
        do l=1,np
-         do i=1,6
-           do j=1,6
+         do i=1,ng
+           do j=1,ng
+
              atom_orb_cc_s_x_s = atom_orb_cc_s_by_type(i,k)*atom_orb_cc_s_by_type(j,l)
              atom_orb_zz_s_x_s = atom_orb_zz_s_by_type(i,k)*atom_orb_zz_s_by_type(j,l)
 

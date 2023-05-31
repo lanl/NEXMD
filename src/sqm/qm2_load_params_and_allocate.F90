@@ -37,7 +37,7 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
         qmmm_mpi_structure, qmmm_scratch_structure, qmmm_opnq_structure
     use MNDOChargeSeparation, only : GetDDAndPho
     use qm2_diagonalizer_module, only : qm2_diagonalizer_setup
-    use xlbomd_module, only : xlbomd_structure                                
+    use xlbomd_module, only : init_xlbomd, xlbomd_structure                                
     use qmmm_struct_module, only : qmmm_struct_type
     use qm2_params_module,  only : qm2_params_type
     use qmmm_nml_module   , only : qmmm_nml_type
@@ -217,6 +217,16 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
     allocate ( qm2_struct%old2_density(qm2_struct%norbs), stat=ier )
     REQUIRE ( ier == 0 ) !Used by qm2_cnvg as workspace.
 
+    if (qmmm_nml%density_predict == 1) then
+        !We are using Niklasson et al. density matrix prediction.
+        allocate ( qm2_struct%md_den_mat_guess1(qm2_struct%matsize), stat=ier )
+        REQUIRE ( ier == 0 )
+        allocate ( qm2_struct%md_den_mat_guess2(qm2_struct%matsize), stat=ier )
+        REQUIRE ( ier == 0 )
+    elseif (qmmm_nml%density_predict == 2) then
+        !We are using XL-BOMD
+        call init_xlbomd(xlbomd_struct,qm2_struct%matsize)
+    end if
 
     if (qmmm_nml%fock_predict == 1) then
         !We are using Pulay et al. Fock matrix prediction.
@@ -306,6 +316,18 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
         end do
     end do
 
+    if ( qmmm_nml%density_predict == 1) then
+        !We are using Pguess(t) = 2Pconv(t-1) - Pguess(t-2)
+        !in this case for an initial start we set
+        !den_matrix = 0.5 initial guess
+        !md_den_mat_guess1 = initial guess
+        !md_den_mat_guess2 = 0.0d0
+
+        qm2_struct%md_den_mat_guess2(1:qm2_struct%matsize) = 0.0d0
+        qm2_struct%md_den_mat_guess1(1:qm2_struct%matsize) = 0.0d0
+        qm2_struct%den_matrix(1:qm2_struct%matsize) = qm2_struct%den_matrix(1:qm2_struct%matsize) * 0.5d0
+
+    end if
       
     !!            qxd_s, qxd_z0, qxd_zq, qxd_d0, qxd_dq, qxd_q0, qxd_qq, qxd_neff
     !----------------------------------------
@@ -691,15 +713,12 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
                     *(2.0d0*nsshell(iqm_atomic)+1.0d0)) &
                     /((base_temp2**exponent_temp2) * sqrt(3.0d0))
 
-                qm2_params%multip_2c_elec_params(2,i)= &
-                    sqrt((4.0d0*nsshell(iqm_atomic)**2+6.0d0*nsshell(iqm_atomic) &
-                    +2.0d0)/20.0d0)/p_orb_exp_am1(iqm_atomic)
-
-                ! expression above sometimes (e.g., for hydrogen) gives Inf
-                ! because p_orb_exp_am1 vanishes !!!???
-                ! to correct for that: kav
                 if(p_orb_exp_am1(iqm_atomic)==0.d0) then
                     qm2_params%multip_2c_elec_params(2,i)=0.d0
+                else 
+                    qm2_params%multip_2c_elec_params(2,i)= &
+                    sqrt((4.0d0*nsshell(iqm_atomic)**2+6.0d0*nsshell(iqm_atomic) &
+                    +2.0d0)/20.0d0)/p_orb_exp_am1(iqm_atomic)
                 end if
             else
                 qm2_params%multip_2c_elec_params(1,i)= 0.0d0
@@ -782,6 +801,7 @@ subroutine qm2_load_params_and_allocate(qm2_params, qmmm_nml, qmmm_mpi, qmmm_opn
             ! get the Slater orbital expansion coefficients
             qm2_params%s_orb_exp_by_type(i) = s_orb_exp_am1(qmmm_struct%qm_type_id(i))
             qm2_params%p_orb_exp_by_type(i) = p_orb_exp_am1(qmmm_struct%qm_type_id(i))
+            qm2_params%d_orb_exp_by_type(i) = 0.0d0
             qm2_params%NUM_FN(i) = NUM_FN_am1(qmmm_struct%qm_type_id(i))
             do j=1,4
                 qm2_params%FN1(j,i) = FN1_am1(j,qmmm_struct%qm_type_id(i))
@@ -2041,6 +2061,9 @@ if (.not. qmmm_nml%qmtheory%DFTB) then
     ! Now see if user wants an MM peptide torsion correction
     ! ------------------------------------------------------
     qm2_struct%n_peptide_links = 0
+    if (qmmm_nml%peptide_corr) then
+        call qm2_identify_peptide_links(qm2_struct,qmmm_struct, qm2_struct%n_peptide_links,qmmm_struct%qm_coords)
+    end if
 
     ! Finally setup the STO-6G orbital expansions and allocate the memory required.
     ! Setup the STO-6G orbital expansions and pre-calculate as many overlaps by type

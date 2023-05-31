@@ -224,6 +224,7 @@
    ! Total energies of excited states
    allocate(qm2ds%Etot(qm2ds%Mx),stat=ierr)
    REQUIRE(ierr==0)
+   qm2ds%Etot = 0.0d0
 
    ! Gradient of required (last) excited state
    if(.not.allocated(qm2ds%grad)) then

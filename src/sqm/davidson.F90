@@ -36,6 +36,7 @@
    integer i,j,lprint
    integer iseed,ip,ih,j0,Mx0,imin,one,iloops
    integer kflag,nd,nd1,nd1_old,j1
+   integer :: iter = 0, max_iter = 200 ! max iteration for Davidson when not converged
 
    integer Lt,Mb
 !
@@ -188,7 +189,6 @@
 111   format (i3,a,g24.16,2(' ',e8.2))
    call flush(6)
 
-   
 ! Write vectors only for BIG sizes in the case of crash/restart       	  
    
    if(qm2ds%mdflag.lt.0.and.qm2ds%Nb.gt.100) then
@@ -204,9 +204,18 @@
       close(qm2ds%ee_unit)
    end if
 
+   if(kflag == 1) iter = iter + 1
+   if(iter > max_iter) then
+      write(6, *) '***********************************'
+      write(6, *) 'Could not go further ',j0,' vectors'
+      write(6, *) 'program stops here after', max_iter,' iterations '
+      write(6, *) '***********************************'
+      stop
+   endif
+
    goto 10
    end if
-       
+
 !
 !--------------------------------------------------------------------
 !
@@ -316,7 +325,6 @@
    _REAL_ ray(nd,nd),raye(nd),raye1(nd)
    _REAL_ rayv(nd,nd),rayvL(nd,nd),rayvR(nd,nd)
    _REAL_, allocatable :: dtmp(:)
-   !_REAL_ f11;
 
    if (lprint.gt.4) write(6,*)' Entering davidson0'
 
@@ -385,7 +393,7 @@
       end do
       !!NORMALIZE
       f2=ddot(M4,xi,one,xi,one) !xi.xi
-      f2=1.0D0/sqrt(abs(f2)) !normalization constant
+      f2=1.0D0/dsqrt(dabs(f2)) !normalization constant
 
       call dscal(M4,f2,xi,one) !normalize xi
      
@@ -395,8 +403,8 @@
          call daxpy(M4,f1,xi,one,vexp1(1,j),one) !vexp1=vexp1+xi.vexp1*xi
       end do
 
-      f2=ddot(M4,vexp(1,j),one,vexp1(1,j),one) !vexp.vexp1 but vexp=0 if started from 85??
-      f2=1.0D0/sqrt(abs(f2)) !normalization constant
+      f2=ddot(M4,vexp1(1,j),one,vexp1(1,j),one) !vexp.vexp1 but vexp=0 if started from 85??
+      if(f2.ne.0.0d0) f2=1.0D0/dsqrt(dabs(f2)) !normalization constant
       call dscal(M4,f2,vexp1(1,j),one) !normalize
 
       !!SAME AS ABOVE BUT WITH XI=X-Y
@@ -405,7 +413,7 @@
       end do
 
       f2=ddot(M4,xi,one,xi,one) !xi.xi
-      f2=1.0D0/sqrt(abs(f2)) 
+      f2=1.0D0/dsqrt(dabs(f2)) 
       call dscal(M4,f2,xi,one) !normalize xi
 
       do j=1,nd1   
@@ -413,8 +421,8 @@
          call daxpy(M4,f1,xi,one,vexp1(1,j),one)
       end do
 
-      f2=ddot(M4,vexp(1,j),one,vexp1(1,j),one)
-      f2=1.0D0/sqrt(abs(f2))
+      f2=ddot(M4,vexp1(1,j),one,vexp1(1,j),one)
+      if(f2.ne.0.0d0) f2=1.0D0/dsqrt(dabs(f2))
       call dscal(M4,f2,vexp1(1,j),one)
    end do
 
@@ -424,7 +432,7 @@
 
       !!NORMALIZE
       f2=ddot(M4,vexp1(1,j),one,vexp1(1,j),one)
-      f2=1/sqrt(abs(f2))
+      f2=1.0D0/dsqrt(dabs(f2))
       call dscal(M4,f2,vexp1(1,j),one)
 
       do i=1,j-1
@@ -442,7 +450,7 @@
       end do
 
       f2=ddot(M4,vexp1(1,j),one,vexp1(1,j),one) !!NORMALIZE AGAIN
-      f2=1/sqrt(abs(f2))
+      f2=1.0D0/dsqrt(dabs(f2))
       call dscal(M4,f2,vexp1(1,j),one)
    end do 
 
@@ -513,7 +521,7 @@
 12    continue
       do j=1,nd1
          f2=ddot(M4,vexp1(1,j),one,vexp1(1,j),one)
-         f2=1/sqrt(abs(f2))
+         f2=1.0D0/dsqrt(dabs(f2))
          call dscal(M4,f2,vexp1(1,j),one)
 
          do i=1,j-1
@@ -529,7 +537,7 @@
          end do
 
          f2=ddot(M4,vexp1(1,j),one,vexp1(1,j),one)
-         f2=1/sqrt(abs(f2))
+         f2=1.0D0/dsqrt(dabs(f2))
          call dscal(M4,f2,vexp1(1,j),one)
       end do
 
@@ -604,15 +612,17 @@
 
    call dcopy(nd*nd,ray1,one,rayvR,one)
 
-
-   write(6,*)'info00',info 
-
    allocate(dtmp(4*nd1))
    call dsyev ('v','u',nd1,rayvR,nd,raye,dtmp,4*nd1,info) 
         !Eigenvalues of ray1 in raye and eigenvectors in rayvR
-   write(6,*)'info000',info
-   write(6,*)'info Nrpa,nd,nd1',qm2ds%Nrpa,nd,nd1
-   write(6,*)'info shapes',shape(rayvR),shape(raye),shape(xi)
+
+   if(info /= 0) then
+      write(6, *)'DSYEV return code',info
+      if(lprint.gt.2) then
+          write(6,*)'info Nrpa, nd, nd1',qm2ds%Nrpa,nd,nd1
+          write(6,*)'info shapes',shape(rayvR),shape(raye),shape(xi)
+      end if
+   end if
  
    do j=1,nd1
       raye1(j)=Sign(Sqrt(Abs(raye(j))),raye(j)) !make raye1 sqrt(eigenvalues) with same sign as eigenvalues
@@ -634,8 +644,10 @@
 
 
 ! find eigenvalues and eigenvectors of ray
-   write(6,*)'info0',info
    call dsyev ('v','u',nd1,rayv,nd,raye,dtmp,4*nd1,info)
+   if(lprint > 2 .and. info /= 0) then
+       write(6,*)'DSYEV return code',info
+   end if
    do j=1,nd1
       raye(j) = Sign(Sqrt(Abs(raye(j))),raye(j))
    enddo
@@ -654,8 +666,7 @@
    end do
 
    if(lprint.gt.2) then 
-      write(6,*)'info',info
-      write(6,910) (raye(i),i=1,j1)
+      write(6, 910) (raye(i),i=1,j1)
    end if 
 
    if(raye(1).le.0.1) goto 100           ! RPA bad behavior
@@ -703,7 +714,7 @@
 
       f2=ddot(M4,v0(1,j),one,v0(1,j),one) &
          -ddot(M4,v0(1+M4,j),one,v0(1+M4,j),one)
-      f2=1/sqrt(abs(f2))
+      f2=1.0D0/dsqrt(dabs(f2))
       call dscal(2*M4,f2,v0(1,j),one)
 
    end do
@@ -759,7 +770,7 @@
          end do
 
          f4=ddot(M4,vexp1(1,nd1+m),one,vexp1(1,nd1+m),one)
-         f4=1/sqrt(abs(f4))
+         f4=1.0D0/dsqrt(dabs(f4))
          call dscal(M4,f4,vexp1(1,nd1+m),one)
 
          if(lprint.gt.3) then 
@@ -776,7 +787,7 @@
          end do
 
          f4=ddot(M4,vexp1(1,nd1+m),one,vexp1(1,nd1+m),one)
-         f4=1/sqrt(abs(f4))
+         f4=1.0D0/dsqrt(dabs(f4))
          call dscal(M4,f4,vexp1(1,nd1+m),one)
 
          if((nd1+m).eq.nd) goto 45
@@ -788,7 +799,7 @@
          end do
 
          f4=ddot(M4,vexp1(1,nd1+m),one,vexp1(1,nd1+m),one)
-         f4=1/sqrt(abs(f4))
+         f4=1.0D0/dsqrt(dabs(f4))
          call dscal(M4,f4,vexp1(1,nd1+m),one)
          if(lprint.gt.1) write(6,"(3i5,1x,2f14.9,2g10.3)") &
             j,n,m,raye(j-j0),f1,f2,f3
@@ -814,7 +825,7 @@
 
    do j=1+nd1,nd1+m
       f2=ddot(M4,vexp1(1,j),one,vexp1(1,j),one)
-      f2=1/sqrt(abs(f2))
+      f2=1.0D0/dsqrt(dabs(f2))
       call dscal(M4,f2,vexp1(1,j),one)
 
       do i=1,j-1
@@ -830,7 +841,7 @@
       end do
 
       f2=ddot(M4,vexp1(1,j),one,vexp1(1,j),one)
-      f2=1/sqrt(abs(f2))
+      f2=1.0D0/dsqrt(dabs(f2))
       call dscal(M4,f2,vexp1(1,j),one)
    end do
 !  Check

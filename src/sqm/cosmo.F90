@@ -632,7 +632,6 @@ cosmo_c_struct%qdenet(i,3)=cosmo_c_struct%qdenet(i,2)+cosmo_c_struct%qdenet(i,1)
 call coscl2(cosmo_c_struct%amat,cosmo_c_struct%nsetf,cosmo_c_struct%qscnet(1,2),cosmo_c_struct%phinet(1,2),cosmo_c_struct%nps)
 
 
-
 	s1=0.d0
 	s3=0.d0
 
@@ -753,7 +752,6 @@ a(k+indi) = summe * a(kk)
         use qmmm_struct_module, only : qmmm_struct_type
 	use qm2_params_module,  only : qm2_params_type
 	use qmmm_nml_module   , only : qmmm_nml_type
-
 
 
 	implicit none
@@ -1079,7 +1077,7 @@ subroutine coscav(qm2_params, qmmm_nml, cosmo_c_struct, qmmm_struct)
    ! SYMMETRY PROBLEMS WITH CAVITY CONSTRUCTION
     do i = 1, numat
       do j = 1, 3
-        cosmo_c_struct%coord(j, i) = cosmo_c_struct%coord(j, i) + Cos (i*j*.1d0) * 3.0d-9
+        cosmo_c_struct%coord(j, i) = cosmo_c_struct%coord(j, i) + dcos (float(i*j)*.1d0) * 3.0d-9
       end do
     end do
    !
@@ -1516,8 +1514,8 @@ subroutine dvfill(nppa, dirvec)
       do j = 1, 5
         nd = nd + 1
         beta = 1.d0 + j * 0.4d0 * pi + (i+1) * 0.1d0 * pi
-        dirvec(2, nd) = r * Cos (beta)
-        dirvec(3, nd) = r * Sin (beta)
+        dirvec(2, nd) = r * dcos (beta)
+        dirvec(3, nd) = r * dsin (beta)
         dirvec(1, nd) = i * h
       end do
     end do
@@ -1525,8 +1523,8 @@ subroutine dvfill(nppa, dirvec)
     dirvec(2, 12) = 0.d0
     dirvec(3, 12) = 0.d0
     nd = 12
-    cphi = Cos (1.d0)
-    sphi = Sin (1.d0)
+    cphi = dcos (1.d0)
+    sphi = dsin (1.d0)
     do i = 1, 12
       xx = dirvec(1, i)
       yy = dirvec(2, i)
@@ -1714,8 +1712,8 @@ subroutine surclo (qm2_params,qmmm_nml,cosmo_c_struct,qmmm_struct,coord, nipa, l
               da = ra * cosa
               hh = ra * sina
               ddd = cosmo_c_struct%rsolv * (cosa+cosb) / dab
-              fz(1) = (1.d0-Cos (hh*pi/ra)) / 2
-              fz(2) = (1.d0-Cos (hh*pi/rb)) / 2
+              fz(1) = (1.d0-dcos (hh*pi/ra)) / 2.d0
+              fz(2) = (1.d0-dcos (hh*pi/rb)) / 2.d0
               if (cosa*cosb < 0d0) then
                 fz(1) = 1.d0
               end if
@@ -1899,25 +1897,24 @@ subroutine surclo (qm2_params,qmmm_nml,cosmo_c_struct,qmmm_struct,coord, nipa, l
                   do ja = ich, nsa, 2
                     jb = Max (ja-1, 1)
                     jc = Min (ja+1, nsa)
-                    phi = phiu + (ja-1) * dp
-                    cphi = Cos (phi)
-                    sphi = Sin (phi)
+                    phi = phiu + float(ja-1) * dp
+                    cphi = dcos (phi)
+                    sphi = dsin (phi)
                     do ix = 1, 3
                       ca = xd(ix) + (cphi*rvx(ix)+sphi*rvy(ix)) * fz(ich)
                       ca = ca + (xta(ix, ich)-ca) * yx(ich)
-                      xja(ix) = ca + (xta(ix, 3-ich)-xta(ix, ich)) * ddd * &
-                     & (1.d0-fz(ich))
+                      xja(ix) = ca + (xta(ix, 3-ich)-xta(ix, ich)) * ddd * (1.d0-fz(ich))
                     end do
-                    phi = phiu + (jb-1) * dp
-                    cphi = Cos (phi)
-                    sphi = Sin (phi)
+                    phi = phiu + float(jb-1) * dp
+                    cphi = dcos (phi)
+                    sphi = dsin (phi)
                     do ix = 1, 3
                       ca = xd(ix) + cphi * rvx(ix) + sphi * rvy(ix)
                       xjb(ix) = ca + (xta(ix, 3-ich)-ca) * yx(3-ich)
                     end do
-                    phi = phiu + (jc-1) * dp
-                    cphi = Cos (phi)
-                    sphi = Sin (phi)
+                    phi = phiu + float(jc-1) * dp
+                    cphi = dcos (phi)
+                    sphi = dsin (phi)
                     do ix = 1, 3
                       ca = xd(ix) + cphi * rvx(ix) + sphi * rvy(ix)
                       xjc(ix) = ca + (xta(ix, 3-ich)-ca) * yx(3-ich)
@@ -2197,8 +2194,8 @@ subroutine ansude (ra, rb, d, rs, ara, arb, aar, abr, arad, arbd, rinc)
     sb = Sqrt (1.d0-cb*cb)
     ta = pi * sa
     tb = pi * sb
-    fza = (1.d0-Cos (ta)) / 2
-    fzb = (1.d0-Cos (tb)) / 2
+    fza = (1.d0-dcos (ta)) / 2.d0
+    fzb = (1.d0-dcos (tb)) / 2.d0
     if (sa < 0 .or. sb < 0) then
       fza = 1.d0
     end if
@@ -2223,8 +2220,8 @@ subroutine ansude (ra, rb, d, rs, ara, arb, aar, abr, arad, arbd, rinc)
     sbd = -cb * cbd / sb
     tad = pi * sad
     tbd = pi * sbd
-    fzad = Sin (ta) * .5d0
-    fzbd = Sin (tb) * .5d0
+    fzad = dsin (ta) * .5d0
+    fzbd = dsin (tb) * .5d0
     if (sa < 0 .or. sb < 0) then
       fzad = 0.d0
     end if

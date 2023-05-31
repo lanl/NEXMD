@@ -2,7 +2,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !THIS SUBROUTINE IS THE NONEQUILIBRIUM STATE SPECIFIC SOLVENT SCF SELECTOR
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine solvent_scf_and_davidson_test(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct);
+subroutine solvent_scf_and_davidson_test(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,printTdipole,outfile_28,tfemto);
     use qm2_davidson_module
     use cosmo_C, only : cosmo_C_structure
     use qmmm_struct_module, only : qmmm_struct_type
@@ -18,11 +18,13 @@ subroutine solvent_scf_and_davidson_test(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_st
     type(qm2_davidson_structure_type), intent(inout) :: qm2ds
     type(qmmm_struct_type), intent(inout) :: qmmm_struct
     type(qmmm_mpi_structure),intent(inout) :: qmmm_mpi
+    integer, intent(in) :: printTdipole, outfile_28
+    _REAL_, intent(in) :: tfemto
 
     if (cosmo_c_struct%solvent_model.eq.3) then
         call calc_cosmo_3(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct);
     else if (cosmo_c_struct%solvent_model.eq.2) then
-        call calc_cosmo_2(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct);
+        call calc_cosmo_2(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct,printTdipole,outfile_28,tfemto);
     end if
     return
 end subroutine
@@ -103,7 +105,7 @@ end subroutine
 !STATE SPECIFIC ROUTINE FOR [V_s(T+Z),xi] WHICH IS ADDED TO [F(xi),rho_0] in
 !DAVIDSON
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-subroutine calc_cosmo_2(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct, qm2ds,qmmm_struct)
+subroutine calc_cosmo_2(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct, qm2ds,qmmm_struct,printTdipole,outfile_28,tfemto)
     use qm2_davidson_module
     use communism
     use cosmo_C, only: cosmo_C_structure !cosmo_c_struct%v_solvent_difdens, cosmo_c_struct%cosmo_scf_ftol,cosmo_c_struct%cosmo_scf_maxcyc,cosmo_c_struct%doZ,cosmo_c_struct%potential_type, &
@@ -123,6 +125,8 @@ subroutine calc_cosmo_2(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct, 
      type(qm2_structure),intent(inout) :: qm2_struct
      type(qmmm_struct_type), intent(inout) :: qmmm_struct
      type(qm2_davidson_structure_type), intent(inout) :: qm2ds
+    integer, intent(in) :: printTdipole, outfile_28
+    _REAL_, intent(in) :: tfemto
     _REAL_ :: lastxi(qm2ds%Nrpa)
     _REAL_ :: vsol_temp(qm2ds%Nb,qm2ds%Nb)
     integer verbosity_save
@@ -168,7 +172,7 @@ subroutine calc_cosmo_2(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct, 
     endif
     lastxi=qm2ds%v0(:,qmmm_struct%state_of_interest) !Store old transition density
 
-    if(qm2ds%verbosity.eq.5) call outDavidson(qm2_params,qmmm_nml,qm2_struct,qm2ds,qmmm_struct)
+    if(qm2ds%verbosity.eq.5) call outDavidson(qm2_params,qmmm_nml,qm2_struct,qm2ds,qmmm_struct,0,outfile_28,tfemto)
 
     !Initialize some variables
     e0_0 = qm2ds%e0(qmmm_struct%state_of_interest)
@@ -195,7 +199,7 @@ subroutine calc_cosmo_2(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct, 
     !Begin SCF loop
     do k=1,cosmo_c_struct%cosmo_scf_maxcyc
         call davidson(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct,qm2ds,qmmm_struct);        !Calculate new excited states
-        if(qm2ds%verbosity.eq.5) call outDavidson(qm2_params,qmmm_nml,qm2_struct,qm2ds,qmmm_struct)
+        if(qm2ds%verbosity.eq.5) call outDavidson(qm2_params,qmmm_nml,qm2_struct,qm2ds,qmmm_struct,0,outfile_28,tfemto)
 
         ! Tracking the transition density (checking for crossing)
         f0=abs(ddot(qm2ds%Ncis,lastxi,1,qm2ds%v0(1,soi_temp),1))
@@ -209,6 +213,7 @@ subroutine calc_cosmo_2(qm2_params,qmmm_nml,qmmm_mpi,cosmo_c_struct,qm2_struct, 
                 f0=f1
             end if
         end do
+        !i=qmmm_struct%state_of_interest !for switching back at the end
         qmmm_struct%state_of_interest=soi_temp
         lastxi=qm2ds%v0(:,qmmm_struct%state_of_interest) !Store old transition densities
 
@@ -275,7 +280,7 @@ subroutine calc_cosmo_4(sim_target)
 
     sim=>sim_target
 
-    call do_sqm_davidson_update(sim)
+    call do_sqm_davidson_update(sim,0)
     e0_0 = (sim%naesmd%Omega(sim%qmmm%state_of_interest)+sim%naesmd%E0)*AU_TO_EV;
     e0_k = e0_0
     calc_Z=sim%cosmo%doZ
@@ -346,7 +351,7 @@ subroutine calc_cosmo_4(sim_target)
 
     !Begin SCF loop
     do k=1,sim%cosmo%cosmo_scf_maxcyc
-        call do_sqm_davidson_update(sim) !to include in the groundstate
+        call do_sqm_davidson_update(sim,0) !to include in the groundstate
         ! Tracking the transition density (checking for crossing)
         f0=abs(ddot(sim%dav%Ncis,lastxi,1,sim%dav%v0(1,soi_temp),1))
         do i=1,sim%dav%Mx
@@ -412,6 +417,7 @@ subroutine calc_cosmo_4(sim_target)
 
 
     !Printing out found eigenvalues, error and tolerance with solvent
+    !qmmm_struct%qm_mm_first_call = .true.
     if(sim%dav%verbosity.eq.0) then
         sim%dav%verbosity=verbosity_save2 !hack
         sim%qnml%verbosity=verbosity_save2
@@ -442,7 +448,7 @@ subroutine calc_cosmo_4(sim_target)
         write(6,"('    GS nonlinear term energy=',e20.10,' eV')") gsenergy
         write(6,"('    ES nonlinear term energy=',e20.10,' eV')") energy
         write(6,*)'-------------------------------------------------'
-        call do_sqm_davidson_update(sim) !to include in the groundstate
+        call do_sqm_davidson_update(sim,0) !to include in the groundstate
     end if
 
 111 format (i3,' ',g24.16,4('        ',e10.3))
