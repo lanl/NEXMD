@@ -67,11 +67,11 @@ def pesnact(header):
     print('Collecting pess and/or nacts.')
 
     ## Type of calculaton and directory ##
-    NEXMDir = raw_input('NEXMD directory: ')
+    NEXMDir = input('NEXMD directory: ')
     if not os.path.exists(NEXMDir):
         print('Path %s does not exist.' % (NEXMDir))
         sys.exit()
-    typeq = input('Output pess and/or nacts at all time-steps and trajectories, up to some user-defined time, or hops only?\nanswer all [0], user-defined time [1], or hops [2]: ')
+    typeq = eval(input('Output pess and/or nacts at all time-steps and trajectories, up to some user-defined time, or hops only?\nanswer all [0], user-defined time [1], or hops [2]: '))
     if typeq not in [0,1,2]:
         print('Answer must be 0, 1, or 2.')
         sys.exit()
@@ -113,7 +113,7 @@ def pesnact(header):
     if typeq == 0: ## all time-steps
         tcoll = (header.n_class_steps - 1)*header.time_step
     if typeq == 1 or typeq == 2: ## user-defined time or time-steps at hops only
-        tcoll = input('Collect data up to what time in femtoseconds: ')
+        tcoll = eval(input('Collect data up to what time in femtoseconds: '))
         if isinstance(tcoll, int) == False and isinstance(tcoll, float) == False:
             print('Time must be integer or float.')
             sys.exit()
@@ -135,7 +135,7 @@ def pesnact(header):
 
     ## Data type ##
     if header.bo_dynamics_flag == 0: ## non-adiabatic
-        dtypeq = input('Collect pess [1], nacts [2], or both [3]: ')
+        dtypeq = eval(input('Collect pess [1], nacts [2], or both [3]: '))
     if header.bo_dynamics_flag == 1: ## adiabatic
         dtypeq = 1
     if dtypeq not in [1,2,3]:
@@ -144,8 +144,9 @@ def pesnact(header):
 
     ## Line number array ##
     if header.moldyn_verbosity == 3:
-        if tstepq == 0 and header.n_quant_steps != 1:
-            linenums = np.arange(header.n_quant_steps, tscol*header.n_quant_steps - (header.n_quant_steps - 1), header.n_quant_steps)
+        ##if tstepq == 0 and header.n_quant_steps != 1:
+        if  header.n_quant_steps != 1:
+            linenums = np.arange(0, tscol*header.n_quant_steps - (header.n_quant_steps - 1), header.n_quant_steps)
         else:
             linenums = np.arange(0, tscol)
     else:
@@ -194,7 +195,7 @@ def pesnact(header):
                 for dir in dirlist1:
                     ## Determine completed number of time-steps ##
                     if not os.path.exists('%s/%04d/energy-ev.out' % (NEXMD,dir)):
-                        error.wirte( 'Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir))
+                        print('Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -203,7 +204,7 @@ def pesnact(header):
                     tsteps = len(data) - 1
                     ## Determine if pes files exist and open them ##
                     if not os.path.exists('%s/%04d/pes.out' % (NEXMD,dir)):
-                        error.wirte( 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir))
+                        print('Path %s%04d/pes.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -214,14 +215,18 @@ def pesnact(header):
                     tflag = 0
                     index = 0
                     for line in lines:
-                        pess = np.float_(pes[line].split())
+                        if(header.moldyn_verbosity ==3 and header.n_quant_steps >1):
+                            pess = np.float_(pes[int(line/header.n_quant_steps)].split())
+                        else:
+                            pess = np.float_(pes[line].split())
+
                         time = np.around(pess[0], decimals = 3)
                         if time != times[index]:
-                            error.wirte( 'There is an inconsistency in time-step in %s%04d at %.3f fs' % (NEXMD,dir,times[index]))
+                            print('There is an inconsistency in time-step in %s%04d at %.3f fs' % (NEXMD,dir,times[index]), file=error)
                             tflag = 1
                             errflag = 1
                             break
-                        pesall.wirte( '%s%04d' % (NEXMD,dir), '%d' % (header.exc_state_init), '%d' % (header.exc_state_init), ' '.join(str('%.10f') % (x) for x in pess))
+                        print('%s%04d' % (NEXMD,dir), '%d' % (header.exc_state_init), '%d' % (header.exc_state_init), ' '.join(str('%.10f') % (x) for x in pess), file=pesall)
                         index += 1
                     if tflag == 0:
                         ctraj += 1
@@ -262,7 +267,7 @@ def pesnact(header):
                 for dir in dirlist1:
                     ## Determine completed number of time-steps ##
                     if not os.path.exists('%s/%04d/energy-ev.out' % (NEXMD,dir)):
-                        error.wirte( 'Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir))
+                        print('Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -271,7 +276,7 @@ def pesnact(header):
                     tsteps = len(data) - 1
                     ## Determine if pes files exist and open them ##
                     if not os.path.exists('%s/%04d/pes.out' % (NEXMD,dir)):
-                        error.wirte( 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir))
+                        print('Path %s%04d/pes.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -283,21 +288,25 @@ def pesnact(header):
                         tflag = 0
                         index = 0
                         for line in lines:
-                            pess = np.float_(pes[line].split())
+                            if(header.moldyn_verbosity ==3 and header.n_quant_steps >1):
+                                pess = np.float_(pes[int(line/header.n_quant_steps)].split())
+                            else:
+                                pess = np.float_(pes[line].split())
+
                             time = np.around(pess[0], decimals = 3)
                             if time != times[index]:
-                                error.wirte( 'There is an inconsistency in time-step in %s%04d at %.3f fs' % (NEXMD,dir,times[index]))
+                                print('There is an inconsistency in time-step in %s%04d at %.3f fs' % (NEXMD,dir,times[index]), file=error)
                                 tflag = 1
                                 errflag = 1
                                 break
-                            pesall.wirte( '%s%04d' % (NEXMD,dir), '%d' % (header.exc_state_init), '%d' % (header.exc_state_init), ' '.join(str('%.10f') % (x) for x in pess))
+                            print('%s%04d' % (NEXMD,dir), '%d' % (header.exc_state_init), '%d' % (header.exc_state_init), ' '.join(str('%.10f') % (x) for x in pess), file=pesall)
                             index += 1
                         if tflag == 0:
                             ctraj += 1
                             if tsteps == header.n_class_steps:
                                 etraj += 1
                     else:
-                        error.wirte( '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
+                        print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step), file=error)
                         errflag = 1
                     print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
                     ttraj += 1
@@ -342,7 +351,7 @@ def pesnact(header):
                 for dir in dirlist1:
                     ## Determine completed number of time-steps ##
                     if not os.path.exists('%s/%04d/energy-ev.out' % (NEXMD,dir)):
-                        error.wirte( 'Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir))
+                        print('Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -351,7 +360,7 @@ def pesnact(header):
                     tsteps = len(data) - 1
                     ## Determine if pes/nact files exist and open them ##
                     if not os.path.exists('%s/%04d/coeff-n.out' % (NEXMD,dir)):
-                        error.wirte( 'Path %s%04d/coeff-n.out does not exist.' % (NEXMD,dir))
+                        print('Path %s%04d/coeff-n.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -360,7 +369,7 @@ def pesnact(header):
                     hsteps = len(hops)
                     if dtypeq == 1:
                         if not os.path.exists('%s/%04d/pes.out' % (NEXMD,dir)):
-                            error.wirte( 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir))
+                            print('Path %s%04d/pes.out does not exist.' % (NEXMD,dir), file=error)
                             errflag = 1
                             ttraj += 1
                             continue
@@ -369,7 +378,7 @@ def pesnact(header):
                         lines = linenums[0:len(pes):1]
                     if dtypeq == 2:
                         if not os.path.exists('%s/%04d/nact.out' % (NEXMD,dir)):
-                            error.wirte( 'Path %s%04d/nact.out does not exist.' % (NEXMD,dir))
+                            print('Path %s%04d/nact.out does not exist.' % (NEXMD,dir), file=error)
                             errflag = 1
                             ttraj += 1
                             continue
@@ -378,7 +387,7 @@ def pesnact(header):
                         lines = linenums[1:len(nact) + 1:1]
                     if dtypeq == 3:
                         if not os.path.exists('%s/%04d/pes.out' % (NEXMD,dir)):
-                            error.wirte( 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir))
+                            print('Path %s%04d/pes.out does not exist.' % (NEXMD,dir), file=error)
                             errflag = 1
                             ttraj += 1
                             continue
@@ -386,7 +395,7 @@ def pesnact(header):
                         pes = pes.readlines()
                         lines = linenums[1:len(pes):1]
                         if not os.path.exists('%s/%04d/nact.out' % (NEXMD,dir)):
-                            error.wirte( 'Path %s%04d/nact.out does not exist.' % (NEXMD,dir))
+                            print('Path %s%04d/nact.out does not exist.' % (NEXMD,dir), file=error)
                             errflag = 1
                             ttraj += 1
                             continue
@@ -397,40 +406,49 @@ def pesnact(header):
                     index = 0
                     cstate = np.int(hops[0].split()[0])
                     for line in lines:
-                        if line <= hsteps - 1:
+
+                        if line <= hsteps-1:
                             nstate = np.int(hops[line].split()[0])
+
                         if dtypeq in [1,3]:
                             pess = np.float_(pes[line].split())
                             time = np.around(pess[0], decimals = 3)
                             if time != times[index]:
-                                error.wirte( 'There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index]))
+                                print('There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index]), file=error)
                                 tflag = 1
                                 errflag = 1
                                 break
+
                         if dtypeq in [2,3]:
-                            if line <= hsteps - 1:
+                            headerSteps = (hsteps-1)
+                            if(header.moldyn_verbosity ==3 and header.n_quant_steps >1):
+                                headerSteps = header.n_quant_steps*(hsteps-1)
+
+                            if line <= headerSteps:
                                 nacts = np.float_(nact[line - 1].split())[indices]
                                 time = np.around(nacts[0], decimals = 3)
                                 if time != times[index]:
-                                    error.wirte( 'There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index]))
+                                    print('There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index]), file=error)
                                     tflag = 1
                                     errflag = 1
                                     break
+
                         if dtypeq == 1:
-                            pesall.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess))
+                            print('%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess), file=pesall)
                             cstate = nstate
                             index += 1
                             continue
                         if dtypeq == 2:
-                            if line <= hsteps - 1:
-                                nactall.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts))
+                            if line <= headerSteps:
+                                print('%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts), file=nactall)
                                 cstate = nstate
                                 index += 1
                                 continue
                         if dtypeq == 3:
-                            pesall.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess))
-                            if line <= hsteps - 1:
-                                nactall.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts))
+                            print('%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess), file=pesall)
+
+                            if line <= headerSteps:
+                                print('%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts), file=nactall)
                         cstate = nstate
                         index += 1
                     if tflag == 0:
@@ -454,7 +472,7 @@ def pesnact(header):
                 print('Completed trajectories:', '%04d' % (ctraj))
                 print('Excellent trajectories:', '%04d' % (etraj))
             if errflag == 1:
-                print('One of more trajectories have experienced an error, check pesnact.err.' % (len(str(header.n_class_steps)), tcoll))
+                print('One of more trajectories have experienced an error, check pesnact.err.') 
             else:
                 os.remove('%s/pesnact.err' % (cwd))
 
@@ -491,7 +509,7 @@ def pesnact(header):
                     tsteps = len(data) - 1
                     ## Determine if pes/nact files exist ##
                     if not os.path.exists('%s/%04d/coeff-n.out' % (NEXMD,dir)):
-                        error.wirte( 'Path %s%04d/coeff-n.out does not exist.' % (NEXMD,dir))
+                        print('Path %s%04d/coeff-n.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -500,7 +518,7 @@ def pesnact(header):
                     htsteps = len(hops)
                     if dtypeq == 1:
                         if not os.path.exists('%s/%04d/pes.out' % (NEXMD,dir)):
-                            error.wirte( 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir))
+                            print('Path %s%04d/pes.out does not exist.' % (NEXMD,dir), file=error)
                             errflag = 1
                             ttraj += 1
                             continue
@@ -509,16 +527,16 @@ def pesnact(header):
                         lines = linenums[0:len(pes):1]
                     if dtypeq == 2:
                         if not os.path.exists('%s/%04d/nact.out' % (NEXMD,dir)):
-                            error.wirte( 'Path %s%04d/nact.out does not exist.' % (NEXMD,dir))
+                            print('Path %s%04d/nact.out does not exist.' % (NEXMD,dir), file=error)
                             errflag = 1
                             ttraj += 1
                             continue
                         nact = open('%s/%04d/nact.out' % (NEXMD,dir),'r')
                         nact = nact.readlines()
                         lines = linenums[1:len(nact) + 1:1]
-                    if dtype == 3:
+                    if dtypeq == 3:
                         if not os.path.exists('%s/%04d/pes.out' % (NEXMD,dir)):
-                            error.wirte( 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir))
+                            print('Path %s%04d/pes.out does not exist.' % (NEXMD,dir), file=error)
                             errflag = 1
                             ttraj += 1
                             continue
@@ -526,7 +544,7 @@ def pesnact(header):
                         pes = pes.readlines()
                         lines = linenums[1:len(pes):1]
                         if not os.path.exists('%s/%04d/nact.out' % (NEXMD,dir)):
-                            error.wirte( 'Path %s%04d/nact.out does not exist.' % (NEXMD,dir))
+                            print('Path %s%04d/nact.out does not exist.' % (NEXMD,dir), file=error)
                             errflag = 1
                             ttraj += 1
                             continue
@@ -538,40 +556,45 @@ def pesnact(header):
                         index = 0
                         cstate = np.int(hops[0].split()[0])
                         for line in lines:
-                            if line <= htsteps - 1:
+
+                            if line <= htsteps-1:
                                 nstate = np.int(hops[line].split()[0])
                             if dtypeq in [1,3]:
                                 pess = np.float_(pes[line].split())
                                 time = np.around(pess[0], decimals = 3)
                                 if time != times[index]:
-                                    error.wirte( 'There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index]))
+                                    print('There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index]), file=error)
                                     tflag = 1
                                     errflag = 1
                                     break
                             if dtypeq in [2,3]:
-                                if line <= htsteps - 1:
-                                    nacts = np.float_(nact[line-1].split())[indices]
+                                headerSteps = (htsteps-1)
+                                if(header.moldyn_verbosity ==3 and header.n_quant_steps >1):
+                                    headerSteps = header.n_quant_steps*(htsteps-1)
+
+                                if line <= headerSteps:
+                                    nacts = np.float_(nact[(line-1)].split())[indices]
                                     time = np.around(nacts[0], decimals = 3)
                                     if time != times[index]:
-                                        error.wirte( 'There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index]))
+                                        print('There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index]), file=error)
                                         tflag = 1
                                         errflag = 1
                                         break
                             if dtypeq == 1:
-                                pesall.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess))
+                                print('%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess), file=pesall)
                                 cstate = nstate
                                 index += 1
                                 continue
                             if dtypeq == 2:
-                                if line <= htsteps - 1:
-                                    nactall.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts))
+                                if line <= headerSteps:
+                                    print('%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts), file=nactall)
                                     cstate = nstate
                                     index += 1
                                     continue
                             if dtypeq == 3:
-                                pesall.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess))
-                                if line <= htsteps - 1:
-                                    nactall.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts))
+                                print('%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess), file=pesall)
+                                if line <= headerSteps:
+                                    print('%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts), file=nactall)
                             cstate = nstate
                             index += 1
                         if tflag == 0:
@@ -579,7 +602,7 @@ def pesnact(header):
                             if tsteps == header.n_class_steps:
                                 etraj += 1
                     else:
-                        error.wirte( '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
+                        print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step), file=error)
                         errflag = 1
                     print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
                     ttraj += 1
@@ -635,7 +658,7 @@ def pesnact(header):
                     tsteps = len(data) - 1
                     ## determine if pes/nact files exist ##
                     if not os.path.exists('%s/%04d/coeff-n.out' % (NEXMD,dir)):
-                        error.wirte( 'Path %s%04d/coeff-n.out does not exist.' % (NEXMD,dir))
+                        print('Path %s%04d/coeff-n.out does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -644,7 +667,7 @@ def pesnact(header):
                     hsteps = len(hops)
                     if dtypeq == 1:
                         if not os.path.exists('%s/%04d/pes.out' % (NEXMD,dir)):
-                            error.wirte( 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir))
+                            print('Path %s%04d/pes.out does not exist.' % (NEXMD,dir), file=error)
                             errflag = 1
                             ttraj += 1
                             continue
@@ -653,7 +676,7 @@ def pesnact(header):
                         lines = linenums[0:len(pes):1]
                     if dtypeq == 2:
                         if not os.path.exists('%s/%04d/nact.out' % (NEXMD,dir)):
-                            error.wirte( 'Path %s%04d/nact.out does not exist.' % (NEXMD,dir))
+                            print('Path %s%04d/nact.out does not exist.' % (NEXMD,dir), file=error)
                             errflag = 1
                             ttraj += 1
                             continue
@@ -662,7 +685,7 @@ def pesnact(header):
                         lines = linenums[1:len(nact) + 1:1]
                     if dtypeq == 3:
                         if not os.path.exists('%s/%04d/pes.out' % (NEXMD,dir)):
-                            error.wirte( 'Path %s%04d/pes.out does not exist.' % (NEXMD,dir))
+                            print('Path %s%04d/pes.out does not exist.' % (NEXMD,dir), file=error)
                             errflag = 1
                             ttraj += 1
                             continue
@@ -670,7 +693,7 @@ def pesnact(header):
                         pes = pes.readlines()
                         lines = linenums[1:len(pes):1]
                         if not os.path.exists('%s/%04d/nact.out' % (NEXMD,dir)):
-                            error.wirte( 'Path %s%04d/nact.out does not exist.' % (NEXMD,dir))
+                            print('Path %s%04d/nact.out does not exist.' % (NEXMD,dir), file=error)
                             errflag = 1
                             ttraj += 1
                             continue
@@ -682,41 +705,49 @@ def pesnact(header):
                         cstate = np.int(hops[0].split()[0])
                         index = 0
                         for line in lines:
-                            if line <= hsteps - 1:
-                                nstate = np.int(hops[line].split()[0])
+                            headerSteps = hsteps - 1
+                            if(header.moldyn_verbosity ==3 and header.n_quant_steps >1):
+                                headerSteps = header.n_quant_steps*(hsteps-1)
+
+
+                            if line <= headerSteps:
+                                if(header.moldyn_verbosity ==3 and header.n_quant_steps >1):
+                                    nstate = np.int(hops[int(line/header.n_quant_steps)].split()[0])
+                                else:
+                                    nstate = np.int(hops[int(line)].split()[0])
                             if dtypeq in [1,3]:
                                 pess = np.float_(pes[line].split())
                                 time = np.around(pess[0], decimals = 3)
                                 if time != times[index]:
-                                    error.wirte( 'There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index]))
+                                    print('There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index]), file=error)
                                     tflag = 1
                                     errflag = 1
                                     break
                             if dtypeq in [2,3]:
-                                if line <= hsteps - 1:
+                                if line <= headerSteps:
                                     nacts = np.float_(nact[line - 1].split())[indices]
                                     time = np.around(nacts[0], decimals = 3)
                                     if time != times[index]:
-                                        error.wirte( 'There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index]))
+                                        print('There is an inconsistency in time-step in %s%04d at %.3f fs.' % (NEXMD,dir,times[index]), file=error)
                                         tflag = 1
                                         errflag = 1
                                         break
                             if nstate != cstate:
                                 if dtypeq == 1:
-                                    peshop.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess))
+                                    print('%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess), file=peshop)
                                     cstate = nstate
                                     index += 1
                                     continue
                                 if dtypeq == 2:
-                                    if line <= hsteps - 1:
-                                        nacthop.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts))
+                                    if line <= headerSteps:
+                                        print('%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts), file=nacthop)
                                         cstate = nstate
                                         index += 1
                                         continue
                                 if dtypeq == 3:
-                                    peshop.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess))
-                                    if line <= hsteps - 1:
-                                        nacthop.wirte( '%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts))
+                                    print('%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in pess), file=peshop)
+                                    if line <= headerSteps:
+                                        print('%s%04d' % (NEXMD,dir), '%d' % (cstate), '%d' % (nstate), ' '.join(str('%.10f') % (x) for x in nacts), file=nacthop)
                             cstate = nstate
                             index += 1
                         if tflag == 0:
@@ -724,7 +755,7 @@ def pesnact(header):
                             if tsteps == header.n_class_steps:
                                 etraj += 1
                     else:
-                        error.wirte( '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
+                        print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step), file=error)
                         errflag = 1
                     print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
                     ttraj += 1

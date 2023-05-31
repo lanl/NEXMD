@@ -28,7 +28,7 @@ def cleandir(header):
     print('Cleaning directories of unfinished trajectories.')
     
     ## Check to delete question ##
-    checkq = input('Are you sure you want to delete all unfinished trajectories?\nAnswer yes [1] or no [0]: ')
+    checkq = eval(input('Are you sure you want to delete all unfinished trajectories?\nAnswer yes [1] or no [0]: '))
     if checkq not in [1,0]:
         print('Answer must be 1 or 0.')
         sys.exit()
@@ -36,7 +36,7 @@ def cleandir(header):
         sys.exit()
 
     ## Directory names ##
-    NEXMDir = raw_input('NEXMD directory: ')
+    NEXMDir = input('NEXMD directory: ')
     if not os.path.exists(NEXMDir):
         print('Path %s does not exist.' % (NEXMDir))
         sys.exit()
@@ -57,7 +57,7 @@ def cleandir(header):
     header.n_class_steps = header.n_class_steps + 1
 
     ## Ask user to delete unfinished trajectories up to user-defined number of classical time-steps ##
-    contq = input('Trajectories less than %d classical time-steps will be deleted.\nContinue? Answer yes [1] or no [0]: ' % (header.n_class_steps - 1))
+    contq = eval(input('Trajectories less than %d classical time-steps will be deleted.\nContinue? Answer yes [1] or no [0]: ' % (header.n_class_steps - 1)))
     if contq not in [1,0]:
         print('Answer must be 1 or 0.')
         sys.exit()
@@ -105,6 +105,6 @@ def cleandir(header):
                 os.rename('%s/%04d/ninput.ceon' % (NEXMD,dir), '%s/%04d/input.ceon' % (NEXMD,dir))
                 clnflag = 0
                 traj += 1
-                dirlist.wirte( '%04d' % (dir))
+                print('%04d' % (dir), file=dirlist)
                 print('%s%04d' % (NEXMD,dir))
     print('The contents of %d trajectories have been deleted.' % (traj))

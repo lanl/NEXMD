@@ -38,7 +38,7 @@ def optspec(pathtopack,header):
     print('Generating optical spectrum.')
 
     ## Directory names ##
-    spdir = raw_input('Single-point calculations directory: ')
+    spdir = input('Single-point calculations directory: ')
     if not os.path.exists(spdir):
         print('Path %s does not exist.' % (spdir))
         sys.exit()
@@ -72,22 +72,22 @@ def optspec(pathtopack,header):
             dirlist1 = np.array([dirlist1])
         for dir in dirlist1:
             if not os.path.exists('%s/%s/%04d' % (cwd,NEXMD,dir)):
-                error.write('Path %s%04d does not exist.' % (NEXMD,dir))
+                print('Path %s%04d does not exist.' % (NEXMD,dir), file=error)
                 errflag = 1
                 continue
             os.chdir('%s/%s/%04d' % (cwd,NEXMD,dir))
             if not os.path.exists('%s/%s/%04d/md.out' % (cwd,NEXMD,dir)):
-                error.write('Path %s%04d/md.out does not exist.' % (NEXMD,dir))
+                print('Path %s%04d/md.out does not exist.' % (NEXMD,dir), file=error)
                 errflag = 1
                 continue
             subprocess.call(shlex.split('sh %s/getexcited_package/collectceo.sh %d' % (pathtopack,header.n_exc_states_propagate + 1)))
             if not os.path.exists('%s/%s/%04d/ceo.out' % (cwd,NEXMD,dir)):
-                error.write('Path %s/%04d/ceo.out does not exist.' % (NEXMD,dir))
+                print('Path %s/%04d/ceo.out does not exist.' % (NEXMD,dir), file=error)
                 errflag = 1
                 continue
             with open('%s/%s/%04d/ceo.out' % (cwd,NEXMD,dir),'r') as data:
                 if len(data.readlines()) != header.n_exc_states_propagate:
-                    error.write('%s%04d/ceo.out' % (NEXMD,dir) + ' is incomplete')
+                    print('%s%04d/ceo.out' % (NEXMD,dir), 'is incomplete', file=error)
                     errflag = 1
     if errflag == 1:
         print('One or more single-point calculations did not finish, check ceo.err.')
@@ -96,14 +96,16 @@ def optspec(pathtopack,header):
         os.remove('%s/ceo.err' % (cwd))
 
     ## Generate optical spectrum ##
-    stype = input('Spectral lineshape? Answer Gaussian [0] or Lorentzian [1]: ')
+    stype = eval(input('Spectral lineshape? Answer Gaussian [0] or Lorentzian [1]: '))
     if stype not in [0,1]:
         print('Answer must be 0 or 1.')
         sys.exit()
     if stype == 0:
-        specb = input('Spectral broadening (i.e. Gaussian standard deviation) in eV [e.g. 0.15]: ')
+        FWHM = eval(input('Please enter the full width at half maximum (FWHM) for the Gaussian lineshape in eV [e.g. 0.36]: '))
+        specb = FWHM/(2*np.sqrt(2*np.log(2))) 
     else:
-        specb = input('Spectral broadening (i.e. Lorentzian fwhm) in eV [e.g. 0.36]: ')
+        FWHM = eval(input('Please enter the full width at half maximum (FWHM) for the Lorentzian lineshape in eV  [e.g. 0.36]: '))
+        specb = FWHM
     if isinstance(specb, int) == False and isinstance(specb, float) == False:
         print('Spectral broadening must be integer or float.')
         sys.exit()
@@ -122,6 +124,7 @@ def optspec(pathtopack,header):
             for dir in dirlist1:
                 data = np.genfromtxt('%s/%s/%04d/ceo.out' % (cwd,NEXMD,dir))
                 for state, energy, osx, osy, osz, oscstren in data:
+                    state = state.astype(np.int64)
                     dpoints[state] = dpoints[state] + oscstren*np.exp(-(energy-dpoints[0])**(2.0)/(2.0*specb**(2.0)))/np.sqrt(2.0*np.pi*specb**(2.0))
                 print('%s%04d' % (NEXMD,dir))
                 traj += 1
@@ -133,6 +136,7 @@ def optspec(pathtopack,header):
             for dir in dirlist1:
                 data = np.genfromtxt('%s/%s/%04d/ceo.out' % (cwd,NEXMD,dir))
                 for state, energy, osx, osy, osz, oscstren in data:
+                    state = state.astype(np.int64)
                     dpoints[state] = dpoints[state] + oscstren/(1.0+((energy-dpoints[0])**2.0)/(specb/2.0)**(2.0))/(specb*np.pi/2.0)
                 print('%s%04d' % (NEXMD,dir))
                 traj += 1

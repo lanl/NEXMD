@@ -40,15 +40,15 @@ def newsim(header):
     print('Preparing input files for a new simulation with geometries taken from another simulation.')
 
     ## Directory names ##
-    gsdir = raw_input('Ground-state dynamics directory: ')
+    gsdir = input('Ground-state dynamics directory: ')
     if not os.path.exists(gsdir):
         print('Path %s does not exist.' % (gsdir))
         sys.exit()
-    olddir = raw_input('NEXMD directory where geometries should be taken from: ')
+    olddir = input('NEXMD directory where geometries should be taken from: ')
     if not os.path.exists(olddir):
         print('Path %s does not exist.' % (olddir))
         sys.exit()
-    newdir = raw_input('NEXMD directory for new simulation: ')
+    newdir = input('NEXMD directory for new simulation: ')
     if not os.path.exists(newdir):
         print('Path %s does not exist.' % (newdir))
         sys.exit()
@@ -57,7 +57,7 @@ def newsim(header):
     NEXMDs = glob.glob('%s/NEXMD*/' % (newdir))
     NEXMDs.sort()
     if len(NEXMDs) != 0:
-        contq = input('** WARNING ** All NEXMD folders and rseedslist inside %s will be deleted!\nContinue? Answer yes [1] or no [0]: ' % (newdir))
+        contq = eval(input('** WARNING ** All NEXMD folders and rseedslist inside %s will be deleted!\nContinue? Answer yes [1] or no [0]: ' % (newdir)))
         if contq not in [1,0]:
             print('Answer must be 1 or 0.')
             sys.exit()
@@ -75,7 +75,7 @@ def newsim(header):
     if not os.path.exists('%s/header' % (olddir)):
         print('Path %s/header does not exist.' % (olddir))
         sys.exit()
-    old_header = header('%s/header' % (oldir))
+    old_header = header('%s/header' % (olddir))
 
     ## Check output data ##
     if old_header.out_data_steps == 0:
@@ -110,9 +110,9 @@ def newsim(header):
     bottom = None
     index = 0
     for line in anum:
-        if '$coord' in line:
+        if '$COORD' in line:
             top = index
-        if '$endcoord' in line:
+        if '$ENDCOORD' in line:
             bottom = index
             break
         index += 1
@@ -140,14 +140,14 @@ def newsim(header):
         dirlist1 = np.array([dirlist1])
     os.remove('%s/totdirlist' % (newdir))
     ntraj = len(dirlist1)
-    randq = input('New random seeds? Answer yes [1] or no [0]: ')
+    randq = eval(input('New random seeds? Answer yes [1] or no [0]: '))
     if randq not in [1,0]:
         print('Answer must be 1 or 0.')
         sys.exit()
     if randq == 1:
-        rseeds = random.sample(np.arange(1,1000001), ntraj)
+        rseeds = random.sample(list(np.arange(1,1000001)), ntraj)
     else:
-        rseeds = raw_input('Path to random-seeds list: ')
+        rseeds = input('Path to random-seeds list: ')
         if not os.path.exists(rseeds):
             print('Path %s does not exist.' % (rseeds))
             sys.exit()
@@ -165,18 +165,18 @@ def newsim(header):
     rseeds = np.int_(rseeds)
 
     ## Choose time at which geometries should be taken from the old simulation ##
-    startq = input('At what time, in femtoseconds, should geometries be taken from %s? ' % (olddir))
+    startq = eval(input('At what time, in femtoseconds, should geometries be taken from %s?  Plese enter a time greater than 0:   ' % (olddir)))
     if isinstance(startq, int) == False and isinstance(startq, float) == False:
         print('Time must be integer or float')
         sys.exit()
-    if startq < 0:
+    if startq <= 0:
         print('Time must be integer or float greater than zero.')
         sys.exit()
     startq = np.float(startq)
     nsteps = 0
-    while nsteps*cprint + old_header.time_init <= startq:
+    while round(nsteps*cprint + old_header.time_init,3) <= round(startq,3):
         nsteps += 1
-    if (nsteps - 1)*cprint + old_header.time_init != startq:
+    if round((nsteps - 1)*cprint + old_header.time_init,2) != round(startq,2):
         print('The time, %.2f, minus the initial time, %.2f, is not divisible by %.2f.' % (startq,old_header.time_init,cprint))
         sys.exit()
 
@@ -195,15 +195,16 @@ def newsim(header):
         sys.exit()
     for NEXMD in NEXMDs:
         dirlist1 = np.int_(np.genfromtxt('%s/dirlist1' % (NEXMD)))
+        print('%s/dirlist1'% (NEXMD))
         if isinstance(dirlist1,int) == True:
             dirlist1 = np.array([dirlist1])
         for dir in dirlist1:
             if not os.path.exists('%s/%04d/coords.xyz' % (NEXMD,dir)):
-                error.wirte( '%s/%04d/coords.xyz' % (NEXMD,dir), 'does not exist')
+                print('%s/%04d/coords.xyz' % (NEXMD,dir), 'does not exist', file=error)
                 errflag = 1
                 terrflag = 1
             if not os.path.exists('%s/%04d/velocity.out' % (NEXMD,dir)):
-                error.wirte( '%s/%04d/velocity.out' % (NEXMD,dir), 'does not exist')
+                print('%s/%04d/velocity.out' % (NEXMD,dir), 'does not exist', file=error)
                 errflag = 1
                 terrflag = 1
             if errflag == 1:
@@ -226,7 +227,7 @@ def newsim(header):
                     if ncoords == 0:
                         dtinit = np.around(np.float(line.split()[-1]), decimals = 3)
                         if dtinit != old_header.time_init:
-                            error.wirte( 'Initial time in %s%04d/coords.xyz does not match initial time in %s/header.' (NEXMD,dir,olddir))
+                            print('Initial time in %s%04d/coords.xyz does not match initial time in %s/header.' %(NEXMD,dir,olddir), file=error)
                             errflag = 1
                             terrflag = 1
                             break
@@ -244,9 +245,14 @@ def newsim(header):
                 traj += 1
                 continue
             arrayc = np.append(arrayc, lenc + 1)
-            cindex = np.where(arrayc == tindex)
+            try:
+                cindex = np.where(arrayc == tindex)
+            except:
+                print(' There is problem with the directory: %s%04d' %(NEXMD,dir), file=error)
+                traj +=1
+                continue
             if len(cindex[0]) == 0:
-                error.wirte( 'Coordinates at %.2f fs in %s%04d/coords.xyz were not found.' % (startq,NEXMD,dir))
+                print('Coordinates at %.2f fs in %s%04d/coords.xyz were not found.' % (startq,NEXMD,dir), file=error)
                 tarrayc = np.append(tarrayc, np.array([-9999,-9999]))
                 tarrayv = np.append(tarrayv, np.array([-9999,-9999]))
                 terrflag = 1
@@ -254,7 +260,7 @@ def newsim(header):
                 continue
             arrayc = np.int_(arrayc[[cindex[0][0], cindex[0][0] + 1]])
             index = 0
-            arrayv = np.array([0])
+            arrayv = np.array([])
             for line in datav:
                 if 'time' in line:
                     time = np.around(np.float(line.split()[-1]), decimals = 3)
@@ -262,10 +268,11 @@ def newsim(header):
                         tindex = index
                     arrayv = np.append(arrayv, index)
                 index += 1
+
             arrayv = np.append(arrayv, lenv)
             vindex = np.where(arrayv == tindex)
             if len(vindex[0]) == 0:
-                error.wirte( 'Velocities at %.2f fs in %s%04d/velocity.out were not found.' % (startq,NEXMD,dir))
+                print('Velocities at %.2f fs in %s%04d/velocity.out were not found.' % (startq,NEXMD,dir), file=error)
                 tarrayc = np.append(tarrayc, np.array([-9999,-9999]))
                 tarrayv = np.append(tarrayv, np.array([-9999,-9999]))
                 terrflag = 1
@@ -277,7 +284,7 @@ def newsim(header):
             traj += 1
     if terrflag == 1:
         print('One or more trajectories of the previous simulation cannot be used for in the current simulation, check newsim.err.')
-        contq = input('Continue preparing input files? Answer yes [1] or no [0]: ')
+        contq = eval(input('Continue preparing input files? Answer yes [1] or no [0]: '))
         if contq not in [1,0]:
             print('Answer must be 1 or 0.')
             sys.exit()
@@ -298,7 +305,7 @@ def newsim(header):
         for dir in dirlist1:
             os.makedirs('%s/NEXMD%d/%04d' % (newdir,NEXMD,dir))
             if -9999 in tarrayc[traj]:
-                error.wirte( 'The input file for %s/NEXMD%d/%04d cannot be generated.' % (olddir,NEXMD,dir))
+                print('The input file for %s/NEXMD%d/%04d cannot be generated.' % (olddir,NEXMD,dir), file=error)
                 errflag = 1
                 traj += 1
                 continue
@@ -306,6 +313,7 @@ def newsim(header):
             datac = datac.readlines()
             datav = open('%s/NEXMD%d/%04d/velocity.out' % (olddir,NEXMD,dir),'r')
             datav = datav.readlines()
+            datac = np.asarray(datac)
             coords = datac[tarrayc[traj][0] + 1:tarrayc[traj][1] - 1:1]
             velocs = datav[tarrayv[traj][0] + 2:tarrayv[traj][1] - 1:1]
             inputfile = open('%s/NEXMD%d/%04d/input.ceon' % (newdir,NEXMD,dir),'w')
@@ -327,7 +335,7 @@ def newsim(header):
                         inputfile.write('&endveloc')
                     else:
                         inputfile.write(line)
-            dirlist.wirte( '%04d' % (dir))
+            print('%04d' % (dir), file=dirlist)
             print('%s/NEXMD%d/%04d' % (newdir,NEXMD,dir))
             traj += 1
         dirlist.close()

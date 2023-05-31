@@ -39,11 +39,11 @@ def nexmd(header):
     print('Preparing input files for NEXMD.')
     
     ## Directory names ##
-    gsdir = raw_input('Ground-state dynamics directory: ')
+    gsdir = input('Ground-state dynamics directory: ')
     if not os.path.exists(gsdir):
         print('Path %s does not exist.' % (gsdir))
         sys.exit()
-    outdir = raw_input('Output directory [e.g. NEXMD]: ')
+    outdir = input('Output directory [e.g. NEXMD]: ')
     if not os.path.exists(outdir):
         print('Path %s does not exist.' % (outdir))
         sys.exit()
@@ -52,7 +52,7 @@ def nexmd(header):
     NEXMDs = glob.glob('%s/NEXMD*/' % (outdir))
     NEXMDs.sort()
     if len(NEXMDs) != 0:
-        contq = input('** WARNING ** All NEXMD folders and rseedslists inside %s will be deleted!\ndo you want to continue? Answer yes [1] or no [0]: ' % (outdir))
+        contq = eval(input('** WARNING ** All NEXMD folders and rseedslists inside %s will be deleted!\ndo you want to continue? Answer yes [1] or no [0]: ' % (outdir)))
         if contq not in [1,0]:
             print('answer must be 1 or 0.')
             sys.exit()
@@ -102,7 +102,7 @@ def nexmd(header):
         sys.exit()
     if state_set == 0 and coeff_set == 0:
         print('Initial excited states will model a photoexcited wavepacket according to the optical spectrum.')
-        spdir = raw_input('Single-point calculations directory: ')
+        spdir = input('Single-point calculations directory: ')
         if not os.path.exists(spdir):
             print('Path %s does not exist.' % (spdir))
             sys.exit()
@@ -174,7 +174,7 @@ def nexmd(header):
             dirlist1 = np.array([dirlist1])
         os.remove('%s/totdirlist' % (outdir))
         ntraj = len(dirlist1)
-        ntrajq = input('How many trajectories for NEXMD? Enter a number no greater than %d: ' % (ntraj))
+        ntrajq = eval(input('How many trajectories for NEXMD? Enter a number no greater than %d: ' % (ntraj)))
         if isinstance(ntrajq, int) == False:
             print('Number of trajectories must be integer.')
             sys.exit()
@@ -186,7 +186,7 @@ def nexmd(header):
             sys.exit()
         if ntrajq < 0:
             ntraj = np.abs(ntrajq)
-            coordsq = input('You have requested %d randomly-selected coordinate files in the range %d to %d.\nContinue? Answer yes [1] or no [0]: ' % (ntraj,dirlist[0],dirlist[-1]))
+            coordsq = eval(input('You have requested %d randomly-selected coordinate files in the range %d to %d.\nContinue? Answer yes [1] or no [0]: ' % (ntraj,dirlist[0],dirlist[-1])))
         else:
             interval = np.int(np.ceil(ntraj/np.float(ntrajq)))
             if interval*ntrajq > ntraj:
@@ -194,7 +194,7 @@ def nexmd(header):
                 ntraj = len(dirlist1[0::interval])
             else:
                 ntraj = ntrajq
-            coordsq = input('You have requested %d evenly-spaced coordinate files in the range %d to %d for NEXMD.\nContinue? Answer yes [1] or no [0]: ' % (ntraj,dirlist1[0],dirlist1[0::interval][-1]))
+            coordsq = eval(input('You have requested %d evenly-spaced coordinate files in the range %d to %d for NEXMD.\nContinue? Answer yes [1] or no [0]: ' % (ntraj,dirlist1[0],dirlist1[0::interval][-1])))
         if coordsq not in [1,0]:
             print('Answer must be 1 or 0.')
             sys.exit()
@@ -203,7 +203,7 @@ def nexmd(header):
 
     ## Choose geometries for a single excited state ##
     if state_set == 1 and coeff_set == 1 or state_set == 1 and coeff_set == 0:
-        coords = input('Enter requested range of the ground-state sampling by coordinate files and the number of trajectories.\nInput an array of the form [start, end, number]: ')
+        coords = eval(input('Enter requested range of the ground-state sampling by coordinate files and the number of trajectories.\nInput an array of the form [start, end, number]: '))
         if not isinstance(coords,list):
             print('Input must be an array of the form [start, end, number].\nFor example, [1, 1000, 500] requests 500 coordinate files sampled from 1 to 1000.')
             sys.exit()
@@ -232,7 +232,7 @@ def nexmd(header):
             sys.exit()
         if coords[2] < 0:
             ntraj = np.abs(coords[2])
-            coordsq = input('You have requested %d randomly-selected coordinate files in the range %d to %d.\nContinue? Answer yes [1] or no [0]: ' % (ntraj,coords[0],coords[1]))
+            coordsq = eval(input('You have requested %d randomly-selected coordinate files in the range %d to %d.\nContinue? Answer yes [1] or no [0]: ' % (ntraj,coords[0],coords[1])))
         else:
             interval = np.int(np.ceil((coords[1] - coords[0] + 1)/np.float(coords[2])))
             if interval*coords[2] > (coords[1] - coords[0] + 1):
@@ -240,7 +240,7 @@ def nexmd(header):
                 ntraj = len(np.arange(coords[0],coords[1] + 1,interval))
             else:
                 ntraj = coords[2]
-            coordsq = input('You have requested %d evenly-spaced coordinate files in the range %d to %d.\nContinue? Answer yes [1] or no [0]: ' % (ntraj,coords[0],coords[1]))
+            coordsq = eval(input('You have requested %d evenly-spaced coordinate files in the range %d to %d.\nContinue? Answer yes [1] or no [0]: ' % (ntraj,coords[0],coords[1])))
         if coordsq not in [1,0]:
             print('Answer must be 1 or 0.')
             sys.exit()
@@ -248,7 +248,7 @@ def nexmd(header):
             sys.exit()
 
     ## Split geometries ##
-    split = input('Number of trajectories per NEXMD folder: ')
+    split = eval(input('Number of trajectories per NEXMD folder: '))
     if isinstance(split, int) == False:
         print('Number of trajectories per NEXMD folder must be integer.')
         sys.exit()
@@ -259,11 +259,14 @@ def nexmd(header):
     if state_set == 1 and coeff_set == 1 or state_set == 1 and coeff_set == 0:
         dirsplit[-1] = coords[1] + 1
         if coords[2] < 0:
+            dirsplit =  dirsplit.astype(np.int64)
             dirsplit = np.split(np.sort(random.sample(np.arange(coords[0],coords[1]+1),ntraj)),dirsplit)
         else:
+            dirsplit =  dirsplit.astype(np.int64)
             dirsplit = np.split(np.arange(coords[0],coords[1]+1,interval),dirsplit)
     if state_set == 0 and coeff_set == 0:
         dirsplit[-1] = dirlist1[-1]
+        dirsplit = dirsplit.astype(np.int64)
         if ntrajq < 0:
             dirsplit = np.split(np.sort(random.sample(dirlist1,ntraj)),dirsplit)
         else:
@@ -292,14 +295,14 @@ def nexmd(header):
         sys.exit()
 
     ## Choose random seeds ##
-    randq = input('New random seeds? answer yes [1] or no [0]: ')
+    randq = eval(input('New random seeds? answer yes [1] or no [0]: '))
     if randq not in [1,0]:
         print('Answer must be 1 or 0.')
         sys.exit()
     if randq == 1:
-        rseeds = random.sample(np.arange(1,1000001), ntraj)
+        rseeds = random.sample(list(np.arange(1,1000001)), ntraj)
     else:
-        rseeds = raw_input('path to random-seeds list: ')
+        rseeds = input('path to random-seeds list: ')
         if not os.path.exists(rseeds):
             print('Path %s does not exist.' % (rseeds))
             sys.exit()
@@ -321,18 +324,20 @@ def nexmd(header):
         spNEXMDs = glob.glob('%s/NEXMD*/' % (spdir))
         spNEXMDs.sort()
         error = open('%s/ceo.err' % (cwd),'w')
-        stype = input('Spectral lineshape? Answer Gaussian [0] or Lorentzian [1]: ')
+        stype = eval(input('Spectral lineshape? Answer Gaussian [0] or Lorentzian [1]: '))
         if stype not in [0,1]:
             print('Answer must be 0 or 1.')
             sys.exit()
-        excen = input('Laser excitation energy in eV: ')
+        excen = eval(input('Laser excitation energy in eV: '))
         if isinstance(excen, int) == False and isinstance(excen, float) == False:
             print('Excitation energy must be integer or float.')
             sys.exit()
         if stype == 0:
-            specb = input('Spectral broadening (i.e. Gaussian standard deviation) in eV [e.g. 0.15]: ')
+            FWHM = eval(input('Please enter the full width at half maximum (FWHM) for the Gaussian lineshape in eV [e.g. 0.36]: '))
+            specb = FWHM/(2*np.sqrt(2*np.log(2)))
         else:
-            specb = input('Spectral broadening (i.e. Lorentzian fwhm) in eV [e.g. 0.36]: ')
+            FWHM = eval(input('Please enter the full width at half maximum (FWHM) for the Lorentzian lineshape in eV  [e.g. 0.36]: '))
+            specb = FWHM
         if isinstance(specb, int) == False and isinstance(specb, float) == False:
             print('Spectral broadening must be integer or float.')
             sys.exit()
@@ -352,7 +357,7 @@ def nexmd(header):
                     else:
                         iceoflag = 1
                 if iceoflag == 1:
-                    error.write( '%s%04d/ceo.out does not exist' % (spNEXMD,dir))
+                    print('%s%04d/ceo.out does not exist' % (spNEXMD,dir), file=error)
                     rseeds[traj] = -123456789
                     ceoflag = 1
                     iceoflag = 0
@@ -403,7 +408,7 @@ def nexmd(header):
                                     inputfile.write('&endcoeff\n')
                                 else:
                                     inputfile.write(line)
-                dirlist.write( '%04d' % (dir))
+                print('%04d' % (dir), file=dirlist)
                 print('%s/NEXMD%d/%04d' % (outdir,NEXMD,dir))
                 traj += 1
             dirlist.close()
@@ -458,7 +463,7 @@ def nexmd(header):
                                 inputfile.write('&endcoeff\n')
                             else:
                                 inputfile.write(line)
-                dirlist.write( '%04d' % (dir))
+                print('%04d' % (dir), file=dirlist)
                 print('%s/NEXMD%d/%04d' % (outdir,NEXMD,dir))
                 traj += 1
             dirlist.close()

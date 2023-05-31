@@ -44,7 +44,7 @@ def spcalc(header):
     NEXMDs = glob.glob('%s/NEXMD*/' % (outdir))
     NEXMDs.sort()
     if len(NEXMDs) != 0:
-        contq = input('** WARNING ** All NEXMD folders inside %s will be deleted!\nContinue? Answer yes [1] or no [0]: ' % (outdir))
+        contq = eval(input('** WARNING ** All NEXMD folders inside %s will be deleted!\nContinue? Answer yes [1] or no [0]: ' % (outdir)))
         if contq not in [1,0]:
             print('Answer must be 1 or 0.')
             sys.exit()
@@ -111,8 +111,7 @@ def spcalc(header):
     print('A total of %d coordinates files, ranging from %.2f to %.2f fs in increments of %.2f fs, were found.' % (ncoords,tinit,time,tinc))
 
     ## Choose geometries ##
-    #coords = input('Enter requested range of the ground-state sampling by coordinate files and the number of single-point calculations.\nInput an array of the form [start, end, number]: ')
-    coords = list(map(int,input("\n'Enter requested range of the ground-state sampling by coordinate files and the number of single-point calculations.\nInput an array of the form [start, end, number]: ").strip().split()))
+    coords = eval(input('Enter requested range of the ground-state sampling by coordinate files and the number of single-point calculations.\nInput an array of the form [start, end, number]: '))
     if not isinstance(coords,list):
         print('Input must be an array of the form [start, end, number].\nFor example, [1, 1000, 500] requests 500 coordinate files sampled from 1 to 1000.')
         sys.exit()
@@ -141,7 +140,7 @@ def spcalc(header):
         sys.exit()
     if coords[2] < 0:
         ntraj = np.abs(coords[2])
-        coordsq = input('You have requested %d randomly-selected coordinate files in the range %d to %d.\nContinue? Answer yes [1] or no [0]: ' % (ntraj,coords[0],coords[1]))
+        coordsq = eval(input('You have requested %d randomly-selected coordinate files in the range %d to %d.\nContinue? Answer yes [1] or no [0]: ' % (ntraj,coords[0],coords[1])))
     else:
         interval = np.int(np.ceil((coords[1] - coords[0] + 1)/np.float(coords[2])))
         if interval*coords[2] > (coords[1] - coords[0] + 1):
@@ -149,7 +148,7 @@ def spcalc(header):
             ntraj = len(np.arange(coords[0],coords[1] + 1,interval))
         else:
             ntraj = coords[2]
-        coordsq = int(input('You have requested %d evenly-spaced coordinate files in the range %d to %d.\nContinue? Answer yes [1] or no [0]: ' % (ntraj,coords[0],coords[1])))
+        coordsq = eval(input('You have requested %d evenly-spaced coordinate files in the range %d to %d.\nContinue? Answer yes [1] or no [0]: ' % (ntraj,coords[0],coords[1])))
     if coordsq not in [1,0]:
         print('Answer must be 1 or 0.')
         sys.exit()
@@ -157,7 +156,7 @@ def spcalc(header):
         sys.exit()
 
     ## Split geometries ##
-    split = int(input('Number of single-point calculations per NEXMD folder [e.g. 100]: '))
+    split = eval(input('Number of single-point calculations per NEXMD folder [e.g. 100]: '))
     if isinstance(split, int) == False:
         print('Number of single-point calculations per NEXMD folder must be integer.')
         sys.exit()
@@ -166,6 +165,7 @@ def spcalc(header):
         sys.exit()
     dirsplit = split*np.arange(1,np.ceil(np.float(ntraj)/split) + 1)
     dirsplit[-1] = coords[1] + 1
+    dirsplit = dirsplit.astype(np.int64)
     if coords[2] < 0:
         dirsplit = np.split(np.sort(random.sample(np.arange(coords[0],coords[1]+1),ntraj)),dirsplit)
     else:
@@ -221,7 +221,7 @@ def spcalc(header):
                     inputfile.write('&endveloc\n')
                 else:
                     inputfile.write(line)
-            dirlist.write('%04d' % (dir))
+            print('%04d' % (dir), file=dirlist)
             print('%s/NEXMD%d/%04d' % (outdir,NEXMD,dir))
         dirlist.close()
         shutil.copyfile('%s/NEXMD%d/dirlist' % (outdir,NEXMD), '%s/NEXMD%d/dirlist1' % (outdir,NEXMD))

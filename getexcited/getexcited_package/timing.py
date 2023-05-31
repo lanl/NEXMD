@@ -30,7 +30,7 @@ def timing(pathtotime):
     print('Collecting timings from trajectories.')
 
     ## Directory names ##
-    NEXMDir = raw_input('NEXMD directory: ')
+    NEXMDir = input('NEXMD directory: ')
     if not os.path.exists(NEXMDir):
         print('Path %s does not exist.' % (NEXMDir))
         sys.exit()
@@ -52,32 +52,32 @@ def timing(pathtotime):
             print('Path %s/%sdirlist1 does not exist.' % (cwd,NEXMD))
             sys.exit()
         dirlist1 = np.int_(np.genfromtxt('%s/%s/dirlist1' % (cwd,NEXMD)))
-        if isinstance(dirlist1,int) == true:
+        if isinstance(dirlist1,int) == True:
             dirlist1 = np.array([dirlist1])
         for dir in dirlist1:
             if not os.path.exists('%s/%s/%04d' % (cwd,NEXMD,dir)):
-                error.wirte( '%s%04d' % (NEXMD,dir), 'does not exist')
+                print('%s%04d' % (NEXMD,dir), 'does not exist', file=error)
                 errflag = 1
                 continue
             os.chdir('%s/%s/%04d' % (cwd,NEXMD,dir))
             if not os.path.exists('%s/%s/%04d/md.out' % (cwd,NEXMD,dir)):
-                error.wirte( '%s%04d/md.out' % (NEXMD,dir), 'does not exist')
+                print('%s%04d/md.out' % (NEXMD,dir), 'does not exist', file=error)
                 errflag = 1
                 continue
             subprocess.call(shlex.split('sh %s/getexcited_package/collectime.sh' % (pathtotime)))
             if not os.path.exists('%s/%s/%04d/timing.out' % (cwd,NEXMD,dir)):
-                error.wirte( '%s/%04d/timing.out' % (NEXMD,dir), 'does not exist')
+                print('%s/%04d/timing.out' % (NEXMD,dir), 'does not exist', file=error)
                 errflag = 1
                 continue
             with open('%s/%s/%04d/timing.out' % (cwd,NEXMD,dir),'r') as data:
                 data = data.readlines()
-                if len(data) != 6 or 'md total cpu time' not in data[0]:
-                    error.wirte( '%s%04d/timing.out' % (NEXMD,dir), 'is incomplete')
+                if len(data) != 6 or 'MD total CPU time' not in data[0]:
+                    print('%s%04d/timing.out' % (NEXMD,dir), 'is incomplete', file=error)
                     errflag = 1
             print('%s%04d' % (NEXMD,dir))
     if errflag == 1:
         print('One or more trajectories did not finish, check timing.err.')
-        contq = input('Continue? Answer yes [1] or no [0]: ')
+        contq = eval(input('Continue? Answer yes [1] or no [0]: '))
         if contq not in [1,0]:
             print('Answer must be 1 or 0.')
             sys.exit()
@@ -87,32 +87,47 @@ def timing(pathtotime):
         os.remove('%s/timing.err' % (cwd))
 
     ## Extract and combine timings ##
+
+    print(' Collecting time....')
     timing = open('%s/timing.out' % (cwd),'w')
     times = np.zeros(5) ## change 5 to 1 for old code (NAESMD)
     traj = 0
     for NEXMD in NEXMDs:
         dirlist1 = np.int_(np.genfromtxt('%s/%s/dirlist1' % (cwd,NEXMD)))
-        if isinstance(dirlist1,int) == true:
+        if isinstance(dirlist1,int) == True:
             dirlist1 = np.array([dirlist1])
         for dir in dirlist1:
-            data = open('%s/%s/%04d/timing.out' % (cwd,NEXMD,dir),'r')
+            try: 
+                data = open('%s/%s/%04d/timing.out' % (cwd,NEXMD,dir),'r')
+            except:
+                print(('%s/%s/%04d/timing.out does not exist' % (cwd,NEXMD,dir)))
+                continue
             data = data.readlines()
             data = np.delete(data, (1), axis = 0) ## comment out for old code (NAESMD)
             tarray = np.array([])
             index = 0
+            fail = 0
             for line in data:
                 val = line.split()
                 if index == 0:
-                    tarray = np.append(tarray, np.float(val[5]))
+                    try: 
+                        tarray = np.append(tarray, np.float(val[5]))
+                    except:
+                        print((' %s/%s/%04d did not finish' %(cwd,NEXMD,dir)))
+                        fail = 1
+                        traj -= 1
+                        break
                 else: ## comment out for old code (NAESMD)
                     tarray = np.append(tarray, np.float(val[0]))
                 index += 1
-            times += tarray
-            timing.wirte( '%s%04d' % (NEXMD,dir), ' '.join(str('%06d' % (x)) for x in tarray))
+            if fail == 0:
+                times += tarray
+                print('%s%04d' % (NEXMD,dir), ' '.join(str('%06d' % (x)) for x in tarray), file=timing)
             os.remove('%s/%s/%04d/timing.out' % (cwd,NEXMD,dir))
             print('%s%04d' % (NEXMD,dir))
             traj += 1
     times = times/traj
+    print('Total number of trajectories: %d' %(traj))
     print('Mean total cpu [s]:', '%06d' % (times[0]))
     ## comment all below for old code (NAESMD) ##
     print('Mean ground state [s]:', '%06d' % (times[1]))

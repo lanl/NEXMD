@@ -49,12 +49,16 @@ def restart(pathtopack,header):
     print('Preparing restart input files for NEXMD.')
 
     ## Type of calculation and directory check ##
-    dynq = input('Restart a single trajectory or an ensemble of trajectories?\nAnswer one [1] or ensemble [0]: ')
+    dynq = eval(input('Restart a single trajectory or an ensemble of trajectories?\nAnswer one [1] or ensemble [0]: '))
     if dynq not in [1,0]:
         print('Answer must be 1 or 0.')
         sys.exit()
+    numRestarts = eval(input('Input the number of times you have restarted the trajectories? e.g 1 if this is the first time you have run a restart:'))
+    if numRestarts < 0 or not(isinstance(numRestarts,int)) :
+        print('Answer must be greater than 1 and an integer.')
+        sys.exit()
     if dynq == 0: ## ensemble
-        NEXMDir = raw_input('Ensemble directory [e.g. NEXMD]: ')
+        NEXMDir = input('Ensemble directory [e.g. NEXMD]: ')
         if not os.path.exists(NEXMDir):
             print('Path %s does not exist.' % (NEXMDir))
             sys.exit()
@@ -65,7 +69,7 @@ def restart(pathtopack,header):
             print('There are no NEXMD folders in %s.' % (NEXMDir))
             sys.exit()
     if dynq == 1: ## single trajectory
-        NEXMDir = raw_input('Single trajectory directory: ')
+        NEXMDir = input('Single trajectory directory: ')
         if not os.path.exists(NEXMDir):
             print('Path %s does not exist.' % (NEXMDir))
             sys.exit()
@@ -87,12 +91,12 @@ def restart(pathtopack,header):
 
 ## Figure out what this part is about
     print('Currently, trajectories are set to run for %d classical steps with a time-step of %.2f fs.\nThis is a total of %.2f fs.' % (header.n_class_steps,header.time_step,header.n_class_steps*header.time_step))
-    tsmaxq = input('Keep this trajectory length? Answer yes [1] or no [0]: ')
+    tsmaxq = eval(input('Keep this trajectory length? Answer yes [1] or no [0]: '))
     if tsmaxq not in [1,0]:
         print('Answer must be 1 or 0.')
         sys.exit()
     if tsmaxq == 0:
-        ntsmax = input('Enter new number of classical time-steps: ')
+        ntsmax = eval(input('Enter new number of classical time-steps: '))
         if isinstance(ntsmax, int) == False:
             print('Answer must be integer.')
             sys.exit()
@@ -100,11 +104,13 @@ def restart(pathtopack,header):
             print('Answer must be greater than or equal to the previous number of classical steps used, which was %d.\nTo reduce number of classical steps past %d, simply change n_class_steps in header.' % (header.n_class_steps,header.n_class_steps))
             sys.exit()
         nheader = open('%s/nheader' % (NEXMDir),'w')
-        for line in header:
+        headerFile = open('%s/header' % (NEXMDir)) #Changed
+        for line in headerFile: #Changed
             if 'n_class_steps' in line:
                 nheader.write('   n_class_steps=%d, ! number of classical steps [1]\n' % (ntsmax))
             else:
                 nheader.write(line)
+        headerFile.close() # Changed
         nheader.close()
         header.n_class_steps = ntsmax
         os.rename('%s/nheader' % (NEXMDir), '%s/header' % (NEXMDir))
@@ -122,7 +128,7 @@ def restart(pathtopack,header):
             ntraj += len(data)
     if dynq == 1: ## single trajectory
         ntraj = 1
-    randq = input('New random seeds? Answer yes [1] or no [0]: ')
+    randq = eval(input('New random seeds? Answer yes [1] or no [0]: '))
     if randq not in [1,0]:
         print('Answer must be 1 or 0.')
         sys.exit()
@@ -132,7 +138,7 @@ def restart(pathtopack,header):
         sys.exit()
     maxdir = np.int(extract(max(data,key = extract))[0])
     if randq == 0:
-        rseeds = raw_input('Path to random-seeds list (** must be different from past random seeds **): ')
+        rseeds = input('Path to random-seeds list (** must be different from past random seeds **): ')
         if not os.path.exists(rseeds):
             print('Path %s does not exist.' % (rseeds))
             sys.exit()
@@ -165,8 +171,8 @@ def restart(pathtopack,header):
             dirlist = open('%s/dirlist' % (NEXMD),'w')
             for dir in dirlist1:
                 if not os.path.exists('%s/%04d/energy-ev.out' % (NEXMD,dir)):
-                    error.wirte( 'Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir))
-                    rseedslist.wirte( '%d' % (-123456789))
+                    print('Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir), file=error)
+                    print('%d' % (-123456789), file=rseedslist)
                     rstflag = 1
                     traj += 1
                     continue
@@ -175,8 +181,8 @@ def restart(pathtopack,header):
                 tsteps = len(data) - 2
                 if tsteps != header.n_class_steps:
                     if not os.path.exists('%s/%04d/restart.out' % (NEXMD,dir)):
-                        error.wirte( 'Path %s/%04d/restart.out does not exist.' % (NEXMD,dir))
-                        rseedslist.wirte( '%d' % (-123456789))
+                        print('Path %s/%04d/restart.out does not exist.' % (NEXMD,dir), file=error)
+                        print('%d' % (-123456789), file=rseedslist)
                         rstflag = 1
                         traj += 1
                         continue
@@ -206,8 +212,8 @@ def restart(pathtopack,header):
                         index += 1
                     array = np.int_(array)
                     if len(array) != 6:
-                        error.wirte( 'Path %s%04d/restart.out is incomplete.' % (NEXMD,dir))
-                        rseedslist.wirte( '%d' % (-123456789))
+                        print('Path %s%04d/restart.out is incomplete.' % (NEXMD,dir), file=error)
+                        print('%d' % (-123456789), file=rseedslist)
                         rstflag = 1
                         traj += 1
                         continue
@@ -230,8 +236,10 @@ def restart(pathtopack,header):
                     else:
                         maxview = 0
                     ## Make new input file ##
+                    os.rename('%s/%04d/input.ceon' % (NEXMD,dir), '%s/%04d/input%d.ceon' % (NEXMD,dir,numRestarts))
                     inputfile = open('%s/%04d/input.ceon' % (NEXMD,dir),'w')
-                    for line in header:
+                    headerFile = open('%s/header' % (NEXMDir))  #Changed
+                    for line in headerFile:  #Changed
                         if 'rnd_seed_flag' in line:
                             inputfile.write('   rnd_seed=%d, ! seed for the random number generator\n' % (rseed if randq == 1 else rseeds[traj]))
                         else:
@@ -243,6 +251,7 @@ def restart(pathtopack,header):
                                 else:
                                     if 'n_class_steps' in line:
                                         inputfile.write('   n_class_steps=%d, ! number of classical steps [1]\n' % (np.int(header.n_class_steps-time/header.time_step)))
+                                        ####inputfile.write('   n_class_steps=%d, ! number of classical steps [1]\n' % (np.int(header.n_class_steps-time/header.time_step)))
                                     else:
                                         if 'out_count_init' in line:
                                             inputfile.write('   out_count_init=%d, ! initial count for output files [0]\n' % (maxview))
@@ -261,16 +270,15 @@ def restart(pathtopack,header):
                                                     inputfile.write('$endcoeff\n')
                                                 else:
                                                     inputfile.write(line)
+                    headerFile.close() # Changed
                     rtimes = np.append(rtimes,time)
-                    dirlist.wirte( '%04d' % (dir))
+                    print('%04d' % (dir), file=dirlist)
                     print('%s%04d' % (NEXMD,dir))
-                    rseedslist.wirte( '%d' % (rseed if randq == 1 else rseeds[traj]))
+                    print('%d' % (rseed if randq == 1 else rseeds[traj]), file=rseedslist)
                 else:
-                    rseedslist.wirte( '%d' % (-123456789))
+                    print('%d' % (-123456789), file=rseedslist)
                 traj += 1
             dirlist.close()
-        if filecmp.cmp('%s/rseedslist%d' % (NEXMDir,maxdir), '%s/rseedslist%d' % (NEXMDir,maxdir + 1)):
-            os.remove('%s/rseedslist%d' % (NEXMDir,maxdir + 1))
         if rstflag == 1:
             print('One or more trajectories cannot be restarted, check restart.err.')
         else:
@@ -293,7 +301,7 @@ def restart(pathtopack,header):
         tsteps = len(data) - 2
         if tsteps != header.n_class_steps:
             if not os.path.exists('%s/restart.out' % (NEXMDir)):
-                error.wirte( 'Path %s/restart.out does not exist.' % (NEXMDir))
+                print('Path %s/restart.out does not exist.' % (NEXMDir), file=error)
                 os.remove('%s/rseedslist%d' % (NEXMDir, maxdir + 1))
                 sys.exit()
             data = open('%s/restart.out' % (NEXMDir),'r')
@@ -343,8 +351,10 @@ def restart(pathtopack,header):
             else:
                 maxview = 0
             ## Make new input file ##
+            os.rename('%s/input.ceon' % (NEXMDir), '%s/input%d.ceon' % (NEXMDir,numRestarts))
             inputfile = open('%s/input.ceon' % (NEXMDir),'w')
-            for line in header:
+            headerFile = open('%s/header' % (NEXMDir))  #Changed
+            for line in headerFile: #Changed
                 if 'rnd_seed_flag' in line:
                     inputfile.write('   rnd_seed=%d, ! seed for the random number generator\n' % (rseed if randq == 1 else rseeds[traj]))
                 else:
@@ -375,8 +385,9 @@ def restart(pathtopack,header):
                                         else:
                                             inputfile.write(line)
             rtimes = np.append(rtimes,time)
+            headerFile.close() #Changed
             print('%s' % (NEXMDir))
-            rseedslist.wirte( '%d' % (rseed if randq == 1 else rseeds[traj]))
+            print('%d' % (rseed if randq == 1 else rseeds[traj]), file=rseedslist)
         else:
             print('Trajectory has completed.')
             sys.exit()
@@ -385,7 +396,7 @@ def restart(pathtopack,header):
             os.remove('%s/rseedslist%d' % (NEXMDir,maxdir + 1))
 
     ## Determine whether or not to delete extraneous data in output files ##
-    contq = input('Continue to delete extraneous data in output files? Answer yes [1] or no [0]: ')
+    contq = eval(input('Continue to delete extraneous data in output files? Answer yes [1] or no [0]: '))
     if contq not in [1,0]:
         print('Answer must be 1 or 0.')
         sys.exit()
@@ -409,25 +420,27 @@ def restart(pathtopack,header):
                 continue
             else:
                 dirlist = np.int_(np.genfromtxt('%s/%s/dirlist' % (cwd,NEXMD)))
-            if isinstance(dirlist,int) == True:
-                    dirlist = np.array([dirlist])
+            if(np.isscalar(dirlist)):
+                dirlist = np.array([dirlist],dtype=np.int64)
+            else:
+                dirlist = np.array(dirlist,dtype=np.int64)
             for dir in dirlist:
                 if not os.path.exists('%s/%s/%04d' % (cwd,NEXMD,dir)):
-                    error.wirte( 'Path %s/%s%04d does not exist.' % (cwd,NEXMD,dir))
+                    print('Path %s/%s%04d does not exist.' % (cwd,NEXMD,dir), file=error)
                     rstflag = 1
                     traj += 1
                     continue
                 os.chdir('%s/%s/%04d' % (cwd,NEXMD,dir))
                 for index in np.arange(len(files)):
                     if not os.path.exists('%s/%s/%04d/%s' % (cwd,NEXMD,dir,files[index])):
-                        error.wirte( 'Path %s/%s%04d/%s does not exist.' % (cwd,NEXMD,dir,files[index]))
+                        print('Path %s/%s%04d/%s does not exist.' % (cwd,NEXMD,dir,files[index]), file=error)
                         rstflag = 1
                         continue
                     ## Derivation of the following algorithm is provided at the end of this script ##
                     data = subprocess.check_output(['tail','-1','%s' % (files[index])])
                     ltime = np.around(np.float(np.fromstring(data,dtype=float,sep=' ')[1 if index == 0 and header.bo_dynamics_flag == 0 else 0]), decimals = 3)
                     if rtimes[traj] > ltime + header.out_data_steps*header.time_step:
-                        error.wirte( 'last time-step in', '%s/%s%04d/%s' % (cwd,NEXMD,dir,'restart.out'), 'exceeds last time-step in', '%s/%s%04d/%s' % (cwd,NEXMD,dir,files[index]))
+                        print('last time-step in', '%s/%s%04d/%s' % (cwd,NEXMD,dir,'restart.out'), 'exceeds last time-step in', '%s/%s%04d/%s' % (cwd,NEXMD,dir,files[index]), file=error)
                         rstflag = 1
                         continue
                     ncsteps = 0
@@ -454,12 +467,14 @@ def restart(pathtopack,header):
                     os.rename('%s.restart' % (files[index]), '%s' % (files[index]))
                 for index in np.arange(len(ofiles)):
                     if not os.path.exists('%s/%s/%04d/%s' % (cwd,NEXMD,dir,ofiles[index])):
-                        error.wirte( 'Path %s/%s%04d/%s does not exist.' % (cwd,NEXMD,dir,ofiles[index]))
+                        print('Path %s/%s%04d/%s does not exist.' % (cwd,NEXMD,dir,ofiles[index]), file=error)
                         rstflag = 1
                         continue
                     ltime = 1000000
                     nlines = 0
                     while ltime >= rtimes[traj]:
+                        if(os.stat(ofiles[index]).st_size == 0):
+                            break
                         data = subprocess.check_output(['tail','%d' % (-(nlines + 1)),'%s' % (ofiles[index])])
                         ltime = np.float(np.fromstring(data,dtype=float,sep=' ')[0])
                         nlines += 1
@@ -481,14 +496,14 @@ def restart(pathtopack,header):
         os.chdir('%s/%s' % (cwd,NEXMDir))
         for index in np.arange(len(files)):
             if not os.path.exists('%s/%s/%s' % (cwd,NEXMDir,files[index])):
-                error.wirte( '%s/%s/%s does not exist.' % (cwd,NEXMDir,files[index]))
+                print('%s/%s/%s does not exist.' % (cwd,NEXMDir,files[index]), file=error)
                 rstflag = 1
                 continue
             ## Derivation of the following algorithm is provided at the end of this script ##
             data = subprocess.check_output(['tail','-1','%s' % (files[index])])
             ltime = np.around(np.float(np.fromstring(data,dtype=float,sep=' ')[1 if index == 0 and header.bo_dynamics_flag == 0 else 0]), decimals = 3)
             if rtimes[traj] > ltime + header.out_data_steps*header.time_step:
-                error.wirte( 'last time-step in', '%s/%s/%s' % (cwd,NEXMDir,'restart.out'), 'exceeds last time-step in', '%s/%s/%s' % (cwd,NEXMDir,files[index]))
+                print('last time-step in', '%s/%s/%s' % (cwd,NEXMDir,'restart.out'), 'exceeds last time-step in', '%s/%s/%s' % (cwd,NEXMDir,files[index]), file=error)
                 rstflag = 1
                 continue
             ncsteps = 0
@@ -515,12 +530,14 @@ def restart(pathtopack,header):
             os.rename('%s.restart' % (files[index]), '%s' % (files[index]))
         for index in np.arange(len(ofiles)):
             if not os.path.exists('%s/%s/%s' % (cwd,NEXMDir,ofiles[index])):
-                error.wirte( '%s/%s/%s' % (cwd,NEXMDir,ofiles[index]), 'does not exist')
+                print('%s/%s/%s' % (cwd,NEXMDir,ofiles[index]), 'does not exist', file=error)
                 rstflag = 1
                 continue
             ltime = 1000000
             nlines = 0
             while ltime >= rtimes[traj]:
+                if(os.stat(ofiles[index]).st_size == 0):
+                            break
                 data = subprocess.check_output(['tail','%d' % (-(nlines + 1)),'%s' % (ofiles[index])])
                 ltime = np.float(np.fromstring(data,dtype=float,sep=' ')[0])
                 nlines += 1

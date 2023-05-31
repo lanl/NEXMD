@@ -56,12 +56,12 @@ def dihedral(header):
     print('Calculating a dihedral angle as a function of time.')
 
     ## Type of calculation and directory check ##
-    dynq = input('Calculate a dihedral along one trajectory or an ensemble of trajectories?\nAnswer one [1] or ensemble [0]: ')
+    dynq = eval(input('Calculate a dihedral along one trajectory or an ensemble of trajectories?\nAnswer one [1] or ensemble [0]: '))
     if dynq not in [1,0]:
         print('Answer must be 1 or 0.')
         sys.exit()
     if dynq == 0: ## ensemble
-        NEXMDir = raw_input('Ensemble directory [e.g. NEXMD]: ')
+        NEXMDir = input('Ensemble directory [e.g. NEXMD]: ')
         if not os.path.exists(NEXMDir):
             print('Path %s does not exist.' % (NEXMDir))
             sys.exit()
@@ -72,13 +72,13 @@ def dihedral(header):
             print('There are no NEXMD folders in %s.' % (NEXMDir))
             sys.exit()
         ## Determine mean or all ##
-        typeq = input('Ouput mean dihedral in time or output dihedrals at all time-steps and trajectories?\nAnswer mean [0] or all [1]: ')
+        typeq = eval(input('Ouput mean dihedral in time or output dihedrals at all time-steps and trajectories?\nAnswer mean [0] or all [1]: '))
         if typeq not in [0,1]:
             print('Answer must be 0 or 1.')
             sys.exit()
     if dynq == 1: ## single trajectory
         typeq = 0
-        NEXMDir = raw_input('Single trajectory directory: ')
+        NEXMDir = input('Single trajectory directory: ')
         if not os.path.exists(NEXMDir):
             print('path %s does not exist.' % (NEXMDir))
             sys.exit()
@@ -101,9 +101,9 @@ def dihedral(header):
     ## Collection time ##
     if typeq == 0: ## mean dihedral
         if dynq == 0: ## ensemble
-            tcoll = input('Calculate dihedral up to what time in femtoseconds?\nNote that averaged results will only include trajectories that are complete up to this time: ')
+            tcoll = eval(input('Calculate dihedral up to what time in femtoseconds?\nNote that averaged results will only include trajectories that are complete up to this time: '))
         if dynq == 1: ## single trajectory
-            tcoll = input('Calculate dihedral up to what time in femtoseconds? ')
+            tcoll = eval(input('Calculate dihedral up to what time in femtoseconds? '))
         if isinstance(tcoll, int) == False and isinstance(tcoll, float) == False:
             print('Time must be integer or float.')
             sys.exit()
@@ -124,7 +124,7 @@ def dihedral(header):
     ## Number of time-steps for coordinates ##
     ccoll = 0
     num = 0
-    while ccoll <= tcoll:
+    while round(ccoll,3) <= round(tcoll,3): #changed
         ccoll += header.time_step*header.out_data_steps*header.out_coords_steps
         num += 1
 
@@ -132,7 +132,7 @@ def dihedral(header):
     times = np.linspace(header.time_init, ccoll - header.time_step*header.out_data_steps*header.out_coords_steps, num)
 
     ## Four unique atoms defining dihedral angle ##
-    lines = input('Input the line numbers labeling the coordinates of the four atoms.\nInput an array of the form [ .., .., .., .. ]: ')
+    lines = eval(input('Input the line numbers labeling the coordinates of the four atoms.\nInput an array of the form [ .., .., .., .. ]: '))
     if isinstance(lines, list) == False:
         print('Input must be an array of the form [atom 1, atom2, atom3, atom4], where atom# = line number of atom (0 is the first line).')
         sys.exit()
@@ -182,6 +182,8 @@ def dihedral(header):
             array = np.array([])
             for line in data:
                 if 'time' in line:
+                    if ncoords == num: #changed
+                        break          #changed
                     if ncoords == 0:
                         tinit = np.float(line.split()[-1])
                         if tinit != header.time_init:
@@ -192,7 +194,9 @@ def dihedral(header):
                         if time > tcoll:
                             tflag3 = 1
                             break
-                        if time != times[ncoords]:
+                        if round(time,3) != round(times[ncoords],3):
+                            print(time)
+                            print((times[ncoords]))
                             tflag2 = 1
                             break
                     ncoords += 1
@@ -237,12 +241,12 @@ def dihedral(header):
                 x = np.dot(un1, un2)
                 y = np.dot(m1, un2)
                 sdihedral[ncoord] = np.degrees(-math.atan2(y,x))
-            print('%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
+            print('%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps))
             ctraj = 1
-            if tsteps == header.n_class_steps:
+            if tsteps == math.floor(header.n_class_steps/header.out_data_steps):
                 etraj += 1
         else:
-            print('%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
+            print('%s' % (NEXMDir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps))
         ttraj = 1
         ## Summary of results ##
         if ctraj == 0:
@@ -251,11 +255,11 @@ def dihedral(header):
             print('Total trajectories:', '%04d' % (ttraj))
             print('Completed trajectories:', '%04d' % (ctraj))
             print('Excellent trajectories:', '%04d' % (etraj))
-            output.wirte( 'Total trajectories: ', '%04d' % (ttraj))
-            output.wirte( 'Tompleted trajectories: ', '%04d' % (ctraj))
-            output.wirte( 'Excellent trajectories: ', '%04d' % (etraj))
+            print('Total trajectories: ', '%04d' % (ttraj), file=output)
+            print('Tompleted trajectories: ', '%04d' % (ctraj), file=output)
+            print('Excellent trajectories: ', '%04d' % (etraj), file=output)
             for ncoord in np.arange(ncoords):
-                output.wirte( '%0*.2f' % (len(str((header.n_class_steps))) + 2,header.time_step*header.out_data_steps*header.out_coords_steps*ncoord), '%08.3f' % (sdihedral[ncoord]))
+                print('%0*.2f' % (len(str((header.n_class_steps))) + 2,header.time_step*header.out_data_steps*header.out_coords_steps*ncoord), '%08.3f' % (sdihedral[ncoord]), file=output)
 
     ## Calculate mean dihedral from ensemble of trajectories ##
     if dynq == 0 and typeq == 0: ## mean from ensemble
@@ -292,7 +296,7 @@ def dihedral(header):
             for dir in dirlist1:
                 ## Determine completed number of time-steps ##
                 if not os.path.exists('%s/%04d/energy-ev.out' % (NEXMD,dir)):
-                    error.wirte( 'Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir))
+                    print('Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir), file=error)
                     errflag = 1
                     ttraj += 1
                     continue
@@ -300,7 +304,7 @@ def dihedral(header):
                 ## Generate array with indices of the coordinate blocks along trajectory ##
                 if tsteps >= tscol:
                     if not os.path.exists('%s/%04d/coords.xyz' % (NEXMD,dir)):
-                        error.wirte( 'Path %s%04d/coords.xyz does not exist.' % (NEXMD,dir))
+                        print('Path %s%04d/coords.xyz does not exist.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -315,6 +319,8 @@ def dihedral(header):
                     array = np.array([])
                     for line in data:
                         if 'time' in line:
+                            if ncoords == num: #changed
+                                break          #changed
                             if ncoords == 0:
                                 tinit = np.float(line.split()[-1])
                                 if tinit != header.time_init:
@@ -325,19 +331,19 @@ def dihedral(header):
                                 if time > tcoll:
                                     tflag3 = 1
                                     continue
-                                if time != times[ncoords]:
+                                if round(time,3) != round(times[ncoords],3): #changed
                                     tflag2 = 1
                                     continue
                             ncoords += 1
                             array = np.append(array,cindex)
                         cindex += 1
                     if tflag1 == 1:
-                        error.wirte( 'Initial time in %s%04d/coords.xyz does not match time_init in %s/header.' % (NEXMD,dir,NEXMDir))
+                        print('Initial time in %s%04d/coords.xyz does not match time_init in %s/header.' % (NEXMD,dir,NEXMDir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
                     if tflag2 == 1:
-                        error.wirte( 'There is an inconsistency in time-step in %s%04d/coords.xyz.' % (NEXMD,dir))
+                        print('There is an inconsistency in time-step in %s%04d/coords.xyz.' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -349,12 +355,12 @@ def dihedral(header):
                     array = np.int_(array)
                     ## Checks to ensure dihedral calculation ##
                     if ncoords == 0:
-                        error.wirte( 'No coordinates were found in %s%04d/coords.xyz' % (NEXMD,dir))
+                        print('No coordinates were found in %s%04d/coords.xyz' % (NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
                     if ncoords == 1:
-                        error.wirte( 'Only initial coordinates, at %.2f fs, were found in %s%04d/coords.xyz.' % (tinit,NEXMD,dir))
+                        print('Only initial coordinates, at %.2f fs, were found in %s%04d/coords.xyz.' % (tinit,NEXMD,dir), file=error)
                         errflag = 1
                         ttraj += 1
                         continue
@@ -380,13 +386,13 @@ def dihedral(header):
                         sdihedral[ncoord] = np.degrees(-math.atan2(y,x))
                         edihedral[ncoord,ctraj] = sdihedral[ncoord]
                     fdihedral += sdihedral
-                    print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
+                    print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps))
                     ctraj += 1
-                    if tsteps == header.n_class_steps:
+                    if tsteps == math.floor(header.n_class_steps/header.out_data_steps):
                         etraj += 1
                 else:
-                    print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
-                    error.wirte( '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
+                    print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps))
+                    print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps), file=error)
                     errflag = 1
                 ttraj += 1
         ## Summary of results ##
@@ -401,15 +407,15 @@ def dihedral(header):
             print('total trajectories:', '%04d' % (ttraj))
             print('completed trajectories:', '%04d' % (ctraj))
             print('excellent trajectories:', '%04d' % (etraj))
-            output.wirte( 'total trajectories: ', '%04d' % (ttraj))
-            output.wirte( 'completed trajectories: ', '%04d' % (ctraj))
-            output.wirte( 'excellent trajectories: ', '%04d' % (etraj))
+            print('total trajectories: ', '%04d' % (ttraj), file=output)
+            print('completed trajectories: ', '%04d' % (ctraj), file=output)
+            print('excellent trajectories: ', '%04d' % (etraj), file=output)
             for ncoord in np.arange(ncoords):
-                output.wirte( '%0*.2f' % (len(str((header.n_class_steps))) + 2,header.time_step*header.out_data_steps*header.out_coords_steps*ncoord), '%08.3f' % (fdihedral[ncoord]), '%07.3f' % (edihedral[ncoord]))
+                print('%0*.2f' % (len(str((header.n_class_steps))) + 2,header.time_step*header.out_data_steps*header.out_coords_steps*ncoord), '%08.3f' % (fdihedral[ncoord]), '%07.3f' % (edihedral[ncoord]), file=output)
         if errflag == 1:
             print('One or more trajectories have experienced an error, check dihedral_mean_ensemble.err.')
         else:
-            os.remove('%s/dihedral_mean_ensemble.err' % (CWD))
+            os.remove('%s/dihedral_mean_ensemble.err' % (cwd))
 
     ## Calculate dihedral from ensemble of trajectories at all time-steps ##
     if dynq == 0 and typeq == 1: ## all from ensemble
@@ -430,14 +436,14 @@ def dihedral(header):
             for dir in dirlist1:
                 ## Determine completed number of time-steps ##
                 if not os.path.exists('%s/%04d/energy-ev.out' % (NEXMD,dir)):
-                    error.wirte( 'Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir))
+                    print('Path %s%04d/energy-ev.out does not exist.' % (NEXMD,dir), file=error)
                     errflag = 1
                     ttraj += 1
                     continue
                 tsteps = np.genfromtxt('%s/%04d/energy-ev.out' % (NEXMD,dir), usecols=[0], skip_header=1).size
                 ## Generate array with indices of the coordinate blocks along trajectory ##
                 if not os.path.exists('%s/%04d/coords.xyz' % (NEXMD,dir)):
-                    error.wirte( 'Path %s%04d/coords.xyz does not exist.' % (NEXMD,dir))
+                    print('Path %s%04d/coords.xyz does not exist.' % (NEXMD,dir), file=error)
                     errflag = 1
                     ttraj += 1
                     continue
@@ -452,6 +458,8 @@ def dihedral(header):
                 array = np.array([])
                 for line in data:
                     if 'time' in line:
+                        if ncoords == num: #changed
+                            break          #changed
                         if ncoords == 0:
                             tinit = np.float(line.split()[-1])
                             if tinit != header.time_init:
@@ -462,19 +470,19 @@ def dihedral(header):
                             if time > tcoll:
                                 tflag3 = 1
                                 continue
-                            if time != times[ncoords]:
+                            if round(time,3) != round(times[ncoords],3): #changed
                                 tflag2 = 1
                                 continue
                         ncoords += 1
                         array = np.append(array,cindex)
                     cindex += 1
                 if tflag1 == 1:
-                    error.wirte( 'Initial time in %s%04d/coords.xyz does not match time_init in %s/header.' % (NEXMD,dir,NEXMDir))
+                    print('Initial time in %s%04d/coords.xyz does not match time_init in %s/header.' % (NEXMD,dir,NEXMDir), file=error)
                     errflag = 1
                     ttraj += 1
                     continue
                 if tflag2 == 1:
-                    error.wirte( 'There is an inconsistency in time-step in %s%04d/coords.xyz.' % (NEXMD,dir))
+                    print('There is an inconsistency in time-step in %s%04d/coords.xyz.' % (NEXMD,dir), file=error)
                     errflag = 1
                     ttraj += 1
                     continue
@@ -486,12 +494,12 @@ def dihedral(header):
                 array = np.int_(array)
                 ## Checks to ensure dihedral calculation ##
                 if ncoords == 0:
-                    error.wirte( 'No coordinates were found in %s%04d/coords.xyz' % (NEXMD,dir))
+                    print('No coordinates were found in %s%04d/coords.xyz' % (NEXMD,dir), file=error)
                     errflag = 1
                     ttraj += 1
                     continue
                 if ncoords == 1:
-                    error.wirte( 'Only initial coordinates, at %.2f fs, were found in %s%04d/coords.xyz.' % (tinit,NEXMD,dir))
+                    print('Only initial coordinates, at %.2f fs, were found in %s%04d/coords.xyz.' % (tinit,NEXMD,dir), file=error)
                     errflag = 1
                     ttraj += 1
                     continue
@@ -514,13 +522,12 @@ def dihedral(header):
                     x = np.dot(un1, un2)
                     y = np.dot(m1, un2)
                     dihedral = np.degrees(-math.atan2(y,x))
-                    output.wirte( '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2,header.time_step*header.out_data_steps*header.out_coords_steps*ncoord), '%08.3f' % (dihedral))
-                print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
-                if tsteps == header.n_class_steps:
+                    print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2,header.time_step*header.out_data_steps*header.out_coords_steps*ncoord), '%08.3f' % (dihedral), file=output)
+                print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps))
+                if tsteps == math.floor(header.n_class_steps/header.out_data_steps):
                     etraj += 1
                 else:
-                    print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
-                    error.wirte( '%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step))
+                    print('%s%04d' % (NEXMD,dir), '%0*.2f' % (len(str((header.n_class_steps))) + 2, (tsteps - 1)*header.time_step*header.out_data_steps), file=error)
                     errflag = 1
                 ttraj += 1
         ## Summary of results ##
