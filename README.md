@@ -51,14 +51,21 @@ Please refer to the NEXMD manual for a complete list of supported calculations.
 
 When using NEXMD results in academic work, please cite the package:
 
-> Walter Malone, Benjamin Nebgen, Alexander White, Yu Zhang, Huajing Song, 
+> Walter Malone, Benjamin Nebgen, Alexander White, Yu Zhang, Huajing Song,
 Josiah A. Bjorgaard, Andrew E. Sifain, Beatriz Rodriguez-Hernandez, 
 Victor M. Freixas, Sebastian Fernandez-Alberti, Adrian E. Roitberg, 
 Tammie R. Nelson, and Sergei Tretiak,
 NEXMD Software Package for Nonadiabatic Excited State 
 Molecular Dynamics Simulations,
 *Journal of Chemical Theory and Computation* **2020** *16* (9), 5771-5783,
-DOI: 10.1021/acs.jctc.0c00248 
+DOI: 10.1021/acs.jctc.0c00248
+
+> Victor M. Freixas, Walter Malone, Xinyang Li, Huajing Song, Hassiel Negrin-Yuvero, Royle Pérez-Castillo, Alexander White,
+Tammie R. Gibson, Dmitry V. Makhov, Dmitrii V. Shalashilin, Yu Zhang, Nikita Fedik, Maksim Kulichenko, Richard Messerly, Luke Nambi Mohanam,
+Sahar Sharifzadeh, Adolfo Bastida, Shaul Mukamel, Sebastian Fernandez-Alberti, and Sergei Tretiak,
+NEXMD v2.0 Software Package for Nonadiabatic Excited State Molecular Dynamics Simulations,
+*Journal of Chemical Theory and Computation* **2023** *19* (16), 5356-5368,
+https://doi.org/10.1021/acs.jctc.3c00583
 
 as well as the 2020 review of the methods implemented in NEXMD:
 
