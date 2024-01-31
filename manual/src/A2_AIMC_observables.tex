@@ -1,0 +1,114 @@
+\section{Observable calculation for AIMC}
+
+In this section we will provide insights on observable calculations for AIMC. AIMC is a sampling technique developed for the MultiConfigurational Ehrenfest (MCE) approach and implemented in the NEXMD software package \cite{freixas2018ab}. In the MCE approach, the system is described by means of a molecular wave function $|\Psi\rangle$ which is a linear superposition of configurations $|\varphi_n\rangle$:
+
+\begin{equation}
+    |\Psi\rangle = \sum_n|\varphi_n\rangle\,.
+\end{equation}
+
+Each configuration has its own nuclear and electronic parts. The nuclear part is given by Gaussian functions $|\chi_n\rangle$ centered on mean field Ehrenfest trajectories \cite{freixas2018ab}, while the electronic part is given by a linear superposition of the adiabatic solutions $\phi_I^{(n)}$ for the nuclear center. Therefore, the total wave function can be written as:
+
+\begin{equation}
+    |\Psi\rangle = \sum_nc_n|\chi_n\rangle\sum_Ia_I^{(n)}|\phi_I^{(n)}\rangle\,,
+\end{equation}
+where the magnitudes $c_n$ and $a_I^{(n)}$ are complex numbers propagated on the fly according to the time dependent Schrödinger equation and stored in the files \verb+nuclear-coeff.dat+ and \verb+coefficient_????.out+ respectively.
+
+\subsection{Observable over the electronic subspace}
+There are two mean observable types according to the subspace where they are defined. Let us start with those defined over the electronic subspace. One of the most important magnitudes for analyzing non-adiabatic dynamics simulations is the population of states. For trajectory surface hopping dynamics, these are the fraction of the ensemble driven by a given surface at a given time and are referred as classical populations. For AIMC we need to introduce the population operator:
+
+\begin{equation}
+    \hat P_K = |\phi_K^{(n)}\rangle\langle\phi_K^{(n)}|\,.\label{popK}
+\end{equation}
+
+The corresponding expectation value is given by:
+
+\begin{equation}
+    P_K = \langle\hat P_K\rangle = \sum_{n,m}c_m^*c_n\langle\chi_m|\chi_n\rangle\sum_{I,J}\left(a_J^{(m)}\right)^*a_I^{(n)}\langle\phi_J^{(m)}|\hat P_K|\phi_I^{(n)}\rangle\,.
+\end{equation}
+
+Taking into account the orthonormality of the adiabatic basis for a given configuration $n$, we can get to \cite{freixas2018ab}:
+
+\begin{equation}
+    \hat P_K = \sum_{n,m}c_m^*c_n\langle\chi_m|\chi_n\rangle\left(a_K^{(m)}\right)^*\sum_{I}a_I^{(n)}\langle\phi_K^{(m)}|\phi_I^{(n)}\rangle\,.
+\end{equation}
+
+The nuclear overlaps $\langle\chi_m|\chi_n\rangle$ can be calculated analytically \cite{makhov2014ab} as a function of nuclear coordinates and velocities stored respectively in \verb+coords.xyz+ and \verb+velocity.out+. The electronic overlaps $\langle\phi_K^{(m)}|\phi_I^{(n)}\rangle$ are propagated on the fly \cite{freixas2018ab} and are stored in the file \verb+electronic_overlaps.dat+.
+
+Is worth noting that equation (\ref{popK}) is defined over $n$ while it could have been defined over $m$ leading to a different analytical result. When using a complete electronic basis these two options are exactly the same. Since we are using a truncated basis there might be some small numerical differences and sometime a half summation over $n$ and $m$ is used for (\ref{popK}), leading to:
+
+\begin{equation}
+    \langle\hat P_{K}\rangle = \frac{1}{2}\sum_{n,m}c_m^*c_n\langle\chi_m|\chi_n\rangle\sum_{I}\left[\left(a_K^{(m)}\right)^*a_I^{(n)}\langle\phi_K^{(m)}|\phi_I^{(n)}\rangle+\left(a_I^{(m)}\right)^*a_K^{(n)}\langle\phi_I^{(m)}|\phi_K^{(n)}\rangle\right]
+\end{equation}
+
+The same reasoning applies for the closure relation used in the derivation of other observable.
+
+One important property of $\hat P_K$ is that summation over $K$ is the norm of the molecular wave function, which should always be 1. Therefore, it is strongly advised that the implementation of any other observable is preceded by the calculation of the norm to verify that all complex phases fit in correctly.
+
+Some other examples of observable over the electronic subspace are:
+\begin{itemize}
+    \item \textit{Transition densities.} Diagonal terms of the transition density matrix are commonly used to track the excitation localization in real space. The fraction of TD corresponding to state $I$ localized over a given fragment $X$ of the molecule for a given configuration can be calculated as \cite{freixas2018ab}:
+    \begin{equation}
+        \rho_{I,X}^{(n)} = \frac{\sum_{i\in X}\left(\rho_I^{(n)}\right)^2_{i,i}}{\sum_{i}\left(\rho_I^{(n)}\right)^2_{i,i}}\,,
+    \end{equation}
+    where the diagonal terms $\left(\rho_I^{(n)}\right)_{i,i}$ are stored in the files \verb+transition-densities.out+. The corresponding operator $\hat\rho_X$ is such that \cite{freixas2022ultrafast}:
+    \begin{equation}
+        \hat\rho_X|\phi_I^{(n)}\rangle=\rho_{I,X}^{(n)}|\phi_I^{(n)}\rangle\,,
+    \end{equation}
+    and the corresponding expectation value is:
+    \begin{equation}
+        \langle\rho_X\rangle = \sum_{n,m}c_m^*c_n\langle\chi_m|\chi_n\rangle\sum_{I,J}\left(a_J^{(m)}\right)^*a_I^{(n)}\rho_{I,X}^{(n)}\langle\phi_J^{(m)}|\phi_I^{(n)}\rangle\,.
+    \end{equation}
+    
+    \item \textit{Coherences.} Coherences can be of relevance for the calculation of spectroscopic signals when the polarization is assumed to be constant \cite{keefer2021monitoring,freixas2022ultrafast} and can be calculated as the non-diagonal version of the population operator $\hat P_{KL}$:
+    
+    \begin{equation}
+        \hat P_{KL} = |\phi_K^{(n)}\rangle\langle\phi_L^{(n)}|\,.\label{popKL}
+    \end{equation}
+    
+    The corresponding expectation value (symmetrised) is given by \cite{keefer2021monitoring}:
+    \begin{equation}
+        \langle\hat P_{KL}\rangle = \frac{1}{2}\sum_{n,m}c_m^*c_n\langle\chi_m|\chi_n\rangle\sum_{I}\left[\left(a_K^{(m)}\right)^*a_I^{(n)}\langle\phi_L^{(m)}|\phi_I^{(n)}\rangle+\left(a_I^{(m)}\right)^*a_L^{(n)}\langle\phi_I^{(m)}|\phi_K^{(n)}\rangle\right]
+    \end{equation}
+    
+    \item \textit{Potential energy.} The operator corresponding to the potential energy is such that:
+    
+    \begin{equation}
+        \hat V |\phi_I^{(n)}\rangle = V_I^{(n)}|\phi_I^{(n)}\rangle,
+    \end{equation}
+    where $V_I^{(n)}$ is written in the files \verb+pes_????.out+. The corresponding expectation value (symmetrised) is given by:
+    \begin{equation}
+        \langle\hat V\rangle = \frac{1}{2}\sum_{n,m}c_m^*c_n\langle\chi_m|\chi_n\rangle\sum_{I,J}\left(a_J^{(m)}\right)^*a_I^{(n)}\langle\phi_J^{(m)}|\phi_I^{(n)}\rangle\left(V_I^{(n)}+V_J^{(m)}\right)
+    \end{equation}
+    
+\end{itemize}
+
+\subsection{Observable over the nuclear subspace}
+
+In a similar way to the case of observable over the electronic subspace, the one over the nuclear subspace are calculated by introducing fist the corresponding operator. Let us see some examples:
+\begin{itemize}
+    \item \textit{Distance between atoms.} The expectation value $\langle\hat R_{ij}\rangle$ of the distance between atoms $i$ and $j$ of the molecule is given by:
+    \begin{equation}
+        \langle\hat R_{ij}\rangle = \sum_{m,n}c_m^*c_n\langle\chi_n||R_i-R_j||\chi_n\rangle\sum_{IJ}\left(a_J^{(m)}\right)^*a_I^{(n)}\langle\phi_J^{(m)}|\phi_I^{(n)}\rangle\,.
+    \end{equation}
+    
+    In order to calculate the nuclear matrix elements needed, we can introduce the approximation \cite{freixas2018ab}:
+    \begin{equation}
+        \langle\hat R_{ij}\rangle \approx\left|\sum_{n,m}c_m^*c_n\left(\langle\chi_m|R_i|\chi_n\rangle-\langle\chi_m|R_j|\chi_n\rangle\right)\right|\sum_{IJ}\left(a_J^{(m)}\right)^*a_I^{(n)}\langle\phi_J^{(m)}|\phi_I^{(n)}\rangle\,,
+    \end{equation}
+    which, taking into account the analytical expressions reported in \cite{makhov2014ab} for the nuclear matrix overlaps, can be reduced to \cite{freixas2018ab}:
+    \begin{equation}
+        \langle\hat R_{ij}\rangle \approx\sum_{n,m}c_m^*c_n\langle\chi_m|\chi_n\rangle\left|\frac{R_i^{(n)}+R_i^{(m)}}{2}-\frac{R_j^{(n)}+R_j^{(m)}}{2}\right|\sum_{IJ}\left(a_J^{(m)}\right)^*a_I^{(n)}\langle\phi_J^{(m)}|\phi_I^{(n)}\rangle\,,
+    \end{equation}
+    
+    \item \textit{Potential energy of a given state.} The energy of a given state $V_K$ might be useful during the analysis of the non-adiabatic molecular dynamics. It does not depend on the time solution of the Schrödinger equation for the electronic subsystem. Therefore, it can be calculated by introducing an operator $\hat V_K$ over the nuclear subspace such that:
+    \begin{equation}
+        \hat V_K|\chi_n\rangle = V_K^{(n)}|\chi_n\rangle\,,
+    \end{equation}
+    where the energies $V_K^{(n)}$ of the state $K$ for the configuration $n$ are stored in the \verb+pes_????.out+ files. The corresponding expectation value is given by:
+    \begin{equation}
+        \langle\hat V_K\rangle = \frac{1}{2}\sum_{n,m}c_m^*c_n\langle\chi_m|\chi_n\rangle\left(V_K^{(m)}+V_K^{(n)}\right)\sum_{I,J}\left(a_J^{(m)}\right)^*a_I^{(n)}\langle\phi_J^{(m)}|\phi_I^{(n)}\rangle\,.
+    \end{equation}
+    
+    This idea can be extended for the calculation of any other electronic magnitude belonging to a given adiabatic state, such as the fraction of the transition density of state $K$ localized over the fragment $X$ of the molecule.
+    
+\end{itemize}

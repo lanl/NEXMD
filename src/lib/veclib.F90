@@ -13,120 +13,120 @@
 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !+ vectorized square-root
-subroutine vdsqrt( n, x, y )
-   
-   implicit none
-   integer  n
-   _REAL_   x(n), y(n)
+subroutine vdsqrt(n, x, y)
 
-#ifdef MASSLIB   
-   call vsqrt ( y, x, n )
+    implicit none
+    integer n
+    _REAL_ x(n), y(n)
+
+#ifdef MASSLIB
+    call vsqrt(y, x, n)
 #else
-   y(1:n) = sqrt(x(1:n))
+    y(1:n) = sqrt(x(1:n))
 #endif
-   
-   return
-end subroutine vdsqrt 
+
+    return
+end subroutine vdsqrt
 !--------------------------------------------------------------
 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !+ vectorized exponential
-subroutine vdexp( n, x, y )
-   
-   implicit none
-   integer  n
-   _REAL_   x(n), y(n)
-   
+subroutine vdexp(n, x, y)
+
+    implicit none
+    integer n
+    _REAL_ x(n), y(n)
+
 #  ifdef MASSLIB
-      call vexp ( y, x, n )
+    call vexp(y, x, n)
 #  else
-      y(1:n) = exp(x(1:n))
+    y(1:n) = exp(x(1:n))
 #  endif
-   
-   return
-end subroutine vdexp 
+
+    return
+end subroutine vdexp
 !--------------------------------------------------------------
 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !+ vectorized logarithm
-subroutine vdln( n, x, y )
-   
-   implicit none
-   integer  n
-   _REAL_   x(n), y(n)
-   
+subroutine vdln(n, x, y)
+
+    implicit none
+    integer n
+    _REAL_ x(n), y(n)
+
 #  ifdef MASSLIB
-      call vlog ( y, x, n )
+    call vlog(y, x, n)
 #  else
-      y(1:n) = log(x(1:n))
+    y(1:n) = log(x(1:n))
 #  endif
-   
-   return
-end subroutine vdln 
+
+    return
+end subroutine vdln
 !--------------------------------------------------------------
 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !+ vectorized inverse square root
-subroutine vdinvsqrt( n, x, y )
-   implicit none
-   integer  n
-   _REAL_   x(n), y(n)
-  
+subroutine vdinvsqrt(n, x, y)
+    implicit none
+    integer n
+    _REAL_ x(n), y(n)
+
 #  ifdef MASSLIB
-      call vrsqrt ( y, x, n )
+    call vrsqrt(y, x, n)
 #  else
-      y(1:n) = 1.d0/sqrt( x(1:n) )
+    y(1:n) = 1.d0/sqrt(x(1:n))
 #  endif
 
-   return
-end subroutine vdinvsqrt 
+    return
+end subroutine vdinvsqrt
 !--------------------------------------------------------------
 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !+ vectorized inverse
-subroutine vdinv( n, x, y )
-   implicit none
-   integer  n
-   _REAL_   x(n), y(n)
-   
+subroutine vdinv(n, x, y)
+    implicit none
+    integer n
+    _REAL_ x(n), y(n)
+
 #  ifdef MASSLIB
-      call vrec ( y, x, n )
+    call vrec(y, x, n)
 #  else
-      y(1:n) = 1.d0/x(1:n)
+    y(1:n) = 1.d0/x(1:n)
 #  endif
-   
-   return
-end subroutine vdinv 
+
+    return
+end subroutine vdinv
 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !+ Vectorized cosine
-subroutine vdcos( n, x, y )
-  implicit none
-  integer n
-  _REAL_  x(n), y(n)
+subroutine vdcos(n, x, y)
+    implicit none
+    integer n
+    _REAL_ x(n), y(n)
 # ifdef MASSLIB
-    call vcos ( y, x, n )
+    call vcos(y, x, n)
 # else
     y(1:n) = cos(x(1:n))
 # endif
 
-  return
+    return
 end subroutine vdcos
 !--------------------------------------------------------------
 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !+ Vectorized tanh
-subroutine vdtanh( n, x, y )
-  implicit none
-  integer n
-  _REAL_  x(n), y(n)
+subroutine vdtanh(n, x, y)
+    implicit none
+    integer n
+    _REAL_ x(n), y(n)
 # ifdef MASSLIB
-    call vtanh ( y, x, n )
+    call vtanh(y, x, n)
 # else
     y(1:n) = tanh(x(1:n))
 # endif
 
-  return
+    return
 end subroutine vdtanh
 !--------------------------------------------------------------
 
@@ -134,11 +134,11 @@ end subroutine vdtanh
 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !+ dummy subroutine to avoid compiling an empty file
-subroutine vd_dummy_to_avoid_empty_file( )
-   
-   implicit none
-   return
-end subroutine vd_dummy_to_avoid_empty_file 
+subroutine vd_dummy_to_avoid_empty_file()
+
+    implicit none
+    return
+end subroutine vd_dummy_to_avoid_empty_file
 !--------------------------------------------------------------
 
 #endif

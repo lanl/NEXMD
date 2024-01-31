@@ -9,324 +9,323 @@ module fewest_switches
     use communism
     implicit none
 contains
-    subroutine evalhop(sim,lprint,Na,yg,yg_new,cross)
+    subroutine evalhop(sim, lprint, Na, yg, yg_new, cross)
         implicit none
         type(simulation_t), pointer :: sim
-        integer Na,lprint,excNtemp,ipn,indx(Na)
-        integer k,i,j,jj,icheck,itest,ini,ihopavant
-        _REAL_ pn,kavant
-        _REAL_ g(sim%excN),gacum(sim%excN)
-        _REAL_ iseedhop,eavant, eapres
-        _REAL_ xx(Na),yy(Na),zz(Na)
-        _REAL_ yg(sim%excN*2),ytemp,ytemp2,ytemp3,ytemp4,ytemp5
+        integer Na, lprint, excNtemp, ipn, indx(Na)
+        integer k, i, j, jj, icheck, itest, ini, ihopavant
+        _REAL_ pn, kavant
+        _REAL_ g(sim%excN), gacum(sim%excN)
+        _REAL_ iseedhop, eavant, eapres
+        _REAL_ xx(Na), yy(Na), zz(Na)
+        _REAL_ yg(sim%excN*2), ytemp, ytemp2, ytemp3, ytemp4, ytemp5
         _REAL_ yg_new(sim%excN*3)
-        _REAL_ t_start,t_finish
-        integer cross(sim%excN),crosstemp,ininonhop
-        if(sim%naesmd%conthop.eq.3) sim%naesmd%conthop=0
-        if(sim%naesmd%conthop2.eq.3) sim%naesmd%conthop2=0
-        if(sim%naesmd%conthop.gt.0) sim%naesmd%conthop=sim%naesmd%conthop+1
-        if(sim%naesmd%conthop2.gt.0) sim%naesmd%conthop2=sim%naesmd%conthop2+1
-        if(sim%naesmd%conthop.gt.0) then
-            if(cross(sim%naesmd%ihop).eq.2) then
-                if(sim%naesmd%iordenhop(sim%naesmd%ihop).ne.sim%naesmd%ihopprev) sim%naesmd%conthop=0
+        _REAL_ t_start, t_finish
+        integer cross(sim%excN), crosstemp, ininonhop
+        if (sim%naesmd%conthop .eq. 3) sim%naesmd%conthop = 0
+        if (sim%naesmd%conthop2 .eq. 3) sim%naesmd%conthop2 = 0
+        if (sim%naesmd%conthop .gt. 0) sim%naesmd%conthop = sim%naesmd%conthop + 1
+        if (sim%naesmd%conthop2 .gt. 0) sim%naesmd%conthop2 = sim%naesmd%conthop2 + 1
+        if (sim%naesmd%conthop .gt. 0) then
+            if (cross(sim%naesmd%ihop) .eq. 2) then
+                if (sim%naesmd%iordenhop(sim%naesmd%ihop) .ne. sim%naesmd%ihopprev) sim%naesmd%conthop = 0
             end if
         end if
-        iseedhop=rranf1(sim%naesmd%iseedmdqt)
-        ihopavant=sim%naesmd%ihop
-        eavant=sim%naesmd%vmdqtnew(sim%naesmd%ihop)
-        do j=1,sim%naesmd%natom
-            eavant=eavant+0.5d0*sim%naesmd%massmdqt(j)*(sim%naesmd%vx(j)**2+sim%naesmd%vy(j)**2+sim%naesmd%vz(j)**2)
+        iseedhop = rranf1(sim%naesmd%iseedmdqt)
+        ihopavant = sim%naesmd%ihop
+        eavant = sim%naesmd%vmdqtnew(sim%naesmd%ihop)
+        do j = 1, sim%naesmd%natom
+            eavant = eavant + 0.5d0*sim%naesmd%massmdqt(j)*(sim%naesmd%vx(j)**2 + sim%naesmd%vy(j)**2 + sim%naesmd%vz(j)**2)
         end do
-        do j=1,sim%excN
-            g(j)=0.d0
-            gacum(j)=0.d0
+        do j = 1, sim%excN
+            g(j) = 0.d0
+            gacum(j) = 0.d0
         end do
         ! g(j) is the probability to hop from the
         ! current sim%naesmd%state to the sim%naesmd%state j
-        do j=1,sim%excN
-            if(j.ne.sim%naesmd%ihop) then
-                g(j)=sim%naesmd%vnqcorrhoptot(j,sim%naesmd%ihop)/(sim%naesmd%nqold**2)
-                if(g(j).lt.0.0d0) g(j)=0.0d0
+        do j = 1, sim%excN
+            if (j .ne. sim%naesmd%ihop) then
+                g(j) = sim%naesmd%vnqcorrhoptot(j, sim%naesmd%ihop)/(sim%naesmd%nqold**2)
+                if (g(j) .lt. 0.0d0) g(j) = 0.0d0
             end if
         end do
-        icheck=0
-        do j=1,sim%excN
-            gacum(j)=0.0d0
-            if(j.ne.sim%naesmd%ihop) then
-                do k=1,j
-                    if(k.ne.sim%naesmd%ihop) gacum(j)=gacum(j)+g(k)
+        icheck = 0
+        do j = 1, sim%excN
+            gacum(j) = 0.0d0
+            if (j .ne. sim%naesmd%ihop) then
+                do k = 1, j
+                    if (k .ne. sim%naesmd%ihop) gacum(j) = gacum(j) + g(k)
                 end do
             end if
         end do
-        itest=0
-        do j=1,sim%excN
-            if(j.ne.sim%naesmd%ihop) then
-                if(iseedhop.le.gacum(j).and.itest.eq.0) then
-                    icheck=j
-                    itest=1
+        itest = 0
+        do j = 1, sim%excN
+            if (j .ne. sim%naesmd%ihop) then
+                if (iseedhop .le. gacum(j) .and. itest .eq. 0) then
+                    icheck = j
+                    itest = 1
                 end if
             end if
         end do
-        crosstemp=cross(sim%naesmd%ihop)
-        if(icheck.ne.0.and.cross(sim%naesmd%ihop).ne.2) then
-            ini=0
+        crosstemp = cross(sim%naesmd%ihop)
+        if (icheck .ne. 0 .and. cross(sim%naesmd%ihop) .ne. 2) then
+            ini = 0
             ! adjustment of velocities
-            if(sim%naesmd%conthop2.eq.0) then
-                call veladjustment(sim, lprint,Na,icheck,ini)
-                if(lprint.ge.2) then
-                    write(sim%outfile_10,*) sim%naesmd%tfemto,sim%naesmd%ihop, icheck,ini
-                    call flush(sim%outfile_10)
+            if (sim%naesmd%conthop2 .eq. 0) then
+                call veladjustment(sim, lprint, Na, icheck, ini)
+                if (lprint .ge. 2) then
+                    write (sim%outfile_10, *) sim%naesmd%tfemto, sim%naesmd%ihop, icheck, ini
+                    call flush (sim%outfile_10)
                 end if
             else
-                ini=1
+                ini = 1
             end if
-            if(ini.eq.0) then
-                sim%naesmd%ihop=icheck
+            if (ini .eq. 0) then
+                sim%naesmd%ihop = icheck
                 call naesmd2qmmm_r(sim)
                 call cpu_time(t_start)
-                call deriv(sim,sim%naesmd%ihop)
+                call deriv(sim, sim%naesmd%ihop)
                 call cpu_time(t_finish)
-                sim%time_deriv_took=sim%time_deriv_took+t_finish-t_start
-                call do_sqm_davidson_update(sim,0,vmdqt=sim%naesmd%vmdqtnew,vgs=sim%naesmd%vgs)
-
+                sim%time_deriv_took = sim%time_deriv_took + t_finish - t_start
+                call do_sqm_davidson_update(sim, 0, vmdqt=sim%naesmd%vmdqtnew, vgs=sim%naesmd%vgs)
 
 !Added for patch JAKB
-               if(sim%naesmd%decorhop.ne.0) then
-                  do j=1,sim%excN
-                     yg(j)=0.0d0
-                     yg(j+sim%excN)=0.0d0
-                     yg_new(j)=0.0d0
-                     yg_new(j+sim%excN)=0.0d0
-                     yg_new(j+2*sim%excN)=0.0d0
-                  enddo
-                  yg(sim%naesmd%ihop)=1.0d0
-                  yg_new(sim%naesmd%ihop)=1.0d0
+                if (sim%naesmd%decorhop .ne. 0) then
+                    do j = 1, sim%excN
+                        yg(j) = 0.0d0
+                        yg(j + sim%excN) = 0.0d0
+                        yg_new(j) = 0.0d0
+                        yg_new(j + sim%excN) = 0.0d0
+                        yg_new(j + 2*sim%excN) = 0.0d0
+                    end do
+                    yg(sim%naesmd%ihop) = 1.0d0
+                    yg_new(sim%naesmd%ihop) = 1.0d0
 ! after kirill
 ! check the reduction of sim%excN
-                 if(sim%naesmd%iredpot.eq.1) then
-                   if((sim%naesmd%ihop+sim%naesmd%nstates).lt.sim%excN) then
-                      sim%excN=sim%naesmd%ihop+sim%naesmd%nstates
-                   endif
-                 endif
-                 if(sim%naesmd%iredpot.eq.2) then
-                   excNtemp=sim%excN
-                   do i=1,sim%excN
-                      if((sim%naesmd%vmdqtnew(sim%naesmd%ihop)+sim%naesmd%deltared).lt.sim%naesmd%vmdqtnew(sim%excN+1-i)) then
-                         excNtemp=sim%excN+1-i
-                      endif
-                   enddo
-                   sim%excN=excNtemp
-                 endif
+                    if (sim%naesmd%iredpot .eq. 1) then
+                        if ((sim%naesmd%ihop + sim%naesmd%nstates) .lt. sim%excN) then
+                            sim%excN = sim%naesmd%ihop + sim%naesmd%nstates
+                        end if
+                    end if
+                    if (sim%naesmd%iredpot .eq. 2) then
+                        excNtemp = sim%excN
+                        do i = 1, sim%excN
+                            if ((sim%naesmd%vmdqtnew(sim%naesmd%ihop) + sim%naesmd%deltared) .lt. sim%naesmd%vmdqtnew(sim%excN + 1 - i)) then
+                                excNtemp = sim%excN + 1 - i
+                            end if
+                        end do
+                        sim%excN = excNtemp
+                    end if
 ! after Josiah
-                 if(sim%naesmd%iredpot.eq.3) then
-                   jj=1
-                   pn=0.0d0
-                   do i=1,sim%naesmd%natom
-                      if(sim%naesmd%atomtype(i).eq.1) then
-                        sim%naesmd%cicoeffao3(i)=sim%naesmd%cicoeffao2(jj,sim%naesmd%ihop)**2
-                        jj=jj+1
-                      endif
-                      if(sim%naesmd%atomtype(i).eq.6) then
-                        sim%naesmd%cicoeffao3(i)=sim%naesmd%cicoeffao2(jj,sim%naesmd%ihop)**2 &
-			    + sim%naesmd%cicoeffao2(jj+1,sim%naesmd%ihop)**2&
-                            +sim%naesmd%cicoeffao2(jj+2,sim%naesmd%ihop)**2 + sim%naesmd%cicoeffao2(jj+3,sim%naesmd%ihop)**2
-                          jj=jj+4
-                      endif
-                      pn=pn+ sim%naesmd%cicoeffao3(i)**2
-                   enddo
-                   pn=1.0d0/pn
-                   ipn=int(pn)+1
-                   call indexx(sim%naesmd%natom,sim%naesmd%cicoeffao3,indx)
-                   sim%naesmd%deltared=0.0d0
-                   do jj=1,sim%naesmd%natom
-                      if(indx(jj).ge.(sim%naesmd%natom-ipn)) then
-                        sim%naesmd%deltared = sim%naesmd%deltared + &
-			0.5d0*sim%naesmd%massmdqt(jj)*(sim%naesmd%vx(jj)**2 &
-			+sim%naesmd%vy(jj)**2+sim%naesmd%vz(jj)**2)
-                      endif
-                   enddo
-                   excNtemp=sim%excN
-                   do i=1,sim%excN
-                     if((sim%naesmd%vmdqtnew(sim%naesmd%ihop)+sim%naesmd%deltared).lt.sim%naesmd%vmdqtnew(sim%excN+1-i)) then
-                         excNtemp=sim%excN+1-i
-                     endif
-                   enddo
-                   sim%excN=excNtemp
-                 endif
+                    if (sim%naesmd%iredpot .eq. 3) then
+                        jj = 1
+                        pn = 0.0d0
+                        do i = 1, sim%naesmd%natom
+                            if (sim%naesmd%atomtype(i) .eq. 1) then
+                                sim%naesmd%cicoeffao3(i) = sim%naesmd%cicoeffao2(jj, sim%naesmd%ihop)**2
+                                jj = jj + 1
+                            end if
+                            if (sim%naesmd%atomtype(i) .eq. 6) then
+                                sim%naesmd%cicoeffao3(i) = sim%naesmd%cicoeffao2(jj, sim%naesmd%ihop)**2 &
+                                    + sim%naesmd%cicoeffao2(jj + 1, sim%naesmd%ihop)**2 &
+                                    + sim%naesmd%cicoeffao2(jj + 2, sim%naesmd%ihop)**2 + sim%naesmd%cicoeffao2(jj + 3, sim%naesmd%ihop)**2
+                                jj = jj + 4
+                            end if
+                            pn = pn + sim%naesmd%cicoeffao3(i)**2
+                        end do
+                        pn = 1.0d0/pn
+                        ipn = int(pn) + 1
+                        call indexx(sim%naesmd%natom, sim%naesmd%cicoeffao3, indx)
+                        sim%naesmd%deltared = 0.0d0
+                        do jj = 1, sim%naesmd%natom
+                            if (indx(jj) .ge. (sim%naesmd%natom - ipn)) then
+                                sim%naesmd%deltared = sim%naesmd%deltared + &
+                                    0.5d0*sim%naesmd%massmdqt(jj)*(sim%naesmd%vx(jj)**2 &
+                                    + sim%naesmd%vy(jj)**2 + sim%naesmd%vz(jj)**2)
+                            end if
+                        end do
+                        excNtemp = sim%excN
+                        do i = 1, sim%excN
+                            if ((sim%naesmd%vmdqtnew(sim%naesmd%ihop) + sim%naesmd%deltared) .lt. sim%naesmd%vmdqtnew(sim%excN + 1 - i)) then
+                                excNtemp = sim%excN + 1 - i
+                            end if
+                        end do
+                        sim%excN = excNtemp
+                    end if
 ! end after josiah
 ! after kirill
-               endif
-               sim%naesmd%conthop=1
+                end if
+                sim%naesmd%conthop = 1
 ! sim%naesmd%ihopprev keep the value of the previous sim%naesmd%state from where we hop
 ! in order to allow new hops for the next 2 steps only in case that
 ! we do not want to hop again to the same sim%naesmd%state
 !               sim%naesmd%ihopprev=ihopavant
-!######################################### 
-            endif
-!######################################### 
+!#########################################
+            end if
+!#########################################
 ! added after Kirill
-!######################################### 
-           if (ini.eq.2) then
-!######################################### 
-               do j=1,sim%excN
-                  yg(j)=0.0d0
-                  yg(j+sim%excN)=0.0d0
-                  yg_new(j)=0.0d0
-                  yg_new(j+sim%excN)=0.0d0
-                  yg_new(j+2*sim%excN)=0.0d0
-               enddo
-               yg(ihopavant)=1.0d0
-               yg_new(ihopavant)=1.0d0
-               sim%naesmd%conthop=1
+!#########################################
+            if (ini .eq. 2) then
+!#########################################
+                do j = 1, sim%excN
+                    yg(j) = 0.0d0
+                    yg(j + sim%excN) = 0.0d0
+                    yg_new(j) = 0.0d0
+                    yg_new(j + sim%excN) = 0.0d0
+                    yg_new(j + 2*sim%excN) = 0.0d0
+                end do
+                yg(ihopavant) = 1.0d0
+                yg_new(ihopavant) = 1.0d0
+                sim%naesmd%conthop = 1
 ! check the reduction of sim%excN
-               if(sim%naesmd%iredpot.eq.1) then
-                   if((ihopavant+sim%naesmd%nstates).lt.sim%excN) then
-                      sim%excN=ihopavant+sim%naesmd%nstates
-                   endif
-               endif
-               if(sim%naesmd%iredpot.eq.2) then
-                  excNtemp=sim%excN
-                  do i=1,sim%excN
-                     if((sim%naesmd%vmdqtnew(ihopavant)+sim%naesmd%deltared).lt.sim%naesmd%vmdqtnew(sim%excN+1-i)) then
-                         excNtemp=sim%excN+1-i
-                     endif
-                  enddo
-                  sim%excN=excNtemp
-               endif
+                if (sim%naesmd%iredpot .eq. 1) then
+                    if ((ihopavant + sim%naesmd%nstates) .lt. sim%excN) then
+                        sim%excN = ihopavant + sim%naesmd%nstates
+                    end if
+                end if
+                if (sim%naesmd%iredpot .eq. 2) then
+                    excNtemp = sim%excN
+                    do i = 1, sim%excN
+                        if ((sim%naesmd%vmdqtnew(ihopavant) + sim%naesmd%deltared) .lt. sim%naesmd%vmdqtnew(sim%excN + 1 - i)) then
+                            excNtemp = sim%excN + 1 - i
+                        end if
+                    end do
+                    sim%excN = excNtemp
+                end if
 ! after Josiah
-               if(sim%naesmd%iredpot.eq.3) then
-                  jj=1
-                  pn=0.0d0
-                  do i=1,sim%naesmd%natom
-                     if(sim%naesmd%atomtype(i).eq.1) then
-                        sim%naesmd%cicoeffao3(i)=sim%naesmd%cicoeffao2(jj,ihopavant)**2
-                        jj=jj+1
-                     endif
-                     if(sim%naesmd%atomtype(i).eq.6) then
-                        sim%naesmd%cicoeffao3(i)=sim%naesmd%cicoeffao2(jj,ihopavant)**2 &
-      + sim%naesmd%cicoeffao2(jj+1,ihopavant)**2+sim%naesmd%cicoeffao2(jj+2,ihopavant)**2 &
-      + sim%naesmd%cicoeffao2(jj+3,ihopavant)**2
-                        jj=jj+4
-                     endif
-                     pn=pn+ sim%naesmd%cicoeffao3(i)**2
-                  enddo
-                  pn=1.0d0/pn
-                  ipn=int(pn)+1
-                  call indexx(sim%naesmd%natom,sim%naesmd%cicoeffao3,indx)
-                  sim%naesmd%deltared=0.0d0
-                  do jj=1,sim%naesmd%natom
-                     if(indx(jj).ge.(sim%naesmd%natom-ipn)) then
-                        sim%naesmd%deltared = sim%naesmd%deltared + 0.5d0*sim%naesmd%massmdqt(jj)*&
-                                (sim%naesmd%vx(jj)**2+sim%naesmd%vy(jj)**2+sim%naesmd%vz(jj)**2)
-                     endif
-                  enddo
-                  excNtemp=sim%excN
-                  do i=1,sim%excN
-                     if((sim%naesmd%vmdqtnew(ihopavant)+sim%naesmd%deltared).lt.sim%naesmd%vmdqtnew(sim%excN+1-i)) then
-                         excNtemp=sim%excN+1-i
-                     endif
-                  enddo
-                  sim%excN=excNtemp
-               endif
-!###############################################3       
-            endif
-!###############################################3       
+                if (sim%naesmd%iredpot .eq. 3) then
+                    jj = 1
+                    pn = 0.0d0
+                    do i = 1, sim%naesmd%natom
+                        if (sim%naesmd%atomtype(i) .eq. 1) then
+                            sim%naesmd%cicoeffao3(i) = sim%naesmd%cicoeffao2(jj, ihopavant)**2
+                            jj = jj + 1
+                        end if
+                        if (sim%naesmd%atomtype(i) .eq. 6) then
+                            sim%naesmd%cicoeffao3(i) = sim%naesmd%cicoeffao2(jj, ihopavant)**2 &
+                                + sim%naesmd%cicoeffao2(jj + 1, ihopavant)**2 + sim%naesmd%cicoeffao2(jj + 2, ihopavant)**2 &
+                                + sim%naesmd%cicoeffao2(jj + 3, ihopavant)**2
+                            jj = jj + 4
+                        end if
+                        pn = pn + sim%naesmd%cicoeffao3(i)**2
+                    end do
+                    pn = 1.0d0/pn
+                    ipn = int(pn) + 1
+                    call indexx(sim%naesmd%natom, sim%naesmd%cicoeffao3, indx)
+                    sim%naesmd%deltared = 0.0d0
+                    do jj = 1, sim%naesmd%natom
+                        if (indx(jj) .ge. (sim%naesmd%natom - ipn)) then
+                            sim%naesmd%deltared = sim%naesmd%deltared + 0.5d0*sim%naesmd%massmdqt(jj)* &
+                                (sim%naesmd%vx(jj)**2 + sim%naesmd%vy(jj)**2 + sim%naesmd%vz(jj)**2)
+                        end if
+                    end do
+                    excNtemp = sim%excN
+                    do i = 1, sim%excN
+                        if ((sim%naesmd%vmdqtnew(ihopavant) + sim%naesmd%deltared) .lt. sim%naesmd%vmdqtnew(sim%excN + 1 - i)) then
+                            excNtemp = sim%excN + 1 - i
+                        end if
+                    end do
+                    sim%excN = excNtemp
+                end if
+!###############################################3
+            end if
+!###############################################3
 ! end after josiah
 ! end added after Kirill
 ! end added for patch JAKB
 
 !            end if
 
-        endif
+        end if
 
-        if(crosstemp.eq.2.and.sim%naesmd%conthop.eq.0) then
-            sim%naesmd%conthop2=1
+        if (crosstemp .eq. 2 .and. sim%naesmd%conthop .eq. 0) then
+            sim%naesmd%conthop2 = 1
             ! sim%naesmd%ihopprev keep the value of the previous sim%naesmd%state from where we hop
             ! in order to allow new hops for the next 2 steps only in case that
             ! we do not want to hop again to the same sim%naesmd%state
-            sim%naesmd%ihopprev=sim%naesmd%ihop
-            ini=0
-            sim%naesmd%ihop=sim%naesmd%iordenhop(sim%naesmd%ihop)
-            icheck=sim%naesmd%ihop
+            sim%naesmd%ihopprev = sim%naesmd%ihop
+            ini = 0
+            sim%naesmd%ihop = sim%naesmd%iordenhop(sim%naesmd%ihop)
+            icheck = sim%naesmd%ihop
             ! after the hop, we reinitialize the variables
             call naesmd2qmmm_r(sim)
             call cpu_time(t_start)
-            call deriv(sim,sim%naesmd%ihop)
+            call deriv(sim, sim%naesmd%ihop)
             call cpu_time(t_finish)
-            sim%time_deriv_took=sim%time_deriv_took+t_finish-t_start
-            do j=1,sim%naesmd%natom
-                xx(j)=sim%naesmd%rx(j)
-                yy(j)=sim%naesmd%ry(j)
-                zz(j)=sim%naesmd%rz(j)
+            sim%time_deriv_took = sim%time_deriv_took + t_finish - t_start
+            do j = 1, sim%naesmd%natom
+                xx(j) = sim%naesmd%rx(j)
+                yy(j) = sim%naesmd%ry(j)
+                zz(j) = sim%naesmd%rz(j)
             end do
-            call do_sqm_davidson_update(sim,0,vmdqt=sim%naesmd%vmdqtnew,vgs=sim%naesmd%vgs)
-            ytemp=yg(ihopavant)
-            ytemp2=yg(ihopavant+sim%excN)
-            ytemp3=yg_new(ihopavant)
-            ytemp4=yg_new(ihopavant+sim%excN)
-            ytemp5=yg_new(ihopavant+2*sim%excN)
-            yg(ihopavant)=yg(sim%naesmd%ihop)
-            yg(ihopavant+sim%excN)=yg(sim%naesmd%ihop+sim%excN)
-            yg_new(ihopavant)=yg_new(sim%naesmd%ihop)
-            yg_new(ihopavant+sim%excN)=yg_new(sim%naesmd%ihop+sim%excN)
-            yg_new(ihopavant+2*sim%excN)=yg_new(sim%naesmd%ihop+2*sim%excN)
-            yg(sim%naesmd%ihop)=ytemp
-            yg(sim%naesmd%ihop+sim%excN)=ytemp2
-            yg_new(sim%naesmd%ihop)=ytemp3
-            yg_new(sim%naesmd%ihop+sim%excN)=ytemp4
-            yg_new(sim%naesmd%ihop+2*sim%excN)=ytemp5
+            call do_sqm_davidson_update(sim, 0, vmdqt=sim%naesmd%vmdqtnew, vgs=sim%naesmd%vgs)
+            ytemp = yg(ihopavant)
+            ytemp2 = yg(ihopavant + sim%excN)
+            ytemp3 = yg_new(ihopavant)
+            ytemp4 = yg_new(ihopavant + sim%excN)
+            ytemp5 = yg_new(ihopavant + 2*sim%excN)
+            yg(ihopavant) = yg(sim%naesmd%ihop)
+            yg(ihopavant + sim%excN) = yg(sim%naesmd%ihop + sim%excN)
+            yg_new(ihopavant) = yg_new(sim%naesmd%ihop)
+            yg_new(ihopavant + sim%excN) = yg_new(sim%naesmd%ihop + sim%excN)
+            yg_new(ihopavant + 2*sim%excN) = yg_new(sim%naesmd%ihop + 2*sim%excN)
+            yg(sim%naesmd%ihop) = ytemp
+            yg(sim%naesmd%ihop + sim%excN) = ytemp2
+            yg_new(sim%naesmd%ihop) = ytemp3
+            yg_new(sim%naesmd%ihop + sim%excN) = ytemp4
+            yg_new(sim%naesmd%ihop + 2*sim%excN) = ytemp5
         end if
         ! Evaluation of other crossings that do not involve the sim%naesmd%ihop sim%naesmd%state
         !*************************************************************
-        ininonhop=1
-        do i=1,sim%excN
-            if(i.lt.sim%naesmd%iorden(i).and.i.ne.ihopavant.and.i.ne.sim%naesmd%iorden(ihopavant)) then
-                if(cross(i).eq.2) then
-                    ininonhop=0
-                    icheck=i
+        ininonhop = 1
+        do i = 1, sim%excN
+            if (i .lt. sim%naesmd%iorden(i) .and. i .ne. ihopavant .and. i .ne. sim%naesmd%iorden(ihopavant)) then
+                if (cross(i) .eq. 2) then
+                    ininonhop = 0
+                    icheck = i
                     ! after the hop, we reinicialize the variables
-                    ytemp=yg(i)
-                    ytemp2=yg(i+sim%excN)
-                    ytemp3=yg_new(i)
-                    ytemp4=yg_new(i+sim%excN)
-                    ytemp5=yg_new(i+2*sim%excN)
-                    yg(i)=yg(sim%naesmd%iorden(i))
-                    yg(i+sim%excN)=yg(sim%naesmd%iorden(i)+sim%excN)
-                    yg_new(i)=yg_new(sim%naesmd%iorden(i))
-                    yg_new(i+sim%excN)=yg_new(sim%naesmd%iorden(i)+sim%excN)
-                    yg_new(i+2*sim%excN)=yg_new(sim%naesmd%iorden(i)+2*sim%excN)
-                    yg(sim%naesmd%iorden(i))=ytemp
-                    yg(sim%naesmd%iorden(i)+sim%excN)=ytemp2
-                    yg_new(sim%naesmd%iorden(i))=ytemp3
-                    yg_new(sim%naesmd%iorden(i)+sim%excN)=ytemp4
-                    yg_new(sim%naesmd%iorden(i)+2*sim%excN)=ytemp5
+                    ytemp = yg(i)
+                    ytemp2 = yg(i + sim%excN)
+                    ytemp3 = yg_new(i)
+                    ytemp4 = yg_new(i + sim%excN)
+                    ytemp5 = yg_new(i + 2*sim%excN)
+                    yg(i) = yg(sim%naesmd%iorden(i))
+                    yg(i + sim%excN) = yg(sim%naesmd%iorden(i) + sim%excN)
+                    yg_new(i) = yg_new(sim%naesmd%iorden(i))
+                    yg_new(i + sim%excN) = yg_new(sim%naesmd%iorden(i) + sim%excN)
+                    yg_new(i + 2*sim%excN) = yg_new(sim%naesmd%iorden(i) + 2*sim%excN)
+                    yg(sim%naesmd%iorden(i)) = ytemp
+                    yg(sim%naesmd%iorden(i) + sim%excN) = ytemp2
+                    yg_new(sim%naesmd%iorden(i)) = ytemp3
+                    yg_new(sim%naesmd%iorden(i) + sim%excN) = ytemp4
+                    yg_new(sim%naesmd%iorden(i) + 2*sim%excN) = ytemp5
                 end if
             end if
-        enddo
+        end do
         ! Check the conservation of the total energy in the hop
         ! and recalculate the sim%naesmd%kin to be printed in writeoutput.f
-        if(icheck.ne.0) then
-            if(ini.eq.0.or.ininonhop.eq.0) then
-                eapres=sim%naesmd%vmdqtnew(sim%naesmd%ihop)
-                sim%naesmd%kin=0.0d0
-                do j=1,sim%naesmd%natom
-                    sim%naesmd%kin=sim%naesmd%kin+sim%naesmd%massmdqt(j)*(sim%naesmd%vx(j)**2+&
-			sim%naesmd%vy(j)**2+sim%naesmd%vz(j)**2)/2
+        if (icheck .ne. 0) then
+            if (ini .eq. 0 .or. ininonhop .eq. 0) then
+                eapres = sim%naesmd%vmdqtnew(sim%naesmd%ihop)
+                sim%naesmd%kin = 0.0d0
+                do j = 1, sim%naesmd%natom
+                    sim%naesmd%kin = sim%naesmd%kin + sim%naesmd%massmdqt(j)*(sim%naesmd%vx(j)**2 + &
+                        sim%naesmd%vy(j)**2 + sim%naesmd%vz(j)**2)/2
                 end do
-                eapres=eapres+sim%naesmd%kin
-                do j=1,sim%excN
-                    if(j.ne.sim%naesmd%ihop) then
-                        if(j.lt.sim%naesmd%iorden(j).and.sim%naesmd%conthop2.ne.1) then
-                            if(cross(j).ne.0) then
-                                write(sim%outfile_3,887) sim%naesmd%tfemto,cross(j),j,sim%naesmd%iorden(j),eavant,eapres
-                                call flush(sim%outfile_3)
+                eapres = eapres + sim%naesmd%kin
+                do j = 1, sim%excN
+                    if (j .ne. sim%naesmd%ihop) then
+                        if (j .lt. sim%naesmd%iorden(j) .and. sim%naesmd%conthop2 .ne. 1) then
+                            if (cross(j) .ne. 0) then
+                                write (sim%outfile_3, 887) sim%naesmd%tfemto, cross(j), j, sim%naesmd%iorden(j), eavant, eapres
+                                call flush (sim%outfile_3)
                             end if
                         end if
                     else
-                        if(sim%naesmd%ihop.ne.ihopavant) then
-                            write(sim%outfile_3,887) sim%naesmd%tfemto,cross(sim%naesmd%ihop), &
-                                                     & ihopavant,sim%naesmd%ihop,eavant,eapres
-                            call flush(sim%outfile_3)
+                        if (sim%naesmd%ihop .ne. ihopavant) then
+                            write (sim%outfile_3, 887) sim%naesmd%tfemto, cross(sim%naesmd%ihop), &
+                            & ihopavant, sim%naesmd%ihop, eavant, eapres
+                            call flush (sim%outfile_3)
                         end if
                     end if
                 end do
@@ -335,124 +334,123 @@ contains
         !***********************************
         ! end analyze the hopping
         !**********************************
-887     FORMAT(F18.10,1X,I2,1X,I3,1X,I3,10000(1X,F18.10))
-884   FORMAT(F18.10,1X,I2,1X,I3,1X,I3,1X,I3,10000(1X,F18.10))
+887     format(F18.10, 1X, I2, 1X, I3, 1X, I3, 10000(1X, F18.10))
+884     format(F18.10, 1X, I2, 1X, I3, 1X, I3, 1X, I3, 10000(1X, F18.10))
         return
-    end subroutine
+    end subroutine evalhop
 
-    subroutine just_trivial(sim, yg, yg_new,cross, nuclear, Nsim)
+    subroutine just_trivial(sim, yg, yg_new, cross, nuclear, Nsim)
         implicit none
         type(simulation_t), pointer :: sim
-        integer i,j,k,l, icheck
-        _REAL_ yg(sim%excN*2),ytemp,ytemp2,ytemp3,ytemp4,ytemp5
+        integer i, j, k, l, icheck
+        _REAL_ yg(sim%excN*2), ytemp, ytemp2, ytemp3, ytemp4, ytemp5
         _REAL_ yg_new(sim%excN*3)
-        _REAL_ t_start,t_finish
-        integer cross(sim%excN),ininonhop
+        _REAL_ t_start, t_finish
+        integer cross(sim%excN), ininonhop
         type(MCE) :: nuclear
-        _REAL_, allocatable :: sE0(:,:,:), sE1(:,:,:)
+        _REAL_, allocatable :: sE0(:, :, :), sE1(:, :, :)
         integer, intent(in) :: Nsim
-        _REAL_, dimension(sim%excN,sim%excN) :: cadiabmiddleold
-        _REAL_, dimension(sim%excN,sim%excN) :: cadiabmiddle
-        _REAL_, dimension(sim%excN,sim%excN) :: bcoeffcadiab
+        _REAL_, dimension(sim%excN, sim%excN) :: cadiabmiddleold
+        _REAL_, dimension(sim%excN, sim%excN) :: cadiabmiddle
+        _REAL_, dimension(sim%excN, sim%excN) :: bcoeffcadiab
 
-        if(sim%naesmd%conthop.eq.3) sim%naesmd%conthop=0
-        if(sim%naesmd%conthop.gt.0) sim%naesmd%conthop=sim%naesmd%conthop+1
+        if (sim%naesmd%conthop .eq. 3) sim%naesmd%conthop = 0
+        if (sim%naesmd%conthop .gt. 0) sim%naesmd%conthop = sim%naesmd%conthop + 1
 
-        ininonhop=1
-        do i=1,sim%excN
-            if(i.lt.sim%naesmd%iorden(i)) then
-                if(cross(i).eq.2.and.sim%naesmd%conthop.eq.0) then
-                    ininonhop=0
-                    icheck=i
+        ininonhop = 1
+        do i = 1, sim%excN
+            if (i .lt. sim%naesmd%iorden(i)) then
+                if (cross(i) .eq. 2 .and. sim%naesmd%conthop .eq. 0) then
+                    ininonhop = 0
+                    icheck = i
                     ! after the hop, we reinicialize the variables
-                    ytemp=yg(i)
-                    ytemp2=yg(i+sim%excN)
-                    ytemp3=yg_new(i)
-                    ytemp4=yg_new(i+sim%excN)
-                    ytemp5=yg_new(i+2*sim%excN)
-                    yg(i)=yg(sim%naesmd%iorden(i))
-                    yg(i+sim%excN)=yg(sim%naesmd%iorden(i)+sim%excN)
-                    yg_new(i)=yg_new(sim%naesmd%iorden(i))
-                    yg_new(i+sim%excN)=yg_new(sim%naesmd%iorden(i)+sim%excN)
-                    yg_new(i+2*sim%excN)=yg_new(sim%naesmd%iorden(i)+2*sim%excN)
-                    yg(sim%naesmd%iorden(i))=ytemp
-                    yg(sim%naesmd%iorden(i)+sim%excN)=ytemp2
-                    yg_new(sim%naesmd%iorden(i))=ytemp3
-                    yg_new(sim%naesmd%iorden(i)+sim%excN)=ytemp4
-                    yg_new(sim%naesmd%iorden(i)+2*sim%excN)=ytemp5
+                    ytemp = yg(i)
+                    ytemp2 = yg(i + sim%excN)
+                    ytemp3 = yg_new(i)
+                    ytemp4 = yg_new(i + sim%excN)
+                    ytemp5 = yg_new(i + 2*sim%excN)
+                    yg(i) = yg(sim%naesmd%iorden(i))
+                    yg(i + sim%excN) = yg(sim%naesmd%iorden(i) + sim%excN)
+                    yg_new(i) = yg_new(sim%naesmd%iorden(i))
+                    yg_new(i + sim%excN) = yg_new(sim%naesmd%iorden(i) + sim%excN)
+                    yg_new(i + 2*sim%excN) = yg_new(sim%naesmd%iorden(i) + 2*sim%excN)
+                    yg(sim%naesmd%iorden(i)) = ytemp
+                    yg(sim%naesmd%iorden(i) + sim%excN) = ytemp2
+                    yg_new(sim%naesmd%iorden(i)) = ytemp3
+                    yg_new(sim%naesmd%iorden(i) + sim%excN) = ytemp4
+                    yg_new(sim%naesmd%iorden(i) + 2*sim%excN) = ytemp5
 
-                    if(sim%naesmd%dynam_type.eq.'aimc') then !Swap electronic overlaps at crossings for aimc:
+                    if (sim%naesmd%dynam_type .eq. 'aimc') then !Swap electronic overlaps at crossings for aimc:
                         print *, 'Interchanging states for electronic overlaps calculations:', sim%id + 1, i
-                        allocate(sE0(Nsim,sim%excN,sim%excN), sE1(Nsim,sim%excN,sim%excN))
-                        sE0 = nuclear%sE(sim%id+1,:,:,:)
-                        nuclear%sE(sim%id+1,:,i,:) = sE0(:,sim%naesmd%iorden(i),:)
-                        nuclear%sE(sim%id+1,:,sim%naesmd%iorden(i),:) = sE0(:,i,:)
-                        sE1 = nuclear%sE(:,sim%id+1,:,:)
-                        nuclear%sE(:,sim%id+1,:,i) = sE1(:,:,sim%naesmd%iorden(i))
-                        nuclear%sE(:,sim%id+1,:,sim%naesmd%iorden(i)) = sE1(:,:,i)
-                        deallocate(sE0,sE1)
-                    endif
+                        allocate (sE0(Nsim, sim%excN, sim%excN), sE1(Nsim, sim%excN, sim%excN))
+                        sE0 = nuclear%sE(sim%id + 1, :, :, :)
+                        nuclear%sE(sim%id + 1, :, i, :) = sE0(:, sim%naesmd%iorden(i), :)
+                        nuclear%sE(sim%id + 1, :, sim%naesmd%iorden(i), :) = sE0(:, i, :)
+                        sE1 = nuclear%sE(:, sim%id + 1, :, :)
+                        nuclear%sE(:, sim%id + 1, :, i) = sE1(:, :, sim%naesmd%iorden(i))
+                        nuclear%sE(:, sim%id + 1, :, sim%naesmd%iorden(i)) = sE1(:, :, i)
+                        deallocate (sE0, sE1)
+                    end if
 !Interchanging cadiabmiddleold, cadiabmiddle and bcoeffcadiab for interpolation after crossing
                     cadiabmiddleold = sim%naesmd%cadiabmiddleold
                     bcoeffcadiab = sim%naesmd%bcoeffcadiab
-                    sim%naesmd%cadiabmiddleold(i,:) = cadiabmiddleold(sim%naesmd%iorden(i),:)
-                    sim%naesmd%cadiabmiddle(i,:) = cadiabmiddle(sim%naesmd%iorden(i),:)
-                    sim%naesmd%bcoeffcadiab(i,:) = bcoeffcadiab(sim%naesmd%iorden(i),:)
-                    sim%naesmd%cadiabmiddleold(:,i) = cadiabmiddleold(:,sim%naesmd%iorden(i))
-                    sim%naesmd%cadiabmiddle(:,i) = cadiabmiddle(:,sim%naesmd%iorden(i))
-                    sim%naesmd%bcoeffcadiab(:,i) = bcoeffcadiab(:,sim%naesmd%iorden(i))
-                    sim%naesmd%cadiabmiddleold(sim%naesmd%iorden(i),:) = cadiabmiddleold(i,:)
-                    sim%naesmd%cadiabmiddle(sim%naesmd%iorden(i),:) = cadiabmiddle(i,:)
-                    sim%naesmd%bcoeffcadiab(sim%naesmd%iorden(i),:) = bcoeffcadiab(i,:)
-                    sim%naesmd%cadiabmiddleold(:,sim%naesmd%iorden(i)) = cadiabmiddleold(:,i)
-                    sim%naesmd%cadiabmiddle(:,sim%naesmd%iorden(i)) = cadiabmiddle(:,i)
-                    sim%naesmd%bcoeffcadiab(:,sim%naesmd%iorden(i)) = bcoeffcadiab(:,i)
-                    sim%naesmd%cadiabmiddleold(i,sim%naesmd%iorden(i)) = 0.0d0
-                    sim%naesmd%cadiabmiddle(i,sim%naesmd%iorden(i)) = 0.0d0
-                    sim%naesmd%bcoeffcadiab(i,sim%naesmd%iorden(i)) = 0.0d0
-                    sim%naesmd%cadiabmiddleold(sim%naesmd%iorden(i),i) = 0.0d0
-                    sim%naesmd%cadiabmiddle(sim%naesmd%iorden(i),i) = 0.0d0
-                    sim%naesmd%bcoeffcadiab(sim%naesmd%iorden(i),i) = 0.0d0
+                    sim%naesmd%cadiabmiddleold(i, :) = cadiabmiddleold(sim%naesmd%iorden(i), :)
+                    sim%naesmd%cadiabmiddle(i, :) = cadiabmiddle(sim%naesmd%iorden(i), :)
+                    sim%naesmd%bcoeffcadiab(i, :) = bcoeffcadiab(sim%naesmd%iorden(i), :)
+                    sim%naesmd%cadiabmiddleold(:, i) = cadiabmiddleold(:, sim%naesmd%iorden(i))
+                    sim%naesmd%cadiabmiddle(:, i) = cadiabmiddle(:, sim%naesmd%iorden(i))
+                    sim%naesmd%bcoeffcadiab(:, i) = bcoeffcadiab(:, sim%naesmd%iorden(i))
+                    sim%naesmd%cadiabmiddleold(sim%naesmd%iorden(i), :) = cadiabmiddleold(i, :)
+                    sim%naesmd%cadiabmiddle(sim%naesmd%iorden(i), :) = cadiabmiddle(i, :)
+                    sim%naesmd%bcoeffcadiab(sim%naesmd%iorden(i), :) = bcoeffcadiab(i, :)
+                    sim%naesmd%cadiabmiddleold(:, sim%naesmd%iorden(i)) = cadiabmiddleold(:, i)
+                    sim%naesmd%cadiabmiddle(:, sim%naesmd%iorden(i)) = cadiabmiddle(:, i)
+                    sim%naesmd%bcoeffcadiab(:, sim%naesmd%iorden(i)) = bcoeffcadiab(:, i)
+                    sim%naesmd%cadiabmiddleold(i, sim%naesmd%iorden(i)) = 0.0d0
+                    sim%naesmd%cadiabmiddle(i, sim%naesmd%iorden(i)) = 0.0d0
+                    sim%naesmd%bcoeffcadiab(i, sim%naesmd%iorden(i)) = 0.0d0
+                    sim%naesmd%cadiabmiddleold(sim%naesmd%iorden(i), i) = 0.0d0
+                    sim%naesmd%cadiabmiddle(sim%naesmd%iorden(i), i) = 0.0d0
+                    sim%naesmd%bcoeffcadiab(sim%naesmd%iorden(i), i) = 0.0d0
 !Interchanging cadiabmiddleold, cadiabmiddle and bcoeffcadiab for interpolation after crossing
                 end if
             end if
-        enddo
-        if(icheck.ne.0.and.sim%naesmd%conthop.eq.0) then
-            if(ininonhop.eq.0) then
-                do j=1,sim%excN
-                        if(cross(j).eq.2) then
-                            sim%naesmd%conthop=1
-                            write(sim%outfile_3,887) sim%naesmd%tfemto,cross(j),j,sim%naesmd%iorden(j)
-                            call flush(sim%outfile_3)
-                        endif
+        end do
+        if (icheck .ne. 0 .and. sim%naesmd%conthop .eq. 0) then
+            if (ininonhop .eq. 0) then
+                do j = 1, sim%excN
+                    if (cross(j) .eq. 2) then
+                        sim%naesmd%conthop = 1
+                        write (sim%outfile_3, 887) sim%naesmd%tfemto, cross(j), j, sim%naesmd%iorden(j)
+                        call flush (sim%outfile_3)
+                    end if
                 end do
             end if
         end if
         !***********************************
         ! end analyze the hopping
         !**********************************
-887     FORMAT(F18.10,1X,I2,1X,I3,1X,I3,10000(1X,F18.10))
+887     format(F18.10, 1X, I2, 1X, I3, 1X, I3, 10000(1X, F18.10))
         return
-    end subroutine
-
+    end subroutine just_trivial
 
     ! At the point of hop, in general, the value of the potential energy in the new
     ! surface is different to the one in the older.
     ! In order to conserve the energy, we adjust the velocities
-    subroutine veladjustment(sim, lprint,Na,icheck,ini)
+    subroutine veladjustment(sim, lprint, Na, icheck, ini)
         implicit none
-        type(simulation_t),pointer::sim
-        integer Na,lprint
-        integer i,j,icheck,ini,ihoptemp
-        _REAL_ dij(Na*3),vicheck,ki
-        _REAL_ alpha,racine,ctehop1,dctehop1
-        _REAL_ vtemp(sim%excN),vgstemp
+        type(simulation_t), pointer::sim
+        integer Na, lprint
+        integer i, j, icheck, ini, ihoptemp
+        _REAL_ dij(Na*3), vicheck, ki
+        _REAL_ alpha, racine, ctehop1, dctehop1
+        _REAL_ vtemp(sim%excN), vgstemp
         !********************************************************
         ! adjustment of velocities
         !********************************************************
         ! Added by ST: calculate here NAC <psi| d psi/dR> in one step:
         !   Current energy calculation
-        call do_sqm_davidson_update(sim,0,vmdqt=vtemp,vgs=vgstemp)
+        call do_sqm_davidson_update(sim, 0, vmdqt=vtemp, vgs=vgstemp)
         !    Feed here energies and wavefunctions and geometry, get back dij
         ! if necessary here the signs of the CI coefficient matrix can be checked right here
         ! analytical calculation of nacR
@@ -461,194 +459,194 @@ contains
         !*********************************
         ! calculation of the current energy
         ! and the velocities adjustment
-        ihoptemp=icheck
-        vicheck=vtemp(ihoptemp)
-        alpha=sim%naesmd%vmdqtnew(sim%naesmd%ihop)-vicheck
+        ihoptemp = icheck
+        vicheck = vtemp(ihoptemp)
+        alpha = sim%naesmd%vmdqtnew(sim%naesmd%ihop) - vicheck
         racine = 0.0d0
 
-        if (sim%naesmd%nmc.lt.1) then !readjustment of the energy in the direction of NACR
-            j=1
-            do i=1,sim%naesmd%natom
-                racine=racine+sim%naesmd%vx(i)*dij(j)+sim%naesmd%vy(i)*dij(j+1) &
-                    +sim%naesmd%vz(i)*dij(j+2)
-                j=j+3
+        if (sim%naesmd%nmc .lt. 1) then !readjustment of the energy in the direction of NACR
+            j = 1
+            do i = 1, sim%naesmd%natom
+                racine = racine + sim%naesmd%vx(i)*dij(j) + sim%naesmd%vy(i)*dij(j + 1) &
+                    + sim%naesmd%vz(i)*dij(j + 2)
+                j = j + 3
             end do
-            racine=racine**2
-            j=1
-            do i=1,sim%naesmd%natom
-                racine=racine+2.0d0*alpha/sim%naesmd%massmdqt(i) &
-                    *(dij(j)**2+dij(j+1)**2+dij(j+2)**2)
-                j=j+3
+            racine = racine**2
+            j = 1
+            do i = 1, sim%naesmd%natom
+                racine = racine + 2.0d0*alpha/sim%naesmd%massmdqt(i) &
+                    *(dij(j)**2 + dij(j + 1)**2 + dij(j + 2)**2)
+                j = j + 3
             end do
-            if(racine.le.0.0d0) then
-                ini=1
+            if (racine .le. 0.0d0) then
+                ini = 1
                 ! change made after Kirill
-                if(sim%naesmd%decorhop.eq.2) ini=2
+                if (sim%naesmd%decorhop .eq. 2) ini = 2
                 ! end change made after Kirill
                 goto 4321
             end if
-            ctehop1=0.0d0
-            j=1
-            do i=1,sim%naesmd%natom
-                ctehop1=ctehop1+sim%naesmd%vx(i)*dij(j)+sim%naesmd%vy(i)*dij(j+1)+sim%naesmd%vz(i)*dij(j+2)
-                j=j+3
+            ctehop1 = 0.0d0
+            j = 1
+            do i = 1, sim%naesmd%natom
+                ctehop1 = ctehop1 + sim%naesmd%vx(i)*dij(j) + sim%naesmd%vy(i)*dij(j + 1) + sim%naesmd%vz(i)*dij(j + 2)
+                j = j + 3
             end do
-            ctehop1=ctehop1+dsqrt(racine)
-            dctehop1=0.d0
-            j=1
-            do i=1,sim%naesmd%natom
-                dctehop1=dctehop1+1.0d0/sim%naesmd%massmdqt(i) &
-                    *(dij(j)**2+dij(j+1)**2+dij(j+2)**2)
-                j=j+3
+            ctehop1 = ctehop1 + dsqrt(racine)
+            dctehop1 = 0.d0
+            j = 1
+            do i = 1, sim%naesmd%natom
+                dctehop1 = dctehop1 + 1.0d0/sim%naesmd%massmdqt(i) &
+                    *(dij(j)**2 + dij(j + 1)**2 + dij(j + 2)**2)
+                j = j + 3
             end do
-            ctehop1=ctehop1/dctehop1
+            ctehop1 = ctehop1/dctehop1
 
             ! option to adjust the velocities in the direction of
             ! the nonadiabatic coupling vector
-            j=1
-            do i=1,sim%naesmd%natom
-                sim%naesmd%vx(i)=sim%naesmd%vx(i)-ctehop1*dij(j)/sim%naesmd%massmdqt(i)
-                sim%naesmd%vy(i)=sim%naesmd%vy(i)-ctehop1*dij(j+1)/sim%naesmd%massmdqt(i)
-                sim%naesmd%vz(i)=sim%naesmd%vz(i)-ctehop1*dij(j+2)/sim%naesmd%massmdqt(i)
-                j=j+3
+            j = 1
+            do i = 1, sim%naesmd%natom
+                sim%naesmd%vx(i) = sim%naesmd%vx(i) - ctehop1*dij(j)/sim%naesmd%massmdqt(i)
+                sim%naesmd%vy(i) = sim%naesmd%vy(i) - ctehop1*dij(j + 1)/sim%naesmd%massmdqt(i)
+                sim%naesmd%vz(i) = sim%naesmd%vz(i) - ctehop1*dij(j + 2)/sim%naesmd%massmdqt(i)
+                j = j + 3
             end do
         else  !readjustment of the energy in the direction of the velocity
-            ki=0.0d0
-            do i=1, sim%naesmd%natom
-                ki=ki+0.5*sim%naesmd%massmdqt(i) &
-                *(sim%naesmd%vx(i)**2+sim%naesmd%vy(i)**2+sim%naesmd%vz(i)**2)
+            ki = 0.0d0
+            do i = 1, sim%naesmd%natom
+                ki = ki + 0.5*sim%naesmd%massmdqt(i) &
+                    *(sim%naesmd%vx(i)**2 + sim%naesmd%vy(i)**2 + sim%naesmd%vz(i)**2)
             end do
-            racine=ki**2+alpha*ki
-            if(racine.le.0.0d0) then
-                ini=1
+            racine = ki**2 + alpha*ki
+            if (racine .le. 0.0d0) then
+                ini = 1
                 ! change made after Kirill
-                if(sim%naesmd%decorhop.eq.2) ini=2
+                if (sim%naesmd%decorhop .eq. 2) ini = 2
                 ! end change made after Kirill
                 goto 4321
             end if
-            ctehop1=0.0d0
-            ctehop1=ki-dsqrt(racine)
-            ctehop1=ctehop1/ki
-            do i=1,sim%naesmd%natom
-               sim%naesmd%vx(i)=sim%naesmd%vx(i)-ctehop1*sim%naesmd%vx(i)
-               sim%naesmd%vy(i)=sim%naesmd%vy(i)-ctehop1*sim%naesmd%vy(i)
-               sim%naesmd%vz(i)=sim%naesmd%vz(i)-ctehop1*sim%naesmd%vz(i)
+            ctehop1 = 0.0d0
+            ctehop1 = ki - dsqrt(racine)
+            ctehop1 = ctehop1/ki
+            do i = 1, sim%naesmd%natom
+                sim%naesmd%vx(i) = sim%naesmd%vx(i) - ctehop1*sim%naesmd%vx(i)
+                sim%naesmd%vy(i) = sim%naesmd%vy(i) - ctehop1*sim%naesmd%vy(i)
+                sim%naesmd%vz(i) = sim%naesmd%vz(i) - ctehop1*sim%naesmd%vz(i)
             end do
-        endif
-        if(lprint.ge.1) then
-            write(sim%outfile_6,451) sim%naesmd%tfemto, sim%naesmd%ihop, icheck, (dij(3*j-2),dij(3*j-1),dij(3*j),j=1,sim%naesmd%natom)
-            call flush(sim%outfile_6)
         end if
-4321 continue
-     !********************************************************
-     ! end of adjustment of velocities
-     !********************************************************
-     return
+        if (lprint .ge. 1) then
+            write (sim%outfile_6, 451) sim%naesmd%tfemto, sim%naesmd%ihop, icheck, (dij(3*j - 2), dij(3*j - 1), dij(3*j), j=1, sim%naesmd%natom)
+            call flush (sim%outfile_6)
+        end if
+4321    continue
+        !********************************************************
+        ! end of adjustment of velocities
+        !********************************************************
+        return
 
- 451     FORMAT(F18.10,I5,I5,10000(1X,F18.10))
+451     format(F18.10, I5, I5, 10000(1X, F18.10))
 
- end subroutine
+    end subroutine veladjustment
 
-subroutine decoherence_E0_and_C(sim)
-        type(simulation_t),pointer::sim
-            
-            if(sim%constcoherE0.ne.0.d0.and.sim%constcoherC.ne.0.d0) then
-                if(sim%naesmd%conthop.ne.1.and.sim%naesmd%conthop2.ne.1) then
-                    !BTN: I have not had time to investigate this fully, but the simulation object gets garbled when passed to coherence. 
-                    !My guess is that one of the variables passed (though it does not appear to be sim) is not defined identically correctly inside coherence.
-                    !For now, just exit.
-                    write(6,*) 'Your choices for decoher_e0 and decoher_c &
-                        are not currently available'
-                    stop
-                    call coherence(sim,sim%Na,sim%naesmd%yg,sim%naesmd%yg_new,sim%constcoherE0,sim%constcoherC,sim%cohertype)
-                end if
+    subroutine decoherence_E0_and_C(sim)
+        type(simulation_t), pointer::sim
+
+        if (sim%constcoherE0 .ne. 0.d0 .and. sim%constcoherC .ne. 0.d0) then
+            if (sim%naesmd%conthop .ne. 1 .and. sim%naesmd%conthop2 .ne. 1) then
+                !BTN: I have not had time to investigate this fully, but the simulation object gets garbled when passed to coherence.
+                !My guess is that one of the variables passed (though it does not appear to be sim) is not defined identically correctly inside coherence.
+                !For now, just exit.
+                write (6, *) 'Your choices for decoher_e0 and decoher_c &
+                &                        are not currently available'
+                stop
+                call coherence(sim, sim%Na, sim%naesmd%yg, sim%naesmd%yg_new, sim%constcoherE0, sim%constcoherC, sim%cohertype)
             end if
-end subroutine
+        end if
+    end subroutine decoherence_E0_and_C
 
-subroutine indexx(n,arr,indx)
+    subroutine indexx(n, arr, indx)
 ! ************************************************************************
 
-      integer n,indx(n),M,NSTACK
-      double precision arr(n)
-      parameter (M=7, NSTACK=50)
+        integer n, indx(n), M, NSTACK
+        double precision arr(n)
+        parameter(M=7, NSTACK=50)
 ! Indexes an array arr(1:n), i.e., outputs the array indx(1:n) such that arr(indx(j))
 ! is in ascending order for j=1,2,...N. The input quantities n and arr are not changed.
 
-      integer i,indxt,ir,itemp,j,jstack,k,l,istack(NSTACK)
-      double precision a
+        integer i, indxt, ir, itemp, j, jstack, k, l, istack(NSTACK)
+        double precision a
 
-      do j=1,n
-        indx(j)=j
-      enddo
-      jstack=0
-      l=1
-      ir=n
-1     if(ir-l.lt.M)then
-        do j=l+1,ir
-           indxt=indx(j)
-           a=arr(indxt)
-           do i=j-1,l,-1
-               if(arr(indx(i)).le.a)goto 2
-               indx(i+1)=indx(i)
-           enddo
-           i=l-1
-2          indx(i+1)=indxt
-        enddo
-        if(jstack.eq.0)return
-        ir=istack(jstack)
-        l=istack(jstack-1)
-        jstack=jstack-2
-      else
-        k=(l+ir)/2
-        itemp=indx(k)
-        indx(k)=indx(l+1)
-        indx(l+1)=itemp
-        if(arr(indx(l)).gt.arr(indx(ir)))then
-         itemp=indx(l)
-          indx(l)=indx(ir)
-          indx(ir)=itemp
-        endif
-        if(arr(indx(l+1)).gt.arr(indx(ir)))then
-          itemp=indx(l+1)
-          indx(l+1)=indx(ir)
-          indx(ir)=itemp
-        endif
-        if(arr(indx(l)).gt.arr(indx(l+1)))then
-          itemp=indx(l)
-          indx(l)=indx(l+1)
-          indx(l+1)=itemp
-        endif
-        i=l+1
-        j=ir
-        indxt=indx(l+1)
-        a=arr(indxt)
-3       continue
-           i=i+1
-        if(arr(indx(i)).lt.a)goto 3
-4       continue
-           j=j-1
-        if(arr(indx(j)).gt.a)goto 4
-        if(j.lt.i)goto 5
-        itemp=indx(i)
-        indx(i)=indx(j)
-        indx(j)=itemp
-        goto 3
-5       indx(l+1)=indx(j)
-        indx(j)=indxt
-        jstack=jstack+2
-        if(jstack.gt.NSTACK) pause 'NSTACK too small in indexx'
-        if(ir-i+1.ge.j-l)then
-          istack(jstack)=ir
-          istack(jstack-1)=i
-          ir=j-1
+        do j = 1, n
+            indx(j) = j
+        end do
+        jstack = 0
+        l = 1
+        ir = n
+1       if (ir - l .lt. M) then
+            do j = l + 1, ir
+                indxt = indx(j)
+                a = arr(indxt)
+                do i = j - 1, l, -1
+                    if (arr(indx(i)) .le. a) goto 2
+                    indx(i + 1) = indx(i)
+                end do
+                i = l - 1
+2               indx(i + 1) = indxt
+            end do
+            if (jstack .eq. 0) return
+            ir = istack(jstack)
+            l = istack(jstack - 1)
+            jstack = jstack - 2
         else
-          istack(jstack)=j-1
-        istack(jstack-1)=l
-          l=i
-        endif
-      endif
-      goto 1
+            k = (l + ir)/2
+            itemp = indx(k)
+            indx(k) = indx(l + 1)
+            indx(l + 1) = itemp
+            if (arr(indx(l)) .gt. arr(indx(ir))) then
+                itemp = indx(l)
+                indx(l) = indx(ir)
+                indx(ir) = itemp
+            end if
+            if (arr(indx(l + 1)) .gt. arr(indx(ir))) then
+                itemp = indx(l + 1)
+                indx(l + 1) = indx(ir)
+                indx(ir) = itemp
+            end if
+            if (arr(indx(l)) .gt. arr(indx(l + 1))) then
+                itemp = indx(l)
+                indx(l) = indx(l + 1)
+                indx(l + 1) = itemp
+            end if
+            i = l + 1
+            j = ir
+            indxt = indx(l + 1)
+            a = arr(indxt)
+3           continue
+            i = i + 1
+            if (arr(indx(i)) .lt. a) goto 3
+4           continue
+            j = j - 1
+            if (arr(indx(j)) .gt. a) goto 4
+            if (j .lt. i) goto 5
+            itemp = indx(i)
+            indx(i) = indx(j)
+            indx(j) = itemp
+            goto 3
+5           indx(l + 1) = indx(j)
+            indx(j) = indxt
+            jstack = jstack + 2
+            if (jstack .gt. NSTACK) pause 'NSTACK too small in indexx'
+            if (ir - i + 1 .ge. j - l) then
+                istack(jstack) = ir
+                istack(jstack - 1) = i
+                ir = j - 1
+            else
+                istack(jstack) = j - 1
+                istack(jstack - 1) = l
+                l = i
+            end if
+        end if
+        goto 1
 
-      return
-      end subroutine indexx
- end module
+        return
+    end subroutine indexx
+end module fewest_switches

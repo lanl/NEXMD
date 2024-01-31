@@ -1,0 +1,58 @@
+\section{Compiling NEXMD}
+
+Expanding upon the readme, the \verb+Makefile+ for \verb+NEXMD+ is handwritten for both \verb+GNU+ and \verb+Intel+ Fortran compilers and libraries with their default names and locations. 
+By default a serial binary is compiled and libraries are statically linked.
+The \verb+Makefile+
+should work for most standard systems (sometimes only after loading
+the relevant compiler and library module) 
+%please contact !email! if that is not the case.
+
+Calling the \verb+make+ command in the NEXMD directory will call the default \verb+Intel+ Fortran compiler with \verb+Intel+ MKL libraries, equivalent to calling 
+\verb+make all+ and \verb+make ic_mkl+
+
+The other tested option is \verb+make gnu+ which will call the default \verb+GNU+ Fortran compiler with BLAS and LAPack libraries in their default
+location.
+
+There are commented out options, as examples for tinkering with
+the Makefile for advanced users. 
+
+\subsection{Stack size}
+
+Similar to most programs, if \verb+nexmd.exe+ has insufficient space on the
+stack it will crash with no useful error messages.
+
+Before running calculations, it is useful to ensure there is sufficient
+stack size, for \verb+BASH+:
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+ulimit -s unlimited
+\end{lstlisting}
+or
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+ulimit -s hard
+\end{lstlisting}
+
+This may require super-user permissions.
+
+\subsection{Avoiding edits to the Makefile}
+For \verb+BASH+,
+the default \verb+Makefile+ can be used with non-default compiler locations by adding these locations to the path:
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+export PATH = <NEXMD directory>:$PATH
+\end{lstlisting}
+
+For \verb+BASH+,
+it may be possible that custom libraries can be softlinked to the main repository.
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+ln -s <custom library file> <NEXMD directory>/<special_lib>
+\end{lstlisting}
+
+\subsection{Advance configuration}
+
+Advanced users on custom systems may find that they need NEXMD compiled with custom compilers and libraries outside the default location. 
+The \verb+Makefile+ contains empty variables under the flag \verb+custom+
+for such custom compilers and libraries; for complete flexibility.
+%Please contact !email! for assistance.
+
+\subsection{Tests after compiling}
+\verb+<NEXMD directory>/tests+ contains template input and bash scripts for NEXMD2 calculations on benzene;
+\verb+<NEXMD directory>/tests/reference+ contains reference output of the tests.

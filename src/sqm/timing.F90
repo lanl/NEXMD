@@ -1,49 +1,48 @@
-   function get_time()
-   integer tms(4), get_time
-	real*4 etime,etime1,tarry(2)
+function get_time()
+    integer tms(4), get_time
+    real*4 etime, etime1, tarry(2)
 
-        get_time=100*etime(tarry) ! DEC Alpha setting
+    get_time = 100*etime(tarry) ! DEC Alpha setting
 
-        return
-   end    
+    return
+end function get_time
 
-   subroutine get_date(datetime)
-   implicit none
+subroutine get_date(datetime)
+    implicit none
 
-   character*30 datetime
+    character*30 datetime
 
-   character*20 str
-   integer system,res
+    character*20 str
+    integer system, res
 
-   str='date > syst'
-   res=system(str)
+    str = 'date > syst'
+    res = system(str)
 
-   if(res==0) then ! everything is ok
-      open(12,file='syst',status='old')
-      read(12,'(A30)') datetime
-      close(12,status='delete')
-   else
-      datetime='system time problem'
-   end if
+    if (res == 0) then ! everything is ok
+        open (12, file='syst', status='old')
+        read (12, '(A30)') datetime
+        close (12, status='delete')
+    else
+        datetime = 'system time problem'
+    end if
 
-   return
-   end
+    return
+end subroutine get_date
 
+subroutine get_machine(machname)
 
-	subroutine get_machine(machname)
-	
-	character*36 machname, str*20
-	integer system, i
-	
-	str='uname -nms > syst'
-      i=system(str)
-	
-	if (i.eq.0) then
-	  open (2,file='syst')
-	  read (2,10) machname 
-	  close (2,status='delete')
-	endif 	
- 10   format (A36)
+    character*36 machname, str*20
+    integer system, i
 
-        return
-	end
+    str = 'uname -nms > syst'
+    i = system(str)
+
+    if (i .eq. 0) then
+        open (2, file='syst')
+        read (2, 10) machname
+        close (2, status='delete')
+    end if
+10  format(A36)
+
+    return
+end subroutine get_machine

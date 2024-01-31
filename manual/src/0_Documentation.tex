@@ -1,0 +1,81 @@
+ \documentclass[letterpaper,12pt,titlepage]{article}
+
+\usepackage[letterpaper, margin=1in]{geometry}
+\usepackage{authblk}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{braket}
+\usepackage{appendix}
+\usepackage[justification=justified]{subcaption}
+\usepackage{cite}
+\usepackage{titlepic}
+\usepackage{comment}
+\usepackage{multicol}
+\usepackage{multienum}
+\usepackage{color}
+\usepackage[normalem]{ulem}
+\usepackage[hidelinks]{hyperref}
+
+\graphicspath{{figures/}}
+\newcommand{\yz}[1]{\textcolor{blue}{YZ: #1}}
+
+\lstset{
+  columns=flexible,
+  basicstyle=\small\ttfamily,
+  mathescape=true,
+  escapeinside=||
+}
+\providecommand{\versionnumber}{2.0.2}
+\newenvironment{multiitem}{%
+  \multienumerate\renewcommand{\labelname}{\textbullet}%
+}{%
+  \endmultienumerate%
+}
+
+\title{Non-adiabatic EXcited-state Molecular Dynamics (NEXMD) Reference Manual\\ Version \versionnumber}
+\titlepic{\includegraphics[width=\textwidth]{NEXMD.pdf}}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\newpage
+\include{1_Introduction}
+
+\newpage
+\include{2_Features}
+
+\newpage
+\include{3_Compiling}
+
+\newpage
+\include{4_Running}
+
+\newpage
+\include{5_Input_file}
+
+\newpage
+\include{6_Output_files}
+
+\newpage
+\include{7_Restarting}
+
+\newpage
+\include{8_Input_examples}
+
+\begin{appendix}
+    \newpage
+    \include{A1_Contributors}
+
+    \newpage
+    \include{A2_AIMC_observables}
+\end{appendix}
+
+\newpage
+\bibliographystyle{aip}
+\bibliography{references}
+
+\end{document}

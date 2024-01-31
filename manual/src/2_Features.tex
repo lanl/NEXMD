@@ -1,0 +1,34 @@
+\section{NEXMD Main Features}
+
+NEXMD/NEXMD v2 have been principally developed to perform on-the-fly non-adiabatic excited state molecular dynamics simulations at TDHF or CIS level of electronic structure using semiempirical Hamiltonians. It also comprises several features that are useful when analyzing the photophysics of a molecular system. In this section we enumerate some of NEXMD features and corresponding input keywords, while the full list and the details for configuring the corresponding input parameters can be found in the Section \ref{Input_file}.
+
+\begin{itemize}
+\item Electronic structure single point is done when both the classical steps \verb+n_class_steps+ and the optimization cycles \verb+maxcyc+ are set to zero. In the standard output (usually denoted as \verb+md.out+), NEXMD will write the ground state and excited state energies along with the corresponding electric transition dipole moments and oscillator strengths. Furthermore the following options are available:
+    \begin{itemize}
+        \item Mulliken charges: Can be set with \verb+printcharges+.
+        \item Transition dipole moments between excited states: Can be set with \verb+calcxdens+.
+        \item Transition density plots: Can be set with \verb+out_data_cube+. This option will generate a set of \verb+.DATA+ files that can be converted to \verb+.cube+ files and plotted with any standard chemical software. 
+    \end{itemize}
+
+\item Optimization can be done for the ground state or any excited state by setting the variable \verb+maxcyc+ to any value greater than zero. The number of classical steps has to be reduced to zero otherwise an error will show up in the standard output. 
+
+\item Hessian and normal mode calculations can be set with \verb+do_nm+. Both the number of classical steps \verb+n_class_steps+ and the optimization cycles \verb+maxcyc+ have to be set to zero.
+
+\item Molecular dynamics can be set when the number of classical steps \verb+n_class_steps+ is set to a value greater than zero. NEXMD includes the following types of molecular dynamics:
+    \begin{itemize}
+        \item Ground state molecular dynamics is performed when the initial excited state \verb+exc_state_init+ is set to zero. If the number of excited states to calculate \verb+\n_exc_states_propagate+ is set to number greater than zero, the energies and transition dipole moments of the corresponding states will be calculated along the ground state dynamics.
+        \item Adiabatic excited state dynamics can be activated by setting the initial excited state \verb+exc_state_init+ to a value greater than zero and the Born-Oppenheimer flag \verb+bo_dynamics_flag+ to one. The number of excited states to propagate in the input variable \verb+n_exc_states_propagate+ has to be greater than \verb+exc_state_init+.
+        \item Non-adiabatic excited state dynamics can be activated setting the initial excited state \verb+exc_state_init+ to a value greater than zero and the Born-Oppenheimer flag \verb+bo_dynamics_flag+ to zero. By default the non-adiabatic dynamic method is the trajectory surface hopping. The type of non-adiabatic molecular dynamics can also be set to perform Ehrenfest or Ab-initio Multiple Cloning dynamics by means of the variable \verb+NAMD_type+.
+    \end{itemize}
+
+\item Langevin thermostat can be activated setting \verb+therm_type+ to one for any of the types of molecular dynamics, although it is advised to only use it for ground state dynamics. 
+
+\item Implicit solvation schemes are available by setting the input variable \verb+solvent_model+. Vertical excitation and state specific methods are not advised for non-adiabatic dynamics since instantaneous quantum transitions instantaneously change the charge density, which in turn instantly changes polarized solvent field leading to an unphysical sudden change of the excited state solutions.
+
+\item Constraints can be activated between atom distances or for generalized directions, e.g. normal modes. Only one type of constraint is advised to be used in a calculation.
+    \begin{itemize}
+        \item Constraints for atom distances can be activated with the input variable \verb+npc+.
+        \item Constraints for generalized directions can be activated with the input variable \verb+nmc+.
+    \end{itemize}
+
+\end{itemize}

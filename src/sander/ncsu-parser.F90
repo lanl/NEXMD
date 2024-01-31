@@ -52,31 +52,31 @@
 
 module ncsu_parser
 
-use ncsu_cftree, only : node_t
+    use ncsu_cftree, only : node_t
 
-implicit none
+    implicit none
 
-private
+    private
 
-type, private                  :: stack_node_t
-   type(node_t),       pointer :: node
-   type(stack_node_t), pointer :: prev
-end type stack_node_t
+    type, private                  :: stack_node_t
+        type(node_t), pointer :: node
+        type(stack_node_t), pointer :: prev
+    end type stack_node_t
 
-type, private :: stack_t
-   type(stack_node_t), pointer :: top => null()
-end type stack_t
+    type, private :: stack_t
+        type(stack_node_t), pointer :: top => null()
+    end type stack_t
 
-private :: stack_pop
-private :: stack_push
-private :: stack_empty
+    private :: stack_pop
+    private :: stack_push
+    private :: stack_empty
 
 !
 ! returns pointer to the root-node (or null()); caller
 ! must call node_cleanup() and deallocate() on it after use
 !
 
-public :: parse_cf
+    public :: parse_cf
 
 !-----------------------------------------------------------------------------
 
@@ -84,472 +84,472 @@ contains
 
 !-----------------------------------------------------------------------------
 
-logical function stack_empty(stack)
+    logical function stack_empty(stack)
 
-   implicit none
+        implicit none
 
-   type(stack_t), intent(in) :: stack
+        type(stack_t), intent(in) :: stack
 
-   stack_empty = .not. associated(stack%top)
+        stack_empty = .not. associated(stack%top)
 
-end function stack_empty
-
-!-----------------------------------------------------------------------------
-
-subroutine stack_push(stack, nodeptr)
-
-   use ncsu_utils
-
-   implicit none
-
-   type(stack_t), intent(inout) :: stack
-   type(node_t),        pointer :: nodeptr
-
-   integer                     :: error
-   type(stack_node_t), pointer :: new
-
-   allocate(new, stat = error)
-   if (error /= 0) &
-      NCSU_OUT_OF_MEMORY
-
-   new%node => nodeptr
-   new%prev => stack%top
-
-   stack%top => new
-
-end subroutine stack_push
+    end function stack_empty
 
 !-----------------------------------------------------------------------------
 
-subroutine stack_pop(stack)
+    subroutine stack_push(stack, nodeptr)
 
-   use ncsu_utils
+        use ncsu_utils
 
-   implicit none
+        implicit none
 
-   type(stack_t), intent(inout) :: stack
+        type(stack_t), intent(inout) :: stack
+        type(node_t), pointer :: nodeptr
 
-   type(stack_node_t), pointer :: pray
+        integer                     :: error
+        type(stack_node_t), pointer :: new
 
-   ncsu_assert(associated(stack%top))
+        allocate (new, stat=error)
+        if (error /= 0) &
+            NCSU_OUT_OF_MEMORY
 
-   pray => stack%top
-   stack%top => pray%prev
+        new%node => nodeptr
+        new%prev => stack%top
 
-   deallocate(pray)
+        stack%top => new
 
-end subroutine stack_pop
+    end subroutine stack_push
 
 !-----------------------------------------------------------------------------
 
-function parse_cf(filename, rootname, lun) result(root)
+    subroutine stack_pop(stack)
 
-   use ncsu_utils
-   use ncsu_lexer
-   use ncsu_value
-   use ncsu_cftree
-   use ncsu_constants
-   use ncsu_sander_proxy
+        use ncsu_utils
 
-   implicit none
+        implicit none
 
-   type(node_t), pointer :: root
-   type(node_t), pointer :: curr
+        type(stack_t), intent(inout) :: stack
 
-   character(len = *), intent(in) :: filename
-   character(len = *), intent(in) :: rootname
+        type(stack_node_t), pointer :: pray
 
-   integer, optional, intent(in) :: lun
+        ncsu_assert(associated(stack%top))
 
-   integer :: ios, lineno
-   integer :: tb, te, ttype
-   integer :: error
-   integer :: un
+        pray => stack%top
+        stack%top => pray%prev
 
-   character(len = STRING_LENGTH) :: line
-   character(len = STRING_LENGTH) :: prev
+        deallocate (pray)
 
-   type(stack_t) :: sections
+    end subroutine stack_pop
 
-   ncsu_assert(len(rootname) <= STRING_LENGTH)
+!-----------------------------------------------------------------------------
 
-   root => null()
+    function parse_cf(filename, rootname, lun) result(root)
 
-   if (present(lun)) then
-      un = lun
-      rewind (unit = un, iostat = ios)
+        use ncsu_utils
+        use ncsu_lexer
+        use ncsu_value
+        use ncsu_cftree
+        use ncsu_constants
+        use ncsu_sander_proxy
 
-      if (ios > 0) then
-         write (unit = ERR_UNIT, fmt = '(/a,a,i3/)') &
-               NCSU_ERROR, 'failed to rewind UNIT ''', un
-         call bail_out()
-      end if
-   else
-      un = 56 ! FORTRAN is _exceptionally_ powerful language indeed
-      open (unit = un, file = filename, iostat = ios, &
-            form = 'FORMATTED', action = 'READ', status = 'OLD')
+        implicit none
 
-      if (ios > 0) then
-         write (unit = ERR_UNIT, fmt = '(/a,a,a,a/)') &
-               NCSU_ERROR, 'failed to open ''', trim(filename), ''' for reading'
-         call bail_out()
-      end if
-   end if
+        type(node_t), pointer :: root
+        type(node_t), pointer :: curr
 
-   !
-   ! scan for 'rootname' section
-   !
+        character(len=*), intent(in) :: filename
+        character(len=*), intent(in) :: rootname
 
-   lineno = 0
-   do
-      call next_line()
-      if (ios < 0) exit
+        integer, optional, intent(in) :: lun
 
-      ncsu_assert(ios == 0)
+        integer :: ios, lineno
+        integer :: tb, te, ttype
+        integer :: error
+        integer :: un
 
-      if (lineno > 1) then ! skip first line
-         tb = 0
-         ttype = token(line, tb, te)
-         if (ttype == TOKEN_WORD) then
-            if (line(tb:te) == rootname) &
-               exit
-         end if
-      end if
-   end do
+        character(len=STRING_LENGTH) :: line
+        character(len=STRING_LENGTH) :: prev
 
-   if (ios < 0) then
-      return
-   end if
+        type(stack_t) :: sections
 
-   !
-   ! there is 'rootname' section ... parse it out
-   !
+        ncsu_assert(len(rootname) <= STRING_LENGTH)
 
-   ncsu_assert(ios == 0)
-   ncsu_assert(stack_empty(sections))
+        root => null()
 
-   do
-      ncsu_assert(ttype == TOKEN_WORD)
-      prev = line(tb:te) ! prev is always of type WORD
-      call next_token_not_eof()
-      ncsu_assert(ttype > 0)
+        if (present(lun)) then
+            un = lun
+            rewind (unit=un, iostat=ios)
 
-      select case(ttype)
-         case(TOKEN_EQUAL_SIGN)
-            call parse_key_value(key = prev)
+            if (ios > 0) then
+                write (unit=ERR_UNIT, fmt='(/a,a,i3/)') &
+                    NCSU_ERROR, 'failed to rewind UNIT ''', un
+                call bail_out()
+            end if
+        else
+            un = 56 ! FORTRAN is _exceptionally_ powerful language indeed
+            open (unit=un, file=filename, iostat=ios, &
+                form='FORMATTED', action='READ', status='OLD')
 
-         case(TOKEN_WORD)
-            if (prev == 'end') then
-               ncsu_assert(associated(curr))
-               ncsu_assert(.not. stack_empty(sections))
+            if (ios > 0) then
+                write (unit=ERR_UNIT, fmt='(/a,a,a,a/)') &
+                    NCSU_ERROR, 'failed to open ''', trim(filename), ''' for reading'
+                call bail_out()
+            end if
+        end if
 
-               prev = node_title(curr)
-               if (prev /= line(tb:te)) &
-                  call parse_error('got ''end '//line(tb:te)//&
-                       ''' instead of ''end '//trim(prev)//'''')
+        !
+        ! scan for 'rootname' section
+        !
 
-               call stack_pop(sections)
+        lineno = 0
+        do
+            call next_line()
+            if (ios < 0) exit
 
-               if (stack_empty(sections)) then
-                  curr => null()
-                  exit
-               else
-                  curr => sections%top%node
-               end if
+            ncsu_assert(ios == 0)
 
-               call next_token_not_eof()
-               if (ttype /= TOKEN_WORD) &
-                  call parse_error()
-            else
-               if (.not. associated(root)) then
-                  ncsu_assert(stack_empty(sections))
-                  allocate(root, stat = error)
-                  if (error /= 0) &
-                     NCSU_OUT_OF_MEMORY
-                  curr => root
-               else
-                  ncsu_assert(.not. stack_empty(sections))
-                  curr => node_create_child(curr)
-               end if
+            if (lineno > 1) then ! skip first line
+                tb = 0
+                ttype = token(line, tb, te)
+                if (ttype == TOKEN_WORD) then
+                    if (line(tb:te) == rootname) &
+                        exit
+                end if
+            end if
+        end do
 
-               call node_set_title(curr, prev)
-               call stack_push(sections, curr)
+        if (ios < 0) then
+            return
+        end if
+
+        !
+        ! there is 'rootname' section ... parse it out
+        !
+
+        ncsu_assert(ios == 0)
+        ncsu_assert(stack_empty(sections))
+
+        do
+            ncsu_assert(ttype == TOKEN_WORD)
+            prev = line(tb:te) ! prev is always of type WORD
+            call next_token_not_eof()
+            ncsu_assert(ttype > 0)
+
+            select case (ttype)
+              case (TOKEN_EQUAL_SIGN)
+                call parse_key_value(key=prev)
+
+              case (TOKEN_WORD)
+                if (prev == 'end') then
+                    ncsu_assert(associated(curr))
+                    ncsu_assert(.not. stack_empty(sections))
+
+                    prev = node_title(curr)
+                    if (prev /= line(tb:te)) &
+                        call parse_error('got ''end '//line(tb:te)// &
+                        ''' instead of ''end '//trim(prev)//'''')
+
+                    call stack_pop(sections)
+
+                    if (stack_empty(sections)) then
+                        curr => null()
+                        exit
+                    else
+                        curr => sections%top%node
+                    end if
+
+                    call next_token_not_eof()
+                    if (ttype /= TOKEN_WORD) &
+                        call parse_error()
+                else
+                    if (.not. associated(root)) then
+                        ncsu_assert(stack_empty(sections))
+                        allocate (root, stat=error)
+                        if (error /= 0) &
+                            NCSU_OUT_OF_MEMORY
+                        curr => root
+                    else
+                        ncsu_assert(.not. stack_empty(sections))
+                        curr => node_create_child(curr)
+                    end if
+
+                    call node_set_title(curr, prev)
+                    call stack_push(sections, curr)
+                end if
+
+              case default
+                call parse_error()
+            end select
+        end do
+
+        ncsu_assert(stack_empty(sections))
+
+        if (.not. present(lun)) &
+            close (unit=un)
+
+    contains
+
+!-----------------------------------------------------------------------------
+
+        subroutine bail_out()
+
+            implicit none
+
+            do while (.not. stack_empty(sections))
+                call stack_pop(sections)
+            end do
+
+            if (associated(root)) then
+                call node_cleanup(root)
+                deallocate (root)
             end if
 
-         case default
-            call parse_error()
-      end select
-   end do
+            call terminate()
 
-   ncsu_assert(stack_empty(sections))
-
-   if (.not. present(lun)) &
-      close (unit = un)
-
-contains
+        end subroutine bail_out
 
 !-----------------------------------------------------------------------------
 
-subroutine bail_out()
+        subroutine print_errloc()
 
-   implicit none
+            implicit none
 
-   do while (.not. stack_empty(sections))
-      call stack_pop(sections)
-   end do
+            write (unit=ERR_UNIT, &
+                fmt='(/a,a,a,a,'//pfmt(lineno)//',a,'//pfmt(tb)//',a)', advance='NO') &
+                NCSU_ERROR, '''', trim(filename), ''', line:', lineno, &
+                ', col:', tb, ' : '
 
-   if (associated(root)) then
-      call node_cleanup(root)
-      deallocate(root)
-   end if
-
-   call terminate()
-
-end subroutine bail_out
+        end subroutine print_errloc
 
 !-----------------------------------------------------------------------------
 
-subroutine print_errloc()
+        subroutine premature_eof(msg)
 
-   implicit none
+            implicit none
 
-   write (unit = ERR_UNIT, &
-      fmt = '(/a,a,a,a,'//pfmt(lineno)//',a,'//pfmt(tb)//',a)', advance = 'NO') &
-          NCSU_ERROR, '''', trim(filename), ''', line:', lineno, &
-          ', col:', tb, ' : '
+            character(len=*), intent(in), optional :: msg
 
-end subroutine print_errloc
+            write (unit=ERR_UNIT, fmt='(/a,a,a,a,'//pfmt(lineno)//')', advance='NO') &
+                NCSU_ERROR, '''', trim(filename), &
+                ''' : premature end of file after line ', lineno
 
-!-----------------------------------------------------------------------------
+            if (present(msg)) &
+                write (unit=ERR_UNIT, fmt='(a,a)', advance='NO') ' - ', trim(msg)
 
-subroutine premature_eof(msg)
+            write (unit=ERR_UNIT, fmt='(a/)') ''
 
-   implicit none
+            call bail_out()
 
-   character(len = *), intent(in), optional :: msg
-
-   write (unit = ERR_UNIT, fmt = '(/a,a,a,a,'//pfmt(lineno)//')', advance = 'NO') &
-          NCSU_ERROR, '''', trim(filename), &
-          ''' : premature end of file after line ', lineno
-
-   if (present(msg)) &
-      write (unit = ERR_UNIT, fmt = '(a,a)', advance = 'NO') ' - ', trim(msg)
-
-   write (unit = ERR_UNIT, fmt = '(a/)') ''
-
-   call bail_out()
-
-end subroutine premature_eof
+        end subroutine premature_eof
 
 !-----------------------------------------------------------------------------
 
-subroutine parse_error(msg)
+        subroutine parse_error(msg)
 
-   implicit none
+            implicit none
 
-   character(len = *), optional, intent(in) :: msg
+            character(len=*), optional, intent(in) :: msg
 
-   call print_errloc()
+            call print_errloc()
 
-   write (unit = ERR_UNIT, fmt = '(a)', advance = 'NO') 'parse error'
-   if (present(msg)) &
-      write (unit = ERR_UNIT, fmt = '(a,a)', advance = 'NO') ' - ', msg
+            write (unit=ERR_UNIT, fmt='(a)', advance='NO') 'parse error'
+            if (present(msg)) &
+                write (unit=ERR_UNIT, fmt='(a,a)', advance='NO') ' - ', msg
 
-   write (unit = ERR_UNIT, fmt = '(a/)') ''
-   call bail_out()
+            write (unit=ERR_UNIT, fmt='(a/)') ''
+            call bail_out()
 
-end subroutine parse_error
-
-!-----------------------------------------------------------------------------
-
-subroutine next_line()
-
-   implicit none
-
-   read (unit = un, fmt = '(a)', iostat = ios) line
-
-   if (ios == 0) &
-      lineno = lineno + 1
-
-   if (ios > 0) then
-      write (unit = ERR_UNIT, fmt = '(/a,a,a,a,'//pfmt(lineno)//'/)') &
-             NCSU_ERROR, 'read() from ''', &
-             trim(filename), ''' failed after line ', lineno
-      call bail_out()
-   end if
-
-end subroutine next_line
+        end subroutine parse_error
 
 !-----------------------------------------------------------------------------
 
-subroutine next_token()
+        subroutine next_line()
 
-   implicit none
+            implicit none
 
-   tb = te + 1
-   do
-      ttype = token(line, tb, te)
-      if (ttype == TOKEN_ERROR_END_OF_LINE) then
-         tb = 0
-         call next_line()
-         if (ios < 0) exit
-      else
-         exit
-      end if
-   end do
+            read (unit=un, fmt='(a)', iostat=ios) line
 
-   if (ttype < 0 .and. ios >= 0) then
-      call print_errloc()
-      select case(ttype)
-         case(TOKEN_ERROR_UNTERMINATED)
-            write (unit = ERR_UNIT, fmt = '(a/)') &
-                  'unterminated character constant'
-         case(TOKEN_ERROR_UNRECOGNIZED)
-            write (unit = ERR_UNIT, fmt = '(a/)') 'unexpected character'
-         case(TOKEN_ERROR_BAD_REAL)
-            write (unit = ERR_UNIT, fmt = '(a/)') 'ill-formatted real number'
-         case default
-            write (unit = ERR_UNIT, fmt = '(a,i4,a/)') &
-               'must not be here ('//__FILE__//':', __LINE__, ')'
-      end select
-      call bail_out()
-   end if
+            if (ios == 0) &
+                lineno = lineno + 1
 
-end subroutine next_token
+            if (ios > 0) then
+                write (unit=ERR_UNIT, fmt='(/a,a,a,a,'//pfmt(lineno)//'/)') &
+                    NCSU_ERROR, 'read() from ''', &
+                    trim(filename), ''' failed after line ', lineno
+                call bail_out()
+            end if
+
+        end subroutine next_line
 
 !-----------------------------------------------------------------------------
 
-subroutine next_token_not_eof(msg)
+        subroutine next_token()
 
-   implicit none
+            implicit none
 
-   character(len = *), intent(in), optional :: msg
+            tb = te + 1
+            do
+                ttype = token(line, tb, te)
+                if (ttype == TOKEN_ERROR_END_OF_LINE) then
+                    tb = 0
+                    call next_line()
+                    if (ios < 0) exit
+                else
+                    exit
+                end if
+            end do
 
-   call next_token()
+            if (ttype < 0 .and. ios >= 0) then
+                call print_errloc()
+                select case (ttype)
+                  case (TOKEN_ERROR_UNTERMINATED)
+                    write (unit=ERR_UNIT, fmt='(a/)') &
+                        'unterminated character constant'
+                  case (TOKEN_ERROR_UNRECOGNIZED)
+                    write (unit=ERR_UNIT, fmt='(a/)') 'unexpected character'
+                  case (TOKEN_ERROR_BAD_REAL)
+                    write (unit=ERR_UNIT, fmt='(a/)') 'ill-formatted real number'
+                  case default
+                    write (unit=ERR_UNIT, fmt='(a,i4,a/)') &
+                        'must not be here ('//__FILE__//':', __LINE__, ')'
+                end select
+                call bail_out()
+            end if
 
-   if (ios < 0) &
-      call premature_eof(msg)
-
-end subroutine next_token_not_eof
-
-!-----------------------------------------------------------------------------
-
-subroutine parse_key_value(key)
-
-   implicit none
-
-   character(len = *), intent(in) :: key
-
-   type(value_t) :: list
-
-   logical :: original
-
-   ncsu_assert(associated(curr))
-
-   call next_token_not_eof()
-   ncsu_assert(ttype > 0)
-
-   if (ttype == TOKEN_WORD) then
-      original = node_insert(curr, key, line(tb:te))
-   else if (ttype == TOKEN_REAL) then
-      original = node_insert(curr, key, token_to_real())
-   else if (ttype == TOKEN_INTEGER) then
-      original = node_insert(curr, key, token_to_integer())
-   else if (ttype == TOKEN_STRING) then
-      original = node_insert(curr, key, line(tb + 1:te - 1))
-   else if (ttype == TOKEN_LEFT_PARENTHESIS) then
-      call parse_list(list)
-      original = node_insert(curr, key, list)
-      call value_cleanup(list)
-   else
-      ncsu_assert_not_reached()
-      original = .false. ! for g95
-   end if
-
-   if (.not. original) &
-      write (unit = ERR_UNIT, &
-             fmt = '(/a,a,a,a,'//pfmt(lineno)//',a,'//pfmt(tb)//',a,a,a/)') &
-             NCSU_WARNING, '''', trim(filename), &
-             ''', line:', lineno, ', col:', tb, &
-             ' : key ''', trim(key), ''' has been already seen'
-
-   call next_token_not_eof('unterminated section(s)')
-   ncsu_assert(ttype > 0)
-
-   if (ttype /= TOKEN_WORD) &
-      call parse_error()
-
-end subroutine parse_key_value
+        end subroutine next_token
 
 !-----------------------------------------------------------------------------
 
-integer function token_to_integer()
-   implicit none
-   read (unit = line(tb:te), fmt = *) token_to_integer
-end function token_to_integer
+        subroutine next_token_not_eof(msg)
+
+            implicit none
+
+            character(len=*), intent(in), optional :: msg
+
+            call next_token()
+
+            if (ios < 0) &
+                call premature_eof(msg)
+
+        end subroutine next_token_not_eof
 
 !-----------------------------------------------------------------------------
 
-NCSU_REAL function token_to_real()
-   implicit none
-   read (unit = line(tb:te), fmt = *) token_to_real
-end function token_to_real
+        subroutine parse_key_value(key)
+
+            implicit none
+
+            character(len=*), intent(in) :: key
+
+            type(value_t) :: list
+
+            logical :: original
+
+            ncsu_assert(associated(curr))
+
+            call next_token_not_eof()
+            ncsu_assert(ttype > 0)
+
+            if (ttype == TOKEN_WORD) then
+                original = node_insert(curr, key, line(tb:te))
+            else if (ttype == TOKEN_REAL) then
+                original = node_insert(curr, key, token_to_real())
+            else if (ttype == TOKEN_INTEGER) then
+                original = node_insert(curr, key, token_to_integer())
+            else if (ttype == TOKEN_STRING) then
+                original = node_insert(curr, key, line(tb + 1:te - 1))
+            else if (ttype == TOKEN_LEFT_PARENTHESIS) then
+                call parse_list(list)
+                original = node_insert(curr, key, list)
+                call value_cleanup(list)
+            else
+                ncsu_assert_not_reached()
+                original = .false. ! for g95
+            end if
+
+            if (.not. original) &
+                write (unit=ERR_UNIT, &
+                fmt='(/a,a,a,a,'//pfmt(lineno)//',a,'//pfmt(tb)//',a,a,a/)') &
+                NCSU_WARNING, '''', trim(filename), &
+                ''', line:', lineno, ', col:', tb, &
+                ' : key ''', trim(key), ''' has been already seen'
+
+            call next_token_not_eof('unterminated section(s)')
+            ncsu_assert(ttype > 0)
+
+            if (ttype /= TOKEN_WORD) &
+                call parse_error()
+
+        end subroutine parse_key_value
 
 !-----------------------------------------------------------------------------
 
-recursive subroutine parse_list(accum) ! recursion could be avoided here
-
-   implicit none
-
-   type(value_t), intent(inout) :: accum
-
-   type(value_t) :: list
-
-   do
-      call next_token_not_eof('unterminated list')
-      ncsu_assert(ttype > 0)
-
-      if (ttype == TOKEN_WORD) then
-         call value_append(accum, line(tb:te))
-      else if (ttype == TOKEN_REAL) then
-         call value_append(accum, token_to_real())
-      else if (ttype == TOKEN_INTEGER) then
-         call value_append(accum, token_to_integer())
-      else if (ttype == TOKEN_STRING) then
-         call value_append(accum, line(tb + 1:te - 1))
-      else if (ttype == TOKEN_COMMA) then
-         call parse_error('unexpected comma')
-      else if (ttype == TOKEN_EQUAL_SIGN) then
-         call parse_error('unexpected equal sign')
-      else if (ttype == TOKEN_LEFT_PARENTHESIS) then
-         call parse_list(list)
-         call value_append(accum, list)
-         call value_cleanup(list)
-      else if (ttype == TOKEN_RIGHT_PARENTHESIS) then
-         call parse_error('unexpected right parenthesis')
-      else
-         ncsu_assert_not_reached()
-         continue
-      end if
-
-      call next_token_not_eof('unterminated list')
-      ncsu_assert(ttype > 0)
-
-      if (ttype == TOKEN_COMMA) then
-         continue
-      else if (ttype == TOKEN_RIGHT_PARENTHESIS) then
-         return
-      else
-         call parse_error('expected either comma or right parenthesis&
-                          &, got '''//line(tb:te)//''' instead')
-      end if
-   end do
-
-end subroutine parse_list
+        integer function token_to_integer()
+            implicit none
+            read (unit=line(tb:te), fmt=*) token_to_integer
+        end function token_to_integer
 
 !-----------------------------------------------------------------------------
 
-end function parse_cf
+        NCSU_REAL function token_to_real()
+        implicit none
+        read (unit=line(tb:te), fmt=*) token_to_real
+    end function parse_cf
+
+!-----------------------------------------------------------------------------
+
+    recursive subroutine parse_list(accum) ! recursion could be avoided here
+
+        implicit none
+
+        type(value_t), intent(inout) :: accum
+
+        type(value_t) :: list
+
+        do
+            call next_token_not_eof('unterminated list')
+            ncsu_assert(ttype > 0)
+
+            if (ttype == TOKEN_WORD) then
+                call value_append(accum, line(tb:te))
+            else if (ttype == TOKEN_REAL) then
+                call value_append(accum, token_to_real())
+            else if (ttype == TOKEN_INTEGER) then
+                call value_append(accum, token_to_integer())
+            else if (ttype == TOKEN_STRING) then
+                call value_append(accum, line(tb + 1:te - 1))
+            else if (ttype == TOKEN_COMMA) then
+                call parse_error('unexpected comma')
+            else if (ttype == TOKEN_EQUAL_SIGN) then
+                call parse_error('unexpected equal sign')
+            else if (ttype == TOKEN_LEFT_PARENTHESIS) then
+                call parse_list(list)
+                call value_append(accum, list)
+                call value_cleanup(list)
+            else if (ttype == TOKEN_RIGHT_PARENTHESIS) then
+                call parse_error('unexpected right parenthesis')
+            else
+                ncsu_assert_not_reached()
+                continue
+            end if
+
+            call next_token_not_eof('unterminated list')
+            ncsu_assert(ttype > 0)
+
+            if (ttype == TOKEN_COMMA) then
+                continue
+            else if (ttype == TOKEN_RIGHT_PARENTHESIS) then
+                return
+            else
+                call parse_error('expected either comma or right parenthesis&
+                &, got '''//line(tb:te)//''' instead')
+            end if
+        end do
+
+    end subroutine parse_list
+
+!-----------------------------------------------------------------------------
+
+end module ncsu_parser
 
 !-----------------------------------------------------------------------------
 

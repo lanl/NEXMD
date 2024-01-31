@@ -29,27 +29,27 @@
 !---------------------------------------------------------
 
 module charmm_mod
-  implicit none
+    implicit none
 
-  private
+    private
 
 !--------------- Public variables and subroutines -----------
-  !Variables
-  public :: charmm_active
-  public :: charmm_cn114, charmm_cn214
-  public :: do_charmm_dump_gold
-  
-  !Subroutines
-  public :: check_for_charmm
-  public :: read_charmm_params
-  public :: charmm_calc_impropers
-  public :: charmm_calc_urey_bradley
-  public :: charmm_calc_cmap
-  public :: charmm_deallocate_arrays
-  public :: charmm_dump_gold
-  public :: charmm_filter_out_qm_atoms
+    !Variables
+    public :: charmm_active
+    public :: charmm_cn114, charmm_cn214
+    public :: do_charmm_dump_gold
+
+    !Subroutines
+    public :: check_for_charmm
+    public :: read_charmm_params
+    public :: charmm_calc_impropers
+    public :: charmm_calc_urey_bradley
+    public :: charmm_calc_cmap
+    public :: charmm_deallocate_arrays
+    public :: charmm_dump_gold
+    public :: charmm_filter_out_qm_atoms
 #ifdef MPI
-  public :: mpi_bcast_charmm_params
+    public :: mpi_bcast_charmm_params
 #endif
 
 !------------- End Public variables and subroutines ---------
@@ -57,121 +57,120 @@ module charmm_mod
 !------------------------------------------------------------
 ! VARIABLES AND DERIVED DATA TYPES
 !------------------------------------------------------------
-  ! Do we have reason to be?
-  logical,save :: charmm_active
+    ! Do we have reason to be?
+    logical, save :: charmm_active
 
-  ! Combined non-boned 1-4 parameters 
-  ! There are nttyp of these.
-  _REAL_, dimension(:), allocatable :: charmm_cn114 ! e*r**12
-  _REAL_, dimension(:), allocatable :: charmm_cn214 ! two*e*R**6
+    ! Combined non-boned 1-4 parameters
+    ! There are nttyp of these.
+    _REAL_, dimension(:), allocatable :: charmm_cn114 ! e*r**12
+    _REAL_, dimension(:), allocatable :: charmm_cn214 ! two*e*R**6
 
 !MPI WARNING - IF YOU CHANGE THESE STRUCTURES YOU MUST UPDATE
 !              ALL THE MPI DATATYPES IN mpi_bcast_charmm_params
 
 !CHARMM Urey-Bradley Terms
-  integer :: charmm_nub      !Number of Urey-Bradley terms
-  integer :: charmm_nubtypes !Number of Urey-Bradley types
-  type chm_ang_ub_struct
-   integer        :: i,k !Index to the 2 atoms in the UB term
-   _REAL_         :: r0  !Equilibrium bond length
-   _REAL_         :: kr  !Force constant
-  end type chm_ang_ub_struct
-  ! There are charmm_nub of these.
-  type(chm_ang_ub_struct),dimension(:),allocatable :: charmm_ang_ub
+    integer :: charmm_nub      !Number of Urey-Bradley terms
+    integer :: charmm_nubtypes !Number of Urey-Bradley types
+    type chm_ang_ub_struct
+        integer        :: i, k !Index to the 2 atoms in the UB term
+        _REAL_         :: r0  !Equilibrium bond length
+        _REAL_         :: kr  !Force constant
+    end type chm_ang_ub_struct
+    ! There are charmm_nub of these.
+    type(chm_ang_ub_struct), dimension(:), allocatable :: charmm_ang_ub
 
-  ! number of charmm improper terms
-  integer :: charmm_nimphi
+    ! number of charmm improper terms
+    integer :: charmm_nimphi
 
-  ! Structure for the charmm improper torsion terms
-  ! Note this set of structures is expanded out of the data in the
-  ! prmtop file which is only written in terms of types.
-  type chm_imp_struct
-   ! i,j,k,l are the index to the 4 atoms in the Charmm improper
-   integer        :: i,j,k,l
-   _REAL_         :: pk    !Improper force constant
-   _REAL_         :: phase !Phase angle (eqm angle between the plane i,j,k and j,k,l)
+    ! Structure for the charmm improper torsion terms
+    ! Note this set of structures is expanded out of the data in the
+    ! prmtop file which is only written in terms of types.
+    type chm_imp_struct
+        ! i,j,k,l are the index to the 4 atoms in the Charmm improper
+        integer        :: i, j, k, l
+        _REAL_         :: pk    !Improper force constant
+        _REAL_         :: phase !Phase angle (eqm angle between the plane i,j,k and j,k,l)
 !   ! The improper's associated type
 !   integer        :: type
-  end type chm_imp_struct
+    end type chm_imp_struct
 
-  ! This should extend so far as charmm_imp(charmm_nimphi)
-  type(chm_imp_struct),dimension(:),allocatable :: charmm_imp
+    ! This should extend so far as charmm_imp(charmm_nimphi)
+    type(chm_imp_struct), dimension(:), allocatable :: charmm_imp
 
-  !CMAP related variables
-  integer,save :: cmap_term_count !Number of Cross (CMAP) Terms from PSF
-  integer,save :: cmap_type_count !Number of unique cmap terms found.
+    !CMAP related variables
+    integer, save :: cmap_term_count !Number of Cross (CMAP) Terms from PSF
+    integer, save :: cmap_type_count !Number of unique cmap terms found.
 
-  integer, allocatable, dimension(:,:),save :: cmap_index 
-  !Contains the atom index of the atoms making up the two dihedrals
-  !that form the cmap term.
-  !It is the form Atom index i,j,k,l,m of the cross term and then
-  !index to its corresponding parameter in the cmap_types array
+    integer, allocatable, dimension(:, :), save :: cmap_index
+    !Contains the atom index of the atoms making up the two dihedrals
+    !that form the cmap term.
+    !It is the form Atom index i,j,k,l,m of the cross term and then
+    !index to its corresponding parameter in the cmap_types array
 
-  !For example the atom index of the 8 atoms making up a cmap cross term: 
-  ! 1    2    3    4    2    3    4    5 
-  !There are two adjacent dihedrals here:
-  !   1    2    3    4            i,j,k,l
-  !   2    3    4    5            j,k,l,m
-  !
-  !Since this is just stepping one atom along the backbone, it can
-  !can be shorted to the form i,j,k,l,m:
-  !   1,2,3,4,5
-  !Finally the cmap_index would be:
-  !   1 2 3 4 5 1
-  ! where the final number is the position in the corresponding parameter in
-  ! the cmap_types array
-
-  integer,parameter :: cmap_entries_per_line = 5 !This is hard coded into the charmm
-                                                 !parm file format.
-
-  !cmap_t
-  type :: cmapParameter
-    integer :: resolution ! The number of cmap data points on each axis
-                          ! Since it is a grid, this is the same for both
-                          ! axis.
-
-    integer :: gridStepSize  ! set once number_of_grid_steps is known
-                             !  360/resolution
-
-    integer  :: gridOrigin=-180 !Where the 2D grid starts in degrees
-
-    real(kind=8), pointer, dimension(:,:) :: grid
-                          !The number of grid points for that CMAP parameter
-                          !The total should be resolution**2
-
-
-    !The CMAP grid is used as a basis for a spline fit to obtain a CMAP
-    !energy correction for any value of phi,psi
-
-    ! Example CMAP grid with a resolution of 5:
+    !For example the atom index of the 8 atoms making up a cmap cross term:
+    ! 1    2    3    4    2    3    4    5
+    !There are two adjacent dihedrals here:
+    !   1    2    3    4            i,j,k,l
+    !   2    3    4    5            j,k,l,m
     !
-    !   +    +    +    +    +
-    !
-    !   +    +    +    +    +
-    !
-    !   +    +    +    +    +
-    !
-    !   +    +    +    +    +    Hence the degree step size is
-    !                            360/5 == 72.
-    !   +    +    +    +    +
-    !                            The origin is always -180 degrees
-    !
-    !   ^    ^    ^    ^    ^
-    !   |    |    |    |    |
-    ! -180 -108  -36  36   108 (angle in degrees)
+    !Since this is just stepping one atom along the backbone, it can
+    !can be shorted to the form i,j,k,l,m:
+    !   1,2,3,4,5
+    !Finally the cmap_index would be:
+    !   1 2 3 4 5 1
+    ! where the final number is the position in the corresponding parameter in
+    ! the cmap_types array
 
-   !Derivative grids; populated at CMAP readtime by generate_cmap_derivatives()
-   !then used later by weight_stencil()
-    real(kind=8), pointer, dimension(:,:) :: dPhi !horizontal
-    real(kind=8), pointer, dimension(:,:) :: dPsi !vertical
-    real(kind=8), pointer, dimension(:,:) :: dPhi_dPsi !cross
+    integer, parameter :: cmap_entries_per_line = 5 !This is hard coded into the charmm
+    !parm file format.
 
-   end type cmapParameter
- 
-   !and now, an array of them
-   type(cmapParameter),allocatable,dimension(:),save :: cmap_types
-  
-   integer,save  :: do_charmm_dump_gold = 0
+    !cmap_t
+    type :: cmapParameter
+        integer :: resolution ! The number of cmap data points on each axis
+        ! Since it is a grid, this is the same for both
+        ! axis.
+
+        integer :: gridStepSize  ! set once number_of_grid_steps is known
+        !  360/resolution
+
+        integer  :: gridOrigin = -180 !Where the 2D grid starts in degrees
+
+        real(kind=8), pointer, dimension(:, :) :: grid
+        !The number of grid points for that CMAP parameter
+        !The total should be resolution**2
+
+        !The CMAP grid is used as a basis for a spline fit to obtain a CMAP
+        !energy correction for any value of phi,psi
+
+        ! Example CMAP grid with a resolution of 5:
+        !
+        !   +    +    +    +    +
+        !
+        !   +    +    +    +    +
+        !
+        !   +    +    +    +    +
+        !
+        !   +    +    +    +    +    Hence the degree step size is
+        !                            360/5 == 72.
+        !   +    +    +    +    +
+        !                            The origin is always -180 degrees
+        !
+        !   ^    ^    ^    ^    ^
+        !   |    |    |    |    |
+        ! -180 -108  -36  36   108 (angle in degrees)
+
+        !Derivative grids; populated at CMAP readtime by generate_cmap_derivatives()
+        !then used later by weight_stencil()
+        real(kind=8), pointer, dimension(:, :) :: dPhi !horizontal
+        real(kind=8), pointer, dimension(:, :) :: dPsi !vertical
+        real(kind=8), pointer, dimension(:, :) :: dPhi_dPsi !cross
+
+    end type cmapParameter
+
+    !and now, an array of them
+    type(cmapParameter), allocatable, dimension(:), save :: cmap_types
+
+    integer, save  :: do_charmm_dump_gold = 0
 
 !------------------------------------------------------------
 ! END VARIABLES AND DERIVED DATA TYPES
@@ -184,32 +183,32 @@ contains
 !------------------------------------------------------------
 
 !------------------------------------------------------------
-subroutine check_for_charmm(nlines,ffdesc)
+    subroutine check_for_charmm(nlines, ffdesc)
 
-  !This subroutine is responsible for checking the prmtop file
-  !contains the charmm force field and if it does it sets
-  !charmm_active to .true.
+        !This subroutine is responsible for checking the prmtop file
+        !contains the charmm force field and if it does it sets
+        !charmm_active to .true.
 
-  implicit none
+        implicit none
 
 !Needed for chngmask
-#include "ew_cntrl.h" 
+#include "ew_cntrl.h"
 
 !Passed in
-  integer, intent(in) :: nlines
-  character(len=80), intent(in) :: ffdesc(nlines)
+        integer, intent(in) :: nlines
+        character(len=80), intent(in) :: ffdesc(nlines)
 
 !Local
-  integer :: i
+        integer :: i
 
-  charmm_active = .false.
-  do i = 1, nlines
-    if (index(ffdesc(i),'CHARMM') /= 0) then
-      write(6,'("|")')
-      write(6,'(a,a)') '|CHARMM: CHARMM force field in use. '
-      charmm_active = .true.
-    end if
-  end do
+        charmm_active = .false.
+        do i = 1, nlines
+            if (index(ffdesc(i), 'CHARMM') /= 0) then
+                write (6, '("|")')
+                write (6, '(a,a)') '|CHARMM: CHARMM force field in use. '
+                charmm_active = .true.
+            end if
+        end do
 
 ! Check for charmm is called after load_ewald_info so we can make changes
 ! to ewald namelist variables here.
@@ -218,77 +217,73 @@ subroutine check_for_charmm(nlines,ffdesc)
 ! by setting the ewald namelist variable chngmask to 0.
 ! RCW: Not sure we strictly need this but we will do it this way for the time being
 !      to avoid confusion.
-  if (charmm_active) then
-     write(6,'(a)') '|CHARMM: Overriding default value of chngmask.'
-     write(6,'(a)') '|CHARMM: Setting chngmask = 0.'
-     chngmask = 0
-  end if
+        if (charmm_active) then
+            write (6, '(a)') '|CHARMM: Overriding default value of chngmask.'
+            write (6, '(a)') '|CHARMM: Setting chngmask = 0.'
+            chngmask = 0
+        end if
 
-  return
+        return
 
-end subroutine check_for_charmm
+    end subroutine check_for_charmm
 !------------------------------------------------------------
 
 !------------------------------------------------------------
-subroutine read_charmm_params(nf)
+    subroutine read_charmm_params(nf)
 
 ! This routine is responsible for reading in charmm specific
 ! 1-4 parameters and Urey-Bradley terms.
 
-  use parms, only : nttyp, & !Number of 1-4 types = ntypes*(ntypes+1)/2
-                    numang   !number of angles from sander - needed
-                             !for the u-b 1-3 pair list.
-                    
+        use parms, only : nttyp, & !Number of 1-4 types = ntypes*(ntypes+1)/2
+            numang   !number of angles from sander - needed
+        !for the u-b 1-3 pair list.
 
-  implicit none
+        implicit none
 
 ! Passed in
-  integer, intent(in) :: nf
+        integer, intent(in) :: nf
 
 !Local
-  _REAL_, allocatable, dimension(:) :: force_constant, phase
-  character(len=80) :: prmtop_flag, fmt, fmtin
-  character(len=2) :: word
-  integer :: iok, ier
-  integer :: i,res
-  integer :: charmm_nimprtyp
-  integer, allocatable, dimension(:) :: imp_type
-  !Tmps needed for parsing UB data 
-  _REAL_, allocatable, dimension(:)  :: rub_tmp, kub_tmp
-  integer, allocatable, dimension(:) :: ub_type
+        _REAL_, allocatable, dimension(:) :: force_constant, phase
+        character(len=80) :: prmtop_flag, fmt, fmtin
+        character(len=2) :: word
+        integer :: iok, ier
+        integer :: i, res
+        integer :: charmm_nimprtyp
+        integer, allocatable, dimension(:) :: imp_type
+        !Tmps needed for parsing UB data
+        _REAL_, allocatable, dimension(:)  :: rub_tmp, kub_tmp
+        integer, allocatable, dimension(:) :: ub_type
 
-
-  !Read UB counts so that an allocate can be done
-  fmtin = '(2i8)'
-  prmtop_flag = 'CHARMM_UREY_BRADLEY_COUNT'
-  call nxtsec(nf,  6,  0,fmtin,  prmtop_flag,  fmt,  iok)
-  read(nf,fmt) charmm_nub, charmm_nubtypes
-
+        !Read UB counts so that an allocate can be done
+        fmtin = '(2i8)'
+        prmtop_flag = 'CHARMM_UREY_BRADLEY_COUNT'
+        call nxtsec(nf, 6, 0, fmtin, prmtop_flag, fmt, iok)
+        read (nf, fmt) charmm_nub, charmm_nubtypes
 
 ! ----------------------------------------------------
 ! * READ IN THE NUMBER OF CHARMM IMPROPERS TO EXPECT *
 ! ----------------------------------------------------
-  !Read the number of Charmm Impropers (atom index to type)
-  fmtin = '(10i8)'
-  prmtop_flag = 'CHARMM_NUM_IMPROPERS'
-  call nxtsec(nf,  6,  0,fmtin,  prmtop_flag,  fmt,  iok)
-  read(nf,fmt) charmm_nimphi
+        !Read the number of Charmm Impropers (atom index to type)
+        fmtin = '(10i8)'
+        prmtop_flag = 'CHARMM_NUM_IMPROPERS'
+        call nxtsec(nf, 6, 0, fmtin, prmtop_flag, fmt, iok)
+        read (nf, fmt) charmm_nimphi
 
-  !Read Charmm Impropers Parameters (based on types)
-  fmtin =  '(i8)'
-  prmtop_flag = 'CHARMM_NUM_IMPR_TYPES'
-  call nxtsec(nf,  6,  0,fmtin,  prmtop_flag,  fmt,  iok)
-  read(nf,fmt) charmm_nimprtyp !local to this routine
-
+        !Read Charmm Impropers Parameters (based on types)
+        fmtin = '(i8)'
+        prmtop_flag = 'CHARMM_NUM_IMPR_TYPES'
+        call nxtsec(nf, 6, 0, fmtin, prmtop_flag, fmt, iok)
+        read (nf, fmt) charmm_nimprtyp !local to this routine
 
 ! --------------------------------------------------------
 ! * END READ IN THE NUMBER OF CHARMM IMPROPERS TO EXPECT *
 ! --------------------------------------------------------
 
-  !Now we can allocate charmm specific arrays and structures 
-  !that are based on the number of impropers, improper types
-  !and angles (numang).
-  call charmm_allocate_arrays()
+        !Now we can allocate charmm specific arrays and structures
+        !that are based on the number of impropers, improper types
+        !and angles (numang).
+        call charmm_allocate_arrays()
 
 ! --------------------------------------
 ! * READ IN THE CHARMM IMPROPER ARRAYS *
@@ -297,46 +292,46 @@ subroutine read_charmm_params(nf)
 ! Inside the prmtop file the charmm improper parameters are stored in terms
 ! of types. So for example for a given improper we have:
 !
-!  i, j, k, l, type  
+!  i, j, k, l, type
 !
 ! The type is then used to lookup the associated force constant and phase. However,
 ! for speed and simplicity in the code (although it uses slightly more memory) we
 ! will expand this out so each improper term contains its associate parameters and
 ! thus the concept of a type is not actually used past this point.
 
-  allocate(force_constant(charmm_nimprtyp),&
-           phase(charmm_nimprtyp), &
-           imp_type(charmm_nimphi),stat=ier)
-  REQUIRE(ier==0)
+        allocate (force_constant(charmm_nimprtyp), &
+            phase(charmm_nimprtyp), &
+            imp_type(charmm_nimphi), stat=ier)
+        REQUIRE(ier == 0)
 
-  fmtin = '(5E16.8)'
-  prmtop_flag = 'CHARMM_IMPROPER_FORCE_CONSTANT'
-  call nxtsec(nf,  6,  0,fmtin,  prmtop_flag,  fmt,  iok)
-  read(nf,fmt) (force_constant(i),i = 1,charmm_nimprtyp)
+        fmtin = '(5E16.8)'
+        prmtop_flag = 'CHARMM_IMPROPER_FORCE_CONSTANT'
+        call nxtsec(nf, 6, 0, fmtin, prmtop_flag, fmt, iok)
+        read (nf, fmt) (force_constant(i), i=1, charmm_nimprtyp)
 
-  prmtop_flag = 'CHARMM_IMPROPER_PHASE'
-  call nxtsec(nf,  6,  0,fmtin,  prmtop_flag,  fmt,  iok)
-  read(nf,fmt) (phase(i),i = 1,charmm_nimprtyp)
+        prmtop_flag = 'CHARMM_IMPROPER_PHASE'
+        call nxtsec(nf, 6, 0, fmtin, prmtop_flag, fmt, iok)
+        read (nf, fmt) (phase(i), i=1, charmm_nimprtyp)
 
-  !Read the 4 atom index to the Charmm impropers
-  fmtin = '(10i8)'
-  prmtop_flag = 'CHARMM_IMPROPERS'
-  call nxtsec(nf,  6,  0,fmtin,  prmtop_flag,  fmt,  iok)
-  !Read in the 4 atom index of the improper and the improper type
-  read(nf,fmt) (charmm_imp(i)%i,&
-                charmm_imp(i)%j,&
-                charmm_imp(i)%k,&
-                charmm_imp(i)%l,&
-                imp_type(i),i=1,charmm_nimphi)
+        !Read the 4 atom index to the Charmm impropers
+        fmtin = '(10i8)'
+        prmtop_flag = 'CHARMM_IMPROPERS'
+        call nxtsec(nf, 6, 0, fmtin, prmtop_flag, fmt, iok)
+        !Read in the 4 atom index of the improper and the improper type
+        read (nf, fmt) (charmm_imp(i)%i, &
+            charmm_imp(i)%j, &
+            charmm_imp(i)%k, &
+            charmm_imp(i)%l, &
+            imp_type(i), i=1, charmm_nimphi)
 
-  do i = 1, charmm_nimphi
-    charmm_imp(i)%pk = force_constant(imp_type(i))
-    charmm_imp(i)%phase = phase(imp_type(i))
-  end do
+        do i = 1, charmm_nimphi
+            charmm_imp(i)%pk = force_constant(imp_type(i))
+            charmm_imp(i)%phase = phase(imp_type(i))
+        end do
 
-  !We no longer need the type based data.
-  deallocate(force_constant,phase,imp_type,stat=ier)
-  REQUIRE(ier==0)
+        !We no longer need the type based data.
+        deallocate (force_constant, phase, imp_type, stat=ier)
+        REQUIRE(ier == 0)
 
 ! ------------------------------------------
 ! * END READ IN THE CHARMM IMPROPER ARRAYS *
@@ -345,15 +340,15 @@ subroutine read_charmm_params(nf)
 ! -----------------------
 ! * READ 1-4 PARAMETERS *
 ! -----------------------
-  fmtin = '(5E16.8)'
-  prmtop_flag = 'LENNARD_JONES_14_ACOEF'
-  call nxtsec(nf,  6,  0,fmtin,  prmtop_flag,  fmt,  iok)
-  read(nf,fmt) (charmm_cn114(i),   i = 1,nttyp)
+        fmtin = '(5E16.8)'
+        prmtop_flag = 'LENNARD_JONES_14_ACOEF'
+        call nxtsec(nf, 6, 0, fmtin, prmtop_flag, fmt, iok)
+        read (nf, fmt) (charmm_cn114(i), i=1, nttyp)
 
-  fmtin = '(5E16.8)'
-  prmtop_flag = 'LENNARD_JONES_14_BCOEF'
-  call nxtsec(nf,  6,  0,fmtin,  prmtop_flag,  fmt,  iok)
-  read(nf,fmt) (charmm_cn214(i),   i = 1,nttyp)
+        fmtin = '(5E16.8)'
+        prmtop_flag = 'LENNARD_JONES_14_BCOEF'
+        call nxtsec(nf, 6, 0, fmtin, prmtop_flag, fmt, iok)
+        read (nf, fmt) (charmm_cn214(i), i=1, nttyp)
 ! ---------------------------
 ! * END READ 1-4 PARAMETERS *
 ! ---------------------------
@@ -362,398 +357,385 @@ subroutine read_charmm_params(nf)
 ! * READ UREY-BRADLEY TERMS *
 ! ---------------------------
 
-  allocate(rub_tmp(charmm_nubtypes),&
-           kub_tmp(charmm_nubtypes), &
-           ub_type(charmm_nub),stat=ier)
-  REQUIRE(ier==0)
+        allocate (rub_tmp(charmm_nubtypes), &
+            kub_tmp(charmm_nubtypes), &
+            ub_type(charmm_nub), stat=ier)
+        REQUIRE(ier == 0)
 
-  fmtin = '(10i8)'
-  prmtop_flag = 'CHARMM_UREY_BRADLEY'
-  call nxtsec(nf,  6,  0,fmtin,  prmtop_flag,  fmt,  iok)
-  read(nf,fmt) ( charmm_ang_ub(i)%i,&
-                 charmm_ang_ub(i)%k,&
-                 ub_type(i),&
-                               i = 1,charmm_nub)
+        fmtin = '(10i8)'
+        prmtop_flag = 'CHARMM_UREY_BRADLEY'
+        call nxtsec(nf, 6, 0, fmtin, prmtop_flag, fmt, iok)
+        read (nf, fmt) (charmm_ang_ub(i)%i, &
+            charmm_ang_ub(i)%k, &
+            ub_type(i), &
+            i=1, charmm_nub)
 
-  fmtin = '(5E16.8)'
-  prmtop_flag = 'CHARMM_UREY_BRADLEY_EQUIL_VALUE'
-  call nxtsec(nf,  6,  0,fmtin,  prmtop_flag,  fmt,  iok)
-  read(nf,fmt) (rub_tmp(i), i = 1,charmm_nubtypes)
-  fmtin = '(5E16.8)'
-  prmtop_flag = 'CHARMM_UREY_BRADLEY_FORCE_CONSTANT'
-  call nxtsec(nf,  6,  0,fmtin,  prmtop_flag,  fmt,  iok)
-  read(nf,fmt) (kub_tmp(i), i = 1,charmm_nubtypes)
+        fmtin = '(5E16.8)'
+        prmtop_flag = 'CHARMM_UREY_BRADLEY_EQUIL_VALUE'
+        call nxtsec(nf, 6, 0, fmtin, prmtop_flag, fmt, iok)
+        read (nf, fmt) (rub_tmp(i), i=1, charmm_nubtypes)
+        fmtin = '(5E16.8)'
+        prmtop_flag = 'CHARMM_UREY_BRADLEY_FORCE_CONSTANT'
+        call nxtsec(nf, 6, 0, fmtin, prmtop_flag, fmt, iok)
+        read (nf, fmt) (kub_tmp(i), i=1, charmm_nubtypes)
 
-  !Do the mapping merge
-  do i = 1, charmm_nub
-    charmm_ang_ub(i)%r0 = rub_tmp(ub_type(i))
-    charmm_ang_ub(i)%kr = kub_tmp(ub_type(i))
-  end do
+        !Do the mapping merge
+        do i = 1, charmm_nub
+            charmm_ang_ub(i)%r0 = rub_tmp(ub_type(i))
+            charmm_ang_ub(i)%kr = kub_tmp(ub_type(i))
+        end do
 
-  !We no longer need the type based data.
-  deallocate(rub_tmp,kub_tmp,ub_type,stat=ier)
-  REQUIRE(ier==0)
-
-
-
+        !We no longer need the type based data.
+        deallocate (rub_tmp, kub_tmp, ub_type, stat=ier)
+        REQUIRE(ier == 0)
 
 ! ------------------------------
 ! * ENDREAD UREY-BRADLEY TERMS *
 ! ------------------------------
 
-
 ! ---------------------------
 ! * READ CMAP TERMS *
 ! ---------------------------
-  !CMAP related data
+        !CMAP related data
 
-  fmtin = '(2I8)'
-  prmtop_flag = 'CHARMM_CMAP_COUNT'
-  call nxtsec(nf,  6,  1,fmtin,  prmtop_flag,  fmt,  iok)
+        fmtin = '(2I8)'
+        prmtop_flag = 'CHARMM_CMAP_COUNT'
+        call nxtsec(nf, 6, 1, fmtin, prmtop_flag, fmt, iok)
 
-  !CHECK iok status to see if CMAP information is 
-  !actually present in the prmtop
-  !set IONERR to 1 in nxtsec to enable recovery if 
-  !CHARMM_CMAP_COUNT section is not present
+        !CHECK iok status to see if CMAP information is
+        !actually present in the prmtop
+        !set IONERR to 1 in nxtsec to enable recovery if
+        !CHARMM_CMAP_COUNT section is not present
 
-  if(iok == 0) then
-    read(nf,fmt) cmap_term_count,cmap_type_count
+        if (iok == 0) then
+            read (nf, fmt) cmap_term_count, cmap_type_count
 
-    !Allocate space for the CMAP indexes bases 
-    !on already read in cmap_term_count
-    allocate(cmap_index(6,cmap_term_count),stat=ier)
-    REQUIRE(ier==0)
+            !Allocate space for the CMAP indexes bases
+            !on already read in cmap_term_count
+            allocate (cmap_index(6, cmap_term_count), stat=ier)
+            REQUIRE(ier == 0)
 
+            !We now know how large to make the cmap_types array
+            !from the unique number of cmap types found ( cmap_type_count )
+            !hence allocate it now
+            allocate (cmap_types(cmap_type_count), stat=ier)
+            REQUIRE(ier == 0)
 
-    !We now know how large to make the cmap_types array
-    !from the unique number of cmap types found ( cmap_type_count )
-    !hence allocate it now
-    allocate(cmap_types(cmap_type_count),stat=ier)
-    REQUIRE(ier==0)
+            fmtin = '(20I4)'
+            prmtop_flag = 'CHARMM_CMAP_RESOLUTION'
+            call nxtsec(nf, 6, 0, fmtin, prmtop_flag, fmt, iok)
+            read (nf, fmt) (cmap_types(i)%resolution, i=1, cmap_type_count)
 
-    fmtin = '(20I4)'
-    prmtop_flag = 'CHARMM_CMAP_RESOLUTION'
-    call nxtsec(nf,  6,  0,fmtin,  prmtop_flag,  fmt,  iok)
-    read(nf,fmt) ( cmap_types(i)%resolution,i=1,cmap_type_count )
+            ! From the cmap_types(i)%resolution we now know how big the
+            ! array for storing the cmap data points should be
+            ! hence allocate it now
 
+            do i = 1, cmap_type_count
+                res = cmap_types(i)%resolution !shorthand for following lines
+                allocate (cmap_types(i)%grid(res, res), stat=ier)
+                !and allocate the derivatives arrays
+                allocate (cmap_types(i)%dPhi(res, res), stat=ier)
+                allocate (cmap_types(i)%dPsi(res, res), stat=ier)
+                allocate (cmap_types(i)%dPhi_dPsi(res, res), stat=ier)
 
-    ! From the cmap_types(i)%resolution we now know how big the
-    ! array for storing the cmap data points should be
-    ! hence allocate it now
+                REQUIRE(ier == 0)
 
-    do i=1,cmap_type_count
-      res = cmap_types(i)%resolution !shorthand for following lines
-      allocate(cmap_types(i)%grid(res,res),stat=ier)
-      !and allocate the derivatives arrays
-      allocate(cmap_types(i)%dPhi(res,res),stat=ier)
-      allocate(cmap_types(i)%dPsi(res,res),stat=ier)
-      allocate(cmap_types(i)%dPhi_dPsi(res,res),stat=ier)
+                !and set the step size for each one
+                cmap_types(i)%gridStepSize = 360/cmap_types(i)%resolution
 
-      REQUIRE(ier==0)
+            end do
 
-      !and set the step size for each one
-      cmap_types(i)%gridStepSize = 360/cmap_types(i)%resolution
+            do i = 1, cmap_type_count
+                write (word, '(i2.2)') i
+                fmtin = '(8(F9.5))'
+                prmtop_flag = "CHARMM_CMAP_PARAMETER_"//word
+                call nxtsec(nf, 6, 0, fmtin, prmtop_flag, fmt, iok)
 
-    enddo
+                read (nf, fmt) cmap_types(i)%grid( &
+                    1:cmap_types(i)%resolution, &
+                    1:cmap_types(i)%resolution)
 
-    do i=1,cmap_type_count
-      write(word,'(i2.2)')i
-      fmtin = '(8(F9.5))'
-      prmtop_flag = "CHARMM_CMAP_PARAMETER_" // word
-      call nxtsec(nf,  6,  0,fmtin,  prmtop_flag,  fmt,  iok)
+            end do
 
-      read(nf,fmt) cmap_types(i)%grid(&
-                         1:cmap_types(i)%resolution, &
-                         1:cmap_types(i)%resolution)
+            fmtin = '(9I8))'
+            prmtop_flag = 'CHARMM_CMAP_INDEX'
+            call nxtsec(nf, 6, 0, fmtin, prmtop_flag, fmt, iok)
+            read (nf, fmt) (cmap_index(1:6, i), i=1, cmap_term_count)
 
-    enddo
+            call generate_cmap_derivatives
 
-    fmtin = '(9I8))'
-    prmtop_flag = 'CHARMM_CMAP_INDEX'
-    call nxtsec(nf,  6,  0,fmtin,  prmtop_flag,  fmt,  iok)
-    read(nf,fmt) (cmap_index(1:6,i),i=1,cmap_term_count)
+        end if !if(iok == 0)
 
-    call generate_cmap_derivatives
-
-  endif !if(iok == 0)
-
-
-
-   !Debug
+        !Debug
 #ifdef CHARMM_DEBUG
-     write(6,'(a60)') &
-     "====================================================================="
-     write(6,'(a50)') "         CMAP parsing summary"
-     write(6,'(a60)') &
-    "====================================================================="
-     write(6,'(a)') ""
-     write(6,'(a,i4,a)') "Dumping entire contents of cmap_types(",&
-                                                 cmap_type_count,")"
-     write(6,'(a)') ""
+        write (6, '(a60)') &
+            "====================================================================="
+        write (6, '(a50)') "         CMAP parsing summary"
+        write (6, '(a60)') &
+            "====================================================================="
+        write (6, '(a)') ""
+        write (6, '(a,i4,a)') "Dumping entire contents of cmap_types(", &
+            cmap_type_count, ")"
+        write (6, '(a)') ""
 
-     do i=1,cmap_type_count
-       write(6,'(a,i4,a,i4,a)') "cmap_types(",i,"/",cmap_type_count,")"
-       call show_cmap( cmap_types(i) )
-     enddo
+        do i = 1, cmap_type_count
+            write (6, '(a,i4,a,i4,a)') "cmap_types(", i, "/", cmap_type_count, ")"
+            call show_cmap(cmap_types(i))
+        end do
 
-     write(6,'(a)') "Atom index to CMAP index map:"
-     write(6,'(a,i4)') "cmap_term_count is:",cmap_term_count
-     do i=1,cmap_term_count
-       write(6,'(6I8)') cmap_index(1:6,i)
-     enddo
-     write(6,'(a)') ""
+        write (6, '(a)') "Atom index to CMAP index map:"
+        write (6, '(a,i4)') "cmap_term_count is:", cmap_term_count
+        do i = 1, cmap_term_count
+            write (6, '(6I8)') cmap_index(1:6, i)
+        end do
+        write (6, '(a)') ""
 #endif
 
 ! ------------------------------
 ! * ENDREAD CMAP TERMS *
 ! ------------------------------
 
-  return
+        return
 
-end subroutine read_charmm_params
+    end subroutine read_charmm_params
 !------------------------------------------------------------
 
 !------------------------------------------------------------
-subroutine charmm_allocate_arrays()
+    subroutine charmm_allocate_arrays()
 
-  use parms, only : nttyp
+        use parms, only : nttyp
 
-  implicit none
+        implicit none
 
 !Local
-  integer :: ier
+        integer :: ier
 
-  allocate(charmm_cn114(nttyp),charmm_cn214(nttyp), stat=ier)
-  REQUIRE(ier==0)
+        allocate (charmm_cn114(nttyp), charmm_cn214(nttyp), stat=ier)
+        REQUIRE(ier == 0)
 
-  allocate(charmm_ang_ub(charmm_nub), stat=ier)
-  REQUIRE(ier==0)
+        allocate (charmm_ang_ub(charmm_nub), stat=ier)
+        REQUIRE(ier == 0)
 
-  allocate(charmm_imp(charmm_nimphi), stat=ier)
-  REQUIRE(ier==0)
+        allocate (charmm_imp(charmm_nimphi), stat=ier)
+        REQUIRE(ier == 0)
 
-  return
+        return
 
-end subroutine charmm_allocate_arrays
+    end subroutine charmm_allocate_arrays
 !------------------------------------------------------------
 
 !------------------------------------------------------------
-subroutine charmm_deallocate_arrays()
+    subroutine charmm_deallocate_arrays()
 
-  implicit none
+        implicit none
 
-  integer :: ier
+        integer :: ier
 
-  deallocate(charmm_cn114,charmm_cn214, stat=ier)
-  REQUIRE(ier==0)
+        deallocate (charmm_cn114, charmm_cn214, stat=ier)
+        REQUIRE(ier == 0)
 
-  deallocate(charmm_imp, stat=ier)
-  REQUIRE(ier==0)
+        deallocate (charmm_imp, stat=ier)
+        REQUIRE(ier == 0)
 
-  deallocate(charmm_ang_ub, stat=ier)
-  REQUIRE(ier==0)
+        deallocate (charmm_ang_ub, stat=ier)
+        REQUIRE(ier == 0)
 
+        !These two arrays may or may not have been assigned
+        !depending on whether a CMAP section was found in
+        !the PARM file; hence check before deallocating
 
-  !These two arrays may or may not have been assigned
-  !depending on whether a CMAP section was found in
-  !the PARM file; hence check before deallocating
+        if (allocated(cmap_types)) then
+            deallocate (cmap_types, stat=ier)
+            REQUIRE(ier == 0)
+        end if
 
-  if(allocated(cmap_types)) then
-    deallocate(cmap_types,stat=ier)
-    REQUIRE(ier==0)
-  end if
+        if (allocated(cmap_index)) then
+            deallocate (cmap_index, stat=ier)
+            REQUIRE(ier == 0)
+        end if
 
-  if(allocated(cmap_index)) then
-    deallocate(cmap_index,stat=ier)
-    REQUIRE(ier==0)
-  end if
+        return
 
-
-
-  return
-
-end subroutine charmm_deallocate_arrays
+    end subroutine charmm_deallocate_arrays
 !------------------------------------------------------------
 
-subroutine charmm_filter_out_qm_atoms()
-  ! Remove CHARMM energy terms for QM region
-  ! Remove all terms for which all atoms are in the QM region
-  ! Keep all terms that have at least one atom in the MM region
-  ! This affects Urey-Bradly, CHARMM impropers and CMAP terms
-  !
-  ! written by Andreas W. Goetz (SDSC, agoetz@sdsc.edu)
+    subroutine charmm_filter_out_qm_atoms()
+        ! Remove CHARMM energy terms for QM region
+        ! Remove all terms for which all atoms are in the QM region
+        ! Keep all terms that have at least one atom in the MM region
+        ! This affects Urey-Bradly, CHARMM impropers and CMAP terms
+        !
+        ! written by Andreas W. Goetz (SDSC, agoetz@sdsc.edu)
 
-  use qmmm_module, only : qmmm_nml, qmmm_struct
+        use qmmm_module, only : qmmm_nml, qmmm_struct
 
-  implicit none
+        implicit none
 
-  integer :: qm_atom_iterator
-  integer :: charmm_nub_iterator, charmm_nimphi_iterator, cmap_term_count_iterator
-  integer :: charmm_nub_counter, charmm_nimphi_counter, cmap_term_count_counter
-  integer :: qm_atom_number
-  logical :: iqm, jqm, kqm, lqm, mqm
+        integer :: qm_atom_iterator
+        integer :: charmm_nub_iterator, charmm_nimphi_iterator, cmap_term_count_iterator
+        integer :: charmm_nub_counter, charmm_nimphi_counter, cmap_term_count_counter
+        integer :: qm_atom_number
+        logical :: iqm, jqm, kqm, lqm, mqm
 
-  logical :: debug = .false.
+        logical :: debug = .false.
 
-  if (.not.charmm_active) return
+        if (.not. charmm_active) return
 
-  if (.not. qmmm_nml%ifqnt) then
-     call sander_bomb("charmm_filter_out_qm_atoms", &
-          "This is not a QM calculation.", &
-          "We should never have gotten here, sigh.")
-  end if
+        if (.not. qmmm_nml%ifqnt) then
+            call sander_bomb("charmm_filter_out_qm_atoms", &
+                "This is not a QM calculation.", &
+                "We should never have gotten here, sigh.")
+        end if
 
-  if (debug) then
-     write (6,'(a)') '>>> entered charmm_filter_out_qm_atoms'
-  end if
+        if (debug) then
+            write (6, '(a)') '>>> entered charmm_filter_out_qm_atoms'
+        end if
 
-  write(6,'(a)') '|CHARMM: adjusting for QMMM'
+        write (6, '(a)') '|CHARMM: adjusting for QMMM'
 
-  ! ------------------
-  ! Urey Bradley terms
-  ! ------------------
-  if (debug) then
-     write(6,'(a)') ' Urey-Bradley terms'
-     write(6,'(a,i6)') '  # before = ', charmm_nub
-  end if
-  charmm_nub_counter = 0
-  do charmm_nub_iterator = 1, charmm_nub
+        ! ------------------
+        ! Urey Bradley terms
+        ! ------------------
+        if (debug) then
+            write (6, '(a)') ' Urey-Bradley terms'
+            write (6, '(a,i6)') '  # before = ', charmm_nub
+        end if
+        charmm_nub_counter = 0
+        do charmm_nub_iterator = 1, charmm_nub
 
-     iqm = .false.
-     jqm = .false.
+            iqm = .false.
+            jqm = .false.
 
-     do qm_atom_iterator = 1, qmmm_struct%nquant
+            do qm_atom_iterator = 1, qmmm_struct%nquant
 
-        qm_atom_number = qmmm_struct%iqmatoms(qm_atom_iterator)
-        if ( charmm_ang_ub(charmm_nub_iterator)%i == qm_atom_number ) then
-           iqm = .true.
-        endif
-        if ( charmm_ang_ub(charmm_nub_iterator)%k == qm_atom_number ) then
-           jqm = .true.
-        endif
+                qm_atom_number = qmmm_struct%iqmatoms(qm_atom_iterator)
+                if (charmm_ang_ub(charmm_nub_iterator)%i == qm_atom_number) then
+                    iqm = .true.
+                end if
+                if (charmm_ang_ub(charmm_nub_iterator)%k == qm_atom_number) then
+                    jqm = .true.
+                end if
 
-     enddo
+            end do
 
-     if ( (.not.iqm) .or. (.not.jqm) ) then
-        ! One atom is MM, so include the Urey Bradley term
-        charmm_nub_counter = charmm_nub_counter + 1
-        charmm_ang_ub(charmm_nub_counter) = charmm_ang_ub(charmm_nub_iterator)
-     end if
+            if ((.not. iqm) .or. (.not. jqm)) then
+                ! One atom is MM, so include the Urey Bradley term
+                charmm_nub_counter = charmm_nub_counter + 1
+                charmm_ang_ub(charmm_nub_counter) = charmm_ang_ub(charmm_nub_iterator)
+            end if
 
-  end do
-  write(6,'(a,i6,a)') '|CHARMM: Urey-Bradley terms removed   : ', charmm_nub - charmm_nub_counter
-  charmm_nub = charmm_nub_counter
-  if (debug) then
-     write(6,'(a,i6)') '  # after  = ', charmm_nub
-  end if
+        end do
+        write (6, '(a,i6,a)') '|CHARMM: Urey-Bradley terms removed   : ', charmm_nub - charmm_nub_counter
+        charmm_nub = charmm_nub_counter
+        if (debug) then
+            write (6, '(a,i6)') '  # after  = ', charmm_nub
+        end if
 
-  ! ----------------
-  ! CHARMM Impropers
-  ! ----------------
-  if (debug) then
-     write(6,'(a)') ' CHARMM impropers'
-     write(6,'(a,i6)') '  # before = ', charmm_nimphi
-  end if
-  charmm_nimphi_counter = 0
-  do charmm_nimphi_iterator=1, charmm_nimphi
-     
-     iqm = .false.
-     jqm = .false.
-     kqm = .false.
-     lqm = .false.
+        ! ----------------
+        ! CHARMM Impropers
+        ! ----------------
+        if (debug) then
+            write (6, '(a)') ' CHARMM impropers'
+            write (6, '(a,i6)') '  # before = ', charmm_nimphi
+        end if
+        charmm_nimphi_counter = 0
+        do charmm_nimphi_iterator = 1, charmm_nimphi
 
-     do qm_atom_iterator = 1, qmmm_struct%nquant
+            iqm = .false.
+            jqm = .false.
+            kqm = .false.
+            lqm = .false.
 
-        qm_atom_number = qmmm_struct%iqmatoms(qm_atom_iterator)
-        if ( charmm_imp(charmm_nimphi_iterator)%i == qm_atom_number ) then
-           iqm = .true.
-        endif
-        if ( charmm_imp(charmm_nimphi_iterator)%j == qm_atom_number ) then
-           jqm = .true.
-        endif
-        if ( charmm_imp(charmm_nimphi_iterator)%k == qm_atom_number ) then
-           kqm = .true.
-        endif
-        if ( charmm_imp(charmm_nimphi_iterator)%l == qm_atom_number ) then
-           lqm = .true.
-        endif
+            do qm_atom_iterator = 1, qmmm_struct%nquant
 
-     enddo
+                qm_atom_number = qmmm_struct%iqmatoms(qm_atom_iterator)
+                if (charmm_imp(charmm_nimphi_iterator)%i == qm_atom_number) then
+                    iqm = .true.
+                end if
+                if (charmm_imp(charmm_nimphi_iterator)%j == qm_atom_number) then
+                    jqm = .true.
+                end if
+                if (charmm_imp(charmm_nimphi_iterator)%k == qm_atom_number) then
+                    kqm = .true.
+                end if
+                if (charmm_imp(charmm_nimphi_iterator)%l == qm_atom_number) then
+                    lqm = .true.
+                end if
 
-     if ( (.not.iqm) .or. (.not.jqm) .or. (.not.kqm) .or. (.not.lqm) ) then
-        ! One atom is MM, so include the CHARMM improper term
-        charmm_nimphi_counter = charmm_nimphi_counter + 1
-        charmm_imp(charmm_nimphi_counter) = charmm_imp(charmm_nimphi_iterator)
-     end if
+            end do
 
-  end do
-  write(6,'(a,i6,a)') '|CHARMM: CHARMM improper terms removed: ', charmm_nimphi - charmm_nimphi_counter
-  charmm_nimphi = charmm_nimphi_counter
-  if (debug) then
-     write(6,'(a,i6)') '  # after  = ', charmm_nimphi
-  end if
+            if ((.not. iqm) .or. (.not. jqm) .or. (.not. kqm) .or. (.not. lqm)) then
+                ! One atom is MM, so include the CHARMM improper term
+                charmm_nimphi_counter = charmm_nimphi_counter + 1
+                charmm_imp(charmm_nimphi_counter) = charmm_imp(charmm_nimphi_iterator)
+            end if
 
-  ! ----------
-  ! CMAP terms
-  ! ----------
-  if (debug) then
-     write(6,'(a)') ' CMAP'
-     write(6,'(a,i6)') '  # before = ', cmap_term_count
-  end if
-  cmap_term_count_counter = 0
-  do cmap_term_count_iterator=1, cmap_term_count
-     
-     iqm = .false.
-     jqm = .false.
-     kqm = .false.
-     lqm = .false.
-     mqm = .false.
+        end do
+        write (6, '(a,i6,a)') '|CHARMM: CHARMM improper terms removed: ', charmm_nimphi - charmm_nimphi_counter
+        charmm_nimphi = charmm_nimphi_counter
+        if (debug) then
+            write (6, '(a,i6)') '  # after  = ', charmm_nimphi
+        end if
 
-     do qm_atom_iterator = 1, qmmm_struct%nquant
+        ! ----------
+        ! CMAP terms
+        ! ----------
+        if (debug) then
+            write (6, '(a)') ' CMAP'
+            write (6, '(a,i6)') '  # before = ', cmap_term_count
+        end if
+        cmap_term_count_counter = 0
+        do cmap_term_count_iterator = 1, cmap_term_count
 
-        qm_atom_number = qmmm_struct%iqmatoms(qm_atom_iterator)
-        if ( cmap_index(1,cmap_term_count_iterator) == qm_atom_number ) then
-           iqm = .true.
-        endif
-        if ( cmap_index(2,cmap_term_count_iterator) == qm_atom_number ) then
-           jqm = .true.
-        endif
-        if ( cmap_index(3,cmap_term_count_iterator) == qm_atom_number ) then
-           kqm = .true.
-        endif
-        if ( cmap_index(4,cmap_term_count_iterator) == qm_atom_number ) then
-           lqm = .true.
-        endif
-        if ( cmap_index(5,cmap_term_count_iterator) == qm_atom_number ) then
-           mqm = .true.
-        endif
+            iqm = .false.
+            jqm = .false.
+            kqm = .false.
+            lqm = .false.
+            mqm = .false.
 
-     enddo
+            do qm_atom_iterator = 1, qmmm_struct%nquant
 
-     if ( (.not.iqm) .or. (.not.jqm) .or. (.not.kqm) .or. (.not.lqm) .or. (.not.mqm) ) then
-        ! One atom is MM, so include the CMAP term
-        cmap_term_count_counter = cmap_term_count_counter + 1
-        cmap_index(:,cmap_term_count_counter) = cmap_index(:,cmap_term_count_iterator)
-     end if
+                qm_atom_number = qmmm_struct%iqmatoms(qm_atom_iterator)
+                if (cmap_index(1, cmap_term_count_iterator) == qm_atom_number) then
+                    iqm = .true.
+                end if
+                if (cmap_index(2, cmap_term_count_iterator) == qm_atom_number) then
+                    jqm = .true.
+                end if
+                if (cmap_index(3, cmap_term_count_iterator) == qm_atom_number) then
+                    kqm = .true.
+                end if
+                if (cmap_index(4, cmap_term_count_iterator) == qm_atom_number) then
+                    lqm = .true.
+                end if
+                if (cmap_index(5, cmap_term_count_iterator) == qm_atom_number) then
+                    mqm = .true.
+                end if
 
-  end do
-  write(6,'(a,i6,a)') '|CHARMM: CMAP terms removed           : ', cmap_term_count - cmap_term_count_counter
-  cmap_term_count = cmap_term_count_counter
-  if (debug) then
-     write(6,'(a,i6)') '  # after  = ', cmap_term_count_counter
-  end if
-     
+            end do
 
-  if (debug) then
-     write (6,'(a)') '<<< leaving charmm_filter_out_qm_atoms'
-  end if
-  
-end subroutine charmm_filter_out_qm_atoms
+            if ((.not. iqm) .or. (.not. jqm) .or. (.not. kqm) .or. (.not. lqm) .or. (.not. mqm)) then
+                ! One atom is MM, so include the CMAP term
+                cmap_term_count_counter = cmap_term_count_counter + 1
+                cmap_index(:, cmap_term_count_counter) = cmap_index(:, cmap_term_count_iterator)
+            end if
+
+        end do
+        write (6, '(a,i6,a)') '|CHARMM: CMAP terms removed           : ', cmap_term_count - cmap_term_count_counter
+        cmap_term_count = cmap_term_count_counter
+        if (debug) then
+            write (6, '(a,i6)') '  # after  = ', cmap_term_count_counter
+        end if
+
+        if (debug) then
+            write (6, '(a)') '<<< leaving charmm_filter_out_qm_atoms'
+        end if
+
+    end subroutine charmm_filter_out_qm_atoms
 !------------------------------------------------------------
 
-
 !------------------------------------------------------------
-subroutine charmm_calc_urey_bradley(crd,epl,frc)
+    subroutine charmm_calc_urey_bradley(crd, epl, frc)
 
 ! This subroutine calculates the Charmm Urey Bradley terms
 ! these are terms that run over 1-3 pairs
@@ -770,512 +752,500 @@ subroutine charmm_calc_urey_bradley(crd,epl,frc)
 !
 ! The energy is added to the regular AMBER angle term.
 
-  implicit none
+        implicit none
 
 !Passed in
-  _REAL_,intent(in)    :: crd(3,*)
-  _REAL_,intent(inout) :: frc(3,*)
-  _REAL_,intent(inout) :: epl
+        _REAL_, intent(in)    :: crd(3, *)
+        _REAL_, intent(inout) :: frc(3, *)
+        _REAL_, intent(inout) :: epl
 
 !Local
-  integer :: i,k,n
-  _REAL_  :: rik
-  _REAL_  :: xik, yik, zik
-  _REAL_  :: da, df, dfw
-  _REAL_  :: xa, ya, za
-  _REAL_  :: local_energy_accumulator
-
-
+        integer :: i, k, n
+        _REAL_  :: rik
+        _REAL_  :: xik, yik, zik
+        _REAL_  :: da, df, dfw
+        _REAL_  :: xa, ya, za
+        _REAL_  :: local_energy_accumulator
 
 #ifdef MPI
 # include "parallel.h"
 #endif
 
-  local_energy_accumulator = 0.0d0
+        local_energy_accumulator = 0.0d0
 
 #ifdef MPI
-  !This loop approach is maybe not ideal for cache utilization
-  !but the inner loop is quite large so it shouldn't hurt too much
-  !here.
-  do n = mytaskid+1, charmm_nub, numtasks
+        !This loop approach is maybe not ideal for cache utilization
+        !but the inner loop is quite large so it shouldn't hurt too much
+        !here.
+        do n = mytaskid + 1, charmm_nub, numtasks
 #else
-  do n = 1, charmm_nub
+        do n = 1, charmm_nub
 #endif
 
-    i =  charmm_ang_ub(n)%i
-    k =  charmm_ang_ub(n)%k
+            i = charmm_ang_ub(n)%i
+            k = charmm_ang_ub(n)%k
 
 ! Calculation of the bond vector:
 
-    xik = crd(1,i) - crd(1,k)
-    yik = crd(2,i) - crd(2,k)
-    zik = crd(3,i) - crd(3,k)
+            xik = crd(1, i) - crd(1, k)
+            yik = crd(2, i) - crd(2, k)
+            zik = crd(3, i) - crd(3, k)
 
-    rik = sqrt(xik * xik + yik * yik + zik * zik)
+            rik = sqrt(xik*xik + yik*yik + zik*zik)
 
 ! Calculation of the energy and deriv:
 
-    da = rik - charmm_ang_ub(n)%r0
-    df = charmm_ang_ub(n)%kr * da
-    dfw = (df + df) / rik
+            da = rik - charmm_ang_ub(n)%r0
+            df = charmm_ang_ub(n)%kr*da
+            dfw = (df + df)/rik
 
 ! Calculation of the force:
 
-    xa = dfw * xik
-    ya = dfw * yik
-    za = dfw * zik
+            xa = dfw*xik
+            ya = dfw*yik
+            za = dfw*zik
 
-    local_energy_accumulator = local_energy_accumulator + df * da
-    frc(1,i) = frc(1,i) - xa
-    frc(2,i) = frc(2,i) - ya
-    frc(3,i) = frc(3,i) - za
-    frc(1,k) = frc(1,k) + xa
-    frc(2,k) = frc(2,k) + ya
-    frc(3,k) = frc(3,k) + za
+            local_energy_accumulator = local_energy_accumulator + df*da
+            frc(1, i) = frc(1, i) - xa
+            frc(2, i) = frc(2, i) - ya
+            frc(3, i) = frc(3, i) - za
+            frc(1, k) = frc(1, k) + xa
+            frc(2, k) = frc(2, k) + ya
+            frc(3, k) = frc(3, k) + za
 
-  end do
+        end do
 
-  epl = epl + local_energy_accumulator
+        epl = epl + local_energy_accumulator
 
-  return
+        return
 
-end subroutine charmm_calc_urey_bradley
+    end subroutine charmm_calc_urey_bradley
 !------------------------------------------------------------
 
 !------------------------------------------------------------
-subroutine charmm_calc_impropers(crd,epl,frc)
-  ! Calculates CHARMM improper torsion terms.
-  ! E=K(w-weq)^2
-  !
-  !    l 
-  !    |
-  !    i
-  !   / \
-  !  k   j
-  !
-  ! Where W is the angle between the plane ijk and jkl.
+    subroutine charmm_calc_impropers(crd, epl, frc)
+        ! Calculates CHARMM improper torsion terms.
+        ! E=K(w-weq)^2
+        !
+        !    l
+        !    |
+        !    i
+        !   / \
+        !  k   j
+        !
+        ! Where W is the angle between the plane ijk and jkl.
 
-  use constants, only : RAD_TO_DEG, DEG_TO_RAD
+        use constants, only : RAD_TO_DEG, DEG_TO_RAD
 
-  implicit none
+        implicit none
 
 ! Passed in
-  _REAL_,intent(in)    :: crd(3,*)
-  _REAL_,intent(inout) :: frc(3,*)
-  _REAL_,intent(inout) :: epl ! AMBER Dihedral energy.
+        _REAL_, intent(in)    :: crd(3, *)
+        _REAL_, intent(inout) :: frc(3, *)
+        _REAL_, intent(inout) :: epl ! AMBER Dihedral energy.
 
-  _REAL_ crd_ijkl(12),gradphi_ijkl(12),cosphi,sinphi
-  _REAL_ phi,function_val
-  _REAL_  :: local_energy_accumulator
-  integer :: m,n
+        _REAL_ crd_ijkl(12), gradphi_ijkl(12), cosphi, sinphi
+        _REAL_ phi, function_val
+        _REAL_  :: local_energy_accumulator
+        integer :: m, n
 
 ! From module globals
-  ! charmm_nimphi
+        ! charmm_nimphi
 
-  ! type chm_imp_struct
-  !  integer        :: i,j,k,l
-  !  _REAL_         :: pk   
-  !  _REAL_         :: phase
-  !  integer        :: type
-  ! end type chm_imp_struct
-  ! charmm_imp(charmm_nimphi)
-
-#ifdef MPI
-# include "parallel.h"
-#endif
-
-  local_energy_accumulator = 0.0d0
-
-#ifdef MPI
-  !This loop approach is maybe not ideal for cache utilization
-  !but the inner loop is quite large so it shouldn't hurt too much
-  !here.
-  do n = mytaskid+1, charmm_nimphi, numtasks
-#else
-  do n = 1, charmm_nimphi
-#endif
-
-    do m = 1,3 !First loop assign x, second assign y, and finally z
-      crd_ijkl(m)   = crd(m,charmm_imp(n)%i)
-      crd_ijkl(m+3) = crd(m,charmm_imp(n)%j)
-      crd_ijkl(m+6) = crd(m,charmm_imp(n)%k)
-      crd_ijkl(m+9) = crd(m,charmm_imp(n)%l)
-    enddo
-
-    call AM_VAL_GEOM_torsion(crd_ijkl,gradphi_ijkl,cosphi,sinphi)
-
-    ! Calculate the improper energy and add it to the AMBER dihedral
-    ! energy term.
-    !Note - when calculating phi acos only returns values between 0 and 180 degrees (in radians)
-    !       but if cosphi is 0.5d0 for example then phi could be -90 or +90 and we need to know
-    !       this when calculating the derviatives. However, a solution is given since we also
-    !       know sinphi - hence if cosphi is 0.5 and sinphi is 0.5 then phi is +90 degrees.
-    !       However, if cosphi is 0.5 and sinphi is -0.5 then phi is -90 degrees.
-
-    phi = sign(acos(cosphi),sinphi)
-    local_energy_accumulator = local_energy_accumulator + &
-                     (charmm_imp(n)%pk * (phi - charmm_imp(n)%phase)**2)
-
-
-
-   ! Now add the force to the main force array.
-   ! Remember, force is the negative of the gradient
-   function_val = -2.0d0*charmm_imp(n)%pk*(phi-charmm_imp(n)%phase)
-
-#ifdef CHARMM_DEBUG
-        write(6,'(10x,a,i8)'),"Improper number: ",n
-        write(6,'(10x,4I8)'), charmm_imp(n)%i,&
-                              charmm_imp(n)%j,&
-                              charmm_imp(n)%k,&
-                              charmm_imp(n)%l
-        write(6,'(a)'),""
-        write(6,'( 10x,a)'),"Coordinates: x,y,z"
-        write(6,'( 10x,a1,3(f10.6,x) )'),"i",crd_ijkl(1:3)
-        write(6,'( 10x,a1,3(f10.6,x) )'),"j",crd_ijkl(4:6)
-        write(6,'( 10x,a1,3(f10.6,x) )'),"k",crd_ijkl(7:9)
-        write(6,'( 10x,a1,3(f10.6,x) )'),"l",crd_ijkl(10:12)
-        write(6,'(a)'),""
-        write(6,'( 10x,a)'),"Gradients x,y,z"
-        write(6,'( 10x,a1,3(f10.6,x) )'),"i",gradphi_ijkl(1:3)
-        write(6,'( 10x,a1,3(f10.6,x) )'),"j",gradphi_ijkl(4:6)
-        write(6,'( 10x,a1,3(f10.6,x) )'),"k",gradphi_ijkl(7:9)
-        write(6,'( 10x,a1,3(f10.6,x) )'),"l",gradphi_ijkl(10:12)
-        write(6,'(a)'),""
-        write(6,'( 10x,a10,f8.3 )'),"cosphi: ",cosphi
-        write(6,'( 10x,a10,f8.3 )'),"sinphi: ",sinphi
-        write(6,'( 10x,a10,f8.3 )'),"Angle: ",phi
-        write(6,'( 10x,a10,f8.3 )'),"function_val: ",function_val
-        write(6,'(a)'),""
-        write(6,'(a)'),""
-#endif
-
-   do m = 1,3
-     frc(m,charmm_imp(n)%i) = frc(m,charmm_imp(n)%i) + (gradphi_ijkl(m)   * function_val)
-     frc(m,charmm_imp(n)%j) = frc(m,charmm_imp(n)%j) + (gradphi_ijkl(m+3) * function_val)
-     frc(m,charmm_imp(n)%k) = frc(m,charmm_imp(n)%k) + (gradphi_ijkl(m+6) * function_val)
-     frc(m,charmm_imp(n)%l) = frc(m,charmm_imp(n)%l) + (gradphi_ijkl(m+9) * function_val)
-   end do
-
-  end do !do n=1,charmm_nimphi
-
-  epl = epl + local_energy_accumulator
-
-  return
-
-end subroutine charmm_calc_impropers
-!------------------------------------------------------------
-
-!------------------------------------------------------------
-subroutine charmm_calc_cmap(crd,epl,frc)
-  !This operates on the CMAP atoms in the coordinate array, calculates the 
-  !total CMAP energy and updates the force array accordingly.
-
-  !This process is broken down into the following steps
-
-  ! 1) Loop over all CMAP terms present in the prmtop file
-  !   a) Extract the four coordinates (ijkl) of the first dihedral and calculate
-  !      that dihedral angle (phi) and the derivatives of the four coordinates 
-  !      with respect to phi.
-  !
-  !   b) Extract the four coordinates (jklm) of the second dihedral and 
-  !      calculate that dihedral angle (psi) and the derivatives of the four 
-  !      coordinates with respect to psi.
-
-  !   c) The sixth term in cmap_index() is an index to the CMAP parameter 
-  !      associated with that CMAP term. Now call that with phi and psi 
-  !      to obtain the interpolated energy value as well as the partial
-  !      derivatives of dPhi with ijkl and dPsi with jklm. The CMAP
-  !      energy is added to a counter.
-
-  !   d) Next, to obtain the force on the five atoms involved here, 
-  !      the chain rule is invoked. This yields the energy gradient 
-  !      with respect to the two sets of four atoms coordinates. 
-  !      Finally the negative of this is added to the to respective
-  !      atom within the force array.
-
-    
-  use constants, only : RAD_TO_DEG, DEG_TO_RAD 
-
-  ! Calculates CHARMM CMAP terms
-  ! Passed in
-  _REAL_,intent(in)    :: crd(3,*) !Coordinate array in
-  _REAL_,intent(inout) :: frc(3,*) !Force array in and out
-  _REAL_,intent(inout) :: epl      !AMBER Dihedral energy.
-
-  !LOCAL
-  _REAL_ :: phi,psi !Value of repsective dihedral in degrees
-  _REAL_ :: e_cmap  !Local CMAP energy counter
-  _REAL_ :: dE_dPhi, dE_dPsi !Derivative of energy with 
-                             !respect to dihedral angles
-
-  _REAL_ :: crd_ijkl(12),dPhi_dijkl(12) !Coordinates and derivatives 
-  _REAL_ :: cosPhi_ijkl,sinPhi_ijkl     !of first dihedral
-
-  _REAL_ :: crd_jklm(12),dPsi_djklm(12)
-  _REAL_ :: cosPsi_jklm,sinPsi_jklm
-
-
-  _REAL_ :: dE_dijkl(12), dE_djklm(12) !Final derivatives of energy wrt
-                                       !to coordinate
-
-  integer :: m,i
-  integer :: cmap_type_index
-  _REAL_  :: rad_to_deg_coeff
-  _REAL_  :: local_energy_accumulator
+        ! type chm_imp_struct
+        !  integer        :: i,j,k,l
+        !  _REAL_         :: pk
+        !  _REAL_         :: phase
+        !  integer        :: type
+        ! end type chm_imp_struct
+        ! charmm_imp(charmm_nimphi)
 
 #ifdef MPI
 # include "parallel.h"
 #endif
 
-  local_energy_accumulator = 0.0d0 !zero the CMAP energies for this step's evaulation
+        local_energy_accumulator = 0.0d0
 
 #ifdef MPI
-  do i = mytaskid+1, cmap_term_count, numtasks
+        !This loop approach is maybe not ideal for cache utilization
+        !but the inner loop is quite large so it shouldn't hurt too much
+        !here.
+        do n = mytaskid + 1, charmm_nimphi, numtasks
 #else
-  do i = 1, cmap_term_count !Loop over all CMAP terms
-#endif
-     cmap_type_index = cmap_index(6,i) !Index to which CMAP type the current CMAP term is
-                                       !Local to current loop
-
-#ifdef CHARMM_DEBUG
-         write(6,'(a)'),""
-         write(6,'(a)'),""
-         write(6,'(a,I8)'),"CMAP term",i
-         write(6,'(5I8,4XI8)'), cmap_index(1:6,i)
+        do n = 1, charmm_nimphi
 #endif
 
-    !First dihedral (phi)
+            do m = 1, 3 !First loop assign x, second assign y, and finally z
+                crd_ijkl(m) = crd(m, charmm_imp(n)%i)
+                crd_ijkl(m + 3) = crd(m, charmm_imp(n)%j)
+                crd_ijkl(m + 6) = crd(m, charmm_imp(n)%k)
+                crd_ijkl(m + 9) = crd(m, charmm_imp(n)%l)
+            end do
 
-    do m = 1,3 !First loop assign x component of coordinate, 
-               !second assign y, and finally z
-      crd_ijkl(m)   = crd(m,cmap_index(1,i) )
-      crd_ijkl(m+3) = crd(m,cmap_index(2,i) )
-      crd_ijkl(m+6) = crd(m,cmap_index(3,i) )
-      crd_ijkl(m+9) = crd(m,cmap_index(4,i) )
-    enddo
+            call AM_VAL_GEOM_torsion(crd_ijkl, gradphi_ijkl, cosphi, sinphi)
 
-    !Calculate the dihedral angle (phi) and the derivatives of the 
-    !four coordinates with respect to phi. Remember this subroutine is
-    !operating in radians
-    call AM_VAL_GEOM_torsion(crd_ijkl,dPhi_dijkl,cosphi_ijkl,sinphi_ijkl)
-    phi = sign(acos(cosphi_ijkl),sinphi_ijkl) * RAD_TO_DEG
+            ! Calculate the improper energy and add it to the AMBER dihedral
+            ! energy term.
+            !Note - when calculating phi acos only returns values between 0 and 180 degrees (in radians)
+            !       but if cosphi is 0.5d0 for example then phi could be -90 or +90 and we need to know
+            !       this when calculating the derviatives. However, a solution is given since we also
+            !       know sinphi - hence if cosphi is 0.5 and sinphi is 0.5 then phi is +90 degrees.
+            !       However, if cosphi is 0.5 and sinphi is -0.5 then phi is -90 degrees.
+
+            phi = sign(acos(cosphi), sinphi)
+            local_energy_accumulator = local_energy_accumulator + &
+                (charmm_imp(n)%pk*(phi - charmm_imp(n)%phase)**2)
+
+            ! Now add the force to the main force array.
+            ! Remember, force is the negative of the gradient
+            function_val = -2.0d0*charmm_imp(n)%pk*(phi - charmm_imp(n)%phase)
 
 #ifdef CHARMM_DEBUG
-        write(6,'(10x,a)'),"Dihedral 1 "
-        write(6,'(10x,4I8)'), cmap_index(1:4,i)
-
-        write(6,'( 10x,a)'),"coordinates"
-        write(6,'( 10x,a1,3(f10.6,x) )'),"i",crd_ijkl(1:3)
-        write(6,'( 10x,a1,3(f10.6,x) )'),"j",crd_ijkl(4:6)
-        write(6,'( 10x,a1,3(f10.6,x) )'),"k",crd_ijkl(7:9)
-        write(6,'( 10x,a1,3(f10.6,x) )'),"l",crd_ijkl(10:12)
-        write(6,'(a)'),""
-        write(6,'( 10x,a10,f8.3 )'),"Angle: ",phi
-        write(6,'(a)'),""
+            write (6, '(10x,a,i8)'), "Improper number: ", n
+            write (6, '(10x,4I8)'), charmm_imp(n)%i, &
+                charmm_imp(n)%j, &
+                charmm_imp(n)%k, &
+                charmm_imp(n)%l
+            write (6, '(a)'), ""
+            write (6, '( 10x,a)'), "Coordinates: x,y,z"
+            write (6, '( 10x,a1,3(f10.6,x) )'), "i", crd_ijkl(1:3)
+            write (6, '( 10x,a1,3(f10.6,x) )'), "j", crd_ijkl(4:6)
+            write (6, '( 10x,a1,3(f10.6,x) )'), "k", crd_ijkl(7:9)
+            write (6, '( 10x,a1,3(f10.6,x) )'), "l", crd_ijkl(10:12)
+            write (6, '(a)'), ""
+            write (6, '( 10x,a)'), "Gradients x,y,z"
+            write (6, '( 10x,a1,3(f10.6,x) )'), "i", gradphi_ijkl(1:3)
+            write (6, '( 10x,a1,3(f10.6,x) )'), "j", gradphi_ijkl(4:6)
+            write (6, '( 10x,a1,3(f10.6,x) )'), "k", gradphi_ijkl(7:9)
+            write (6, '( 10x,a1,3(f10.6,x) )'), "l", gradphi_ijkl(10:12)
+            write (6, '(a)'), ""
+            write (6, '( 10x,a10,f8.3 )'), "cosphi: ", cosphi
+            write (6, '( 10x,a10,f8.3 )'), "sinphi: ", sinphi
+            write (6, '( 10x,a10,f8.3 )'), "Angle: ", phi
+            write (6, '( 10x,a10,f8.3 )'), "function_val: ", function_val
+            write (6, '(a)'), ""
+            write (6, '(a)'), ""
 #endif
 
+            do m = 1, 3
+                frc(m, charmm_imp(n)%i) = frc(m, charmm_imp(n)%i) + (gradphi_ijkl(m)*function_val)
+                frc(m, charmm_imp(n)%j) = frc(m, charmm_imp(n)%j) + (gradphi_ijkl(m + 3)*function_val)
+                frc(m, charmm_imp(n)%k) = frc(m, charmm_imp(n)%k) + (gradphi_ijkl(m + 6)*function_val)
+                frc(m, charmm_imp(n)%l) = frc(m, charmm_imp(n)%l) + (gradphi_ijkl(m + 9)*function_val)
+            end do
 
-    !Second dihedral (psi)
+        end do !do n=1,charmm_nimphi
 
-    do m = 1,3 !First loop assign x component of coordinate,
-               !second assign y, and finally z
-      crd_jklm(m)   = crd(m,cmap_index(2,i) )
-      crd_jklm(m+3) = crd(m,cmap_index(3,i) )
-      crd_jklm(m+6) = crd(m,cmap_index(4,i) )
-      crd_jklm(m+9) = crd(m,cmap_index(5,i) )
-    enddo
+        epl = epl + local_energy_accumulator
 
-    !Calculate the dihedral angle (psi) and the derivatives of the
-    !four coordinates with respect to psi. Remember this subroutine is
-    !operating in radians
-    call AM_VAL_GEOM_torsion(crd_jklm,dPsi_djklm,cospsi_jklm,sinpsi_jklm)
-    psi = sign(acos(cospsi_jklm),sinpsi_jklm) * RAD_TO_DEG
-#ifdef CHARMM_DEBUG
-        write(6,'(10x,a)'),"Dihedral 2 "
-        write(6,'(10x,4I8)'), cmap_index(2:5,i)
+        return
 
-        write(6,'( 10x,a)'),"coordinates"
-        write(6,'( 10x,a1,3(f10.6,x) )'),"j",crd_jklm(1:3)
-        write(6,'( 10x,a1,3(f10.6,x) )'),"k",crd_jklm(4:6)
-        write(6,'( 10x,a1,3(f10.6,x) )'),"l",crd_jklm(7:9)
-        write(6,'( 10x,a1,3(f10.6,x) )'),"m",crd_jklm(10:12)
-        write(6,'(a)'),""
-        write(6,'( 10x,a10,f8.3 )'),"Angle: ",psi
-        write(6,'(a)'),""
+    end subroutine charmm_calc_impropers
+!------------------------------------------------------------
+
+!------------------------------------------------------------
+    subroutine charmm_calc_cmap(crd, epl, frc)
+        !This operates on the CMAP atoms in the coordinate array, calculates the
+        !total CMAP energy and updates the force array accordingly.
+
+        !This process is broken down into the following steps
+
+        ! 1) Loop over all CMAP terms present in the prmtop file
+        !   a) Extract the four coordinates (ijkl) of the first dihedral and calculate
+        !      that dihedral angle (phi) and the derivatives of the four coordinates
+        !      with respect to phi.
+        !
+        !   b) Extract the four coordinates (jklm) of the second dihedral and
+        !      calculate that dihedral angle (psi) and the derivatives of the four
+        !      coordinates with respect to psi.
+
+        !   c) The sixth term in cmap_index() is an index to the CMAP parameter
+        !      associated with that CMAP term. Now call that with phi and psi
+        !      to obtain the interpolated energy value as well as the partial
+        !      derivatives of dPhi with ijkl and dPsi with jklm. The CMAP
+        !      energy is added to a counter.
+
+        !   d) Next, to obtain the force on the five atoms involved here,
+        !      the chain rule is invoked. This yields the energy gradient
+        !      with respect to the two sets of four atoms coordinates.
+        !      Finally the negative of this is added to the to respective
+        !      atom within the force array.
+
+        use constants, only : RAD_TO_DEG, DEG_TO_RAD
+
+        ! Calculates CHARMM CMAP terms
+        ! Passed in
+        _REAL_, intent(in)    :: crd(3, *) !Coordinate array in
+        _REAL_, intent(inout) :: frc(3, *) !Force array in and out
+        _REAL_, intent(inout) :: epl      !AMBER Dihedral energy.
+
+        !LOCAL
+        _REAL_ :: phi, psi !Value of repsective dihedral in degrees
+        _REAL_ :: e_cmap  !Local CMAP energy counter
+        _REAL_ :: dE_dPhi, dE_dPsi !Derivative of energy with
+        !respect to dihedral angles
+
+        _REAL_ :: crd_ijkl(12), dPhi_dijkl(12) !Coordinates and derivatives
+        _REAL_ :: cosPhi_ijkl, sinPhi_ijkl     !of first dihedral
+
+        _REAL_ :: crd_jklm(12), dPsi_djklm(12)
+        _REAL_ :: cosPsi_jklm, sinPsi_jklm
+
+        _REAL_ :: dE_dijkl(12), dE_djklm(12) !Final derivatives of energy wrt
+        !to coordinate
+
+        integer :: m, i
+        integer :: cmap_type_index
+        _REAL_  :: rad_to_deg_coeff
+        _REAL_  :: local_energy_accumulator
+
+#ifdef MPI
+# include "parallel.h"
 #endif
 
-     !Calculate the CMAP correction energy using the associated CMAP
-     !parameter. Also calculate the partial derivatives:  dE/dPhi and dE/Psi
+        local_energy_accumulator = 0.0d0 !zero the CMAP energies for this step's evaulation
 
-     !Remember the sixth element of cmap_index ( cmap_index(6,i) )
-     !is the mapping to its corresponding parameter type:
-     !
-     !       11      13      15      21      23      1
-     !        i       j       k       l       m      index to CMAP type
+#ifdef MPI
+        do i = mytaskid + 1, cmap_term_count, numtasks
+#else
+        do i = 1, cmap_term_count !Loop over all CMAP terms
+#endif
+            cmap_type_index = cmap_index(6, i) !Index to which CMAP type the current CMAP term is
+            !Local to current loop
 
-     call charmm_calc_cmap_from_phi_psi(phi, psi,                      & 
-                                        cmap_types(cmap_type_index), &
-                                        e_cmap, dE_dPhi, dE_dPsi )
-
-     !Update the total cmap energy with calculated energy from the current
-     !CMAP term
-     local_energy_accumulator = local_energy_accumulator + e_cmap
-
-
-     !In AM_VAL_GEOM_torsion(), we've been working in radians,
-     !and conversly charmm_calc_cmap_from_phi_psi(), in degrees.
-     !We need to convert over to degrees per interval.
-
-     rad_to_deg_coeff = RAD_TO_DEG * 1/cmap_types(cmap_type_index)%gridStepSize
-
-     dPhi_dijkl(1:12) = dPhi_dijkl(1:12) * rad_to_deg_coeff
-     dPsi_djklm(1:12) = dPsi_djklm(1:12) * rad_to_deg_coeff
-
-
-     !Use chain rule to obtain the energy gradient wrt to coordinate
-
-     !    dE_d(ijkl) = dE_dPhi*dPhi_d(ijkl)
-     !    dE_d(jklm) = dE_dPsi*dPhi_d(jklm)
-
-     !dE_d(ijkl)
-     dE_dijkl(1:12) = dE_dPhi*dPhi_dijkl(1:12)
-    
-     !dE_d(jklm)
-     dE_djklm(1:12) = dE_dPsi*dPsi_djklm(1:12)
-
-     !Now, update the forces on the five atoms in this CMAP term; 
-     !remember, it is the negative of the derivative
-     do m = 1,3
-       frc(m,cmap_index(1,i)) = frc(m,cmap_index(1,i)) - dE_dijkl(m)
-       frc(m,cmap_index(2,i)) = frc(m,cmap_index(2,i)) - dE_dijkl(m+3) - dE_djklm(m)
-       frc(m,cmap_index(3,i)) = frc(m,cmap_index(3,i)) - dE_dijkl(m+6) - dE_djklm(m+3)
-       frc(m,cmap_index(4,i)) = frc(m,cmap_index(4,i)) - dE_dijkl(m+9) - dE_djklm(m+6)
-       frc(m,cmap_index(5,i)) = frc(m,cmap_index(5,i))                 - dE_djklm(m+9)
 #ifdef CHARMM_DEBUG
-       write(6,'(a,i2)') "Adding to forces: m=",m
-       write(6,'(f10.6)') -dE_dijkl(m) 
-       write(6,'(f10.6)') -dE_dijkl(m+3) - dE_djklm(m)
-       write(6,'(f10.6)') -dE_dijkl(m+6) - dE_djklm(m+3)
-       write(6,'(f10.6)') -dE_dijkl(m+9) - dE_djklm(m+6)
-       write(6,'(f10.6)')                - dE_djklm(m+9)
-       write(6,'(a)') ""
+            write (6, '(a)'), ""
+            write (6, '(a)'), ""
+            write (6, '(a,I8)'), "CMAP term", i
+            write (6, '(5I8,4XI8)'), cmap_index(1:6, i)
+#endif
+
+            !First dihedral (phi)
+
+            do m = 1, 3 !First loop assign x component of coordinate,
+                !second assign y, and finally z
+                crd_ijkl(m) = crd(m, cmap_index(1, i))
+                crd_ijkl(m + 3) = crd(m, cmap_index(2, i))
+                crd_ijkl(m + 6) = crd(m, cmap_index(3, i))
+                crd_ijkl(m + 9) = crd(m, cmap_index(4, i))
+            end do
+
+            !Calculate the dihedral angle (phi) and the derivatives of the
+            !four coordinates with respect to phi. Remember this subroutine is
+            !operating in radians
+            call AM_VAL_GEOM_torsion(crd_ijkl, dPhi_dijkl, cosphi_ijkl, sinphi_ijkl)
+            phi = sign(acos(cosphi_ijkl), sinphi_ijkl)*RAD_TO_DEG
+
+#ifdef CHARMM_DEBUG
+            write (6, '(10x,a)'), "Dihedral 1 "
+            write (6, '(10x,4I8)'), cmap_index(1:4, i)
+
+            write (6, '( 10x,a)'), "coordinates"
+            write (6, '( 10x,a1,3(f10.6,x) )'), "i", crd_ijkl(1:3)
+            write (6, '( 10x,a1,3(f10.6,x) )'), "j", crd_ijkl(4:6)
+            write (6, '( 10x,a1,3(f10.6,x) )'), "k", crd_ijkl(7:9)
+            write (6, '( 10x,a1,3(f10.6,x) )'), "l", crd_ijkl(10:12)
+            write (6, '(a)'), ""
+            write (6, '( 10x,a10,f8.3 )'), "Angle: ", phi
+            write (6, '(a)'), ""
+#endif
+
+            !Second dihedral (psi)
+
+            do m = 1, 3 !First loop assign x component of coordinate,
+                !second assign y, and finally z
+                crd_jklm(m) = crd(m, cmap_index(2, i))
+                crd_jklm(m + 3) = crd(m, cmap_index(3, i))
+                crd_jklm(m + 6) = crd(m, cmap_index(4, i))
+                crd_jklm(m + 9) = crd(m, cmap_index(5, i))
+            end do
+
+            !Calculate the dihedral angle (psi) and the derivatives of the
+            !four coordinates with respect to psi. Remember this subroutine is
+            !operating in radians
+            call AM_VAL_GEOM_torsion(crd_jklm, dPsi_djklm, cospsi_jklm, sinpsi_jklm)
+            psi = sign(acos(cospsi_jklm), sinpsi_jklm)*RAD_TO_DEG
+#ifdef CHARMM_DEBUG
+            write (6, '(10x,a)'), "Dihedral 2 "
+            write (6, '(10x,4I8)'), cmap_index(2:5, i)
+
+            write (6, '( 10x,a)'), "coordinates"
+            write (6, '( 10x,a1,3(f10.6,x) )'), "j", crd_jklm(1:3)
+            write (6, '( 10x,a1,3(f10.6,x) )'), "k", crd_jklm(4:6)
+            write (6, '( 10x,a1,3(f10.6,x) )'), "l", crd_jklm(7:9)
+            write (6, '( 10x,a1,3(f10.6,x) )'), "m", crd_jklm(10:12)
+            write (6, '(a)'), ""
+            write (6, '( 10x,a10,f8.3 )'), "Angle: ", psi
+            write (6, '(a)'), ""
+#endif
+
+            !Calculate the CMAP correction energy using the associated CMAP
+            !parameter. Also calculate the partial derivatives:  dE/dPhi and dE/Psi
+
+            !Remember the sixth element of cmap_index ( cmap_index(6,i) )
+            !is the mapping to its corresponding parameter type:
+            !
+            !       11      13      15      21      23      1
+            !        i       j       k       l       m      index to CMAP type
+
+            call charmm_calc_cmap_from_phi_psi(phi, psi, &
+                cmap_types(cmap_type_index), &
+                e_cmap, dE_dPhi, dE_dPsi)
+
+            !Update the total cmap energy with calculated energy from the current
+            !CMAP term
+            local_energy_accumulator = local_energy_accumulator + e_cmap
+
+            !In AM_VAL_GEOM_torsion(), we've been working in radians,
+            !and conversly charmm_calc_cmap_from_phi_psi(), in degrees.
+            !We need to convert over to degrees per interval.
+
+            rad_to_deg_coeff = RAD_TO_DEG*1/cmap_types(cmap_type_index)%gridStepSize
+
+            dPhi_dijkl(1:12) = dPhi_dijkl(1:12)*rad_to_deg_coeff
+            dPsi_djklm(1:12) = dPsi_djklm(1:12)*rad_to_deg_coeff
+
+            !Use chain rule to obtain the energy gradient wrt to coordinate
+
+            !    dE_d(ijkl) = dE_dPhi*dPhi_d(ijkl)
+            !    dE_d(jklm) = dE_dPsi*dPhi_d(jklm)
+
+            !dE_d(ijkl)
+            dE_dijkl(1:12) = dE_dPhi*dPhi_dijkl(1:12)
+
+            !dE_d(jklm)
+            dE_djklm(1:12) = dE_dPsi*dPsi_djklm(1:12)
+
+            !Now, update the forces on the five atoms in this CMAP term;
+            !remember, it is the negative of the derivative
+            do m = 1, 3
+                frc(m, cmap_index(1, i)) = frc(m, cmap_index(1, i)) - dE_dijkl(m)
+                frc(m, cmap_index(2, i)) = frc(m, cmap_index(2, i)) - dE_dijkl(m + 3) - dE_djklm(m)
+                frc(m, cmap_index(3, i)) = frc(m, cmap_index(3, i)) - dE_dijkl(m + 6) - dE_djklm(m + 3)
+                frc(m, cmap_index(4, i)) = frc(m, cmap_index(4, i)) - dE_dijkl(m + 9) - dE_djklm(m + 6)
+                frc(m, cmap_index(5, i)) = frc(m, cmap_index(5, i)) - dE_djklm(m + 9)
+#ifdef CHARMM_DEBUG
+                write (6, '(a,i2)') "Adding to forces: m=", m
+                write (6, '(f10.6)') - dE_dijkl(m)
+                write (6, '(f10.6)') - dE_dijkl(m + 3) - dE_djklm(m)
+                write (6, '(f10.6)') - dE_dijkl(m + 6) - dE_djklm(m + 3)
+                write (6, '(f10.6)') - dE_dijkl(m + 9) - dE_djklm(m + 6)
+                write (6, '(f10.6)') - dE_djklm(m + 9)
+                write (6, '(a)') ""
 #endif  /* CHARMM_DEBUG */
-     enddo
+            end do
 
-  enddo !do i = 1, cmap_term_count
+        end do !do i = 1, cmap_term_count
 
-
-  epl = epl + local_energy_accumulator
+        epl = epl + local_energy_accumulator
 
 #ifdef CHARMM_DEBUG
-  write(6,'(a)'),""
-  write(6,'(a12,f16.5)'),"Total CMAP =",epl
+        write (6, '(a)'), ""
+        write (6, '(a12,f16.5)'), "Total CMAP =", epl
 #endif
 
-end subroutine charmm_calc_cmap
+    end subroutine charmm_calc_cmap
 !------------------------------------------------------------
 
 !------------------------------------------------------------
-subroutine show_cmap(cmap_type)
-  !Debugging routine to display the read in CMAP grid for a 
-  !specific parameter
+    subroutine show_cmap(cmap_type)
+        !Debugging routine to display the read in CMAP grid for a
+        !specific parameter
 
-  implicit none
+        implicit none
 
-  integer i
-  type(cmapParameter),intent(in)                   :: cmap_type
+        integer i
+        type(cmapParameter), intent(in)                   :: cmap_type
 
-  write(6,'(a)') ""
-  write(6,'(2x,a,i4)') "cmap_type%resolution   :",&
-                     cmap_type%resolution
-  write(6,'(2x,a,i4)') "cmap_type%gridStepSize :",&
-                     cmap_type%gridStepSize
-  write(6,'(a)') ""
+        write (6, '(a)') ""
+        write (6, '(2x,a,i4)') "cmap_type%resolution   :", &
+            cmap_type%resolution
+        write (6, '(2x,a,i4)') "cmap_type%gridStepSize :", &
+            cmap_type%gridStepSize
+        write (6, '(a)') ""
 
-  do i=1,cmap_type%resolution
-      write(6,'(24f10.5)') cmap_type%grid(i,1:cmap_type%resolution)
-  enddo
+        do i = 1, cmap_type%resolution
+            write (6, '(24f10.5)') cmap_type%grid(i, 1:cmap_type%resolution)
+        end do
 
-  write(6,'(a)') ""
+        write (6, '(a)') ""
 
-end subroutine show_cmap
+    end subroutine show_cmap
 !------------------------------------------------------------
 
 !------------------------------------------------------------
-function cmapGridWrapper(value,resolution)
-  !Use modular arithmetic to ensure that coordinates on the grid, 
-  !wrap around at the edges
+    function cmapGridWrapper(value, resolution)
+        !Use modular arithmetic to ensure that coordinates on the grid,
+        !wrap around at the edges
 
-  integer, intent(in)  :: value
-  integer              :: cmapGridWrapper
-!  integer, parameter   :: resolution = 24 !I should take this from 
-                                          !cmapParameter%resolution
-  integer, intent(in)  :: resolution
+        integer, intent(in)  :: value
+        integer              :: cmapGridWrapper
+!  integer, parameter   :: resolution = 24 !I should take this from
+        !cmapParameter%resolution
+        integer, intent(in)  :: resolution
 
-  cmapGridWrapper = modulo(value-1,resolution)+1
+        cmapGridWrapper = modulo(value - 1, resolution) + 1
 
-end function 
+    end function cmapGridWrapper
 !------------------------------------------------------------
 
 !------------------------------------------------------------
-subroutine generate_cubic_spline(n,step_size,y,y2)
-  !Generates the set cubic splining coefficients from a 1D array with 
-  !the assumption that the distance between the points is constant. This
-  !interpolation method ensures that the derivative of this spline is 
-  !continuous across the boundary of two intervals.
+    subroutine generate_cubic_spline(n, step_size, y, y2)
+        !Generates the set cubic splining coefficients from a 1D array with
+        !the assumption that the distance between the points is constant. This
+        !interpolation method ensures that the derivative of this spline is
+        !continuous across the boundary of two intervals.
 
-  !These coefficients are only calculated *once*, but are later used on 
-  !multiple occassions by another subroutine to interpolate anywhere 
-  !between two points in this 1D array
+        !These coefficients are only calculated *once*, but are later used on
+        !multiple occassions by another subroutine to interpolate anywhere
+        !between two points in this 1D array
 
-  use constants, only : zero, half, one, two, three
-  implicit none
+        use constants, only : zero, half, one, two, three
+        implicit none
 
-  integer, intent(in)                :: n !Number of values in below array
-  integer, intent(in)                :: step_size !in degrees
-  !Since n and step_size are known, there is no need to pass an input 
-  !array of x to this subroutine and many simplications can be made 
-  !within this subroutine since we are using a fixed interval
-  _REAL_,  intent(in),dimension(:)   :: y !1D array of y values
-  _REAL_,  intent(out),dimension(:)  :: y2 !calculated coefficients
+        integer, intent(in)                :: n !Number of values in below array
+        integer, intent(in)                :: step_size !in degrees
+        !Since n and step_size are known, there is no need to pass an input
+        !array of x to this subroutine and many simplications can be made
+        !within this subroutine since we are using a fixed interval
+        _REAL_, intent(in), dimension(:)   :: y !1D array of y values
+        _REAL_, intent(out), dimension(:)  :: y2 !calculated coefficients
 
+        _REAL_, allocatable, dimension(:)   :: tmp
+        integer                            :: i
+        _REAL_                             :: p
 
-  _REAL_, allocatable,dimension(:)   :: tmp
-  integer                            :: i
-  _REAL_                             :: p
+        !tmp array used internally for the decomposition loop
+        allocate (tmp(n))
 
-  !tmp array used internally for the decomposition loop
-  allocate( tmp(n) )
+        !Lower and upper boundaries are natural
+        y2(1) = zero
+        tmp(1) = zero
 
-  !Lower and upper boundaries are natural
-  y2(1)=zero
-  tmp(1)=zero
+        do i = 2, n - 1
+            !y2 is used initially as a temp storage array
+            p = half*y2(i - 1) + two
+            !Debug
+            y2(i) = -HALF/p
+            tmp(i) = (y(i + 1) - two*y(i) + y(i - 1))/step_size
+            tmp(i) = (three*(tmp(i)/step_size) - HALF*tmp(i - 1))/p
 
-  do i=2, n-1
-    !y2 is used initially as a temp storage array
-    p=half*y2(i-1) + two
-    !Debug
-    y2(i) = -HALF/p
-    tmp(i) = ( y(i+1)-two*y(i) + y(i-1) ) / step_size
-    tmp(i) = ( three* (tmp(i)/step_size) - HALF *tmp( i-1 ) )/p
+        end do
 
-  enddo
+        !Set the upper boundary
+        y2(n) = zero
 
-  !Set the upper boundary
-  y2(n) = zero
+        do i = n - 1, 1, -1
+            y2(i) = y2(i)*y2(i + 1) + tmp(i)
+        end do
 
-  do i=n-1,1,-1
-    y2(i)=y2(i)*y2(i+1)+tmp(i)
-  enddo
+        deallocate (tmp)
 
-
-  deallocate(tmp)
-    
-end subroutine generate_cubic_spline
+    end subroutine generate_cubic_spline
 !------------------------------------------------------------
 
 !------------------------------------------------------------
-subroutine evaluate_cubic_spline(step_size, y, y2, grid_point, dyout)
+    subroutine evaluate_cubic_spline(step_size, y, y2, grid_point, dyout)
 
 !subroutine evaluate_cubic_spline(n,step_size, gridOrigin, y,y2,xin,dyout)
 !This is reduced version of a typical cubic spline routine
@@ -1284,583 +1254,556 @@ subroutine evaluate_cubic_spline(step_size, y, y2, grid_point, dyout)
 !It is "reduced" since it is used here to obtain smooth derivatives
 !ONLY at discrete points on the CMAP grid, hence it never interpolates
 !between the points, therefore the coefficient a is always 1.0 and b is
-!always 0.0. In addition,  there is never a need to return the 
+!always 0.0. In addition,  there is never a need to return the
 !interpolated value since it will be aways the same as the value passed to it.
 
-
-  use constants, only : zero, half, one, two, three
-  implicit none
+        use constants, only : zero, half, one, two, three
+        implicit none
 
 !  integer, intent(in)                :: n !Number of values in below array
-  integer, intent(in)                :: step_size !in degrees
-!  integer, intent(in)                :: gridOrigin !where the grid start 
-                                                   !in degrees
-  !Since n and step_size are known, there is no need to pass an input
-  !array of x to this subroutine and many simplications can be made
-  !within this subroutine since we are using a fixed interval
-  _REAL_, intent(in),dimension(:)    :: y  !1D array of y values
-  _REAL_, intent(in),dimension(:)    :: y2 !calculated coefficients 
-                                           !from generate_cubic_spline()
+        integer, intent(in)                :: step_size !in degrees
+!  integer, intent(in)                :: gridOrigin !where the grid start
+        !in degrees
+        !Since n and step_size are known, there is no need to pass an input
+        !array of x to this subroutine and many simplications can be made
+        !within this subroutine since we are using a fixed interval
+        _REAL_, intent(in), dimension(:)    :: y  !1D array of y values
+        _REAL_, intent(in), dimension(:)    :: y2 !calculated coefficients
+        !from generate_cubic_spline()
 !Hack to allow grid points to be passed
-  integer, intent(in)                 :: grid_point !WIP
-                                             !nearest GRID point
-!  _REAL_, intent(out)                :: yout  !cubuic spline 
-                                              !interpolated value
-  _REAL_, intent(out)                :: dyout !cubuic spline
-                                              !interpolated gradient
+        integer, intent(in)                 :: grid_point !WIP
+        !nearest GRID point
+!  _REAL_, intent(out)                :: yout  !cubuic spline
+        !interpolated value
+        _REAL_, intent(out)                :: dyout !cubuic spline
+        !interpolated gradient
 
-
-  _REAL_                             :: a,b!,c,d 
-                                        !Cubic spline coefficents
-  integer                            :: lo
+        _REAL_                             :: a, b!,c,d
+        !Cubic spline coefficents
+        integer                            :: lo
 !  _REAL_                             :: yout
 
+        !Work out nearest complete grid point on the CMAP grid from xin
 
-  !Work out nearest complete grid point on the CMAP grid from xin
+        lo = grid_point
 
-  lo = grid_point
+        a = 1.0
+        b = 0.0
 
+        dyout = (y(lo + 1) - y(lo))/step_size &
+            - ((3*a*a - 1)/6)*step_size*y2(lo) &
+            + ((3*b*b - 1)/6)*step_size*y2(lo + 1)
 
-  a = 1.0
-  b = 0.0
-
-
-  dyout =  (y(lo+1)-y(lo))/step_size                    &
-         - ((3*a*a-1)/6)*step_size*y2(lo)                 &
-         + ((3*b*b-1)/6)*step_size*y2(lo+1)               
-
-end subroutine evaluate_cubic_spline
+    end subroutine evaluate_cubic_spline
 !------------------------------------------------------------
 
 !------------------------------------------------------------
-subroutine generate_cmap_derivatives
-  !Called *once* after CMAP parameters have been read. This populates
-  !various partial derivatives in the cmapParameter%{dPsi,dPhi,dPsi_dPhi}
-  !object. It does this using a cubic spline on the read in CMAP grid.
-  !
-  !Later, this information is
-  !used to evaluate an arbitary phi/phi angle for a given crossterm.
+    subroutine generate_cmap_derivatives
+        !Called *once* after CMAP parameters have been read. This populates
+        !various partial derivatives in the cmapParameter%{dPsi,dPhi,dPsi_dPhi}
+        !object. It does this using a cubic spline on the read in CMAP grid.
+        !
+        !Later, this information is
+        !used to evaluate an arbitary phi/phi angle for a given crossterm.
 
-  implicit none
+        implicit none
 
-  integer :: i,row,col,j,k,step_size
-  integer :: res,halfRes,twoRes
-  _REAL_,allocatable,dimension(:)   :: tmpy,tmpy2
+        integer :: i, row, col, j, k, step_size
+        integer :: res, halfRes, twoRes
+        _REAL_, allocatable, dimension(:)   :: tmpy, tmpy2
 
-  write(6,'(a)') '|CHARMM: Reticulating splines.'
-  do i=1,cmap_type_count
+        write (6, '(a)') '|CHARMM: Reticulating splines.'
+        do i = 1, cmap_type_count
 
-    !Assign these here to make the code more readable
-    !in this section
-    res       = cmap_types(i)%resolution
-    halfRes   = cmap_types(i)%resolution/2
-    twoRes    = cmap_types(i)%resolution*2
-    step_size = cmap_types(i)%gridStepSize
-     
-    allocate( tmpy(twoRes) ) 
-    allocate( tmpy2(twoRes) )
+            !Assign these here to make the code more readable
+            !in this section
+            res = cmap_types(i)%resolution
+            halfRes = cmap_types(i)%resolution/2
+            twoRes = cmap_types(i)%resolution*2
+            step_size = cmap_types(i)%gridStepSize
 
-    !1) calculate dE/dPhi
-    do row=1,res !Step up one row each cycle, 
-                 !splining across all columns
+            allocate (tmpy(twoRes))
+            allocate (tmpy2(twoRes))
 
+            !1) calculate dE/dPhi
+            do row = 1, res !Step up one row each cycle,
+                !splining across all columns
 
-      !Fill an *extended* tmp array (tmpy) for with CMAP values
-      !for the 1D splining
-      !CHARMM does this to (I think) avoid edge issues
+                !Fill an *extended* tmp array (tmpy) for with CMAP values
+                !for the 1D splining
+                !CHARMM does this to (I think) avoid edge issues
 
-      k=1 !interal offset counter for tmp array
-      do j=(1-halfRes),(res+halfRes) !-11 --> 36
-        tmpy(k) = cmap_types(i)%grid(row,cmapGridWrapper(j,cmap_types(i)%resolution))
-        k=k+1
-      enddo
+                k = 1 !interal offset counter for tmp array
+                do j = (1 - halfRes), (res + halfRes) !-11 --> 36
+                    tmpy(k) = cmap_types(i)%grid(row, cmapGridWrapper(j, cmap_types(i)%resolution))
+                    k = k + 1
+                end do
 
-      !Calculate spline coeffients (tmpy2) for each of the 1D
-      !horizontal rows in the CMAP table
-      call generate_cubic_spline(twoRes, step_size, tmpy, tmpy2)
+                !Calculate spline coeffients (tmpy2) for each of the 1D
+                !horizontal rows in the CMAP table
+                call generate_cubic_spline(twoRes, step_size, tmpy, tmpy2)
 
+                !Calculate %dPhi for using each row
+                !of energies and corresponding splines in tmpy and tmpy2
+                do j = 1, res
+                    !evaluate_cubic_spline(n,step_size, gridOrigin, y,y2,xin,yout)
 
+                    !offset array passed to evaluate_cubic_spline
+                    call evaluate_cubic_spline(step_size, tmpy, tmpy2, &
+                        j + 12, cmap_types(i)%dPhi(row, j))
+                end do
+            end do !row
 
-      !Calculate %dPhi for using each row 
-      !of energies and corresponding splines in tmpy and tmpy2
-      do j=1,res
-        !evaluate_cubic_spline(n,step_size, gridOrigin, y,y2,xin,yout)
+            !2) calculate dE/dPsi
+            do col = 1, res !Step across one column each cycle,
+                !spinling up each column
 
-        !offset array passed to evaluate_cubic_spline
-        call evaluate_cubic_spline(step_size, tmpy, tmpy2, &
-                                   j+12, cmap_types(i)%dPhi(row,j))
-      enddo
-    enddo !row
+                k = 1
+                do j = (1 - halfRes), (res + halfRes) !-11 --> 36
+                    tmpy(k) = cmap_types(i)%grid(cmapGridWrapper(j, cmap_types(i)%resolution), col)
+                    k = k + 1
+                end do
 
+                !Calculate spline coeffients (tmpy2) for each of the 1D
+                !vertical columns in the CMAP table
+                call generate_cubic_spline(twoRes, step_size, tmpy, tmpy2)
 
-    !2) calculate dE/dPsi 
-    do col=1,res !Step across one column each cycle,
-                 !spinling up each column
+                !Calculate %dPsi for using each column of energies and
+                !corresponding splines in tmpy and tmpy2
+                do j = 1, res
+                    !offset array passed to evaluate_cubic_spline
+                    call evaluate_cubic_spline(step_size, tmpy, tmpy2, &
+                        j + 12, cmap_types(i)%dPsi(j, col))
+                end do
+            end do !col
 
-      k=1 
-      do j=(1-halfRes),(res+halfRes) !-11 --> 36
-        tmpy(k) = cmap_types(i)%grid(cmapGridWrapper(j,cmap_types(i)%resolution), col)
-        k=k+1
-      enddo
+            !3) calculate d^2E/dPhidPsi
+            !TODO Interpolate partitial derivative of psi; dE/dPhi ?
 
-      !Calculate spline coeffients (tmpy2) for each of the 1D
-      !vertical columns in the CMAP table
-      call generate_cubic_spline(twoRes, step_size, tmpy, tmpy2)
+            do col = 1, res !TODO
 
+                k = 1
+                do j = (1 - halfRes), (res + halfRes) !-11 --> 36
+                    tmpy(k) = cmap_types(i)%dPhi(cmapGridWrapper(j, cmap_types(i)%resolution), col)
+                    k = k + 1
+                end do
 
-      !Calculate %dPsi for using each column of energies and 
-      !corresponding splines in tmpy and tmpy2
-      do j=1,res
-        !offset array passed to evaluate_cubic_spline
-        call evaluate_cubic_spline(step_size, tmpy, tmpy2,&
-                                   j+12,cmap_types(i)%dPsi(j,col)) 
-      enddo
-    enddo !col
+                call generate_cubic_spline(twoRes, step_size, tmpy, tmpy2)
 
+                !TODO
+                do j = 1, res
+                    call evaluate_cubic_spline(step_size, tmpy, tmpy2, &
+                        j + 12, cmap_types(i)%dPhi_dPsi(j, col))
+                end do
+            end do
 
+            !release the arrays used by the splining code
+            deallocate (tmpy)
+            deallocate (tmpy2)
 
-    !3) calculate d^2E/dPhidPsi
-    !TODO Interpolate partitial derivative of psi; dE/dPhi ?
-    
-    do col=1,res !TODO
+        end do !cmap_type_count
 
-      k=1 
-      do j=(1-halfRes),(res+halfRes) !-11 --> 36
-        tmpy(k) = cmap_types(i)%dPhi(cmapGridWrapper(j,cmap_types(i)%resolution),col)
-        k=k+1
-      enddo
-
-      call generate_cubic_spline(twoRes, step_size, tmpy, tmpy2)
-
-      !TODO
-      do j=1,res
-        call evaluate_cubic_spline(step_size, tmpy, tmpy2, &
-                                   j+12,cmap_types(i)%dPhi_dPsi(j,col))
-      enddo
-    enddo
-
-    !release the arrays used by the splining code
-    deallocate(tmpy)
-    deallocate(tmpy2)
-
-
-  enddo !cmap_type_count
-
-end subroutine generate_cmap_derivatives
+    end subroutine generate_cmap_derivatives
 !------------------------------------------------------------
 
 !------------------------------------------------------------
-subroutine charmm_calc_cmap_from_phi_psi(phi,psi,cmap_type,E,dPhi,dPsi)
-  !Eventually, this will calculate the CMAP energy given
-  !psi,phi and the cmap parameter
+    subroutine charmm_calc_cmap_from_phi_psi(phi, psi, cmap_type, E, dPhi, dPsi)
+        !Eventually, this will calculate the CMAP energy given
+        !psi,phi and the cmap parameter
 
-  implicit none
+        implicit none
 
-  _REAL_, intent(in)             :: phi,psi
-  type(cmapParameter),intent(in) :: cmap_type
-  _REAL_, intent(out)            :: E !final CMAP energy
-  _REAL_, intent(out)            :: dPhi,dPsi !partitial derivatives
+        _REAL_, intent(in)             :: phi, psi
+        type(cmapParameter), intent(in) :: cmap_type
+        _REAL_, intent(out)            :: E !final CMAP energy
+        _REAL_, intent(out)            :: dPhi, dPsi !partitial derivatives
 
+        _REAL_                         :: phiFrac, psiFrac
+        _REAL_, dimension(2, 2)         :: E_stencil, dPhi_stencil, &
+            dPsi_stencil, dPhi_dPsi_stencil
+        _REAL_, dimension(4)           :: E_stencil_1D, dPhi_stencil_1D, &
+            dPsi_stencil_1D, dPhi_dPsi_stencil_1D
+        integer                        :: i, j, yi, xj
+        integer                        :: x, y = 0
+        _REAL_, dimension(4, 4)        :: c = 0
 
-  _REAL_                         :: phiFrac,psiFrac
-  _REAL_, dimension(2,2)         :: E_stencil,    dPhi_stencil,&
-                                    dPsi_stencil, dPhi_dPsi_stencil
-  _REAL_, dimension(4)           :: E_stencil_1D,    dPhi_stencil_1D,&
-                                    dPsi_stencil_1D, dPhi_dPsi_stencil_1D
-  integer                        :: i,j,yi,xj
-  integer                        :: x,y = 0
-  _REAL_,  dimension(4,4)        :: c = 0
+        !Work out nearest complete grid point on the CMAP grid from
+        !phi and psi and use this to form a 2x2 stencil
+        x = int((phi - cmap_type%gridOrigin)/(cmap_type%gridStepSize)) + 1
+        y = int((psi - cmap_type%gridOrigin)/(cmap_type%gridStepSize)) + 1
 
+        !We are currently at the bottom left of the inner 2x2 elements of the
+        !stencil, now move to the bottom left hand corner of the 4x4 stencil
 
+        !Work out the fraction of the CMAP grid step that the interpolated
+        !point takes up.
+        !This will give the remainder part and then it is divided by the step size
+        phiFrac = modulo((phi - cmap_type%gridOrigin), &
+            dble(cmap_type%gridStepSize))/cmap_type%gridStepSize
+        psiFrac = modulo((psi - cmap_type%gridOrigin), &
+            dble(cmap_type%gridStepSize))/cmap_type%gridStepSize
 
-  !Work out nearest complete grid point on the CMAP grid from
-  !phi and psi and use this to form a 2x2 stencil
-  x =  int( (phi - cmap_type%gridOrigin)/(cmap_type%gridStepSize) ) + 1
-  y =  int( (psi - cmap_type%gridOrigin)/(cmap_type%gridStepSize) ) + 1
-
-  !We are currently at the bottom left of the inner 2x2 elements of the
-  !stencil, now move to the bottom left hand corner of the 4x4 stencil
-
-
-  !Work out the fraction of the CMAP grid step that the interpolated 
-  !point takes up.
-  !This will give the remainder part and then it is divided by the step size
-  phiFrac = modulo( (phi - cmap_type%gridOrigin), &
-               dble(cmap_type%gridStepSize) ) / cmap_type%gridStepSize
-  psiFrac = modulo( (psi - cmap_type%gridOrigin), &
-               dble(cmap_type%gridStepSize) ) / cmap_type%gridStepSize
-
-
- !2x2 stencil
- !Set the stencils to the local CMAP grid region 
- !determined by psi and phi
- do i=1,2
-   do j=1,2
-    yi = cmapGridWrapper( y+(i-1),cmap_type%resolution )
-    xj = cmapGridWrapper( x+(j-1),cmap_type%resolution )
-    E_stencil(i,j)    = cmap_type%grid(yi, xj)
-    dPhi_stencil(i,j) = cmap_type%dPhi(yi, xj)
-    dPsi_stencil(i,j) = cmap_type%dPsi(yi, xj)
-    dPhi_dPsi_stencil(i,j) &
-                      = cmap_type%dPhi_dPsi(yi, xj)
-   enddo
-  enddo
-
-
+        !2x2 stencil
+        !Set the stencils to the local CMAP grid region
+        !determined by psi and phi
+        do i = 1, 2
+            do j = 1, 2
+                yi = cmapGridWrapper(y + (i - 1), cmap_type%resolution)
+                xj = cmapGridWrapper(x + (j - 1), cmap_type%resolution)
+                E_stencil(i, j) = cmap_type%grid(yi, xj)
+                dPhi_stencil(i, j) = cmap_type%dPhi(yi, xj)
+                dPsi_stencil(i, j) = cmap_type%dPsi(yi, xj)
+                dPhi_dPsi_stencil(i, j) &
+                    = cmap_type%dPhi_dPsi(yi, xj)
+            end do
+        end do
 
 #ifdef CHARMM_DEBUG
-    write(6,'(A,f10.3,f10.3)'),"phi, psi ",phi,psi
-    write(6,'(A,f10.5,f10.5)'),"phiFrac,psiFrac  ",phiFrac,psiFrac
-    write(6,'(a,i2)'),"CMAP grid coordinate of psi : ",x
-    write(6,'(a,i2)'),"CMAP grid coordinate of phi : ",y
+        write (6, '(A,f10.3,f10.3)'), "phi, psi ", phi, psi
+        write (6, '(A,f10.5,f10.5)'), "phiFrac,psiFrac  ", phiFrac, psiFrac
+        write (6, '(a,i2)'), "CMAP grid coordinate of psi : ", x
+        write (6, '(a,i2)'), "CMAP grid coordinate of phi : ", y
 
+        write (6, '(A)'), ""
+        write (6, '(A)'), "2x2 grid stencils:"
+        write (6, '(A)'), "CMAP:"
 
-    write(6,'(A)'),""
-    write(6,'(A)'),"2x2 grid stencils:"
-    write(6,'(A)'),"CMAP:"
+        write (6, '(4(f9.6,2x))'), E_stencil(2, 1:2)
+        write (6, '(4(f9.6,2x))'), E_stencil(1, 1:2)
 
-    write(6,'(4(f9.6,2x))'),E_stencil(2,1:2)
-    write(6,'(4(f9.6,2x))'),E_stencil(1,1:2)
+        write (6, '(A)'), ""
 
-    write(6,'(A)'),""
+        write (6, '(A)'), "dPhi:"
 
-    write(6,'(A)'),"dPhi:"
+        write (6, '(4(f9.6,2x))'), dPhi_stencil(2, 1:2)
+        write (6, '(4(f9.6,2x))'), dPhi_stencil(1, 1:2)
 
-    write(6,'(4(f9.6,2x))'),dPhi_stencil(2,1:2)
-    write(6,'(4(f9.6,2x))'),dPhi_stencil(1,1:2)
+        write (6, '(A)'), ""
 
-    write(6,'(A)'),""
+        write (6, '(A)'), "dPsi:"
 
-    write(6,'(A)'),"dPsi:"
+        write (6, '(4(f9.6,2x))'), dPsi_stencil(2, 1:2)
+        write (6, '(4(f9.6,2x))'), dPsi_stencil(1, 1:2)
 
-    write(6,'(4(f9.6,2x))'),dPsi_stencil(2,1:2)
-    write(6,'(4(f9.6,2x))'),dPsi_stencil(1,1:2)
+        write (6, '(A)'), ""
 
-    write(6,'(A)'),""
+        write (6, '(A)'), "dPhi_dPsi:"
 
-    write(6,'(A)'),"dPhi_dPsi:"
+        write (6, '(4(f9.6,2x))'), dPhi_dPsi_stencil(2, 1:2)
+        write (6, '(4(f9.6,2x))'), dPhi_dPsi_stencil(1, 1:2)
 
-    write(6,'(4(f9.6,2x))'),dPhi_dPsi_stencil(2,1:2)
-    write(6,'(4(f9.6,2x))'),dPhi_dPsi_stencil(1,1:2)
-
-    write(6,'(A)'),""
+        write (6, '(A)'), ""
 #endif
 
+        !Convert the 2x2 stencils into a 1D array for processing
+        !by weight_stencil.
+        !The array starts at the bottom left of the 2x2, working
+        !around counterclockwise:
+        !
+        !          4 3
+        !          1 2
+        !
+        !There may be a cleaner/better way of doing this
 
-  !Convert the 2x2 stencils into a 1D array for processing
-  !by weight_stencil.
-  !The array starts at the bottom left of the 2x2, working
-  !around counterclockwise:
-  !
-  !          4 3
-  !          1 2
-  !
-  !There may be a cleaner/better way of doing this
+        E_stencil_1D(1) = E_stencil(1, 1)
+        E_stencil_1D(2) = E_stencil(1, 2)
+        E_stencil_1D(3) = E_stencil(2, 2)
+        E_stencil_1D(4) = E_stencil(2, 1)
 
-  E_stencil_1D(1) = E_stencil(1,1)
-  E_stencil_1D(2) = E_stencil(1,2)
-  E_stencil_1D(3) = E_stencil(2,2)
-  E_stencil_1D(4) = E_stencil(2,1)
+        dPhi_stencil_1D(1) = dPhi_stencil(1, 1)
+        dPhi_stencil_1D(2) = dPhi_stencil(1, 2)
+        dPhi_stencil_1D(3) = dPhi_stencil(2, 2)
+        dPhi_stencil_1D(4) = dPhi_stencil(2, 1)
 
+        dPsi_stencil_1D(1) = dPsi_stencil(1, 1)
+        dPsi_stencil_1D(2) = dPsi_stencil(1, 2)
+        dPsi_stencil_1D(3) = dPsi_stencil(2, 2)
+        dPsi_stencil_1D(4) = dPsi_stencil(2, 1)
 
-  dPhi_stencil_1D(1) = dPhi_stencil(1,1)
-  dPhi_stencil_1D(2) = dPhi_stencil(1,2)
-  dPhi_stencil_1D(3) = dPhi_stencil(2,2)
-  dPhi_stencil_1D(4) = dPhi_stencil(2,1)
+        dPhi_dPsi_stencil_1D(1) = dPhi_dPsi_stencil(1, 1)
+        dPhi_dPsi_stencil_1D(2) = dPhi_dPsi_stencil(1, 2)
+        dPhi_dPsi_stencil_1D(3) = dPhi_dPsi_stencil(2, 2)
+        dPhi_dPsi_stencil_1D(4) = dPhi_dPsi_stencil(2, 1)
 
-  dPsi_stencil_1D(1) = dPsi_stencil(1,1)
-  dPsi_stencil_1D(2) = dPsi_stencil(1,2)
-  dPsi_stencil_1D(3) = dPsi_stencil(2,2)
-  dPsi_stencil_1D(4) = dPsi_stencil(2,1)
+        !Weight d{Psi,dPhi,dPhidPsi}_stencil
+        call weight_stencil(cmap_type%gridStepSize, &
+            E_stencil_1D, &
+            dPhi_stencil_1D, &
+            dPsi_stencil_1D, &
+            dPhi_dPsi_stencil_1D, &
+            c)
 
-  dPhi_dPsi_stencil_1D(1) = dPhi_dPsi_stencil(1,1)
-  dPhi_dPsi_stencil_1D(2) = dPhi_dPsi_stencil(1,2)
-  dPhi_dPsi_stencil_1D(3) = dPhi_dPsi_stencil(2,2)
-  dPhi_dPsi_stencil_1D(4) = dPhi_dPsi_stencil(2,1)
+        call bicubic_interpolation(phiFrac, psiFrac, c, E, dphi, dpsi)
 
-
-
-  !Weight d{Psi,dPhi,dPhidPsi}_stencil
-  call weight_stencil(cmap_type%gridStepSize, &
-                      E_stencil_1D,              &
-                      dPhi_stencil_1D,           &
-                      dPsi_stencil_1D,           &
-                      dPhi_dPsi_stencil_1D,      &
-                      c )
-
-  call bicubic_interpolation(phiFrac, psiFrac, c, E, dphi, dpsi)
-
-end subroutine charmm_calc_cmap_from_phi_psi
+    end subroutine charmm_calc_cmap_from_phi_psi
 !------------------------------------------------------------
 
 !------------------------------------------------------------
-subroutine weight_stencil(step_size,         &
-                          E_stencil,         &
-                          dPhi_stencil,      &
-                          dPsi_stencil,      &
-                          dPhi_dPsi_stencil, &
-                          c )
+    subroutine weight_stencil(step_size, &
+        E_stencil, &
+        dPhi_stencil, &
+        dPsi_stencil, &
+        dPhi_dPsi_stencil, &
+        c)
 
-  implicit none
+        implicit none
 
-  integer, intent(in)         :: step_size
-  _REAL_,  dimension(4),&
-           intent(in)         :: E_stencil,    dPhi_stencil,&
-                                 dPsi_stencil, dPhi_dPsi_stencil
-  _REAL_,  dimension(4,4),&
-           intent(out)        :: c !The coefficient array to be be
-                                   !used by bicubic_interpolation()
+        integer, intent(in)         :: step_size
+        _REAL_, dimension(4), &
+            intent(in)         :: E_stencil, dPhi_stencil, &
+            dPsi_stencil, dPhi_dPsi_stencil
+        _REAL_, dimension(4, 4), &
+            intent(out)        :: c !The coefficient array to be be
+        !used by bicubic_interpolation()
 
-
-  _REAL_,  dimension(16)      :: tmp !temp vector built from
-                                     !E,dPhi,dPsi,dPhi_dPsi
-  integer, dimension(16,16)   :: wT !Weight matrix
+        _REAL_, dimension(16)      :: tmp !temp vector built from
+        !E,dPhi,dPsi,dPhi_dPsi
+        integer, dimension(16, 16)   :: wT !Weight matrix
 #ifdef CHARMM_DEBUG
-  integer                     :: i
-  integer                     :: j
+        integer                     :: i
+        integer                     :: j
 #endif
 
-  _REAL_,  dimension(16)      :: c_tmp !Vector prior to matrix packing
-  integer, dimension (1:2)    :: my_shape = (/ 4, 4 /) !Used for reshape
-  integer, dimension (1:2)    :: my_order = (/ 2, 1 /) !Used for reshape
+        _REAL_, dimension(16)      :: c_tmp !Vector prior to matrix packing
+        integer, dimension(1:2)    :: my_shape = (/4, 4/) !Used for reshape
+        integer, dimension(1:2)    :: my_order = (/2, 1/) !Used for reshape
 
-  wt(1 ,1:16) =   (/ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
-  wt(2 ,1:16) =   (/ 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0/)
-  wt(3 ,1:16) =   (/-3, 0, 0, 3, 0, 0, 0, 0,-2, 0, 0,-1, 0, 0, 0, 0/)
-  wt(4 ,1:16) =   (/ 2, 0, 0,-2, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0/)
-  wt(5 ,1:16) =   (/ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
-  wt(6 ,1:16) =   (/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0/)
-  wt(7 ,1:16) =   (/ 0, 0, 0, 0,-3, 0, 0, 3, 0, 0, 0, 0,-2, 0, 0,-1/)
-  wt(8 ,1:16) =   (/ 0, 0, 0, 0, 2, 0, 0,-2, 0, 0, 0, 0, 1, 0, 0, 1/)
-  wt(9 ,1:16) =   (/-3, 3, 0, 0,-2,-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
-  wt(10,1:16) =   (/ 0, 0, 0, 0, 0, 0, 0, 0,-3, 3, 0, 0,-2,-1, 0, 0/)
-  wt(11,1:16) =   (/ 9,-9, 9,-9, 6, 3,-3,-6, 6,-6,-3, 3, 4, 2, 1, 2/)
-  wt(12,1:16) =   (/-6, 6,-6, 6,-4,-2, 2, 4,-3, 3, 3,-3,-2,-1,-1,-2/)
-  wt(13,1:16) =   (/ 2,-2, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
-  wt(14,1:16) =   (/ 0, 0, 0, 0, 0, 0, 0, 0, 2,-2, 0, 0, 1, 1, 0, 0/)
-  wt(15,1:16) =   (/-6, 6,-6, 6,-3,-3, 3, 3,-4, 4, 2,-2,-2,-2,-1,-1/)
-  wt(16,1:16) =   (/ 4,-4, 4,-4, 2, 2,-2,-2, 2,-2,-2, 2, 1, 1, 1, 1/)
+        wt(1, 1:16) = (/1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
+        wt(2, 1:16) = (/0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0/)
+        wt(3, 1:16) = (/-3, 0, 0, 3, 0, 0, 0, 0, -2, 0, 0, -1, 0, 0, 0, 0/)
+        wt(4, 1:16) = (/2, 0, 0, -2, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0/)
+        wt(5, 1:16) = (/0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
+        wt(6, 1:16) = (/0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0/)
+        wt(7, 1:16) = (/0, 0, 0, 0, -3, 0, 0, 3, 0, 0, 0, 0, -2, 0, 0, -1/)
+        wt(8, 1:16) = (/0, 0, 0, 0, 2, 0, 0, -2, 0, 0, 0, 0, 1, 0, 0, 1/)
+        wt(9, 1:16) = (/-3, 3, 0, 0, -2, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
+        wt(10, 1:16) = (/0, 0, 0, 0, 0, 0, 0, 0, -3, 3, 0, 0, -2, -1, 0, 0/)
+        wt(11, 1:16) = (/9, -9, 9, -9, 6, 3, -3, -6, 6, -6, -3, 3, 4, 2, 1, 2/)
+        wt(12, 1:16) = (/-6, 6, -6, 6, -4, -2, 2, 4, -3, 3, 3, -3, -2, -1, -1, -2/)
+        wt(13, 1:16) = (/2, -2, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
+        wt(14, 1:16) = (/0, 0, 0, 0, 0, 0, 0, 0, 2, -2, 0, 0, 1, 1, 0, 0/)
+        wt(15, 1:16) = (/-6, 6, -6, 6, -3, -3, 3, 3, -4, 4, 2, -2, -2, -2, -1, -1/)
+        wt(16, 1:16) = (/4, -4, 4, -4, 2, 2, -2, -2, 2, -2, -2, 2, 1, 1, 1, 1/)
 
-  !Create the vector to be operated on
-  tmp(1:4)   = E_stencil(1:4)         
-  tmp(5:8)   = dPhi_stencil(1:4)      *step_size
-  tmp(9:12)  = dPsi_stencil(1:4)      *step_size
-  tmp(13:16) = dPhi_dPsi_stencil(1:4) *step_size*step_size
+        !Create the vector to be operated on
+        tmp(1:4) = E_stencil(1:4)
+        tmp(5:8) = dPhi_stencil(1:4)*step_size
+        tmp(9:12) = dPsi_stencil(1:4)*step_size
+        tmp(13:16) = dPhi_dPsi_stencil(1:4)*step_size*step_size
 
-  !Use the matmul intrinsic to operate on the vector
-  !http://gcc.gnu.org/onlinedocs/gfortran/MATMUL.html
-  c_tmp = matmul(wT,tmp)
+        !Use the matmul intrinsic to operate on the vector
+        !http://gcc.gnu.org/onlinedocs/gfortran/MATMUL.html
+        c_tmp = matmul(wT, tmp)
 
-  c = reshape(c_tmp, my_shape, order=my_order )
-  
-#ifdef CHARMM_DEBUG 
-  write(6,'(a)'),"tmp vector is :"
-  write(6,'(f16.6)'),tmp
-  write(6,'(a)'),""
-  write(6,'(a)'),"c matrix is:"
-  do i=4,1,-1
-     write(6,'(4f16.6)'),c(i,1:4)
-  enddo
-#endif
-
-end subroutine weight_stencil
-!------------------------------------------------------------
-
-!------------------------------------------------------------
-subroutine bicubic_interpolation(frac_x, frac_y, c, E, dx, dy)
-  use constants, only : three,two
-  implicit none
-
-  _REAL_, intent(in)         :: frac_x, frac_y
-  _REAL_, dimension(4,4),&
-          intent(in)         :: c
-  _REAL_, intent(out)        :: E, dx, dy
-
-  integer                    :: i
-
-  E = 0.0d0
-  dx = 0.0d0
-  dy = 0.0d0
-
-  do i=4,1,-1 
-
-     E =  E*frac_x +( (c(i,4)*frac_y + c(i,3))*frac_y + c(i,2) )*frac_y + c(i,1)
-     dx = dx*frac_y +( three*c(4,i)*frac_x + two*c(3,i) )*frac_x + c(2,i)
-     dy = dy*frac_x +( three*c(i,4)*frac_y + two*c(i,3) )*frac_y + c(i,2)
-
-  enddo
+        c = reshape(c_tmp, my_shape, order=my_order)
 
 #ifdef CHARMM_DEBUG
-  write(6,'(a)'),""
-
-  write(6,'(A,f10.5,f10.5)'),"frac_x,frac_y  ",frac_x,frac_y
-
-  write(6,'(a,f16.6)'),"E is ",E
-  write(6,'(a,f16.6)'),"dx is ",dx
-  write(6,'(a,f16.6)'),"dy is ",dy
+        write (6, '(a)'), "tmp vector is :"
+        write (6, '(f16.6)'), tmp
+        write (6, '(a)'), ""
+        write (6, '(a)'), "c matrix is:"
+        do i = 4, 1, -1
+            write (6, '(4f16.6)'), c(i, 1:4)
+        end do
 #endif
 
-end subroutine bicubic_interpolation
+    end subroutine weight_stencil
 !------------------------------------------------------------
 
 !------------------------------------------------------------
-subroutine AM_VAL_GEOM_torsion(crd_abcd,gradphi_abcd,cosphi,sinphi)
+    subroutine bicubic_interpolation(frac_x, frac_y, c, E, dx, dy)
+        use constants, only : three, two
+        implicit none
+
+        _REAL_, intent(in)         :: frac_x, frac_y
+        _REAL_, dimension(4, 4), &
+            intent(in)         :: c
+        _REAL_, intent(out)        :: E, dx, dy
+
+        integer                    :: i
+
+        E = 0.0d0
+        dx = 0.0d0
+        dy = 0.0d0
+
+        do i = 4, 1, -1
+
+            E = E*frac_x + ((c(i, 4)*frac_y + c(i, 3))*frac_y + c(i, 2))*frac_y + c(i, 1)
+            dx = dx*frac_y + (three*c(4, i)*frac_x + two*c(3, i))*frac_x + c(2, i)
+            dy = dy*frac_x + (three*c(i, 4)*frac_y + two*c(i, 3))*frac_y + c(i, 2)
+
+        end do
+
+#ifdef CHARMM_DEBUG
+        write (6, '(a)'), ""
+
+        write (6, '(A,f10.5,f10.5)'), "frac_x,frac_y  ", frac_x, frac_y
+
+        write (6, '(a,f16.6)'), "E is ", E
+        write (6, '(a,f16.6)'), "dx is ", dx
+        write (6, '(a,f16.6)'), "dy is ", dy
+#endif
+
+    end subroutine bicubic_interpolation
+!------------------------------------------------------------
+
+!------------------------------------------------------------
+    subroutine AM_VAL_GEOM_torsion(crd_abcd, gradphi_abcd, cosphi, sinphi)
 
 ! This routine is from Darden's generic torsion
 ! code in AM_VAL_GEOM_torsion in amoeba_valence.f
 ! Optimized by Ross Walker
 
-  implicit none
-  _REAL_,intent(in) :: crd_abcd(12)
-  _REAL_,intent(out) :: gradphi_abcd(12),cosphi,sinphi
+        implicit none
+        _REAL_, intent(in) :: crd_abcd(12)
+        _REAL_, intent(out) :: gradphi_abcd(12), cosphi, sinphi
 ! given coords of points a,b,c,d this routine calculates
 ! cosine and sine of torsion phi
 ! as well as gradient of phi with respect to coords of a,b,c,d
 ! units are in radians
 
-  _REAL_ :: rab(3),rcb(3),rdc(3),ucb(3),upab(3),updc(3),rcross(3), &
-         upabc(3),upbcd(3),onesizcb,dotp_ab_cb,onesizpab,dotp_dc_cb, &
-         onesizpdc,vecS(3),dot,cosphi_pre,sinphi_pre
+        _REAL_ :: rab(3), rcb(3), rdc(3), ucb(3), upab(3), updc(3), rcross(3), &
+            upabc(3), upbcd(3), onesizcb, dotp_ab_cb, onesizpab, dotp_dc_cb, &
+            onesizpdc, vecS(3), dot, cosphi_pre, sinphi_pre
 
-  integer :: m
-  do m = 1,3
-    rab(m) = crd_abcd(m) -   crd_abcd(m+3)
-    rcb(m) = crd_abcd(m+6) - crd_abcd(m+3)
-    rdc(m) = crd_abcd(m+9) - crd_abcd(m+6)
-  enddo
+        integer :: m
+        do m = 1, 3
+            rab(m) = crd_abcd(m) - crd_abcd(m + 3)
+            rcb(m) = crd_abcd(m + 6) - crd_abcd(m + 3)
+            rdc(m) = crd_abcd(m + 9) - crd_abcd(m + 6)
+        end do
 
-  onesizcb = 1.0d0/sqrt(rcb(1)*rcb(1)+rcb(2)*rcb(2)+rcb(3)*rcb(3))
-  ucb(1:3) = rcb(1:3)*onesizcb
-  dotp_ab_cb = rab(1)*ucb(1)+rab(2)*ucb(2)+rab(3)*ucb(3)
+        onesizcb = 1.0d0/sqrt(rcb(1)*rcb(1) + rcb(2)*rcb(2) + rcb(3)*rcb(3))
+        ucb(1:3) = rcb(1:3)*onesizcb
+        dotp_ab_cb = rab(1)*ucb(1) + rab(2)*ucb(2) + rab(3)*ucb(3)
 ! upab is unit vector along component rab perp to ucb
-  dot = rab(1)*ucb(1)+rab(2)*ucb(2)+rab(3)*ucb(3)
-  upab(1:3) = rab(1:3) - dot*ucb(1:3)
-  onesizpab = 1.0d0/sqrt(upab(1)*upab(1)+upab(2)*upab(2)+upab(3)*upab(3))
-  upab(1:3) = upab(1:3) * onesizpab
-  dotp_dc_cb = rdc(1)*ucb(1)+rdc(2)*ucb(2)+rdc(3)*ucb(3)
+        dot = rab(1)*ucb(1) + rab(2)*ucb(2) + rab(3)*ucb(3)
+        upab(1:3) = rab(1:3) - dot*ucb(1:3)
+        onesizpab = 1.0d0/sqrt(upab(1)*upab(1) + upab(2)*upab(2) + upab(3)*upab(3))
+        upab(1:3) = upab(1:3)*onesizpab
+        dotp_dc_cb = rdc(1)*ucb(1) + rdc(2)*ucb(2) + rdc(3)*ucb(3)
 ! updc is unit vector along component rdc perp to ucb
-  dot = rdc(1)*ucb(1)+rdc(2)*ucb(2)+rdc(3)*ucb(3)
-  updc(1:3) = rdc(1:3) - dot*ucb(1:3)
-  onesizpdc = 1.0d0/sqrt(updc(1)*updc(1)+updc(2)*updc(2)+updc(3)*updc(3))
-  updc(1:3) = updc(1:3) * onesizpdc
+        dot = rdc(1)*ucb(1) + rdc(2)*ucb(2) + rdc(3)*ucb(3)
+        updc(1:3) = rdc(1:3) - dot*ucb(1:3)
+        onesizpdc = 1.0d0/sqrt(updc(1)*updc(1) + updc(2)*updc(2) + updc(3)*updc(3))
+        updc(1:3) = updc(1:3)*onesizpdc
 ! cosine of phi is given by dot product of upab and updc
 
 ! cosphi must be returned in the range -1.d0 to 1.d0
-! small rounding issues in the 16th decimal place of the 
+! small rounding issues in the 16th decimal place of the
 ! folloing sum can cause this value to lie outside of this range
-! by 1E-16 when: 
+! by 1E-16 when:
 !  upab(1) = updc(1) and upab(2) = updc(2) and upab(3) = updc(3)
 
-  cosphi_pre = upab(1)*updc(1)+upab(2)*updc(2)+upab(3)*updc(3)
-  cosphi = min( max(cosphi_pre, -1.d0), 1.d0) 
+        cosphi_pre = upab(1)*updc(1) + upab(2)*updc(2) + upab(3)*updc(3)
+        cosphi = min(max(cosphi_pre, -1.d0), 1.d0)
 
 ! sine of phi is given by dot product of ucb and upab x updc
-  rcross(1) = upab(2)*updc(3) - upab(3)*updc(2)
-  rcross(2) = upab(3)*updc(1) - upab(1)*updc(3)
-  rcross(3) = upab(1)*updc(2) - upab(2)*updc(1)
+        rcross(1) = upab(2)*updc(3) - upab(3)*updc(2)
+        rcross(2) = upab(3)*updc(1) - upab(1)*updc(3)
+        rcross(3) = upab(1)*updc(2) - upab(2)*updc(1)
 
 ! See note above of cosphi_pre
-  sinphi_pre = rcross(1)*ucb(1)+rcross(2)*ucb(2)+rcross(3)*ucb(3)
-  sinphi = min( max(sinphi_pre, -1.d0), 1.d0)
+        sinphi_pre = rcross(1)*ucb(1) + rcross(2)*ucb(2) + rcross(3)*ucb(3)
+        sinphi = min(max(sinphi_pre, -1.d0), 1.d0)
 
 ! gradient of phi wrt ra is perp to abc plane---movement of ra by dr perp
 ! to abc plane results in dphi of dr/sizpab
 ! perp to abc given by upab x ucb  (these are orthogonal unit vectors)
-  upabc(1) = upab(2)*ucb(3) - upab(3)*ucb(2)
-  upabc(2) = upab(3)*ucb(1) - upab(1)*ucb(3)
-  upabc(3) = upab(1)*ucb(2) - upab(2)*ucb(1)
+        upabc(1) = upab(2)*ucb(3) - upab(3)*ucb(2)
+        upabc(2) = upab(3)*ucb(1) - upab(1)*ucb(3)
+        upabc(3) = upab(1)*ucb(2) - upab(2)*ucb(1)
 ! grad of phi wrt rd is perp to bcd plane--calc sim to grad phi wrt ra
 ! perp given by updc x ucb or ucb x updc
-  upbcd(1) = ucb(2)*updc(3) - ucb(3)*updc(2)
-  upbcd(2) = ucb(3)*updc(1) - ucb(1)*updc(3)
-  upbcd(3) = ucb(1)*updc(2) - ucb(2)*updc(1)
+        upbcd(1) = ucb(2)*updc(3) - ucb(3)*updc(2)
+        upbcd(2) = ucb(3)*updc(1) - ucb(1)*updc(3)
+        upbcd(3) = ucb(1)*updc(2) - ucb(2)*updc(1)
 ! now have enough for gradphi for a and d
-  do m = 1,3
-    gradphi_abcd(m) = upabc(m) * onesizpab
-    gradphi_abcd(9+m) = upbcd(m) * onesizpdc
-  enddo
+        do m = 1, 3
+            gradphi_abcd(m) = upabc(m)*onesizpab
+            gradphi_abcd(9 + m) = upbcd(m)*onesizpdc
+        end do
 ! following chap 5 of thesis of Bekker we have grad phi wrt b = -grad phi wrt a
 ! plus some vec S and rad phi wrt c = -grad phi wrt d - S
 ! S is perp to rcb; using simple torque rule and identity for
 ! triple cross product he derives S (eqn 5.20)
-  do m = 1,3
-    vecS(m) = (dotp_ab_cb*onesizcb)*gradphi_abcd(m) + &
-           (dotp_dc_cb*onesizcb)*gradphi_abcd(m+9)
-    gradphi_abcd(m+3) = vecS(m) - gradphi_abcd(m)
-    gradphi_abcd(m+6) = -vecS(m) - gradphi_abcd(m+9)
-  enddo
-end subroutine AM_VAL_GEOM_torsion
+        do m = 1, 3
+            vecS(m) = (dotp_ab_cb*onesizcb)*gradphi_abcd(m) + &
+                (dotp_dc_cb*onesizcb)*gradphi_abcd(m + 9)
+            gradphi_abcd(m + 3) = vecS(m) - gradphi_abcd(m)
+            gradphi_abcd(m + 6) = -vecS(m) - gradphi_abcd(m + 9)
+        end do
+    end subroutine AM_VAL_GEOM_torsion
 !------------------------------------------------------------
 
-
 !------------------------------------------------------------
-subroutine charmm_dump_gold(frc,natom,ener)
-!Dump all energies and atom forces in the same format 
+    subroutine charmm_dump_gold(frc, natom, ener)
+!Dump all energies and atom forces in the same format
 !with as c36a2's CHARMM frcdump command:
 
 !  open unit 20 form write name "triala_forces.dat"
 !  frcdump unit 20
 !  close unit 20
 
-!The purpose of this is to enable direct comparision to the 
+!The purpose of this is to enable direct comparision to the
 !CHARMM binary output.
 
-  use state
-  implicit none
+        use state
+        implicit none
 
-  integer                      :: gold_file=42
-  integer                      :: i,natom
-  _REAL_,intent(in)            :: frc(3,*) !Force array in
-  type(state_rec),intent(in)   :: ener     !energy array in
-  character(len=15),parameter  :: fmt = "(a6,d26.16)" 
+        integer                      :: gold_file = 42
+        integer                      :: i, natom
+        _REAL_, intent(in)            :: frc(3, *) !Force array in
+        type(state_rec), intent(in)   :: ener     !energy array in
+        character(len=15), parameter  :: fmt = "(a6,d26.16)"
 
-  open (unit = 42, file = "charmm_gold")
+        open (unit=42, file="charmm_gold")
 
-  write(gold_file,'(a5,i12)') "NATOM",natom
-  write(gold_file,'(a6)') "ENERGY"
-  write(gold_file,fmt) "ENER", ener%pot%tot
-  write(gold_file,fmt) "BOND", ener%pot%bond
-  write(gold_file,fmt) "ANGL", ener%pot%angle
-  write(gold_file,fmt) "UREY", ener%pot%angle_ub
-  write(gold_file,fmt) "DIHE", ener%pot%dihedral
-  write(gold_file,fmt) "IMPR", ener%pot%imp
-  write(gold_file,fmt) "VDW ", ener%pot%vdw  + ener%pot%vdw_14
-  write(gold_file,fmt) "ELEC", ener%pot%elec + ener%pot%elec_14
-  write(gold_file,fmt) "CMAP", ener%pot%cmap
+        write (gold_file, '(a5,i12)') "NATOM", natom
+        write (gold_file, '(a6)') "ENERGY"
+        write (gold_file, fmt) "ENER", ener%pot%tot
+        write (gold_file, fmt) "BOND", ener%pot%bond
+        write (gold_file, fmt) "ANGL", ener%pot%angle
+        write (gold_file, fmt) "UREY", ener%pot%angle_ub
+        write (gold_file, fmt) "DIHE", ener%pot%dihedral
+        write (gold_file, fmt) "IMPR", ener%pot%imp
+        write (gold_file, fmt) "VDW ", ener%pot%vdw + ener%pot%vdw_14
+        write (gold_file, fmt) "ELEC", ener%pot%elec + ener%pot%elec_14
+        write (gold_file, fmt) "CMAP", ener%pot%cmap
 
-  write(gold_file,'(a5)') "FORCE"
-  do i=1,natom
-    write(gold_file,'(i10,3(D26.16))') i,-frc(1,i),-frc(2,i),-frc(3,i)
-  enddo
+        write (gold_file, '(a5)') "FORCE"
+        do i = 1, natom
+            write (gold_file, '(i10,3(D26.16))') i, -frc(1, i), -frc(2, i), -frc(3, i)
+        end do
 
-  close(gold_file)
+        close (gold_file)
 
-end subroutine charmm_dump_gold
+    end subroutine charmm_dump_gold
 !------------------------------------------------------------
 
 #ifdef MPI
 !------------------------------------------------------------
-subroutine mpi_bcast_charmm_params(master)
+    subroutine mpi_bcast_charmm_params(master)
 
-  use parms, only : numang, nttyp
+        use parms, only : numang, nttyp
 
-  implicit none
-   include 'mpif.h'
+        implicit none
+        include 'mpif.h'
 #  include "parallel.h"
 
 !Passed in
-  logical, intent(in) :: master
+        logical, intent(in) :: master
 
 !Local
-  integer :: ierr, i
+        integer :: ierr, i
 
 !For custom MPI Datatypes
-  integer :: MPI_chm_ang_ub_struct, &
-             MPI_chm_imp_struct    
-  !These are size two right now because the most complex structure only contains
-  !two types, in the form 4*ints, 2*reals, if we have a more complex
-  !structure later then these may need to be increased.
-  integer :: oldtypes(2), blockcounts(2), offsets(2), extent
+        integer :: MPI_chm_ang_ub_struct, &
+            MPI_chm_imp_struct
+        !These are size two right now because the most complex structure only contains
+        !two types, in the form 4*ints, 2*reals, if we have a more complex
+        !structure later then these may need to be increased.
+        integer :: oldtypes(2), blockcounts(2), offsets(2), extent
 !End for custom MPI Datatypes
 
 !CMAP
@@ -1871,30 +1814,28 @@ subroutine mpi_bcast_charmm_params(master)
 !  integer(MPI_ADDRESS_KIND) disp(block_count), base
 !  integer blocklen(block_count), type(block_count)
 
-  integer :: res
+        integer :: res
 !End CMAP
 
-  call mpi_bcast(charmm_active,1,MPI_LOGICAL,0,commsander,ierr)
+        call mpi_bcast(charmm_active, 1, MPI_LOGICAL, 0, commsander, ierr)
 
-  if (.not. charmm_active) return
+        if (.not. charmm_active) return
 
-  call mpi_bcast(charmm_nimphi,1,MPI_INTEGER,0,commsander,ierr)
-  call mpi_bcast(charmm_nub,1,MPI_INTEGER,0,commsander,ierr)
+        call mpi_bcast(charmm_nimphi, 1, MPI_INTEGER, 0, commsander, ierr)
+        call mpi_bcast(charmm_nub, 1, MPI_INTEGER, 0, commsander, ierr)
 
-  if (.not. master) then
-     call charmm_allocate_arrays()
-  endif 
+        if (.not. master) then
+            call charmm_allocate_arrays()
+        end if
 
-
-  call mpi_bcast(charmm_cn114,nttyp,MPI_DOUBLE_PRECISION,0,commsander,ierr)
-  call mpi_bcast(charmm_cn214,nttyp,MPI_DOUBLE_PRECISION,0,commsander,ierr)
-
+        call mpi_bcast(charmm_cn114, nttyp, MPI_DOUBLE_PRECISION, 0, commsander, ierr)
+        call mpi_bcast(charmm_cn214, nttyp, MPI_DOUBLE_PRECISION, 0, commsander, ierr)
 
 ! Next we need to broadcast the arrays of structures for UB and impropers.
 
 ! Setup the necessary MPI datatypes/
 
-  !--- UREY BRADLEY STRUCTURE ---
+        !--- UREY BRADLEY STRUCTURE ---
 
 !  type chm_ang_ub_struct
 !   integer        :: i,k !Index to the 2 atoms in the UB term
@@ -1902,118 +1843,116 @@ subroutine mpi_bcast_charmm_params(master)
 !   _REAL_         :: kr  !Force constant
 !  end type chm_ang_ub_struct
 
-  offsets(1) = 0
-  oldtypes(1) = MPI_INTEGER
-  blockcounts(1) = 2
+        offsets(1) = 0
+        oldtypes(1) = MPI_INTEGER
+        blockcounts(1) = 2
 
-  !Find offset from size of integers
-  call MPI_TYPE_EXTENT(MPI_INTEGER, extent, ierr)
-  offsets(2) = offsets(1) + (blockcounts(1) * extent)
-  oldtypes(2) = MPI_DOUBLE_PRECISION
-  blockcounts(2) = 2
+        !Find offset from size of integers
+        call MPI_TYPE_EXTENT(MPI_INTEGER, extent, ierr)
+        offsets(2) = offsets(1) + (blockcounts(1)*extent)
+        oldtypes(2) = MPI_DOUBLE_PRECISION
+        blockcounts(2) = 2
 
-  call MPI_Type_struct(2, blockcounts, offsets, oldtypes, &
-                       MPI_chm_ang_ub_struct,ierr)
+        call MPI_Type_struct(2, blockcounts, offsets, oldtypes, &
+            MPI_chm_ang_ub_struct, ierr)
 
-  call MPI_Type_commit(MPI_chm_ang_ub_struct,ierr)
+        call MPI_Type_commit(MPI_chm_ang_ub_struct, ierr)
 
-  call mpi_bcast(charmm_ang_ub,charmm_nub,MPI_chm_ang_ub_struct,0,commsander,ierr)
+        call mpi_bcast(charmm_ang_ub, charmm_nub, MPI_chm_ang_ub_struct, 0, commsander, ierr)
 
-  call MPI_Type_free(MPI_chm_ang_ub_struct,ierr)
+        call MPI_Type_free(MPI_chm_ang_ub_struct, ierr)
 
-  !--- END UREY BRADLEY STRUCTURE ---
+        !--- END UREY BRADLEY STRUCTURE ---
 
-  offsets(1) = 0
-  oldtypes(1) = MPI_INTEGER
-  blockcounts(1) = 4
+        offsets(1) = 0
+        oldtypes(1) = MPI_INTEGER
+        blockcounts(1) = 4
 
-  !Find offset from size of integers
-  call MPI_TYPE_EXTENT(MPI_INTEGER, extent, ierr)
-  offsets(2) = offsets(1) + (blockcounts(1) * extent)
-  oldtypes(2) = MPI_DOUBLE_PRECISION
-  blockcounts(2) = 2 
+        !Find offset from size of integers
+        call MPI_TYPE_EXTENT(MPI_INTEGER, extent, ierr)
+        offsets(2) = offsets(1) + (blockcounts(1)*extent)
+        oldtypes(2) = MPI_DOUBLE_PRECISION
+        blockcounts(2) = 2
 
-  call MPI_Type_struct(2, blockcounts, offsets, oldtypes, &
-                       MPI_chm_imp_struct,ierr)
-  call MPI_Type_commit(MPI_chm_imp_struct,ierr)
+        call MPI_Type_struct(2, blockcounts, offsets, oldtypes, &
+            MPI_chm_imp_struct, ierr)
+        call MPI_Type_commit(MPI_chm_imp_struct, ierr)
 
-  call mpi_bcast(charmm_imp,charmm_nimphi,MPI_chm_imp_struct,0,commsander,ierr)
+        call mpi_bcast(charmm_imp, charmm_nimphi, MPI_chm_imp_struct, 0, commsander, ierr)
 
-  call MPI_Type_free(MPI_chm_imp_struct,ierr)
+        call MPI_Type_free(MPI_chm_imp_struct, ierr)
 
-  !--- END CHARMM IMPROPERS STRUCTURE ---
+        !--- END CHARMM IMPROPERS STRUCTURE ---
 
-  !---- CMAP STRUCTURE  -------------
+        !---- CMAP STRUCTURE  -------------
 
-  !Let nodes other than the master know about how many cmap
-  !terms and types we're dealing with. This is done so that
-  !space for these can be allocated locally.
-  call mpi_bcast(cmap_term_count,1,MPI_INTEGER,0,commsander,ierr)
-  call mpi_bcast(cmap_type_count,1,MPI_INTEGER,0,commsander,ierr)
+        !Let nodes other than the master know about how many cmap
+        !terms and types we're dealing with. This is done so that
+        !space for these can be allocated locally.
+        call mpi_bcast(cmap_term_count, 1, MPI_INTEGER, 0, commsander, ierr)
+        call mpi_bcast(cmap_type_count, 1, MPI_INTEGER, 0, commsander, ierr)
 
-  !Now allocate locally.
-  if (.not. master) then
-     allocate(cmap_index(6,cmap_term_count),stat=ierr)
-     allocate(cmap_types(cmap_type_count),stat=ierr)
-    
-     REQUIRE(ierr==0)
-  endif
-  
-  !Farm out the list of CMAP terms
-  call mpi_bcast(cmap_index,cmap_term_count*6,MPI_INTEGER,0,commsander,ierr)
+        !Now allocate locally.
+        if (.not. master) then
+            allocate (cmap_index(6, cmap_term_count), stat=ierr)
+            allocate (cmap_types(cmap_type_count), stat=ierr)
 
-  !Now, switch focus to the actual CMAP parameter types
-  do i=1,cmap_type_count
-    !Broadcast this now because it will be needed locally for allocates
-    call mpi_bcast(cmap_types(i)%resolution,1,MPI_INTEGER,0,commsander,ierr)
-  enddo
+            REQUIRE(ierr == 0)
+        end if
 
-  if (.not. master) then
+        !Farm out the list of CMAP terms
+        call mpi_bcast(cmap_index, cmap_term_count*6, MPI_INTEGER, 0, commsander, ierr)
 
-     do i=1,cmap_type_count !Remember, this allocation has only been done on the
-                            !master
-       res = cmap_types(i)%resolution
-       allocate(cmap_types(i)%grid(res,res),stat=ierr)
-       !and allocate the derivatives arrays
-       allocate(cmap_types(i)%dPhi(res,res),stat=ierr)
-       allocate(cmap_types(i)%dPsi(res,res),stat=ierr)
-       allocate(cmap_types(i)%dPhi_dPsi(res,res),stat=ierr)
+        !Now, switch focus to the actual CMAP parameter types
+        do i = 1, cmap_type_count
+            !Broadcast this now because it will be needed locally for allocates
+            call mpi_bcast(cmap_types(i)%resolution, 1, MPI_INTEGER, 0, commsander, ierr)
+        end do
 
-       REQUIRE(ierr==0)
-     enddo
+        if (.not. master) then
 
-  endif
+            do i = 1, cmap_type_count !Remember, this allocation has only been done on the
+                !master
+                res = cmap_types(i)%resolution
+                allocate (cmap_types(i)%grid(res, res), stat=ierr)
+                !and allocate the derivatives arrays
+                allocate (cmap_types(i)%dPhi(res, res), stat=ierr)
+                allocate (cmap_types(i)%dPsi(res, res), stat=ierr)
+                allocate (cmap_types(i)%dPhi_dPsi(res, res), stat=ierr)
 
-  !Send out each CMAP type
+                REQUIRE(ierr == 0)
+            end do
 
-  !One would think the following would work:
-  ! call mpi_bcast(cmap_types, cmap_type_count, MPI_chm_cmap_struct, 0,commsander, ierr )
-  !but it does not seem to.
+        end if
 
-  do i=1,cmap_type_count
-    res = cmap_types(i)%resolution
+        !Send out each CMAP type
 
+        !One would think the following would work:
+        ! call mpi_bcast(cmap_types, cmap_type_count, MPI_chm_cmap_struct, 0,commsander, ierr )
+        !but it does not seem to.
 
-    !Broadcast the CMAP data. Ideally we would do this as a single mpi call using a derived
-    !type but there seems to be issues with using mpi_address with structures. mpi_get_address
-    !works but is MPI v2 only.
+        do i = 1, cmap_type_count
+            res = cmap_types(i)%resolution
 
+            !Broadcast the CMAP data. Ideally we would do this as a single mpi call using a derived
+            !type but there seems to be issues with using mpi_address with structures. mpi_get_address
+            !works but is MPI v2 only.
 
-    call mpi_bcast(cmap_types(i)%resolution, 1, MPI_INTEGER, 0,commsander, ierr )
-    call mpi_bcast(cmap_types(i)%gridstepsize, 1, MPI_INTEGER, 0,commsander, ierr )
-    call mpi_bcast(cmap_types(i)%gridorigin, 1, MPI_INTEGER, 0,commsander, ierr )
-    call mpi_bcast(cmap_types(i)%grid(1,1), res*res, MPI_DOUBLE_PRECISION, 0,commsander, ierr )
-    call mpi_bcast(cmap_types(i)%dPhi(1,1), res*res, MPI_DOUBLE_PRECISION, 0,commsander, ierr )
-    call mpi_bcast(cmap_types(i)%dPsi(1,1), res*res, MPI_DOUBLE_PRECISION, 0,commsander, ierr )
-    call mpi_bcast(cmap_types(i)%dPhi_dPsi(1,1), res*res, MPI_DOUBLE_PRECISION, 0,commsander, ierr )
+            call mpi_bcast(cmap_types(i)%resolution, 1, MPI_INTEGER, 0, commsander, ierr)
+            call mpi_bcast(cmap_types(i)%gridstepsize, 1, MPI_INTEGER, 0, commsander, ierr)
+            call mpi_bcast(cmap_types(i)%gridorigin, 1, MPI_INTEGER, 0, commsander, ierr)
+            call mpi_bcast(cmap_types(i)%grid(1, 1), res*res, MPI_DOUBLE_PRECISION, 0, commsander, ierr)
+            call mpi_bcast(cmap_types(i)%dPhi(1, 1), res*res, MPI_DOUBLE_PRECISION, 0, commsander, ierr)
+            call mpi_bcast(cmap_types(i)%dPsi(1, 1), res*res, MPI_DOUBLE_PRECISION, 0, commsander, ierr)
+            call mpi_bcast(cmap_types(i)%dPhi_dPsi(1, 1), res*res, MPI_DOUBLE_PRECISION, 0, commsander, ierr)
 
-  enddo
+        end do
 
-  !--- END CHARMM CMAP STRUCTURE ---
+        !--- END CHARMM CMAP STRUCTURE ---
 
-  return
+        return
 
-end subroutine mpi_bcast_charmm_params
+    end subroutine mpi_bcast_charmm_params
 !------------------------------------------------------------
 
 #endif
@@ -2029,97 +1968,96 @@ module ff11_mod
 ! adapted by Mengjue Hsieh for general-purpose CMAP
 !
 !#define CHARMM_DEBUG
-  !Variables
-  public :: cmap_active
-  
-  !Subroutines
-  public :: check_cmap
-  public :: read_cmap_params
-  public :: calc_cmap
-  public :: deallocate_cmap_arrays
+    !Variables
+    public :: cmap_active
+
+    !Subroutines
+    public :: check_cmap
+    public :: read_cmap_params
+    public :: calc_cmap
+    public :: deallocate_cmap_arrays
 #ifdef MPI
-  public :: mpi_bcast_cmap_params
+    public :: mpi_bcast_cmap_params
 #endif
 
 !------------- End Public variables and subroutines ---------
-  !CMAP related variables
+    !CMAP related variables
 !------------------------------------------------------------
 ! VARIABLES AND DERIVED DATA TYPES
 !------------------------------------------------------------
-  ! Do we have reason to be?
-  logical,save :: cmap_active
+    ! Do we have reason to be?
+    logical, save :: cmap_active
 
-  integer,save :: cmap_term_count !Number of Cross (CMAP) Terms 
-  integer,save :: cmap_type_count !Number of unique cmap terms found.
+    integer, save :: cmap_term_count !Number of Cross (CMAP) Terms
+    integer, save :: cmap_type_count !Number of unique cmap terms found.
 
-  integer, allocatable, dimension(:,:),save :: cmap_index
-  !Contains the atom index of the atoms making up the two dihedrals
-  !that form the cmap term.
-  !It is the form Atom index i,j,k,l,m of the cross term and then
-  !index to its corresponding parameter in the cmap_types array
+    integer, allocatable, dimension(:, :), save :: cmap_index
+    !Contains the atom index of the atoms making up the two dihedrals
+    !that form the cmap term.
+    !It is the form Atom index i,j,k,l,m of the cross term and then
+    !index to its corresponding parameter in the cmap_types array
 
-  !For example the atom index of the 8 atoms making up a cmap cross term: 
-  ! 1    2    3    4    2    3    4    5 
-  !There are two adjacent dihedrals here:
-  !   1    2    3    4            i,j,k,l
-  !   2    3    4    5            j,k,l,m
-  !
-  !Since this is just stepping one atom along the backbone, it can
-  !can be shorted to the form i,j,k,l,m:
-  !   1,2,3,4,5
-  !Finally the cmap_index would be:
-  !   1 2 3 4 5 1
-  ! where the final number is the position in the corresponding parameter in
-  ! the cmap_types array
-  integer,parameter :: cmap_entries_per_line = 5 !This is hard coded into the
-                                                 !file format.
-
-  !cmap_t
-  type :: cmapParameter
-    integer :: resolution ! The number of cmap data points on each axis
-                          ! Since it is a grid, this is the same for both
-                          ! axis.
-
-    integer :: gridStepSize  ! set once number_of_grid_steps is known
-                             !  360/resolution
-
-    integer  :: gridOrigin=-180 !Where the 2D grid starts in degrees
-
-    real(kind=8), pointer, dimension(:,:) :: grid
-                          !The number of grid points for that CMAP parameter
-                          !The total should be resolution**2
-
-    !The CMAP grid is used as a basis for a spline fit to obtain a CMAP
-    !energy correction for any value of phi,psi
-
-    ! Example CMAP grid with a resolution of 5:
+    !For example the atom index of the 8 atoms making up a cmap cross term:
+    ! 1    2    3    4    2    3    4    5
+    !There are two adjacent dihedrals here:
+    !   1    2    3    4            i,j,k,l
+    !   2    3    4    5            j,k,l,m
     !
-    !   +    +    +    +    +
-    !
-    !   +    +    +    +    +
-    !
-    !   +    +    +    +    +
-    !
-    !   +    +    +    +    +    Hence the degree step size is
-    !                            360/5 == 72.
-    !   +    +    +    +    +
-    !                            The origin is always -180 degrees
-    !
-    !   ^    ^    ^    ^    ^
-    !   |    |    |    |    |
-    ! -180 -108  -36  36   108 (angle in degrees)
+    !Since this is just stepping one atom along the backbone, it can
+    !can be shorted to the form i,j,k,l,m:
+    !   1,2,3,4,5
+    !Finally the cmap_index would be:
+    !   1 2 3 4 5 1
+    ! where the final number is the position in the corresponding parameter in
+    ! the cmap_types array
+    integer, parameter :: cmap_entries_per_line = 5 !This is hard coded into the
+    !file format.
 
-   !Derivative grids; populated at CMAP readtime by generate_cmap_derivatives()
-   !then used later by weight_stencil()
-    real(kind=8), pointer, dimension(:,:) :: dPhi !horizontal
-    real(kind=8), pointer, dimension(:,:) :: dPsi !vertical
-    real(kind=8), pointer, dimension(:,:) :: dPhi_dPsi !cross
+    !cmap_t
+    type :: cmapParameter
+        integer :: resolution ! The number of cmap data points on each axis
+        ! Since it is a grid, this is the same for both
+        ! axis.
 
-   end type cmapParameter
+        integer :: gridStepSize  ! set once number_of_grid_steps is known
+        !  360/resolution
 
-   !and now, an array of them
-   type(cmapParameter),allocatable,dimension(:),save :: cmap_types
+        integer  :: gridOrigin = -180 !Where the 2D grid starts in degrees
 
+        real(kind=8), pointer, dimension(:, :) :: grid
+        !The number of grid points for that CMAP parameter
+        !The total should be resolution**2
+
+        !The CMAP grid is used as a basis for a spline fit to obtain a CMAP
+        !energy correction for any value of phi,psi
+
+        ! Example CMAP grid with a resolution of 5:
+        !
+        !   +    +    +    +    +
+        !
+        !   +    +    +    +    +
+        !
+        !   +    +    +    +    +
+        !
+        !   +    +    +    +    +    Hence the degree step size is
+        !                            360/5 == 72.
+        !   +    +    +    +    +
+        !                            The origin is always -180 degrees
+        !
+        !   ^    ^    ^    ^    ^
+        !   |    |    |    |    |
+        ! -180 -108  -36  36   108 (angle in degrees)
+
+        !Derivative grids; populated at CMAP readtime by generate_cmap_derivatives()
+        !then used later by weight_stencil()
+        real(kind=8), pointer, dimension(:, :) :: dPhi !horizontal
+        real(kind=8), pointer, dimension(:, :) :: dPsi !vertical
+        real(kind=8), pointer, dimension(:, :) :: dPhi_dPsi !cross
+
+    end type cmapParameter
+
+    !and now, an array of them
+    type(cmapParameter), allocatable, dimension(:), save :: cmap_types
 
 contains
 
@@ -2128,16 +2066,16 @@ contains
 !------------------------------------------------------------
 
 !------------------------------------------------------------
-subroutine check_cmap
+    subroutine check_cmap
 
-  !This subroutine is responsible for checking the prmtop file
-  !contains the charmm-like cmap and if it does it sets
-  !cmap_active to .true.
+        !This subroutine is responsible for checking the prmtop file
+        !contains the charmm-like cmap and if it does it sets
+        !cmap_active to .true.
 
-  implicit none
+        implicit none
 
 !Needed for chngmask
-#include "ew_cntrl.h" 
+#include "ew_cntrl.h"
 
 !Passed in
 ! integer, intent(in) :: nlines
@@ -2146,7 +2084,7 @@ subroutine check_cmap
 !Local
 ! integer :: i
 
-  cmap_active = .true.
+        cmap_active = .true.
 
 ! Check for charmm is called after load_ewald_info so we can make changes
 ! to ewald namelist variables here.
@@ -2161,315 +2099,303 @@ subroutine check_cmap
 !    chngmask = 0
 ! end if
 
-  return
-end subroutine check_cmap
+        return
+    end subroutine check_cmap
 
-subroutine read_cmap_params(nf)
-  implicit none
+    subroutine read_cmap_params(nf)
+        implicit none
 
 ! Passed in
-  integer, intent(in) :: nf
+        integer, intent(in) :: nf
 
 ! Local
-  character(len=80) :: prmtop_flag, fmt, fmtin
-  character(len=2) :: word
-  integer :: iok, ier
-  integer :: i, res
+        character(len=80) :: prmtop_flag, fmt, fmtin
+        character(len=2) :: word
+        integer :: iok, ier
+        integer :: i, res
 
 ! ---------------------------
 ! * READ CMAP TERMS *
 ! ---------------------------
-  !CMAP related data
+        !CMAP related data
 
-  fmtin = '(2I8)'
-  prmtop_flag = 'CMAP_COUNT'
-  call nxtsec(nf,  6,  1,fmtin,  prmtop_flag,  fmt,  iok)
+        fmtin = '(2I8)'
+        prmtop_flag = 'CMAP_COUNT'
+        call nxtsec(nf, 6, 1, fmtin, prmtop_flag, fmt, iok)
 
-  !CHECK iok status to see if CMAP information is 
-  !actually present in the prmtop
-  !set IONERR to 1 in nxtsec to enable recovery if 
-  !CMAP_COUNT section is not present
+        !CHECK iok status to see if CMAP information is
+        !actually present in the prmtop
+        !set IONERR to 1 in nxtsec to enable recovery if
+        !CMAP_COUNT section is not present
 
-  if(iok == 0) then
-    read(nf,fmt) cmap_term_count,cmap_type_count
+        if (iok == 0) then
+            read (nf, fmt) cmap_term_count, cmap_type_count
 
-    !Allocate space for the CMAP indexes bases 
-    !on already read in cmap_term_count
-    allocate(cmap_index(6,cmap_term_count),stat=ier)
-    REQUIRE(ier==0)
+            !Allocate space for the CMAP indexes bases
+            !on already read in cmap_term_count
+            allocate (cmap_index(6, cmap_term_count), stat=ier)
+            REQUIRE(ier == 0)
 
+            !We now know how large to make the cmap_types array
+            !from the unique number of cmap types found ( cmap_type_count )
+            !hence allocate it now
+            allocate (cmap_types(cmap_type_count), stat=ier)
+            REQUIRE(ier == 0)
 
-    !We now know how large to make the cmap_types array
-    !from the unique number of cmap types found ( cmap_type_count )
-    !hence allocate it now
-    allocate(cmap_types(cmap_type_count),stat=ier)
-    REQUIRE(ier==0)
+            fmtin = '(20I4)'
+            prmtop_flag = 'CMAP_RESOLUTION'
+            call nxtsec(nf, 6, 0, fmtin, prmtop_flag, fmt, iok)
+            read (nf, fmt) (cmap_types(i)%resolution, i=1, cmap_type_count)
 
-    fmtin = '(20I4)'
-    prmtop_flag = 'CMAP_RESOLUTION'
-    call nxtsec(nf,  6,  0,fmtin,  prmtop_flag,  fmt,  iok)
-    read(nf,fmt) ( cmap_types(i)%resolution,i=1,cmap_type_count )
+            ! From the cmap_types(i)%resolution we now know how big the
+            ! array for storing the cmap data points should be
+            ! hence allocate it now
 
+            do i = 1, cmap_type_count
+                res = cmap_types(i)%resolution !shorthand for following lines
+                allocate (cmap_types(i)%grid(res, res), stat=ier)
+                !and allocate the derivatives arrays
+                allocate (cmap_types(i)%dPhi(res, res), stat=ier)
+                allocate (cmap_types(i)%dPsi(res, res), stat=ier)
+                allocate (cmap_types(i)%dPhi_dPsi(res, res), stat=ier)
 
-    ! From the cmap_types(i)%resolution we now know how big the
-    ! array for storing the cmap data points should be
-    ! hence allocate it now
+                REQUIRE(ier == 0)
 
-    do i=1,cmap_type_count
-      res = cmap_types(i)%resolution !shorthand for following lines
-      allocate(cmap_types(i)%grid(res,res),stat=ier)
-      !and allocate the derivatives arrays
-      allocate(cmap_types(i)%dPhi(res,res),stat=ier)
-      allocate(cmap_types(i)%dPsi(res,res),stat=ier)
-      allocate(cmap_types(i)%dPhi_dPsi(res,res),stat=ier)
+                !and set the step size for each one
+                cmap_types(i)%gridStepSize = 360/cmap_types(i)%resolution
 
-      REQUIRE(ier==0)
+            end do
 
-      !and set the step size for each one
-      cmap_types(i)%gridStepSize = 360/cmap_types(i)%resolution
+            do i = 1, cmap_type_count
+                write (word, '(i2.2)') i
+                fmtin = '(8(F9.5))'
+                prmtop_flag = "CMAP_PARAMETER_"//word
+                call nxtsec(nf, 6, 0, fmtin, prmtop_flag, fmt, iok)
 
-    enddo
+                read (nf, fmt) cmap_types(i)%grid( &
+                    1:cmap_types(i)%resolution, &
+                    1:cmap_types(i)%resolution)
 
-    do i=1,cmap_type_count
-      write(word,'(i2.2)')i
-      fmtin = '(8(F9.5))'
-      prmtop_flag = "CMAP_PARAMETER_" // word
-      call nxtsec(nf,  6,  0,fmtin,  prmtop_flag,  fmt,  iok)
+            end do
 
-      read(nf,fmt) cmap_types(i)%grid(&
-                         1:cmap_types(i)%resolution, &
-                         1:cmap_types(i)%resolution)
+            fmtin = '(9I8))'
+            prmtop_flag = 'CMAP_INDEX'
+            call nxtsec(nf, 6, 0, fmtin, prmtop_flag, fmt, iok)
+            read (nf, fmt) (cmap_index(1:6, i), i=1, cmap_term_count)
 
-    enddo
+            call generate_cmap_derivatives
 
-    fmtin = '(9I8))'
-    prmtop_flag = 'CMAP_INDEX'
-    call nxtsec(nf,  6,  0,fmtin,  prmtop_flag,  fmt,  iok)
-    read(nf,fmt) (cmap_index(1:6,i),i=1,cmap_term_count)
-
-    call generate_cmap_derivatives
-
-  endif !if(iok == 0)
-  !Debug
+        end if !if(iok == 0)
+        !Debug
 #ifdef FF11_DEBUG
-  write(6,'(a60)') &
-  "====================================================================="
-  write(6,'(a50)') "         CMAP parsing summary"
-  write(6,'(a60)') &
-  "====================================================================="
-  write(6,'(a)') ""
-  write(6,'(a,i4,a)') "Dumping entire contents of cmap_types(",&
-                                              cmap_type_count,")"
-  write(6,'(a)') ""
+        write (6, '(a60)') &
+            "====================================================================="
+        write (6, '(a50)') "         CMAP parsing summary"
+        write (6, '(a60)') &
+            "====================================================================="
+        write (6, '(a)') ""
+        write (6, '(a,i4,a)') "Dumping entire contents of cmap_types(", &
+            cmap_type_count, ")"
+        write (6, '(a)') ""
 
-  do i=1,cmap_type_count
-    write(6,'(a,i4,a,i4,a)') "cmap_types(",i,"/",cmap_type_count,")"
-    call show_cmap( cmap_types(i) )
-  enddo
+        do i = 1, cmap_type_count
+            write (6, '(a,i4,a,i4,a)') "cmap_types(", i, "/", cmap_type_count, ")"
+            call show_cmap(cmap_types(i))
+        end do
 
-  write(6,'(a)') "Atom index to CMAP index map:"
-  write(6,'(a,i4)') "cmap_term_count is:",cmap_term_count
-  do i=1,cmap_term_count
-    write(6,'(6I8)') cmap_index(1:6,i)
-  enddo
-  write(6,'(a)') ""
+        write (6, '(a)') "Atom index to CMAP index map:"
+        write (6, '(a,i4)') "cmap_term_count is:", cmap_term_count
+        do i = 1, cmap_term_count
+            write (6, '(6I8)') cmap_index(1:6, i)
+        end do
+        write (6, '(a)') ""
 #endif /* FF11_DEBUG */
 
 ! ------------------------------
 ! * ENDREAD CMAP TERMS *
 ! ------------------------------
 
-  return
-end subroutine read_cmap_params
+        return
+    end subroutine read_cmap_params
 !------------------------------------------------------------
-subroutine generate_cmap_derivatives
-  !Called *once* after CMAP parameters have been read. This populates
-  !various partial derivatives in the cmapParameter%{dPsi,dPhi,dPsi_dPhi}
-  !object. It does this using a cubic spline on the read in CMAP grid.
-  !
-  !Later, this information is
-  !used to evaluate an arbitary phi/phi angle for a given crossterm.
+    subroutine generate_cmap_derivatives
+        !Called *once* after CMAP parameters have been read. This populates
+        !various partial derivatives in the cmapParameter%{dPsi,dPhi,dPsi_dPhi}
+        !object. It does this using a cubic spline on the read in CMAP grid.
+        !
+        !Later, this information is
+        !used to evaluate an arbitary phi/phi angle for a given crossterm.
 
-  implicit none
+        implicit none
 
-  integer :: i,row,col,j,k,step_size
-  integer :: res,halfRes,twoRes
-  _REAL_,allocatable,dimension(:)   :: tmpy,tmpy2
+        integer :: i, row, col, j, k, step_size
+        integer :: res, halfRes, twoRes
+        _REAL_, allocatable, dimension(:)   :: tmpy, tmpy2
 
-  write(6,'(a)') '|CMAP: Reticulating splines.'
-  do i=1,cmap_type_count
+        write (6, '(a)') '|CMAP: Reticulating splines.'
+        do i = 1, cmap_type_count
 
-    !Assign these here to make the code more readable
-    !in this section
-    res       = cmap_types(i)%resolution
-    halfRes   = cmap_types(i)%resolution/2
-    twoRes    = cmap_types(i)%resolution*2
-    step_size = cmap_types(i)%gridStepSize
-     
-    allocate( tmpy(twoRes) ) 
-    allocate( tmpy2(twoRes) )
+            !Assign these here to make the code more readable
+            !in this section
+            res = cmap_types(i)%resolution
+            halfRes = cmap_types(i)%resolution/2
+            twoRes = cmap_types(i)%resolution*2
+            step_size = cmap_types(i)%gridStepSize
 
-    !1) calculate dE/dPhi
-    do row=1,res !Step up one row each cycle, 
-                 !splining across all columns
+            allocate (tmpy(twoRes))
+            allocate (tmpy2(twoRes))
 
+            !1) calculate dE/dPhi
+            do row = 1, res !Step up one row each cycle,
+                !splining across all columns
 
-      !Fill an *extended* tmp array (tmpy) for with CMAP values
-      !for the 1D splining
-      !CHARMM does this to (I think) avoid edge issues
+                !Fill an *extended* tmp array (tmpy) for with CMAP values
+                !for the 1D splining
+                !CHARMM does this to (I think) avoid edge issues
 
-      k=1 !interal offset counter for tmp array
-      do j=(1-halfRes),(res+halfRes) !-11 --> 36
-        tmpy(k) = cmap_types(i)%grid(row,cmapGridWrapper(j,cmap_types(i)%resolution))
-        k=k+1
-      enddo
+                k = 1 !interal offset counter for tmp array
+                do j = (1 - halfRes), (res + halfRes) !-11 --> 36
+                    tmpy(k) = cmap_types(i)%grid(row, cmapGridWrapper(j, cmap_types(i)%resolution))
+                    k = k + 1
+                end do
 
-      !Calculate spline coeffients (tmpy2) for each of the 1D
-      !horizontal rows in the CMAP table
-      call generate_cubic_spline(twoRes, step_size, tmpy, tmpy2)
+                !Calculate spline coeffients (tmpy2) for each of the 1D
+                !horizontal rows in the CMAP table
+                call generate_cubic_spline(twoRes, step_size, tmpy, tmpy2)
 
+                !Calculate %dPhi for using each row
+                !of energies and corresponding splines in tmpy and tmpy2
+                do j = 1, res
+                    !evaluate_cubic_spline(n,step_size, gridOrigin, y,y2,xin,yout)
 
+                    !offset array passed to evaluate_cubic_spline
+                    call evaluate_cubic_spline(step_size, tmpy, tmpy2, &
+                        j + 12, cmap_types(i)%dPhi(row, j))
+                end do
+            end do !row
 
-      !Calculate %dPhi for using each row 
-      !of energies and corresponding splines in tmpy and tmpy2
-      do j=1,res
-        !evaluate_cubic_spline(n,step_size, gridOrigin, y,y2,xin,yout)
+            !2) calculate dE/dPsi
+            do col = 1, res !Step across one column each cycle,
+                !spinling up each column
 
-        !offset array passed to evaluate_cubic_spline
-        call evaluate_cubic_spline(step_size, tmpy, tmpy2, &
-                                   j+12, cmap_types(i)%dPhi(row,j))
-      enddo
-    enddo !row
+                k = 1
+                do j = (1 - halfRes), (res + halfRes) !-11 --> 36
+                    tmpy(k) = cmap_types(i)%grid(cmapGridWrapper(j, cmap_types(i)%resolution), col)
+                    k = k + 1
+                end do
 
+                !Calculate spline coeffients (tmpy2) for each of the 1D
+                !vertical columns in the CMAP table
+                call generate_cubic_spline(twoRes, step_size, tmpy, tmpy2)
 
-    !2) calculate dE/dPsi 
-    do col=1,res !Step across one column each cycle,
-                 !spinling up each column
+                !Calculate %dPsi for using each column of energies and
+                !corresponding splines in tmpy and tmpy2
+                do j = 1, res
+                    !offset array passed to evaluate_cubic_spline
+                    call evaluate_cubic_spline(step_size, tmpy, tmpy2, &
+                        j + 12, cmap_types(i)%dPsi(j, col))
+                end do
+            end do !col
 
-      k=1 
-      do j=(1-halfRes),(res+halfRes) !-11 --> 36
-        tmpy(k) = cmap_types(i)%grid(cmapGridWrapper(j,cmap_types(i)%resolution), col)
-        k=k+1
-      enddo
+            !3) calculate d^2E/dPhidPsi
+            !TODO Interpolate partitial derivative of psi; dE/dPhi ?
 
-      !Calculate spline coeffients (tmpy2) for each of the 1D
-      !vertical columns in the CMAP table
-      call generate_cubic_spline(twoRes, step_size, tmpy, tmpy2)
+            do col = 1, res !TODO
 
+                k = 1
+                do j = (1 - halfRes), (res + halfRes) !-11 --> 36
+                    tmpy(k) = cmap_types(i)%dPhi(cmapGridWrapper(j, cmap_types(i)%resolution), col)
+                    k = k + 1
+                end do
 
-      !Calculate %dPsi for using each column of energies and 
-      !corresponding splines in tmpy and tmpy2
-      do j=1,res
-        !offset array passed to evaluate_cubic_spline
-        call evaluate_cubic_spline(step_size, tmpy, tmpy2,&
-                                   j+12,cmap_types(i)%dPsi(j,col)) 
-      enddo
-    enddo !col
+                call generate_cubic_spline(twoRes, step_size, tmpy, tmpy2)
 
+                !TODO
+                do j = 1, res
+                    call evaluate_cubic_spline(step_size, tmpy, tmpy2, &
+                        j + 12, cmap_types(i)%dPhi_dPsi(j, col))
+                end do
+            end do
 
+            !release the arrays used by the splining code
+            deallocate (tmpy)
+            deallocate (tmpy2)
 
-    !3) calculate d^2E/dPhidPsi
-    !TODO Interpolate partitial derivative of psi; dE/dPhi ?
-    
-    do col=1,res !TODO
+        end do !cmap_type_count
 
-      k=1 
-      do j=(1-halfRes),(res+halfRes) !-11 --> 36
-        tmpy(k) = cmap_types(i)%dPhi(cmapGridWrapper(j,cmap_types(i)%resolution),col)
-        k=k+1
-      enddo
-
-      call generate_cubic_spline(twoRes, step_size, tmpy, tmpy2)
-
-      !TODO
-      do j=1,res
-        call evaluate_cubic_spline(step_size, tmpy, tmpy2, &
-                                   j+12,cmap_types(i)%dPhi_dPsi(j,col))
-      enddo
-    enddo
-
-    !release the arrays used by the splining code
-    deallocate(tmpy)
-    deallocate(tmpy2)
-
-
-  enddo !cmap_type_count
-
-end subroutine generate_cmap_derivatives
+    end subroutine generate_cmap_derivatives
 !------------------------------------------------------------
-function cmapGridWrapper(value,resolution)
-  !Use modular arithmetic to ensure that coordinates on the grid, 
-  !wrap around at the edges
+    function cmapGridWrapper(value, resolution)
+        !Use modular arithmetic to ensure that coordinates on the grid,
+        !wrap around at the edges
 
-  integer, intent(in)  :: value
-  integer              :: cmapGridWrapper
-!  integer, parameter   :: resolution = 24 !I should take this from 
-                                          !cmapParameter%resolution
-  integer, intent(in)  :: resolution 
+        integer, intent(in)  :: value
+        integer              :: cmapGridWrapper
+!  integer, parameter   :: resolution = 24 !I should take this from
+        !cmapParameter%resolution
+        integer, intent(in)  :: resolution
 
-  cmapGridWrapper = modulo(value-1,resolution)+1
+        cmapGridWrapper = modulo(value - 1, resolution) + 1
 
-end function 
+    end function cmapGridWrapper
 !------------------------------------------------------------
 !------------------------------------------------------------
-subroutine generate_cubic_spline(n,step_size,y,y2)
-  !Generates the set cubic splining coefficients from a 1D array with 
-  !the assumption that the distance between the points is constant. This
-  !interpolation method ensures that the derivative of this spline is 
-  !continuous across the boundary of two intervals.
+    subroutine generate_cubic_spline(n, step_size, y, y2)
+        !Generates the set cubic splining coefficients from a 1D array with
+        !the assumption that the distance between the points is constant. This
+        !interpolation method ensures that the derivative of this spline is
+        !continuous across the boundary of two intervals.
 
-  !These coefficients are only calculated *once*, but are later used on 
-  !multiple occassions by another subroutine to interpolate anywhere 
-  !between two points in this 1D array
+        !These coefficients are only calculated *once*, but are later used on
+        !multiple occassions by another subroutine to interpolate anywhere
+        !between two points in this 1D array
 
-  use constants, only : zero, half, one, two, three
-  implicit none
+        use constants, only : zero, half, one, two, three
+        implicit none
 
-  integer, intent(in)                :: n !Number of values in below array
-  integer, intent(in)                :: step_size !in degrees
-  !Since n and step_size are known, there is no need to pass an input 
-  !array of x to this subroutine and many simplications can be made 
-  !within this subroutine since we are using a fixed interval
-  _REAL_,  intent(in),dimension(:)   :: y !1D array of y values
-  _REAL_,  intent(out),dimension(:)  :: y2 !calculated coefficients
+        integer, intent(in)                :: n !Number of values in below array
+        integer, intent(in)                :: step_size !in degrees
+        !Since n and step_size are known, there is no need to pass an input
+        !array of x to this subroutine and many simplications can be made
+        !within this subroutine since we are using a fixed interval
+        _REAL_, intent(in), dimension(:)   :: y !1D array of y values
+        _REAL_, intent(out), dimension(:)  :: y2 !calculated coefficients
 
+        _REAL_, allocatable, dimension(:)   :: tmp
+        integer                            :: i
+        _REAL_                             :: p
 
-  _REAL_, allocatable,dimension(:)   :: tmp
-  integer                            :: i
-  _REAL_                             :: p
+        !tmp array used internally for the decomposition loop
+        allocate (tmp(n))
 
-  !tmp array used internally for the decomposition loop
-  allocate( tmp(n) )
+        !Lower and upper boundaries are natural
+        y2(1) = zero
+        tmp(1) = zero
 
-  !Lower and upper boundaries are natural
-  y2(1)=zero
-  tmp(1)=zero
+        do i = 2, n - 1
+            !y2 is used initially as a temp storage array
+            p = half*y2(i - 1) + two
+            !Debug
+            y2(i) = -HALF/p
+            tmp(i) = (y(i + 1) - two*y(i) + y(i - 1))/step_size
+            tmp(i) = (three*(tmp(i)/step_size) - HALF*tmp(i - 1))/p
 
-  do i=2, n-1
-    !y2 is used initially as a temp storage array
-    p=half*y2(i-1) + two
-    !Debug
-    y2(i) = -HALF/p
-    tmp(i) = ( y(i+1)-two*y(i) + y(i-1) ) / step_size
-    tmp(i) = ( three* (tmp(i)/step_size) - HALF *tmp( i-1 ) )/p
+        end do
 
-  enddo
+        !Set the upper boundary
+        y2(n) = zero
 
-  !Set the upper boundary
-  y2(n) = zero
+        do i = n - 1, 1, -1
+            y2(i) = y2(i)*y2(i + 1) + tmp(i)
+        end do
 
-  do i=n-1,1,-1
-    y2(i)=y2(i)*y2(i+1)+tmp(i)
-  enddo
+        deallocate (tmp)
 
-
-  deallocate(tmp)
-    
-end subroutine generate_cubic_spline
+    end subroutine generate_cubic_spline
 !------------------------------------------------------------
 
 !------------------------------------------------------------
-subroutine evaluate_cubic_spline(step_size, y, y2, grid_point, dyout)
+    subroutine evaluate_cubic_spline(step_size, y, y2, grid_point, dyout)
 
 !subroutine evaluate_cubic_spline(n,step_size, gridOrigin, y,y2,xin,dyout)
 !This is reduced version of a typical cubic spline routine
@@ -2478,651 +2404,621 @@ subroutine evaluate_cubic_spline(step_size, y, y2, grid_point, dyout)
 !It is "reduced" since it is used here to obtain smooth derivatives
 !ONLY at discrete points on the CMAP grid, hence it never interpolates
 !between the points, therefore the coefficient a is always 1.0 and b is
-!always 0.0. In addition,  there is never a need to return the 
+!always 0.0. In addition,  there is never a need to return the
 !interpolated value since it will be aways the same as the value passed to it.
 
+        use constants, only : zero, half, one, two, three
+        implicit none
 
-  use constants, only : zero, half, one, two, three
-  implicit none
-
-  integer, intent(in)                :: step_size !in degrees
-                                                   !in degrees
-  !Since n and step_size are known, there is no need to pass an input
-  !array of x to this subroutine and many simplications can be made
-  !within this subroutine since we are using a fixed interval
-  _REAL_, intent(in),dimension(:)    :: y  !1D array of y values
-  _REAL_, intent(in),dimension(:)    :: y2 !calculated coefficients 
-                                           !from generate_cubic_spline()
+        integer, intent(in)                :: step_size !in degrees
+        !in degrees
+        !Since n and step_size are known, there is no need to pass an input
+        !array of x to this subroutine and many simplications can be made
+        !within this subroutine since we are using a fixed interval
+        _REAL_, intent(in), dimension(:)    :: y  !1D array of y values
+        _REAL_, intent(in), dimension(:)    :: y2 !calculated coefficients
+        !from generate_cubic_spline()
 !Hack to allow grid points to be passed
-  integer, intent(in)                 :: grid_point !WIP
-                                             !nearest GRID point
-                                              !interpolated value
-  _REAL_, intent(out)                :: dyout !cubuic spline
-                                              !interpolated gradient
+        integer, intent(in)                 :: grid_point !WIP
+        !nearest GRID point
+        !interpolated value
+        _REAL_, intent(out)                :: dyout !cubuic spline
+        !interpolated gradient
 
+        _REAL_                             :: a, b!,c,d
+        !Cubic spline coefficents
+        integer                            :: lo
 
-  _REAL_                             :: a,b!,c,d 
-                                        !Cubic spline coefficents
-  integer                            :: lo
+        !Work out nearest complete grid point on the CMAP grid from xin
 
+        lo = grid_point
 
-  !Work out nearest complete grid point on the CMAP grid from xin
+        a = 1.0
+        b = 0.0
 
-  lo = grid_point
+        dyout = (y(lo + 1) - y(lo))/step_size &
+            - ((3*a*a - 1)/6)*step_size*y2(lo) &
+            + ((3*b*b - 1)/6)*step_size*y2(lo + 1)
 
-
-  a = 1.0
-  b = 0.0
-
-
-  dyout =  (y(lo+1)-y(lo))/step_size                    &
-         - ((3*a*a-1)/6)*step_size*y2(lo)                 &
-         + ((3*b*b-1)/6)*step_size*y2(lo+1)               
-
-end subroutine evaluate_cubic_spline
+    end subroutine evaluate_cubic_spline
 !------------------------------------------------------------
 
 !------------------------------------------------------------
-subroutine calc_cmap(crd,epl,frc)
-  !This operates on the CMAP atoms in the coordinate array, calculates the 
-  !total CMAP energy and updates the force array accordingly.
+    subroutine calc_cmap(crd, epl, frc)
+        !This operates on the CMAP atoms in the coordinate array, calculates the
+        !total CMAP energy and updates the force array accordingly.
 
-  !This process is broken down into the following steps
+        !This process is broken down into the following steps
 
-  ! 1) Loop over all CMAP terms present in the prmtop file
-  !   a) Extract the four coordinates (ijkl) of the first dihedral and calculate
-  !      that dihedral angle (phi) and the derivatives of the four coordinates 
-  !      with respect to phi.
-  !
-  !   b) Extract the four coordinates (jklm) of the second dihedral and 
-  !      calculate that dihedral angle (psi) and the derivatives of the four 
-  !      coordinates with respect to psi.
+        ! 1) Loop over all CMAP terms present in the prmtop file
+        !   a) Extract the four coordinates (ijkl) of the first dihedral and calculate
+        !      that dihedral angle (phi) and the derivatives of the four coordinates
+        !      with respect to phi.
+        !
+        !   b) Extract the four coordinates (jklm) of the second dihedral and
+        !      calculate that dihedral angle (psi) and the derivatives of the four
+        !      coordinates with respect to psi.
 
-  !   c) The sixth term in cmap_index() is an index to the CMAP parameter 
-  !      associated with that CMAP term. Now call that with phi and psi 
-  !      to obtain the interpolated energy value as well as the partial
-  !      derivatives of dPhi with ijkl and dPsi with jklm. The CMAP
-  !      energy is added to a counter.
+        !   c) The sixth term in cmap_index() is an index to the CMAP parameter
+        !      associated with that CMAP term. Now call that with phi and psi
+        !      to obtain the interpolated energy value as well as the partial
+        !      derivatives of dPhi with ijkl and dPsi with jklm. The CMAP
+        !      energy is added to a counter.
 
-  !   d) Next, to obtain the force on the five atoms involved here, 
-  !      the chain rule is invoked. This yields the energy gradient 
-  !      with respect to the two sets of four atoms coordinates. 
-  !      Finally the negative of this is added to the to respective
-  !      atom within the force array.
+        !   d) Next, to obtain the force on the five atoms involved here,
+        !      the chain rule is invoked. This yields the energy gradient
+        !      with respect to the two sets of four atoms coordinates.
+        !      Finally the negative of this is added to the to respective
+        !      atom within the force array.
 
-    
-  use constants, only : one,RAD_TO_DEG, DEG_TO_RAD 
-  implicit none
+        use constants, only : one, RAD_TO_DEG, DEG_TO_RAD
+        implicit none
 
-  ! Calculates CHARMM CMAP terms
-  ! Passed in
-  _REAL_,intent(in)    :: crd(3,*) !Coordinate array in
-  _REAL_,intent(inout) :: frc(3,*) !Force array in and out
-  _REAL_,intent(inout) :: epl      !AMBER Dihedral energy.
+        ! Calculates CHARMM CMAP terms
+        ! Passed in
+        _REAL_, intent(in)    :: crd(3, *) !Coordinate array in
+        _REAL_, intent(inout) :: frc(3, *) !Force array in and out
+        _REAL_, intent(inout) :: epl      !AMBER Dihedral energy.
 
-  !LOCAL
-  _REAL_ :: phi,psi !Value of repsective dihedral in degrees
-  _REAL_ :: e_cmap  !Local CMAP energy counter
-  _REAL_ :: dE_dPhi, dE_dPsi !Derivative of energy with 
-                             !respect to dihedral angles
+        !LOCAL
+        _REAL_ :: phi, psi !Value of repsective dihedral in degrees
+        _REAL_ :: e_cmap  !Local CMAP energy counter
+        _REAL_ :: dE_dPhi, dE_dPsi !Derivative of energy with
+        !respect to dihedral angles
 
-  _REAL_ :: crd_ijkl(12),dPhi_dijkl(12) !Coordinates and derivatives 
-  _REAL_ :: cosPhi_ijkl,sinPhi_ijkl     !of first dihedral
+        _REAL_ :: crd_ijkl(12), dPhi_dijkl(12) !Coordinates and derivatives
+        _REAL_ :: cosPhi_ijkl, sinPhi_ijkl     !of first dihedral
 
-  _REAL_ :: crd_jklm(12),dPsi_djklm(12)
-  _REAL_ :: cosPsi_jklm,sinPsi_jklm
+        _REAL_ :: crd_jklm(12), dPsi_djklm(12)
+        _REAL_ :: cosPsi_jklm, sinPsi_jklm
 
+        _REAL_ :: dE_dijkl(12), dE_djklm(12) !Final derivatives of energy wrt
+        !to coordinate
 
-  _REAL_ :: dE_dijkl(12), dE_djklm(12) !Final derivatives of energy wrt
-                                       !to coordinate
-
-  integer :: m,i
-  integer :: cmap_type_index
-  _REAL_  :: rad_to_deg_coeff
-  _REAL_  :: local_energy_accumulator
+        integer :: m, i
+        integer :: cmap_type_index
+        _REAL_  :: rad_to_deg_coeff
+        _REAL_  :: local_energy_accumulator
 
 #ifdef MPI
 # include "parallel.h"
 #endif
 
-  local_energy_accumulator = 0.0d0 !zero the CMAP energies for this step's evaulation
+        local_energy_accumulator = 0.0d0 !zero the CMAP energies for this step's evaulation
 
 #ifdef MPI
-  do i = mytaskid+1, cmap_term_count, numtasks
+        do i = mytaskid + 1, cmap_term_count, numtasks
 #else
-  do i = 1, cmap_term_count !Loop over all CMAP terms
+        do i = 1, cmap_term_count !Loop over all CMAP terms
 #endif
-     cmap_type_index = cmap_index(6,i) !Index to which CMAP type the current CMAP term is
-                                       !Local to current loop
+            cmap_type_index = cmap_index(6, i) !Index to which CMAP type the current CMAP term is
+            !Local to current loop
 
 #ifdef CHARMM_DEBUG
-         write(6,'(a)'),""
-         write(6,'(a)'),""
-         write(6,'(a,I8)'),"CMAP term",i
-         write(6,'(5I8,4XI8)'), cmap_index(1:6,i)
+            write (6, '(a)'), ""
+            write (6, '(a)'), ""
+            write (6, '(a,I8)'), "CMAP term", i
+            write (6, '(5I8,4XI8)'), cmap_index(1:6, i)
 #endif
 
-    !First dihedral (phi)
+            !First dihedral (phi)
 
-    do m = 1,3 !First loop assign x component of coordinate, 
-               !second assign y, and finally z
-      crd_ijkl(m)   = crd(m,cmap_index(1,i) )
-      crd_ijkl(m+3) = crd(m,cmap_index(2,i) )
-      crd_ijkl(m+6) = crd(m,cmap_index(3,i) )
-      crd_ijkl(m+9) = crd(m,cmap_index(4,i) )
-    enddo
+            do m = 1, 3 !First loop assign x component of coordinate,
+                !second assign y, and finally z
+                crd_ijkl(m) = crd(m, cmap_index(1, i))
+                crd_ijkl(m + 3) = crd(m, cmap_index(2, i))
+                crd_ijkl(m + 6) = crd(m, cmap_index(3, i))
+                crd_ijkl(m + 9) = crd(m, cmap_index(4, i))
+            end do
 
-    !Calculate the dihedral angle (phi) and the derivatives of the 
-    !four coordinates with respect to phi. Remember this subroutine is
-    !operating in radians
-    call AM_VAL_GEOM_torsion(crd_ijkl,dPhi_dijkl,cosphi_ijkl,sinphi_ijkl)
- 
-    cosphi_ijkl = min(cosphi_ijkl, one)
-    cosphi_ijkl = max(cosphi_ijkl,-one)
-    phi = sign(acos(cosphi_ijkl),sinphi_ijkl) * RAD_TO_DEG
+            !Calculate the dihedral angle (phi) and the derivatives of the
+            !four coordinates with respect to phi. Remember this subroutine is
+            !operating in radians
+            call AM_VAL_GEOM_torsion(crd_ijkl, dPhi_dijkl, cosphi_ijkl, sinphi_ijkl)
+
+            cosphi_ijkl = min(cosphi_ijkl, one)
+            cosphi_ijkl = max(cosphi_ijkl, -one)
+            phi = sign(acos(cosphi_ijkl), sinphi_ijkl)*RAD_TO_DEG
 
 #ifdef CHARMM_DEBUG
-        write(6,'(10x,a)'),"Dihedral 1 "
-        write(6,'(10x,4I8)'), cmap_index(1:4,i)
+            write (6, '(10x,a)'), "Dihedral 1 "
+            write (6, '(10x,4I8)'), cmap_index(1:4, i)
 
-        write(6,'( 10x,a)'),"coordinates"
-        write(6,'( 10x,a1,3(f10.6,x) )'),"i",crd_ijkl(1:3)
-        write(6,'( 10x,a1,3(f10.6,x) )'),"j",crd_ijkl(4:6)
-        write(6,'( 10x,a1,3(f10.6,x) )'),"k",crd_ijkl(7:9)
-        write(6,'( 10x,a1,3(f10.6,x) )'),"l",crd_ijkl(10:12)
-        write(6,'(a)'),""
-        write(6,'( 10x,a20,2E25.17 )'),"cosphi, sinphi: ",cosphi_ijkl,sinphi_ijkl
-        write(6,'( 10x,a10,f8.3 )'),"Angle: ",phi
-        write(6,'(a)'),""
+            write (6, '( 10x,a)'), "coordinates"
+            write (6, '( 10x,a1,3(f10.6,x) )'), "i", crd_ijkl(1:3)
+            write (6, '( 10x,a1,3(f10.6,x) )'), "j", crd_ijkl(4:6)
+            write (6, '( 10x,a1,3(f10.6,x) )'), "k", crd_ijkl(7:9)
+            write (6, '( 10x,a1,3(f10.6,x) )'), "l", crd_ijkl(10:12)
+            write (6, '(a)'), ""
+            write (6, '( 10x,a20,2E25.17 )'), "cosphi, sinphi: ", cosphi_ijkl, sinphi_ijkl
+            write (6, '( 10x,a10,f8.3 )'), "Angle: ", phi
+            write (6, '(a)'), ""
 #endif
 
+            !Second dihedral (psi)
 
-    !Second dihedral (psi)
+            do m = 1, 3 !First loop assign x component of coordinate,
+                !second assign y, and finally z
+                crd_jklm(m) = crd(m, cmap_index(2, i))
+                crd_jklm(m + 3) = crd(m, cmap_index(3, i))
+                crd_jklm(m + 6) = crd(m, cmap_index(4, i))
+                crd_jklm(m + 9) = crd(m, cmap_index(5, i))
+            end do
 
-    do m = 1,3 !First loop assign x component of coordinate,
-               !second assign y, and finally z
-      crd_jklm(m)   = crd(m,cmap_index(2,i) )
-      crd_jklm(m+3) = crd(m,cmap_index(3,i) )
-      crd_jklm(m+6) = crd(m,cmap_index(4,i) )
-      crd_jklm(m+9) = crd(m,cmap_index(5,i) )
-    enddo
+            !Calculate the dihedral angle (psi) and the derivatives of the
+            !four coordinates with respect to psi. Remember this subroutine is
+            !operating in radians
+            call AM_VAL_GEOM_torsion(crd_jklm, dPsi_djklm, cospsi_jklm, sinpsi_jklm)
 
-    !Calculate the dihedral angle (psi) and the derivatives of the
-    !four coordinates with respect to psi. Remember this subroutine is
-    !operating in radians
-    call AM_VAL_GEOM_torsion(crd_jklm,dPsi_djklm,cospsi_jklm,sinpsi_jklm)
-
-    cospsi_jklm = min(cospsi_jklm, one)
-    cospsi_jklm = max(cospsi_jklm,-one)
-    psi = sign(acos(cospsi_jklm),sinpsi_jklm) * RAD_TO_DEG
+            cospsi_jklm = min(cospsi_jklm, one)
+            cospsi_jklm = max(cospsi_jklm, -one)
+            psi = sign(acos(cospsi_jklm), sinpsi_jklm)*RAD_TO_DEG
 #ifdef CHARMM_DEBUG
-        write(6,'(10x,a)'),"Dihedral 2 "
-        write(6,'(10x,4I8)'), cmap_index(2:5,i)
+            write (6, '(10x,a)'), "Dihedral 2 "
+            write (6, '(10x,4I8)'), cmap_index(2:5, i)
 
-        write(6,'( 10x,a)'),"coordinates"
-        write(6,'( 10x,a1,3(f10.6,x) )'),"j",crd_jklm(1:3)
-        write(6,'( 10x,a1,3(f10.6,x) )'),"k",crd_jklm(4:6)
-        write(6,'( 10x,a1,3(f10.6,x) )'),"l",crd_jklm(7:9)
-        write(6,'( 10x,a1,3(f10.6,x) )'),"m",crd_jklm(10:12)
-        write(6,'(a)'),""
-        write(6,'( 10x,a20,2E25.17 )'),"cospsi, sinpsi: ",cospsi_jklm,sinpsi_jklm
-        write(6,'( 10x,a10,f8.3 )'),"Angle: ",psi
-        write(6,'(a)'),""
+            write (6, '( 10x,a)'), "coordinates"
+            write (6, '( 10x,a1,3(f10.6,x) )'), "j", crd_jklm(1:3)
+            write (6, '( 10x,a1,3(f10.6,x) )'), "k", crd_jklm(4:6)
+            write (6, '( 10x,a1,3(f10.6,x) )'), "l", crd_jklm(7:9)
+            write (6, '( 10x,a1,3(f10.6,x) )'), "m", crd_jklm(10:12)
+            write (6, '(a)'), ""
+            write (6, '( 10x,a20,2E25.17 )'), "cospsi, sinpsi: ", cospsi_jklm, sinpsi_jklm
+            write (6, '( 10x,a10,f8.3 )'), "Angle: ", psi
+            write (6, '(a)'), ""
 #endif
 
-     !Calculate the CMAP correction energy using the associated CMAP
-     !parameter. Also calculate the partial derivatives:  dE/dPhi and dE/Psi
+            !Calculate the CMAP correction energy using the associated CMAP
+            !parameter. Also calculate the partial derivatives:  dE/dPhi and dE/Psi
 
-     !Remember the sixth element of cmap_index ( cmap_index(6,i) )
-     !is the mapping to its corresponding parameter type:
-     !
-     !       11      13      15      21      23      1
-     !        i       j       k       l       m      index to CMAP type
+            !Remember the sixth element of cmap_index ( cmap_index(6,i) )
+            !is the mapping to its corresponding parameter type:
+            !
+            !       11      13      15      21      23      1
+            !        i       j       k       l       m      index to CMAP type
 
-     call calc_cmap_from_phi_psi(phi, psi,                      & 
-                                        cmap_types(cmap_type_index), &
-                                        e_cmap, dE_dPhi, dE_dPsi )
+            call calc_cmap_from_phi_psi(phi, psi, &
+                cmap_types(cmap_type_index), &
+                e_cmap, dE_dPhi, dE_dPsi)
 
-     !Update the total cmap energy with calculated energy from the current
-     !CMAP term
-     local_energy_accumulator = local_energy_accumulator + e_cmap
+            !Update the total cmap energy with calculated energy from the current
+            !CMAP term
+            local_energy_accumulator = local_energy_accumulator + e_cmap
 
+            !In AM_VAL_GEOM_torsion(), we've been working in radians,
+            !and conversly calc_cmap_from_phi_psi(), in degrees.
+            !We need to convert over to degrees per interval.
 
-     !In AM_VAL_GEOM_torsion(), we've been working in radians,
-     !and conversly calc_cmap_from_phi_psi(), in degrees.
-     !We need to convert over to degrees per interval.
+            rad_to_deg_coeff = RAD_TO_DEG*1/cmap_types(cmap_type_index)%gridStepSize
 
-     rad_to_deg_coeff = RAD_TO_DEG * 1/cmap_types(cmap_type_index)%gridStepSize
+            dPhi_dijkl(1:12) = dPhi_dijkl(1:12)*rad_to_deg_coeff
+            dPsi_djklm(1:12) = dPsi_djklm(1:12)*rad_to_deg_coeff
 
-     dPhi_dijkl(1:12) = dPhi_dijkl(1:12) * rad_to_deg_coeff
-     dPsi_djklm(1:12) = dPsi_djklm(1:12) * rad_to_deg_coeff
+            !Use chain rule to obtain the energy gradient wrt to coordinate
 
+            dE_dijkl(1:12) = dE_dPhi*dPhi_dijkl(1:12)
 
-     !Use chain rule to obtain the energy gradient wrt to coordinate
+            dE_djklm(1:12) = dE_dPsi*dPsi_djklm(1:12)
 
-     dE_dijkl(1:12) = dE_dPhi*dPhi_dijkl(1:12)
-    
-     dE_djklm(1:12) = dE_dPsi*dPsi_djklm(1:12)
-
-     !Now, update the forces on the five atoms in this CMAP term; 
-     !remember, it is the negative of the derivative
-     do m = 1,3
-       frc(m,cmap_index(1,i)) = frc(m,cmap_index(1,i)) - dE_dijkl(m)
-       frc(m,cmap_index(2,i)) = frc(m,cmap_index(2,i)) - dE_dijkl(m+3) - dE_djklm(m)
-       frc(m,cmap_index(3,i)) = frc(m,cmap_index(3,i)) - dE_dijkl(m+6) - dE_djklm(m+3)
-       frc(m,cmap_index(4,i)) = frc(m,cmap_index(4,i)) - dE_dijkl(m+9) - dE_djklm(m+6)
-       frc(m,cmap_index(5,i)) = frc(m,cmap_index(5,i))                 - dE_djklm(m+9)
+            !Now, update the forces on the five atoms in this CMAP term;
+            !remember, it is the negative of the derivative
+            do m = 1, 3
+                frc(m, cmap_index(1, i)) = frc(m, cmap_index(1, i)) - dE_dijkl(m)
+                frc(m, cmap_index(2, i)) = frc(m, cmap_index(2, i)) - dE_dijkl(m + 3) - dE_djklm(m)
+                frc(m, cmap_index(3, i)) = frc(m, cmap_index(3, i)) - dE_dijkl(m + 6) - dE_djklm(m + 3)
+                frc(m, cmap_index(4, i)) = frc(m, cmap_index(4, i)) - dE_dijkl(m + 9) - dE_djklm(m + 6)
+                frc(m, cmap_index(5, i)) = frc(m, cmap_index(5, i)) - dE_djklm(m + 9)
 #ifdef CHARMM_DEBUG
-       write(6,'(a,i2)') "Adding to forces: m=",m
-       write(6,'(f10.6)') -dE_dijkl(m) 
-       write(6,'(f10.6)') -dE_dijkl(m+3) - dE_djklm(m)
-       write(6,'(f10.6)') -dE_dijkl(m+6) - dE_djklm(m+3)
-       write(6,'(f10.6)') -dE_dijkl(m+9) - dE_djklm(m+6)
-       write(6,'(f10.6)')                - dE_djklm(m+9)
-       write(6,'(a)') ""
+                write (6, '(a,i2)') "Adding to forces: m=", m
+                write (6, '(f10.6)') - dE_dijkl(m)
+                write (6, '(f10.6)') - dE_dijkl(m + 3) - dE_djklm(m)
+                write (6, '(f10.6)') - dE_dijkl(m + 6) - dE_djklm(m + 3)
+                write (6, '(f10.6)') - dE_dijkl(m + 9) - dE_djklm(m + 6)
+                write (6, '(f10.6)') - dE_djklm(m + 9)
+                write (6, '(a)') ""
 #endif  /* CHARMM_DEBUG */
-     enddo
+            end do
 
-  enddo !do i = 1, cmap_term_count
+        end do !do i = 1, cmap_term_count
 
-
-  epl = epl + local_energy_accumulator
-
-#ifdef CHARMM_DEBUG
-  write(6,'(a)'),""
-  write(6,'(a12,f16.5)'),"Total CMAP =",epl
-#endif
-
-end subroutine calc_cmap
-!------------------------------------------------------------
-
-!------------------------------------------------------------
-subroutine calc_cmap_from_phi_psi(phi,psi,cmap_type,E,dPhi,dPsi)
-  !Eventually, this will calculate the CMAP energy given
-  !psi,phi and the cmap parameter
-
-  implicit none
-
-  _REAL_, intent(in)             :: phi,psi
-  type(cmapParameter),intent(in) :: cmap_type
-  _REAL_, intent(out)            :: E !final CMAP energy
-  _REAL_, intent(out)            :: dPhi,dPsi !partitial derivatives
-
-
-  _REAL_                         :: phiFrac,psiFrac
-  _REAL_, dimension(2,2)         :: E_stencil,    dPhi_stencil,&
-                                    dPsi_stencil, dPhi_dPsi_stencil
-  _REAL_, dimension(4)           :: E_stencil_1D,    dPhi_stencil_1D,&
-                                    dPsi_stencil_1D, dPhi_dPsi_stencil_1D
-  integer                        :: i,j,yi,xj
-  integer                        :: x,y = 0
-  _REAL_,  dimension(4,4)        :: c = 0
-
-
-
-  !Work out nearest complete grid point on the CMAP grid from
-  !phi and psi and use this to form a 2x2 stencil
-  x =  int( (phi - cmap_type%gridOrigin)/(cmap_type%gridStepSize) ) + 1
-  y =  int( (psi - cmap_type%gridOrigin)/(cmap_type%gridStepSize) ) + 1
-
-  !We are currently at the bottom left of the inner 2x2 elements of the
-  !stencil, now move to the bottom left hand corner of the 4x4 stencil
-
-
-  !Work out the fraction of the CMAP grid step that the interpolated 
-  !point takes up.
-  !This will give the remainder part and then it is divided by the step size
-  phiFrac = modulo( (phi - cmap_type%gridOrigin), &
-               dble(cmap_type%gridStepSize) ) / cmap_type%gridStepSize
-  psiFrac = modulo( (psi - cmap_type%gridOrigin), &
-               dble(cmap_type%gridStepSize) ) / cmap_type%gridStepSize
-
-
- !2x2 stencil
- !Set the stencils to the local CMAP grid region 
- !determined by psi and phi
- do i=1,2
-   do j=1,2
-    yi = cmapGridWrapper( y+(i-1),cmap_type%resolution )
-    xj = cmapGridWrapper( x+(j-1),cmap_type%resolution )
-    E_stencil(i,j)    = cmap_type%grid(yi, xj)
-    dPhi_stencil(i,j) = cmap_type%dPhi(yi, xj)
-    dPsi_stencil(i,j) = cmap_type%dPsi(yi, xj)
-    dPhi_dPsi_stencil(i,j) &
-                      = cmap_type%dPhi_dPsi(yi, xj)
-   enddo
-  enddo
-
-
+        epl = epl + local_energy_accumulator
 
 #ifdef CHARMM_DEBUG
-    write(6,'(A,f10.3,f10.3)'),"phi, psi ",phi,psi
-    write(6,'(A,f10.5,f10.5)'),"phiFrac,psiFrac  ",phiFrac,psiFrac
-    write(6,'(a,i2)'),"CMAP grid coordinate of psi : ",x
-    write(6,'(a,i2)'),"CMAP grid coordinate of phi : ",y
-
-
-    write(6,'(A)'),""
-    write(6,'(A)'),"2x2 grid stencils:"
-    write(6,'(A)'),"CMAP:"
-
-    write(6,'(4(f9.6,2x))'),E_stencil(2,1:2)
-    write(6,'(4(f9.6,2x))'),E_stencil(1,1:2)
-
-    write(6,'(A)'),""
-
-    write(6,'(A)'),"dPhi:"
-
-    write(6,'(4(f9.6,2x))'),dPhi_stencil(2,1:2)
-    write(6,'(4(f9.6,2x))'),dPhi_stencil(1,1:2)
-
-    write(6,'(A)'),""
-
-    write(6,'(A)'),"dPsi:"
-
-    write(6,'(4(f9.6,2x))'),dPsi_stencil(2,1:2)
-    write(6,'(4(f9.6,2x))'),dPsi_stencil(1,1:2)
-
-    write(6,'(A)'),""
-
-    write(6,'(A)'),"dPhi_dPsi:"
-
-    write(6,'(4(f9.6,2x))'),dPhi_dPsi_stencil(2,1:2)
-    write(6,'(4(f9.6,2x))'),dPhi_dPsi_stencil(1,1:2)
-
-    write(6,'(A)'),""
+        write (6, '(a)'), ""
+        write (6, '(a12,f16.5)'), "Total CMAP =", epl
 #endif
 
-
-  !Convert the 2x2 stencils into a 1D array for processing
-  !by weight_stencil.
-  !The array starts at the bottom left of the 2x2, working
-  !around counterclockwise:
-  !
-  !          4 3
-  !          1 2
-  !
-  !There may be a cleaner/better way of doing this
-
-  E_stencil_1D(1) = E_stencil(1,1)
-  E_stencil_1D(2) = E_stencil(1,2)
-  E_stencil_1D(3) = E_stencil(2,2)
-  E_stencil_1D(4) = E_stencil(2,1)
-
-
-  dPhi_stencil_1D(1) = dPhi_stencil(1,1)
-  dPhi_stencil_1D(2) = dPhi_stencil(1,2)
-  dPhi_stencil_1D(3) = dPhi_stencil(2,2)
-  dPhi_stencil_1D(4) = dPhi_stencil(2,1)
-
-  dPsi_stencil_1D(1) = dPsi_stencil(1,1)
-  dPsi_stencil_1D(2) = dPsi_stencil(1,2)
-  dPsi_stencil_1D(3) = dPsi_stencil(2,2)
-  dPsi_stencil_1D(4) = dPsi_stencil(2,1)
-
-  dPhi_dPsi_stencil_1D(1) = dPhi_dPsi_stencil(1,1)
-  dPhi_dPsi_stencil_1D(2) = dPhi_dPsi_stencil(1,2)
-  dPhi_dPsi_stencil_1D(3) = dPhi_dPsi_stencil(2,2)
-  dPhi_dPsi_stencil_1D(4) = dPhi_dPsi_stencil(2,1)
-
-
-
-  !Weight d{Psi,dPhi,dPhidPsi}_stencil
-  call weight_stencil(cmap_type%gridStepSize, &
-                      E_stencil_1D,              &
-                      dPhi_stencil_1D,           &
-                      dPsi_stencil_1D,           &
-                      dPhi_dPsi_stencil_1D,      &
-                      c )
-
-  call bicubic_interpolation(phiFrac, psiFrac, c, E, dphi, dpsi)
-
-end subroutine calc_cmap_from_phi_psi
+    end subroutine calc_cmap
 !------------------------------------------------------------
 
 !------------------------------------------------------------
-subroutine weight_stencil(step_size,         &
-                          E_stencil,         &
-                          dPhi_stencil,      &
-                          dPsi_stencil,      &
-                          dPhi_dPsi_stencil, &
-                          c )
+    subroutine calc_cmap_from_phi_psi(phi, psi, cmap_type, E, dPhi, dPsi)
+        !Eventually, this will calculate the CMAP energy given
+        !psi,phi and the cmap parameter
 
-  implicit none
+        implicit none
 
-  integer, intent(in)         :: step_size
-  _REAL_,  dimension(4),&
-           intent(in)         :: E_stencil,    dPhi_stencil,&
-                                 dPsi_stencil, dPhi_dPsi_stencil
-  _REAL_,  dimension(4,4),&
-           intent(out)        :: c !The coefficient array to be be
-                                   !used by bicubic_interpolation()
+        _REAL_, intent(in)             :: phi, psi
+        type(cmapParameter), intent(in) :: cmap_type
+        _REAL_, intent(out)            :: E !final CMAP energy
+        _REAL_, intent(out)            :: dPhi, dPsi !partitial derivatives
 
+        _REAL_                         :: phiFrac, psiFrac
+        _REAL_, dimension(2, 2)         :: E_stencil, dPhi_stencil, &
+            dPsi_stencil, dPhi_dPsi_stencil
+        _REAL_, dimension(4)           :: E_stencil_1D, dPhi_stencil_1D, &
+            dPsi_stencil_1D, dPhi_dPsi_stencil_1D
+        integer                        :: i, j, yi, xj
+        integer                        :: x, y = 0
+        _REAL_, dimension(4, 4)        :: c = 0
 
-  _REAL_,  dimension(16)      :: tmp !temp vector built from
-                                     !E,dPhi,dPsi,dPhi_dPsi
-  integer, dimension(16,16)   :: wT !Weight matrix
-#ifdef CHARMM_DEBUG
-  integer                     :: i
-  integer                     :: j
-#endif
+        !Work out nearest complete grid point on the CMAP grid from
+        !phi and psi and use this to form a 2x2 stencil
+        x = int((phi - cmap_type%gridOrigin)/(cmap_type%gridStepSize)) + 1
+        y = int((psi - cmap_type%gridOrigin)/(cmap_type%gridStepSize)) + 1
 
-  _REAL_,  dimension(16)      :: c_tmp !Vector prior to matrix packing
-  integer, dimension (1:2)    :: my_shape = (/ 4, 4 /) !Used for reshape
-  integer, dimension (1:2)    :: my_order = (/ 2, 1 /) !Used for reshape
+        !We are currently at the bottom left of the inner 2x2 elements of the
+        !stencil, now move to the bottom left hand corner of the 4x4 stencil
 
-  wt(1 ,1:16) =   (/ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
-  wt(2 ,1:16) =   (/ 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0/)
-  wt(3 ,1:16) =   (/-3, 0, 0, 3, 0, 0, 0, 0,-2, 0, 0,-1, 0, 0, 0, 0/)
-  wt(4 ,1:16) =   (/ 2, 0, 0,-2, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0/)
-  wt(5 ,1:16) =   (/ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
-  wt(6 ,1:16) =   (/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0/)
-  wt(7 ,1:16) =   (/ 0, 0, 0, 0,-3, 0, 0, 3, 0, 0, 0, 0,-2, 0, 0,-1/)
-  wt(8 ,1:16) =   (/ 0, 0, 0, 0, 2, 0, 0,-2, 0, 0, 0, 0, 1, 0, 0, 1/)
-  wt(9 ,1:16) =   (/-3, 3, 0, 0,-2,-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
-  wt(10,1:16) =   (/ 0, 0, 0, 0, 0, 0, 0, 0,-3, 3, 0, 0,-2,-1, 0, 0/)
-  wt(11,1:16) =   (/ 9,-9, 9,-9, 6, 3,-3,-6, 6,-6,-3, 3, 4, 2, 1, 2/)
-  wt(12,1:16) =   (/-6, 6,-6, 6,-4,-2, 2, 4,-3, 3, 3,-3,-2,-1,-1,-2/)
-  wt(13,1:16) =   (/ 2,-2, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
-  wt(14,1:16) =   (/ 0, 0, 0, 0, 0, 0, 0, 0, 2,-2, 0, 0, 1, 1, 0, 0/)
-  wt(15,1:16) =   (/-6, 6,-6, 6,-3,-3, 3, 3,-4, 4, 2,-2,-2,-2,-1,-1/)
-  wt(16,1:16) =   (/ 4,-4, 4,-4, 2, 2,-2,-2, 2,-2,-2, 2, 1, 1, 1, 1/)
+        !Work out the fraction of the CMAP grid step that the interpolated
+        !point takes up.
+        !This will give the remainder part and then it is divided by the step size
+        phiFrac = modulo((phi - cmap_type%gridOrigin), &
+            dble(cmap_type%gridStepSize))/cmap_type%gridStepSize
+        psiFrac = modulo((psi - cmap_type%gridOrigin), &
+            dble(cmap_type%gridStepSize))/cmap_type%gridStepSize
 
-  !Create the vector to be operated on
-  tmp(1:4)   = E_stencil(1:4)         
-  tmp(5:8)   = dPhi_stencil(1:4)      *step_size
-  tmp(9:12)  = dPsi_stencil(1:4)      *step_size
-  tmp(13:16) = dPhi_dPsi_stencil(1:4) *step_size*step_size
-
-  !Use the matmul intrinsic to operate on the vector
-  !http://gcc.gnu.org/onlinedocs/gfortran/MATMUL.html
-  c_tmp = matmul(wT,tmp)
-
-  c = reshape(c_tmp, my_shape, order=my_order )
-  
-#ifdef CHARMM_DEBUG 
-  write(6,'(a)'),"tmp vector is :"
-  write(6,'(f16.6)'),tmp
-  write(6,'(a)'),""
-  write(6,'(a)'),"c matrix is:"
-  do i=4,1,-1
-     write(6,'(4f16.6)'),c(i,1:4)
-  enddo
-#endif
-
-end subroutine weight_stencil
-!------------------------------------------------------------
-
-!------------------------------------------------------------
-subroutine bicubic_interpolation(frac_x, frac_y, c, E, dx, dy)
-  use constants, only : three,two
-  implicit none
-
-  _REAL_, intent(in)         :: frac_x, frac_y
-  _REAL_, dimension(4,4),&
-          intent(in)         :: c
-  _REAL_, intent(out)        :: E, dx, dy
-
-  integer                    :: i
-
-  E = 0.0d0
-  dx = 0.0d0
-  dy = 0.0d0
-
-  do i=4,1,-1 
-
-     E =  E*frac_x +( (c(i,4)*frac_y + c(i,3))*frac_y + c(i,2) )*frac_y + c(i,1)
-     dx = dx*frac_y +( three*c(4,i)*frac_x + two*c(3,i) )*frac_x + c(2,i)
-     dy = dy*frac_x +( three*c(i,4)*frac_y + two*c(i,3) )*frac_y + c(i,2)
-
-  enddo
+        !2x2 stencil
+        !Set the stencils to the local CMAP grid region
+        !determined by psi and phi
+        do i = 1, 2
+            do j = 1, 2
+                yi = cmapGridWrapper(y + (i - 1), cmap_type%resolution)
+                xj = cmapGridWrapper(x + (j - 1), cmap_type%resolution)
+                E_stencil(i, j) = cmap_type%grid(yi, xj)
+                dPhi_stencil(i, j) = cmap_type%dPhi(yi, xj)
+                dPsi_stencil(i, j) = cmap_type%dPsi(yi, xj)
+                dPhi_dPsi_stencil(i, j) &
+                    = cmap_type%dPhi_dPsi(yi, xj)
+            end do
+        end do
 
 #ifdef CHARMM_DEBUG
-  write(6,'(a)'),""
+        write (6, '(A,f10.3,f10.3)'), "phi, psi ", phi, psi
+        write (6, '(A,f10.5,f10.5)'), "phiFrac,psiFrac  ", phiFrac, psiFrac
+        write (6, '(a,i2)'), "CMAP grid coordinate of psi : ", x
+        write (6, '(a,i2)'), "CMAP grid coordinate of phi : ", y
 
-  write(6,'(A,f10.5,f10.5)'),"frac_x,frac_y  ",frac_x,frac_y
+        write (6, '(A)'), ""
+        write (6, '(A)'), "2x2 grid stencils:"
+        write (6, '(A)'), "CMAP:"
 
-  write(6,'(a,f16.6)'),"E is ",E
-  write(6,'(a,f16.6)'),"dx is ",dx
-  write(6,'(a,f16.6)'),"dy is ",dy
+        write (6, '(4(f9.6,2x))'), E_stencil(2, 1:2)
+        write (6, '(4(f9.6,2x))'), E_stencil(1, 1:2)
+
+        write (6, '(A)'), ""
+
+        write (6, '(A)'), "dPhi:"
+
+        write (6, '(4(f9.6,2x))'), dPhi_stencil(2, 1:2)
+        write (6, '(4(f9.6,2x))'), dPhi_stencil(1, 1:2)
+
+        write (6, '(A)'), ""
+
+        write (6, '(A)'), "dPsi:"
+
+        write (6, '(4(f9.6,2x))'), dPsi_stencil(2, 1:2)
+        write (6, '(4(f9.6,2x))'), dPsi_stencil(1, 1:2)
+
+        write (6, '(A)'), ""
+
+        write (6, '(A)'), "dPhi_dPsi:"
+
+        write (6, '(4(f9.6,2x))'), dPhi_dPsi_stencil(2, 1:2)
+        write (6, '(4(f9.6,2x))'), dPhi_dPsi_stencil(1, 1:2)
+
+        write (6, '(A)'), ""
 #endif
 
-end subroutine bicubic_interpolation
+        !Convert the 2x2 stencils into a 1D array for processing
+        !by weight_stencil.
+        !The array starts at the bottom left of the 2x2, working
+        !around counterclockwise:
+        !
+        !          4 3
+        !          1 2
+        !
+        !There may be a cleaner/better way of doing this
+
+        E_stencil_1D(1) = E_stencil(1, 1)
+        E_stencil_1D(2) = E_stencil(1, 2)
+        E_stencil_1D(3) = E_stencil(2, 2)
+        E_stencil_1D(4) = E_stencil(2, 1)
+
+        dPhi_stencil_1D(1) = dPhi_stencil(1, 1)
+        dPhi_stencil_1D(2) = dPhi_stencil(1, 2)
+        dPhi_stencil_1D(3) = dPhi_stencil(2, 2)
+        dPhi_stencil_1D(4) = dPhi_stencil(2, 1)
+
+        dPsi_stencil_1D(1) = dPsi_stencil(1, 1)
+        dPsi_stencil_1D(2) = dPsi_stencil(1, 2)
+        dPsi_stencil_1D(3) = dPsi_stencil(2, 2)
+        dPsi_stencil_1D(4) = dPsi_stencil(2, 1)
+
+        dPhi_dPsi_stencil_1D(1) = dPhi_dPsi_stencil(1, 1)
+        dPhi_dPsi_stencil_1D(2) = dPhi_dPsi_stencil(1, 2)
+        dPhi_dPsi_stencil_1D(3) = dPhi_dPsi_stencil(2, 2)
+        dPhi_dPsi_stencil_1D(4) = dPhi_dPsi_stencil(2, 1)
+
+        !Weight d{Psi,dPhi,dPhidPsi}_stencil
+        call weight_stencil(cmap_type%gridStepSize, &
+            E_stencil_1D, &
+            dPhi_stencil_1D, &
+            dPsi_stencil_1D, &
+            dPhi_dPsi_stencil_1D, &
+            c)
+
+        call bicubic_interpolation(phiFrac, psiFrac, c, E, dphi, dpsi)
+
+    end subroutine calc_cmap_from_phi_psi
 !------------------------------------------------------------
 
 !------------------------------------------------------------
-subroutine deallocate_cmap_arrays()
+    subroutine weight_stencil(step_size, &
+        E_stencil, &
+        dPhi_stencil, &
+        dPsi_stencil, &
+        dPhi_dPsi_stencil, &
+        c)
 
-  implicit none
+        implicit none
 
-  integer :: ier
+        integer, intent(in)         :: step_size
+        _REAL_, dimension(4), &
+            intent(in)         :: E_stencil, dPhi_stencil, &
+            dPsi_stencil, dPhi_dPsi_stencil
+        _REAL_, dimension(4, 4), &
+            intent(out)        :: c !The coefficient array to be be
+        !used by bicubic_interpolation()
 
+        _REAL_, dimension(16)      :: tmp !temp vector built from
+        !E,dPhi,dPsi,dPhi_dPsi
+        integer, dimension(16, 16)   :: wT !Weight matrix
+#ifdef CHARMM_DEBUG
+        integer                     :: i
+        integer                     :: j
+#endif
 
+        _REAL_, dimension(16)      :: c_tmp !Vector prior to matrix packing
+        integer, dimension(1:2)    :: my_shape = (/4, 4/) !Used for reshape
+        integer, dimension(1:2)    :: my_order = (/2, 1/) !Used for reshape
 
-  !These two arrays may or may not have been assigned
-  !depending on whether a CMAP section was found in
-  !the PARM file; hence check before deallocating
+        wt(1, 1:16) = (/1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
+        wt(2, 1:16) = (/0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0/)
+        wt(3, 1:16) = (/-3, 0, 0, 3, 0, 0, 0, 0, -2, 0, 0, -1, 0, 0, 0, 0/)
+        wt(4, 1:16) = (/2, 0, 0, -2, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0/)
+        wt(5, 1:16) = (/0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
+        wt(6, 1:16) = (/0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0/)
+        wt(7, 1:16) = (/0, 0, 0, 0, -3, 0, 0, 3, 0, 0, 0, 0, -2, 0, 0, -1/)
+        wt(8, 1:16) = (/0, 0, 0, 0, 2, 0, 0, -2, 0, 0, 0, 0, 1, 0, 0, 1/)
+        wt(9, 1:16) = (/-3, 3, 0, 0, -2, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
+        wt(10, 1:16) = (/0, 0, 0, 0, 0, 0, 0, 0, -3, 3, 0, 0, -2, -1, 0, 0/)
+        wt(11, 1:16) = (/9, -9, 9, -9, 6, 3, -3, -6, 6, -6, -3, 3, 4, 2, 1, 2/)
+        wt(12, 1:16) = (/-6, 6, -6, 6, -4, -2, 2, 4, -3, 3, 3, -3, -2, -1, -1, -2/)
+        wt(13, 1:16) = (/2, -2, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
+        wt(14, 1:16) = (/0, 0, 0, 0, 0, 0, 0, 0, 2, -2, 0, 0, 1, 1, 0, 0/)
+        wt(15, 1:16) = (/-6, 6, -6, 6, -3, -3, 3, 3, -4, 4, 2, -2, -2, -2, -1, -1/)
+        wt(16, 1:16) = (/4, -4, 4, -4, 2, 2, -2, -2, 2, -2, -2, 2, 1, 1, 1, 1/)
 
-  if(allocated(cmap_types)) then
-    deallocate(cmap_types,stat=ier)
-    REQUIRE(ier==0)
-  end if
+        !Create the vector to be operated on
+        tmp(1:4) = E_stencil(1:4)
+        tmp(5:8) = dPhi_stencil(1:4)*step_size
+        tmp(9:12) = dPsi_stencil(1:4)*step_size
+        tmp(13:16) = dPhi_dPsi_stencil(1:4)*step_size*step_size
 
-  if(allocated(cmap_index)) then
-    deallocate(cmap_index,stat=ier)
-    REQUIRE(ier==0)
-  end if
+        !Use the matmul intrinsic to operate on the vector
+        !http://gcc.gnu.org/onlinedocs/gfortran/MATMUL.html
+        c_tmp = matmul(wT, tmp)
 
+        c = reshape(c_tmp, my_shape, order=my_order)
 
+#ifdef CHARMM_DEBUG
+        write (6, '(a)'), "tmp vector is :"
+        write (6, '(f16.6)'), tmp
+        write (6, '(a)'), ""
+        write (6, '(a)'), "c matrix is:"
+        do i = 4, 1, -1
+            write (6, '(4f16.6)'), c(i, 1:4)
+        end do
+#endif
 
-  return
+    end subroutine weight_stencil
+!------------------------------------------------------------
 
-end subroutine deallocate_cmap_arrays
+!------------------------------------------------------------
+    subroutine bicubic_interpolation(frac_x, frac_y, c, E, dx, dy)
+        use constants, only : three, two
+        implicit none
+
+        _REAL_, intent(in)         :: frac_x, frac_y
+        _REAL_, dimension(4, 4), &
+            intent(in)         :: c
+        _REAL_, intent(out)        :: E, dx, dy
+
+        integer                    :: i
+
+        E = 0.0d0
+        dx = 0.0d0
+        dy = 0.0d0
+
+        do i = 4, 1, -1
+
+            E = E*frac_x + ((c(i, 4)*frac_y + c(i, 3))*frac_y + c(i, 2))*frac_y + c(i, 1)
+            dx = dx*frac_y + (three*c(4, i)*frac_x + two*c(3, i))*frac_x + c(2, i)
+            dy = dy*frac_x + (three*c(i, 4)*frac_y + two*c(i, 3))*frac_y + c(i, 2)
+
+        end do
+
+#ifdef CHARMM_DEBUG
+        write (6, '(a)'), ""
+
+        write (6, '(A,f10.5,f10.5)'), "frac_x,frac_y  ", frac_x, frac_y
+
+        write (6, '(a,f16.6)'), "E is ", E
+        write (6, '(a,f16.6)'), "dx is ", dx
+        write (6, '(a,f16.6)'), "dy is ", dy
+#endif
+
+    end subroutine bicubic_interpolation
+!------------------------------------------------------------
+
+!------------------------------------------------------------
+    subroutine deallocate_cmap_arrays()
+
+        implicit none
+
+        integer :: ier
+
+        !These two arrays may or may not have been assigned
+        !depending on whether a CMAP section was found in
+        !the PARM file; hence check before deallocating
+
+        if (allocated(cmap_types)) then
+            deallocate (cmap_types, stat=ier)
+            REQUIRE(ier == 0)
+        end if
+
+        if (allocated(cmap_index)) then
+            deallocate (cmap_index, stat=ier)
+            REQUIRE(ier == 0)
+        end if
+
+        return
+
+    end subroutine deallocate_cmap_arrays
 !------------------------------------------------------------
 #ifdef MPI
 !------------------------------------------------------------
-subroutine mpi_bcast_cmap_params(master)
+    subroutine mpi_bcast_cmap_params(master)
 
-  use parms, only : numang, nttyp
+        use parms, only : numang, nttyp
 
-  implicit none
-   include 'mpif.h'
+        implicit none
+        include 'mpif.h'
 #  include "parallel.h"
 
 !Passed in
-  logical, intent(in) :: master
+        logical, intent(in) :: master
 
 !Local
-  integer :: ierr, i
+        integer :: ierr, i
 
 !CMAP
 
 !MPI2 specific - not currently used
 
-  integer :: res
+        integer :: res
 !End CMAP
 
-  call mpi_bcast(cmap_active,1,MPI_LOGICAL,0,commsander,ierr)
+        call mpi_bcast(cmap_active, 1, MPI_LOGICAL, 0, commsander, ierr)
 
-  if (.not. cmap_active) return
-
+        if (.not. cmap_active) return
 
 ! Next we need to broadcast the arrays of structures for UB and impropers.
 
 ! Setup the necessary MPI datatypes/
 
-  !---- CMAP STRUCTURE  -------------
+        !---- CMAP STRUCTURE  -------------
 
-  !Let nodes other than the master know about how many cmap
-  !terms and types we're dealing with. This is done so that
-  !space for these can be allocated locally.
-  call mpi_bcast(cmap_term_count,1,MPI_INTEGER,0,commsander,ierr)
-  call mpi_bcast(cmap_type_count,1,MPI_INTEGER,0,commsander,ierr)
+        !Let nodes other than the master know about how many cmap
+        !terms and types we're dealing with. This is done so that
+        !space for these can be allocated locally.
+        call mpi_bcast(cmap_term_count, 1, MPI_INTEGER, 0, commsander, ierr)
+        call mpi_bcast(cmap_type_count, 1, MPI_INTEGER, 0, commsander, ierr)
 
-  !Now allocate locally.
-  if (.not. master) then
-     allocate(cmap_index(6,cmap_term_count),stat=ierr)
-     allocate(cmap_types(cmap_type_count),stat=ierr)
-    
-     REQUIRE(ierr==0)
-  endif
-  
-  !Farm out the list of CMAP terms
-  call mpi_bcast(cmap_index,cmap_term_count*6,MPI_INTEGER,0,commsander,ierr)
+        !Now allocate locally.
+        if (.not. master) then
+            allocate (cmap_index(6, cmap_term_count), stat=ierr)
+            allocate (cmap_types(cmap_type_count), stat=ierr)
 
-  !Now, switch focus to the actual CMAP parameter types
-  do i=1,cmap_type_count
-    !Broadcast this now because it will be needed locally for allocates
-    call mpi_bcast(cmap_types(i)%resolution,1,MPI_INTEGER,0,commsander,ierr)
-  enddo
+            REQUIRE(ierr == 0)
+        end if
 
-  if (.not. master) then
+        !Farm out the list of CMAP terms
+        call mpi_bcast(cmap_index, cmap_term_count*6, MPI_INTEGER, 0, commsander, ierr)
 
-     do i=1,cmap_type_count !Remember, this allocation has only been done on the
-                            !master
-       res = cmap_types(i)%resolution
-       allocate(cmap_types(i)%grid(res,res),stat=ierr)
-       !and allocate the derivatives arrays
-       allocate(cmap_types(i)%dPhi(res,res),stat=ierr)
-       allocate(cmap_types(i)%dPsi(res,res),stat=ierr)
-       allocate(cmap_types(i)%dPhi_dPsi(res,res),stat=ierr)
+        !Now, switch focus to the actual CMAP parameter types
+        do i = 1, cmap_type_count
+            !Broadcast this now because it will be needed locally for allocates
+            call mpi_bcast(cmap_types(i)%resolution, 1, MPI_INTEGER, 0, commsander, ierr)
+        end do
 
-       REQUIRE(ierr==0)
-     enddo
+        if (.not. master) then
 
-  endif
+            do i = 1, cmap_type_count !Remember, this allocation has only been done on the
+                !master
+                res = cmap_types(i)%resolution
+                allocate (cmap_types(i)%grid(res, res), stat=ierr)
+                !and allocate the derivatives arrays
+                allocate (cmap_types(i)%dPhi(res, res), stat=ierr)
+                allocate (cmap_types(i)%dPsi(res, res), stat=ierr)
+                allocate (cmap_types(i)%dPhi_dPsi(res, res), stat=ierr)
 
-  !Send out each CMAP type
+                REQUIRE(ierr == 0)
+            end do
 
-  !One would think the following would work:
-  ! call mpi_bcast(cmap_types, cmap_type_count, MPI_chm_cmap_struct, 0,commsander, ierr )
-  !but it does not seem to.
+        end if
 
-  do i=1,cmap_type_count
-    res = cmap_types(i)%resolution
+        !Send out each CMAP type
 
+        !One would think the following would work:
+        ! call mpi_bcast(cmap_types, cmap_type_count, MPI_chm_cmap_struct, 0,commsander, ierr )
+        !but it does not seem to.
 
-    !Broadcast the CMAP data. Ideally we would do this as a single mpi call using a derived
-    !type but there seems to be issues with using mpi_address with structures. mpi_get_address
-    !works but is MPI v2 only.
+        do i = 1, cmap_type_count
+            res = cmap_types(i)%resolution
 
-    !Structure to broadcast
+            !Broadcast the CMAP data. Ideally we would do this as a single mpi call using a derived
+            !type but there seems to be issues with using mpi_address with structures. mpi_get_address
+            !works but is MPI v2 only.
 
-    call mpi_bcast(cmap_types(i)%resolution, 1, MPI_INTEGER, 0,commsander, ierr )
-    call mpi_bcast(cmap_types(i)%gridstepsize, 1, MPI_INTEGER, 0,commsander, ierr )
-    call mpi_bcast(cmap_types(i)%gridorigin, 1, MPI_INTEGER, 0,commsander, ierr )
-    call mpi_bcast(cmap_types(i)%grid(1,1), res*res, MPI_DOUBLE_PRECISION, 0,commsander, ierr )
-    call mpi_bcast(cmap_types(i)%dPhi(1,1), res*res, MPI_DOUBLE_PRECISION, 0,commsander, ierr )
-    call mpi_bcast(cmap_types(i)%dPsi(1,1), res*res, MPI_DOUBLE_PRECISION, 0,commsander, ierr )
-    call mpi_bcast(cmap_types(i)%dPhi_dPsi(1,1), res*res, MPI_DOUBLE_PRECISION, 0,commsander, ierr )
+            !Structure to broadcast
 
-  enddo
+            call mpi_bcast(cmap_types(i)%resolution, 1, MPI_INTEGER, 0, commsander, ierr)
+            call mpi_bcast(cmap_types(i)%gridstepsize, 1, MPI_INTEGER, 0, commsander, ierr)
+            call mpi_bcast(cmap_types(i)%gridorigin, 1, MPI_INTEGER, 0, commsander, ierr)
+            call mpi_bcast(cmap_types(i)%grid(1, 1), res*res, MPI_DOUBLE_PRECISION, 0, commsander, ierr)
+            call mpi_bcast(cmap_types(i)%dPhi(1, 1), res*res, MPI_DOUBLE_PRECISION, 0, commsander, ierr)
+            call mpi_bcast(cmap_types(i)%dPsi(1, 1), res*res, MPI_DOUBLE_PRECISION, 0, commsander, ierr)
+            call mpi_bcast(cmap_types(i)%dPhi_dPsi(1, 1), res*res, MPI_DOUBLE_PRECISION, 0, commsander, ierr)
 
-  !--- END CHARMM CMAP STRUCTURE ---
+        end do
 
-  return
+        !--- END CHARMM CMAP STRUCTURE ---
 
-end subroutine mpi_bcast_cmap_params
+        return
+
+    end subroutine mpi_bcast_cmap_params
 !------------------------------------------------------------
 
 #endif

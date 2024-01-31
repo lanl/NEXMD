@@ -1,0 +1,123 @@
+\section{Output Files}
+
+There are four extensions for data output:
+\begin{itemize}
+    \item \verb+.xyz+ is only used for coordinates and makes this file readable by several molecular visualization tools.
+    \item \verb+.out+ is generally used for output corresponding to a given trajectory. For AIMC type of dynamics a four digit label is added for each one of these files.
+    \item \verb+.dat+ is used for ensemble output of AIMC dynamics. The combined information of the data contained in these files and the one in the \verb+coefficient.out+ and \verb+gamma.out+ files is required for calculating any expectation value when using AIMC. More details on expectation values calculations for AIMC can be found elsewhere \cite{freixas2018ab}.
+    \item \verb+.DATA+ is used for generating files which can be later converted to \verb+.cube+ files read by standard visualization software.
+\end{itemize}
+
+\noindent The following section contains a description of all output files. Data depending on time are written to their respective files at a rate which was specified in \verb+out_data_steps+ under \verb+Output+ \verb+&+ \verb+Log+ \verb+Parameters+.
+\begin{itemize}
+\item \verb+coeff-n.out+ contains the current state as a function of time, as well as the populations of all excited-states being propagated.  The first two columns are the current state and time in femtoseconds, respectively.  The remaining columns are for excited-state populations from $\ket{1}$ to $\ket{N}$, respectively, where $N$ is the number of states being propagated.  The last column is the sum of all populations, which should be approximately 1.0. The first column for Ehrenfest and AIMC type of dynamics has no meaning.
+\item \verb+coeff-q.out+ contains the phase of coefficient corresponding to the electronic wavefunction written as a superposition of adiabatic states. The first column is for time in femtoseconds and the remaining ones correspond to states from $\ket{1}$ to $\ket{N}$, where $N$ is the number of states being propagated.
+\item \verb+coefficient.out+ contains the coefficients corresponding to the electronic wavefunction written as a superposition of adiabatic states. These consists in a complex number for each excited state being propagated as a function of time. The first two columns stand for real and imaginary part. From the third to the fifth column we have: real part without classical action, imaginary part without classical action and classical action. See equations (10 -- 14) from \cite{freixas2018ab} for details on this change of variables.
+\item \verb+cm.out+ contains the coordinates of the center of mass with respect to the initial time step.
+\item \verb+coords.xyz+ and \verb+velocity.out+ contain the coordinates in angstroms (\AA) and velocities in angstroms per femtosecond (\AA/ps) of the system as a function of time, respectively.
+\item \verb+coords_opt.xyz+ contains the intermediate coordinates in angstroms (\AA) during an energy minimization for \verb+verbosity+ greater than 1.
+\item \verb+cross-steps.out+ contains the overlap between the hypothetical crossing states. It is written when a reduction of the quantum step is required.  The first column is the time in femtoseconds.  The next column is the time at the reduced time step, also in femtoseconds.  The third column is either a 1  or 2, indicating a potential or a confirmed trivial crossing, respectively.  The next two columns are the states involved in the crossing.  The remaining columns contain the overlap of states at the reduced quantum step, the original overlap of states that triggered the trivial crossing routine, and the energy difference between the states, in Hartrees, at the reduced quantum step.
+\item \verb+dropout.out+ contains the labels and times of trajectories that reached a $S_0/S_1$ energy gap lower than \verb+S0_S1_threshold+. This will stop the simulation for trajectory surface hopping and Ehrenfest dynamics. For AIMC dynamics the simulation will continue through the remaining branches (if any) after a renormalization of the molecular wavefunction.
+\item \verb+energy-ev.out+ contains the kinetic energy, potential energy, and total energy of the system, and their respective changes  from the initial time step all in eV.
+\item \verb+electronic_overlaps.dat+ contains the electronic overlaps coefficients propagated according to equation (22) from \cite{freixas2018ab}. Given the symmetry properties of these overlaps: $\langle\phi_I^{(n)}|\phi_J^{(m)}\rangle=\langle\phi_J^{(m)}|\phi_I^{(n)}\rangle$ and $\langle\phi_I^{(n)}|\phi_J^{(n)}\rangle=\delta_{IJ}$, they are only written after the generation of the first clone and only the lower triangular part of the tensor ($n < m$) is written. The first column corresponds to the number of trajectories, the second column corresponds to the time in femtoseconds, the third and fourth column corresponds to the label of trajectories (1 for \verb+0000+, 2 for \verb+0001+ and so on), the fifth and sixth columns correspond to the label of excited states and the seventh column corresponds to the electronic overlap value.
+\item \verb+gamma.out+ is only written for AIMC dynamics. It contains the kinetic part of the classical action (see equation 7 from \cite{freixas2018ab} for details).
+\item \verb+gradients.out+ prints a list of real numbers where the first value is the current state, the second value is the time in femtoseconds for trajectory surface hopping dynamics, followed by the gradient components of that state. For Ehrenfest and AIMC dynamics gradient components of all states are included. 
+\item \verb+Heff_last.out+ stores the last effective Hamiltonian for AIMC dynamics. This file is only needed for restarting.
+\item \verb+hessian.out+ contains the Hessian matrix (in atomic units), which is only written for nuclear normal mode calculations.
+\item \verb+hops.out+ contains all the successful hops and trivial crossings throughout the trajectory.  The first column contains the time, the second column contains a number, where 0 corresponds to a successful hops, 2 corresponds to a trivial crossing, and 1 corresponds to points where a trivial crossing was possible, a point in time that warranted a reduction in the quantum step. Note that in the case of 1 there is no crossing between states.
+\item \verb+hops-trial.out+ contains attempted and successful hops throughout the trajectory.  Hops may be rejected due to energy conservation.  This occurs when dispensable nuclear kinetic energy does not exceed the energy barrier between the residing and target surfaces.  Therefore, rejected hops can only occur when the target surface lies above the residing surface.  The first column is the time at which attempted hops occur in femtoseconds, the second column is the state before the hop or attempt of hop, the third column is the target surface, and the fourth column labels the type of hop, where \verb+0+ is a successful hop, \verb+1+ is a rejected hop with no decoherence event, and \verb+2+ is a rejected hop with a decoherence event.  The latter two depend on whether the \verb+decoher_type+ was set to \verb+1+ or \verb+2+ under \verb+Non-Adiabatic+ \verb+Parameters+ of the \verb+input.ceon+ file.  The wavefunction also decoheres at hops of type \verb+0+ if \verb+decoher_type=1+ or \verb+2+.
+\item \verb+muab.out+ contains the excited-to-excited transition dipoles moments in atomic units.  This file is generated when \verb+calcxdens=.true.+ during single-point calculations.  First and second columns label states $\ket{i}$ and $\ket{j}$, respectively.  The third column is the energy difference, $E_{ji} = E_{j}-E_{i}$ in eV.  The following three columns are excited-to-excited dipoles along the $x$, $y$, and $z$ axes, respectively.  The last column is the total dipole moment.
+\item \verb+nacr.out+ contains the nonadiabatic coupling vector. The first column is for time in femtoseconds, the second and third columns are for the corresponding states. The remaining columns contain all components of the nonadiabatic coupling vector for all atoms: $x_1, y_1, z_1, x_2, \hdots, z_n$, where $n$ is the number of atoms. The sequence of the atoms corresponds to the same sequence used in the \verb+input.ceon+ file between \verb+&coord+ and \verb+&endcoord+. For trajectory surface hopping dynamics this only written between the states related at a hop,i.e., for hops indicted by the index 0 in the hops.out. For Ehrenfest and AIMC dynamics it is written at all times and pair of states. Given the symmetry properties of the nonadiabatic coupling vector: ${\bf{d}}_{\alpha\beta}=-{\bf{d}}_{\beta\alpha}^{*}$, only lower triangular part of the tensor $(\alpha < \beta)$ is written.
+\item \verb+nact.out+ contains the non-adiabatic coupling terms between all pairs of states.  The non-adiabatic coupling between states $\ket{\alpha}$ and $\ket{\beta}$ is defined as $\dot{{\bf{R}}}\cdot{\bf{d}}_{\alpha\beta}$, where $\dot{{\bf{R}}}$ is velocity and ${\bf{d}}_{\alpha\beta}$ is the non-adiabatic coupling vector between states $\ket{\alpha}$ and ${\ket{\beta}}$.  The first column is time in femtoseconds.  The remaining columns are consecutive rows of the non-adiabatic coupling matrix.  For example, if 2 states were being propagated, the output would be $\dot{{\bf{R}}}\cdot{\bf{d}}_{\alpha\beta}$ for $\alpha\beta=11$, $12$, $21$, and $22$, respectively.  The diagonal terms of the non-adiabatic coupling are zero and the non-adiabatic coupling vector matrix is anti-Hermitian such that ${\bf{d}}=-{\bf{d}}^{\dagger}$ or ${\bf{d}}_{\alpha\beta}=-{\bf{d}}_{\beta\alpha}^{*}$.
+\item \verb+nma_freq.out+ contains the energies of the nuclear normal modes. The first column label the nuclear normal mode and the second contains the corresponding energy (in atomic units). For converting from atomic units to $cm^{-1}$ we can take into account that $1~eV=8065.54~cm^{-1}$ and $1~a.u. = 27.211396~eV$, therefore $1~a.u. = 219474.60289384~cm^{-1}$.
+\item \verb+nma_modes.out+ contains a matrix with the normalized directions for the nuclear normal modes (each column for each nuclear normal mode).
+\item \verb+nuclear_coeff.dat+ contains the coefficients corresponding to the nuclear part of the Multiconfigurational Ehrenfest wavefunction used in AIMC (see equation (1) from \cite{freixas2018ab} for details). These consists of a complex number for each trajectory. The first column contains the number of trajectories and the second column contains the time in femtoseconds. The remaining columns contains the real and imaginary parts of the nuclear coefficients. The ordering is the same as the \verb+.out+ files labeling.
+\item \verb+order.out+ lists the diabatic order of the excited states with respect to the initial order at the first time step.  The first column is the time in femtoseconds.  The next $N$ columns are the $N$ excited states labeled according to the order at the first time step.  The remaining $N$ columns indicate, with a 2, whether a trivial crossing has occurred at a specific state at a certain time step, or, with a 1, whether the quantum time step was reduced. More details on trivial crossing identification can be found elsewhere \cite{nelson2013artifacts}.
+les
+\item \verb+pes.out+ contains PESs of all states being propagated as a function of time.  The first two columns are time in femtoseconds and ground-state energy in eV, respectively.  The remaining columns are excited-state energies in eV from $\ket{1}$ to $\ket{N}$, respectively, where $N$ is the number of states being propagated. It is also written for ground state dynamics if the \verb+n_exc_states_propagate+ is greater than 1.
+\item \verb+pop.dat+ contains the expectation value of the electronic populations calculated according to equation (25) from \cite{freixas2018ab}. In the current version, this is the only expectation value calculated by NEXMD and should be used as reference when calculating any other expectation value.
+\item \verb+restart.out+ is a file identical to the \verb+input.ceon+, but with the information corresponding to the last restarting point saved. These files are written at a rate of \verb+out_coords_steps+ under \verb+Output+ \verb+&+ \verb+Log+ \verb+Parameters+, times the rate of data writing.
+\item \verb+tdipole.out+ contains the transition dipole moment from the ground state to all excited states propagated. It is only written if \verb+printTdipole+ is set to 1. It is not written by default. It is also written for ground state dynamics if the \verb+n_exc_states_propagate+ is greater than 1. The first column contains the time in femtoseconds, the second column contains the corresponding state, columns from the third to the fifth contain respectively the $x$, $y$ and $z$ component of the corresponding transition dipole moment and the sixth column contains the summation of the three components squared.
+\item \verb+temperature.out+ contains the temperature of the system as a function of time.  The temperature is calculated from the total nuclear kinetic energy.  The first column is time in femtoseconds, the second column is the temperature of the system in Kelvin, and the third column is the set temperature of the thermostat in Kelvin.
+\item \verb+transition-densities.out+ contains the transition density matrix written in the atomic orbital basis as a function of time. The number of atomic orbitals for each atom is 1 for hydrogen and 4 for heavier atoms. The sequence of the atoms corresponds to the same sequence used in the \verb+input.ceon+ file between \verb+&coord+ and \verb+&endcoord+. If \verb+printTDM+ is set to 1 the complete matrix will be written in the same line row after row. This has to be used with caution since huge amounts of data may be generated. By default \verb+printTDM+ is set to 0 and only diagonal components are written, which are enough to track the excitation localization in real space. For trajectory surface hopping dynamics it is only written for the residing surface and the first column is for the time in femtoseconds. For Ehrenfest and AIMC dynamics it is written for all surfaces, the first column label the surface and the second column is for time in femtoseconds. The remaining columns are for the transition density matrix components.
+\item \verb+view_????_????.DATA+ are only generated when \verb+out_data_cube+ is set to one. The first four digit label denotes time step while the second four digit label denotes the corresponding excited state. These files contains several blocks with information about the number of atoms, the number of orbitals, the number of occupied molecular orbitals, the number of eigenvectors printed, the atomic coordinates (in \AA) and the diagonal of the transition density. From this information we can generate \verb+.cube+ files containing information about the transition density localization in real space. These \verb+.cube+ files can be read by standard visualization tools. In order to generate the \verb+.cube+ files we can use the \verb+correr+ script located in the \verb+visualization+ directory.
+\end{itemize}
+
+Table \ref{TableOutput} summarizes the conditions for which each file is generated. \verb+verbosity+ here refers to the one in the \verb+&moldyn+ block from the \verb+input.ceon+ file.
+
+\begin{center}
+\begin{table}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+	\hline
+	File name & \verb+verbosity+ & GS & tsh & mf & aimc & Other\\
+	\hline
+	\hline
+	\verb+coeff-n.out+ & 1 & No & Yes & Yes & Yes & - \\
+	\hline
+	\verb+coeff-q.out+ & 2 & No & Yes & Yes & Yes & Always for aimc \\
+	\hline
+	\verb+coefficient.out+ & 0 & No & Yes & Yes & Yes & - \\
+	\hline
+	\verb+cm.out+ & 3 & Yes & Yes & Yes & Yes & - \\
+	\hline
+	\verb+coords.xyz+ & 0 & Yes & Yes & Yes & Yes & Minimization final output \\
+	\hline
+        \verb+coords_opt.xyz+ & 2 & - & - & - & - & Only for minimization \\
+        \hline
+	\verb+cross-steps.out+ & 2 & No & Yes & Yes & Yes & - \\
+	\hline
+	\verb+dropout.out+ & 0 & No & No & No & Yes & - \\
+	\hline
+	\verb+energy-ev.out+ & 0 & Yes & Yes & Yes & Yes & - \\
+	\hline
+	\verb+electronic_overlaps.dat+ & 0 & No & No & No & Yes & - \\
+	\hline
+	\verb+gamma.out+ & 0 & No & No & No & Yes & - \\
+	\hline
+	\verb+gradients.out+ & 3 & Yes & Yes & Yes & Yes& -\\
+	\hline
+	\verb+Heff_last.out+ & 0 & No & No & No & Yes & For restarting aimc \\
+	\hline
+	\verb+hessian.out+ & - & - & - & - & - & Only for normal modes \\
+	\hline
+	\verb+hops.out+ & 0 & No & Yes & Yes & Yes & - \\
+	\hline
+	\verb+hops-trial.out+ & 2 & No & Yes & No & No & - \\
+	\hline
+	\verb+muab.out+ & - & - & - & - & - & Only for \verb+calcxdens=.true.+ \\
+	\hline
+	\verb+nacr.out+ & 2 & No & Yes & Yes & Yes & Always for mf and aimc \\
+	\hline
+	\verb+nact.out+ & 1 & No & Yes & Yes & Yes & - \\
+	\hline
+	\verb+nma_freq.out+ & - & - & - & - & - & Only for normal modes \\
+	\hline
+	\verb+nma_modes.out+ & - & - & - & - & - & Only for normal modes \\
+	\hline
+	\verb+nuclear_coeff.dat+ & 0 & No & No & No & Yes & - \\
+	\hline
+	\verb+order.out+ & 2 & No & Yes & Yes & Yes & - \\
+	\hline
+	\verb+pes.out+ & 1 & Yes & Yes & Yes & Yes & For GS only if  \\
+	&  &  &  &  &  & \verb+n_exc_states_propagate+ $>0$ \\
+	\hline
+	\verb+pop.dat+ & 0 & No & No & No & Yes & - \\
+	\hline
+	\verb+restart.out+ & 0 & Yes & Yes & Yes & Yes & - \\
+	\hline
+	&  &  &  &  &  & Only if \verb+printTdipole+ $>0$, \\
+	\verb+tdipole.out+ & 0 & Yes & Yes & Yes & Yes & for GS only if \\
+	&  &  &  &  &  & \verb+n_exc_states_propagate+ $>0$\\
+	\hline
+	\verb+temperature.out+ & 0 & Yes & Yes & Yes & Yes & - \\
+	\hline
+	\verb+transition-densities.out+ & 1 & No & Yes & Yes & Yes & - \\
+	\hline
+	\verb+velocity.out+ & 0 & Yes & Yes & Yes & Yes & - \\
+	\hline
+	\verb+view_????_????.DATA+ & 0 & No & Yes & Yes & Yes & Only if \verb+out_data_cube+ $=1$ \\
+	\hline
+\end{tabular}
+\caption{\label{TableOutput} NEXMD conditioning for writing each output file.}
+\end{table}
+\end{center}

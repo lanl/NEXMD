@@ -5,53 +5,51 @@ module pimd_vars
 
 ! internal variables used in PIMD
 !------------------------------------------------------------------------------
-  implicit none
-  save
+    implicit none
+    save
 
-  integer :: PRIPIMD = 1   ! Primitive PIMD
-  integer :: NMPIMD = 2    ! Normal-mode PIMD
-  integer :: CMD = 3       ! Centroid MD
-  integer :: RPMD = 4      ! Ring-polymer MD
-  integer :: ipimd
-  integer :: nbead
-  integer :: natomCL
-  integer :: nthermo
-  integer :: itimass
-  _REAL_  :: equal_part
-  _REAL_  :: Epot_external, Epot_spring, Epot_deriv,Eimp_virial
-  _REAL_  :: nebrms
-  _REAL_  :: nbead_inv
-  _REAL_  :: bnd_vir(3,3)
-  _REAL_  :: tau_vol=20.4550d0
-  _REAL_, allocatable :: dmdlm(:)
-  _REAL_, allocatable :: x_centroid(:,:), real_mass(:), nrg_all(:) &
-                       , tempbuf(:,:), cartpos(:,:), cartvel(:,:)
-end module
+    integer :: PRIPIMD = 1   ! Primitive PIMD
+    integer :: NMPIMD = 2    ! Normal-mode PIMD
+    integer :: CMD = 3       ! Centroid MD
+    integer :: RPMD = 4      ! Ring-polymer MD
+    integer :: ipimd
+    integer :: nbead
+    integer :: natomCL
+    integer :: nthermo
+    integer :: itimass
+    _REAL_  :: equal_part
+    _REAL_  :: Epot_external, Epot_spring, Epot_deriv, Eimp_virial
+    _REAL_  :: nebrms
+    _REAL_  :: nbead_inv
+    _REAL_  :: bnd_vir(3, 3)
+    _REAL_  :: tau_vol = 20.4550d0
+    _REAL_, allocatable :: dmdlm(:)
+    _REAL_, allocatable :: x_centroid(:, :), real_mass(:), nrg_all(:) &
+        , tempbuf(:, :), cartpos(:, :), cartvel(:, :)
+end module pimd_vars
 
 module full_pimd_vars
-   use state
-   integer            :: mybeadid
-   type(state_rec)    :: totener
-   type(state_rec)    :: totenert, totenert2
-   _REAL_,allocatable :: xall(:,:,:) 
-end module 
-
+    use state
+    integer            :: mybeadid
+    type(state_rec)    :: totener
+    type(state_rec)    :: totenert, totenert2
+    _REAL_, allocatable :: xall(:, :, :)
+end module full_pimd_vars
 
 module part_pimd_vars
-   
-  _REAL_, allocatable :: massCL( : )
-  _REAL_, allocatable :: frcx_copy(:,:), frcx_temp(:,:)
-  _REAL_, allocatable :: xrep(:), frep(:), vrep(:), ftmp(:,:)
-  _REAL_, allocatable :: pimd_mmchg(:)
 
-end module 
+    _REAL_, allocatable :: massCL(:)
+    _REAL_, allocatable :: frcx_copy(:, :), frcx_temp(:, :)
+    _REAL_, allocatable :: xrep(:), frep(:), vrep(:), ftmp(:, :)
+    _REAL_, allocatable :: pimd_mmchg(:)
+
+end module part_pimd_vars
 
 module neb_vars
 
-  integer :: ineb
-  _REAL_, allocatable :: tangents(:), springforce(:), xprev(:)
-  _REAL_, allocatable :: xnext(:), neb_force(:), neb_nrg_all(:)
-  integer last_neb_atom, neb_nbead, next_node, prev_node
+    integer :: ineb
+    _REAL_, allocatable :: tangents(:), springforce(:), xprev(:)
+    _REAL_, allocatable :: xnext(:), neb_force(:), neb_nrg_all(:)
+    integer last_neb_atom, neb_nbead, next_node, prev_node
 
-end module
-
+end module neb_vars

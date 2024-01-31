@@ -1,24 +1,23 @@
 
 # Non-adiabatic EXcited-state Molecular Dynamics (NEXMD)
 
-`nexmd.exe` is a command-line Fortran90 program designed to understand the non-radiative relaxation of
-a main-block molecule with 100s of atoms and 10s of relevant excited states
-on the picosecond time scale after a vertical photoexcitation.
-With this design goal, `nexmd.exe` has implementations of various
-non-adiabatic molecular dynamics(NAMD) algorithms,
-with efficiency and stability improvements to reach these time scales. 
-To provide the electronic structure parameters for these NAMD algorithms,
-`nexmd.exe` also performs the self-consistent electronic structure, linear response,
-quadratic response and 'Z-vector' calculations 'on-the-fly' ;
-using the CEO (collective electronic oscillator) package with semiempirical Hamiltonians
-from the SQM package. 
-For the classical nuclei and Tully density matrix propagation,
-only the classical nuclear geometry, nuclear velocity and the Tully
-density matrix at $t=0$ (when the vertical excitation occurs)  need be provided.
-NEXMD's modular design allows for individual calculations to be carried out
-with different control words in the input file, thus NEXMD is capable of calculating,
-among many possibilities, energy minimized geometries and absorption spectra,
-at the same level of theory as the NAMD.
+`nexmd.exe` is a command-line Fortran90 program designed to understand the
+non-radiative relaxation of a main-block molecule with 100s of atoms and 10s of
+relevant excited states on the picosecond time scale after a vertical
+photoexcitation. With this design goal, `nexmd.exe` has implementations of
+various non-adiabatic molecular dynamics(NAMD) algorithms, with efficiency and
+stability improvements to reach these time scales. To provide the electronic
+structure parameters for these NAMD algorithms, `nexmd.exe` also performs the
+self-consistent electronic structure, linear response, quadratic response and
+'Z-vector' calculations 'on-the-fly' ; using the CEO (collective electronic
+oscillator) package with semiempirical Hamiltonians from the SQM package. For
+the classical nuclei and Tully density matrix propagation, only the classical
+nuclear geometry, nuclear velocity and the Tully density matrix at $t=0$ (when
+the vertical excitation occurs)  need be provided. NEXMD's modular design allows
+for individual calculations to be carried out with different control words in
+the input file, thus NEXMD is capable of calculating, among many possibilities,
+energy minimized geometries and absorption spectra, at the same level of theory
+as the NAMD.
 
 ------
 
@@ -27,23 +26,31 @@ is worth running through its algorithms to give reproducible output.
 
 ------
 
-There is a helper Python3 script `getexcited.py` to aid in the preparation of the input file, submission
-of a swarm of trajectories (parallelization) and processing the ouput (statistics and visualization),
-with a copy in this repository and a more frequently updated pypi package<create hyperlink>.  
+There is a helper Python3 script `getexcited.py` to aid in the preparation of
+the input file, submission of a swarm of trajectories (parallelization) and
+processing the output (statistics and visualization), with a copy in this
+repository.
 
 ------
 
 ## Highlighted Features
 
 - Solvation correction to the total energy for a single point nuclear geometry.
-- Sampling nuclear geometries of the ground-state potential energy surface (PES) under NVE or NVT (through Langevin dynamics).
-- Vertical excitation stick and broadened spectrum for a single point nuclear geometry or an ensemble of nuclear geometries.
-- Gaussian cube files for the transition density matrix and natural transition orbitals for a vertical excitation. (Relies on external scripts as of now. Integrate it?)
-- Minimum energy nuclear geometry and vibrational force constants on any calculated ground or excited state PES.
-- Born-Oppenheimer molecular dynamics trajectories on any calculated ground or excited state PES.
-- Non-adiabatic molecular dynamics trajectories following the algorithms of trajectory surface hopping (TSH), Ehrenfest, or ab-initio multiple cloning
+- Sampling nuclear geometries of the ground-state potential energy surface (PES)
+  under NVE or NVT (through Langevin dynamics).
+- Vertical excitation stick and broadened spectrum for a single point nuclear
+  geometry or an ensemble of nuclear geometries.
+- Gaussian cube files for the transition density matrix and natural transition
+  orbitals for a vertical excitation. (Relies on external scripts as of now.)
+- Minimum energy nuclear geometry and vibrational force constants on any
+  calculated ground or excited state PES.
+- Born-Oppenheimer molecular dynamics trajectories on any calculated ground or
+  excited state PES.
+- Non-adiabatic molecular dynamics trajectories following the algorithms of
+  trajectory surface hopping (TSH), Ehrenfest, or ab-initio multiple cloning
   (AIMC).
-- Geometry constraints for all molecular dynamics simulations. Currently supports freezing bond distances or normal modes of the molecules.
+- Geometry constraints for all molecular dynamics simulations. Currently
+  supports freezing bond distances or normal modes of the molecules.
 
 Please refer to the NEXMD manual for a complete list of supported calculations.
 
@@ -52,30 +59,32 @@ Please refer to the NEXMD manual for a complete list of supported calculations.
 When using NEXMD results in academic work, please cite the package:
 
 > Walter Malone, Benjamin Nebgen, Alexander White, Yu Zhang, Huajing Song,
-Josiah A. Bjorgaard, Andrew E. Sifain, Beatriz Rodriguez-Hernandez, 
-Victor M. Freixas, Sebastian Fernandez-Alberti, Adrian E. Roitberg, 
-Tammie R. Nelson, and Sergei Tretiak,
-NEXMD Software Package for Nonadiabatic Excited State 
-Molecular Dynamics Simulations,
-*Journal of Chemical Theory and Computation* **2020** *16* (9), 5771-5783,
-DOI: 10.1021/acs.jctc.0c00248
+> Josiah A. Bjorgaard, Andrew E. Sifain, Beatriz Rodriguez-Hernandez,
+> Victor M. Freixas, Sebastian Fernandez-Alberti, Adrian E. Roitberg,
+> Tammie R. Nelson, and Sergei Tretiak,
+> NEXMD Software Package for Nonadiabatic Excited State
+> Molecular Dynamics Simulations,
+> *Journal of Chemical Theory and Computation* **2020** *16* (9), 5771-5783,
+> DOI: 10.1021/acs.jctc.0c00248
 
-> Victor M. Freixas, Walter Malone, Xinyang Li, Huajing Song, Hassiel Negrin-Yuvero, Royle Pérez-Castillo, Alexander White,
-Tammie R. Gibson, Dmitry V. Makhov, Dmitrii V. Shalashilin, Yu Zhang, Nikita Fedik, Maksim Kulichenko, Richard Messerly, Luke Nambi Mohanam,
-Sahar Sharifzadeh, Adolfo Bastida, Shaul Mukamel, Sebastian Fernandez-Alberti, and Sergei Tretiak,
-NEXMD v2.0 Software Package for Nonadiabatic Excited State Molecular Dynamics Simulations,
-*Journal of Chemical Theory and Computation* **2023** *19* (16), 5356-5368,
-https://doi.org/10.1021/acs.jctc.3c00583
+> Victor M. Freixas, Walter Malone, Xinyang Li, Huajing Song, Hassiel
+> Negrin-Yuvero, Royle Pérez-Castillo, Alexander White,  Tammie R. Gibson,
+> Dmitry V. Makhov, Dmitrii V. Shalashilin, Yu Zhang, Nikita Fedik, Maksim
+> Kulichenko, Richard Messerly, Luke Nambi Mohanam, Sahar Sharifzadeh, Adolfo
+> Bastida, Shaul Mukamel, Sebastian Fernandez-Alberti, and Sergei Tretiak, NEXMD
+> v2.0 Software Package for Nonadiabatic Excited State Molecular Dynamics
+> Simulations, *Journal of Chemical Theory and Computation* **2023** *19* (16),
+> 5356-5368, <https://doi.org/10.1021/acs.jctc.3c00583>
 
 as well as the 2020 review of the methods implemented in NEXMD:
 
-> Tammie R. Nelson, Alexander J. White, Josiah A. Bjorgaard, 
-Andrew E. Sifain, Yu Zhang, Benjamin Nebgen, Sebastian Fernandez-Alberti, 
-Dmitry Mozyrsky, Adrian E. Roitberg, and Sergei Tretiak,
-Non-adiabatic Excited-State Molecular Dynamics: Theory and Applications 
-for Modeling Photophysics in Extended Molecular Materials,
-*Chemical Reviews* **2020** *120* (4), 2215-2287,
-DOI: 10.1021/acs.chemrev.9b00447 
+> Tammie R. Nelson, Alexander J. White, Josiah A. Bjorgaard,
+> Andrew E. Sifain, Yu Zhang, Benjamin Nebgen, Sebastian Fernandez-Alberti,
+> Dmitry Mozyrsky, Adrian E. Roitberg, and Sergei Tretiak,
+> Non-adiabatic Excited-State Molecular Dynamics: Theory and Applications
+> for Modeling Photophysics in Extended Molecular Materials,
+> *Chemical Reviews* **2020** *120* (4), 2215-2287,
+> DOI: 10.1021/acs.chemrev.9b00447
 
 we encourage users to cite the references and libraries used by
 NEXMD, which are detailed in the NEXMD manual.
@@ -85,9 +94,9 @@ NEXMD, which are detailed in the NEXMD manual.
 ### Prerequisites
 
 The following dependencies must be installed and configured before
-compiling `nexmd.exe`: (1) a build automation tool such as `make`, (2) a 
+compiling `nexmd.exe`: (1) a build automation tool such as `make`, (2) a
 FORTRAN90 compiler, (3) and a BLAS/LAPack library compatible with the
-compiler and associated libraries. 
+compiler and associated libraries.
 
 1. Build automation tool
 
@@ -100,7 +109,7 @@ not installed already, check [this
 link](https://www.intel.com/content/www/us/en/developer/tools/oneapi/fortran-compiler.html#gs.**8srmr7**)
 out.
 
-3. BLAS/LAPACK libraries 
+3. BLAS/LAPACK libraries
 
 - [Intel
   MKL](https://www.intel.com/content/www/us/en/develop/documentation/get-started-with-mkl-for-dpcpp/top.html)
@@ -110,25 +119,25 @@ Or equivalently
 - [BLAS](http://www.netlib.org/blas/)
 - [LAPACK](http://www.netlib.org/lapack)
 
-
 `getexcited.py` dependencies are listed in its README.
 
 ### Set up
 
-- Download the [stable release](https://github.com/lanl/nexmd/releases/latest) or clone the
-  developmental version via `git clone https://github.com/lanl/nexmd.git`.
+- Download the [stable release](https://github.com/lanl/nexmd/releases/latest)
+  or clone the developmental version via `git clone
+  https://github.com/lanl/nexmd.git`.
 - Go to the root directory of the repo. For the stable version, unzip the
-  compressed file first. If cloning, ensure you have checked out the desired branch
-  with `git checkout <branch name>`
-- Run `make`, which compiles the code with the compiler and libraries specified by options
-  in the command line. These options can be checked and modified by
-  editing the [Makefile](./Makefile). Custom paths to libraries can be added to line 22
-  of the [Makefile](./Makefile) for all options; 
-  for further customization of other compilation flags 
-  and compilers, it is advisable to fill out the option labeled custom at line xxx. 
-  The default target is `ic_mkl`; running `make` is 
-  equivalent to `make ic_mkl`, which will compile NEXMD with the
-  `ifort` compiler and `mkl` BLAS/LAPack libraries in their default location.
+  compressed file first. If cloning, ensure you have checked out the desired
+  branch with `git checkout <branch name>`
+- Run `make`, which compiles the code with the compiler and libraries specified
+  by options in the command line. These options can be checked and modified by
+  editing the [Makefile](./Makefile). Custom paths to libraries can be added to
+  line 22 of the [Makefile](./Makefile) for all options; for further
+  customization of other compilation flags and compilers, it is advisable to
+  fill out the option labeled custom at line 415. The default target is
+  `ic_mkl`; running `make` is equivalent to `make ic_mkl`, which will compile
+  NEXMD with the `ifort` compiler and `mkl` BLAS/LAPack libraries in their
+  default location.
   
 - **Optional:** Add the resulting executable (default name `nexmd.exe`) from
   to your PATH. A quick way to do so in the root directory of the repo
@@ -136,8 +145,8 @@ Or equivalently
 
 ### Tests
 
-Example input files and their expected output are in `./tests`, more information on
-the tests can be found [here](./tests/README.md). Users are encouraged to
+Example input files and their expected output are in `./tests`, more information
+ on the tests can be found [here](./tests/README.md). Users are encouraged to
 verify the executable runs correctly by comparing the output of their
 executable with the expected outputs provided.
 
@@ -162,15 +171,16 @@ Alternatively, you can run the program with an arbitrary input filename with
 nexmd.exe <[input file] > [output file]
 ```
 
-`getexcited.py` is typically used to call multiple `nexmd.exe` executions in parallel.
-More information on nexmd.exe can be found in the
-[manual](./manual/documentation.pdf), more information on getexcited.py can be found
-in its repo.
+`getexcited.py` is typically used to call multiple `nexmd.exe` executions in
+parallel. More information on nexmd.exe can be found in the
+[manual](./manual/documentation.pdf), more information on getexcited.py can be
+found in its repo.
 
 ## Bug reporting
 
 If you find a bug in the code, feel free to [open a new
-issue](https://github.com/lanl/NEXMD/issues/new) or send an email to <nexmd-users@lanl.gov>.
+issue](https://github.com/lanl/NEXMD/issues/new) or send an email to
+<nexmd-users@lanl.gov>.
 
 ## Architecture
 

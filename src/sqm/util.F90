@@ -16,19 +16,19 @@
 !
 !********************************************************************
 !
-   subroutine clearing(n,d)
+subroutine clearing(n, d)
 
-   implicit none
+    implicit none
 
-   integer n,i
-   _REAL_ d(n)
-      
-   do i=1,n
-      d(i)=0.0
-   enddo
+    integer n, i
+    _REAL_ d(n)
 
-   return
-   end
+    do i = 1, n
+        d(i) = 0.0
+    end do
+
+    return
+end subroutine clearing
 !
 !********************************************************************
 !
@@ -36,22 +36,22 @@
 !
 !********************************************************************
 !
-   subroutine symmetr(Nb,tmp)
+subroutine symmetr(Nb, tmp)
 
-   implicit none
+    implicit none
 
-   integer Nb,j,i,k
-   _REAL_  tmp(Nb,Nb)
+    integer Nb, j, i, k
+    _REAL_ tmp(Nb, Nb)
 
-   do i=1,Nb
-    do j=1,i
-       tmp(i,j)=0.5*(tmp(i,j)+tmp(j,i))
-       tmp(j,i)=tmp(i,j)
+    do i = 1, Nb
+        do j = 1, i
+            tmp(i, j) = 0.5*(tmp(i, j) + tmp(j, i))
+            tmp(j, i) = tmp(i, j)
+        end do
     end do
-   enddo
 
-   return
-   end
+    return
+end subroutine symmetr
 !
 !********************************************************************
 !
@@ -59,7 +59,7 @@
 !
 !********************************************************************
 !
-   subroutine rrdpsort (dx, n, iperm, kflag)
+subroutine rrdpsort(dx, n, iperm, kflag)
 
 !  RR changes:
 !  style changed to f77.
@@ -117,254 +117,249 @@
 !                 the acm, 12, 3 (1969), pp. 185-187.
 !***end prologue  dpsort
 
-   integer kflag, n
-   _REAL_ dx(*)
-   integer iperm(*)
+    integer kflag, n
+    _REAL_ dx(*)
+    integer iperm(*)
 
-   _REAL_ r
-   _REAL_ temp
-   integer i, ij, indx, indx0, istrt, j, k, kk, l, lm, lmt, m, nn
-   integer il(21), iu(21)
+    _REAL_ r
+    _REAL_ temp
+    integer i, ij, indx, indx0, istrt, j, k, kk, l, lm, lmt, m, nn
+    integer il(21), iu(21)
 
-   intrinsic abs, int
+    intrinsic abs, int
 
 !***first executable statement  dpsort
 
-      nn = n
-      if (nn .lt. 1) stop 'rripsort: n is not positive'
+    nn = n
+    if (nn .lt. 1) stop 'rripsort: n is not positive'
 
-      kk = abs(kflag)
-      if (kk.ne.1 .and. kk.ne.2) stop 'rripsort: wrong kflag'
+    kk = abs(kflag)
+    if (kk .ne. 1 .and. kk .ne. 2) stop 'rripsort: wrong kflag'
 
 ! initialize permutation vector:
-      do i=1,nn
-         iperm(i) = i
-      enddo
-      if (nn .eq. 1) return
+    do i = 1, nn
+        iperm(i) = i
+    end do
+    if (nn .eq. 1) return
 
 ! alter array dx to get decreasing order if needed:
-      if (kflag .le. -1) then
-         do i=1,nn
+    if (kflag .le. -1) then
+        do i = 1, nn
             dx(i) = -dx(i)
-         enddo
-      endif
+        end do
+    end if
 
 ! sort dx only:
-      m = 1
-      i = 1
-      j = nn
-      r = .375d0
+    m = 1
+    i = 1
+    j = nn
+    r = .375d0
 
-   30 if (i .eq. j) goto 80
-      if (r .le. 0.5898437d0) then
-         r = r+3.90625d-2
-      else
-         r = r-0.21875d0
-      endif
+30  if (i .eq. j) goto 80
+    if (r .le. 0.5898437d0) then
+        r = r + 3.90625d-2
+    else
+        r = r - 0.21875d0
+    end if
 
-   40 k = i
-      ij = i + int((j-i)*r)
-      lm = iperm(ij)
-      if (dx(iperm(i)) .gt. dx(lm)) then
-         iperm(ij) = iperm(i)
-         iperm(i) = lm
-         lm = iperm(ij)
-      endif
-      l = j
+40  k = i
+    ij = i + int((j - i)*r)
+    lm = iperm(ij)
+    if (dx(iperm(i)) .gt. dx(lm)) then
+        iperm(ij) = iperm(i)
+        iperm(i) = lm
+        lm = iperm(ij)
+    end if
+    l = j
 
 ! interchange with lm:
-      if (dx(iperm(j)) .lt. dx(lm)) then
-         iperm(ij) = iperm(j)
-         iperm(j) = lm
-         lm = iperm(ij)
-         if (dx(iperm(i)) .gt. dx(lm)) then
+    if (dx(iperm(j)) .lt. dx(lm)) then
+        iperm(ij) = iperm(j)
+        iperm(j) = lm
+        lm = iperm(ij)
+        if (dx(iperm(i)) .gt. dx(lm)) then
             iperm(ij) = iperm(i)
             iperm(i) = lm
             lm = iperm(ij)
-         endif
-      endif
-      goto 60
+        end if
+    end if
+    goto 60
 
-   50 lmt = iperm(l)
-      iperm(l) = iperm(k)
-      iperm(k) = lmt
+50  lmt = iperm(l)
+    iperm(l) = iperm(k)
+    iperm(k) = lmt
 
-   60 l = l-1
-      if (dx(iperm(l)) .gt. dx(lm)) goto 60
+60  l = l - 1
+    if (dx(iperm(l)) .gt. dx(lm)) goto 60
 
-   70 k = k+1
-      if (dx(iperm(k)) .lt. dx(lm)) goto 70
+70  k = k + 1
+    if (dx(iperm(k)) .lt. dx(lm)) goto 70
 
-      if (k .le. l) goto 50
+    if (k .le. l) goto 50
 
-      if (l-i .gt. j-k) then
-         il(m) = i
-         iu(m) = l
-         i = k
-         m = m+1
-      else
-         il(m) = k
-         iu(m) = j
-         j = l
-         m = m+1
-      endif
-      goto 90
+    if (l - i .gt. j - k) then
+        il(m) = i
+        iu(m) = l
+        i = k
+        m = m + 1
+    else
+        il(m) = k
+        iu(m) = j
+        j = l
+        m = m + 1
+    end if
+    goto 90
 
 ! begin again on another portion of the unsorted array:
-   80 m = m-1
-      if (m .eq. 0) goto 120
-      i = il(m)
-      j = iu(m)
+80  m = m - 1
+    if (m .eq. 0) goto 120
+    i = il(m)
+    j = iu(m)
 
-   90 if (j-i .ge. 1) goto 40
-      if (i .eq. 1) goto 30
-      i = i-1
+90  if (j - i .ge. 1) goto 40
+    if (i .eq. 1) goto 30
+    i = i - 1
 
-  100 i = i+1
-      if (i .eq. j) goto 80
-      lm = iperm(i+1)
-      if (dx(iperm(i)) .le. dx(lm)) goto 100
-      k = i
+100 i = i + 1
+    if (i .eq. j) goto 80
+    lm = iperm(i + 1)
+    if (dx(iperm(i)) .le. dx(lm)) goto 100
+    k = i
 
-  110 iperm(k+1) = iperm(k)
-      k = k-1
-      if (dx(lm) .lt. dx(iperm(k))) goto 110
-      iperm(k+1) = lm
-      goto 100
+110 iperm(k + 1) = iperm(k)
+    k = k - 1
+    if (dx(lm) .lt. dx(iperm(k))) goto 110
+    iperm(k + 1) = lm
+    goto 100
 
 ! clean up:
-  120 if (kflag .le. -1) then
-         do i=1,nn
+120 if (kflag .le. -1) then
+        do i = 1, nn
             dx(i) = -dx(i)
-         enddo
-      endif
-      if (kk.ne.2) return
+        end do
+    end if
+    if (kk .ne. 2) return
 
 ! rearrange the values of dx if desired:
-      do istrt=1,nn
-         if (iperm(istrt) .ge. 0) then
+    do istrt = 1, nn
+        if (iperm(istrt) .ge. 0) then
             indx = istrt
             indx0 = indx
             temp = dx(istrt)
- 140        if (iperm(indx) .gt. 0) then
-               dx(indx) = dx(iperm(indx))
-               indx0 = indx
-               iperm(indx) = -iperm(indx)
-               indx = abs(iperm(indx))
-               goto 140
-            endif
+140         if (iperm(indx) .gt. 0) then
+                dx(indx) = dx(iperm(indx))
+                indx0 = indx
+                iperm(indx) = -iperm(indx)
+                indx = abs(iperm(indx))
+                goto 140
+            end if
             dx(indx0) = temp
-         endif
-      enddo
-      do i=1,nn
-         iperm(i) = -iperm(i)
-      enddo
+        end if
+    end do
+    do i = 1, nn
+        iperm(i) = -iperm(i)
+    end do
 
-      return
-      end
+    return
+end subroutine rrdpsort
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !     This subroutine commutes two matrices
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
-      subroutine commut(n,d1,d2,dd)
-      implicit none
-      integer n,i,j,k
-      _REAL_ d1(n,n),d2(n,n),dd(n,n),tr
-      
-       do i=1,n
-        do j=1,n
-          tr=0.0
-           do k=1,n
-            tr=tr+d1(i,k)*d2(k,j)-d2(i,k)*d1(k,j)
-           enddo 
-         dd(i,j)=tr
-        enddo
-       enddo
+subroutine commut(n, d1, d2, dd)
+    implicit none
+    integer n, i, j, k
+    _REAL_ d1(n, n), d2(n, n), dd(n, n), tr
 
-       return
+    do i = 1, n
+        do j = 1, n
+            tr = 0.0
+            do k = 1, n
+                tr = tr + d1(i, k)*d2(k, j) - d2(i, k)*d1(k, j)
+            end do
+            dd(i, j) = tr
+        end do
+    end do
 
-      entry multiple(n,d1,d2,dd)
+    return
 
-       do i=1,n
-        do j=1,n
-          tr=0.0
-           do k=1,n
-            tr=tr+d1(i,k)*d2(k,j)
-           enddo 
-         dd(i,j)=tr
-        enddo
-       enddo
+  entry multiple(n, d1, d2, dd)
 
-       return
-       end
+    do i = 1, n
+        do j = 1, n
+            tr = 0.0
+            do k = 1, n
+                tr = tr + d1(i, k)*d2(k, j)
+            end do
+            dd(i, j) = tr
+        end do
+    end do
 
-      
+    return
+end subroutine commut
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !     This subroutine trace matrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-      subroutine trace(n,dd,tr)
-      implicit none
-      integer n,k
-      _REAL_ dd(n,n),tr
+subroutine trace(n, dd, tr)
+    implicit none
+    integer n, k
+    _REAL_ dd(n, n), tr
 
-          tr=0.0
-        do k=1,n
-           tr=tr+2*dd(k,k)
-        enddo
-	
-        return
-	end
-      
+    tr = 0.0
+    do k = 1, n
+        tr = tr + 2*dd(k, k)
+    end do
 
-      subroutine wrb_arr2(idim,WJ,WK,GSS,GSP,GPP,GP2,&
-      HSP,GSD,GPD,GDD,fname,rw,sd)
-      
-      implicit none
-      
-      character fname*(*),rw*1,sd*1
-      integer idim,i
-      _REAL_ WJ(idim),WK(idim)                    ! Coulomb matrix elements
-      _REAL_ GSS(107),GSP(107),GPP(107),GP2(107),&
-             HSP(107),GSD(107),GPD(107),GDD(107)
-      
-      open (11,file=fname,form='unformatted')
-            
-      if (rw.eq.'w') then
-	   write (11) (WJ(i),i=1,idim)
-	   write (11) (WK(i),i=1,idim)
-	   write (11) (GSS(i),i=1,107)
-	   write (11) (GSP(i),i=1,107)
-	   write (11) (GPP(i),i=1,107)
-	   write (11) (GP2(i),i=1,107)
-	   write (11) (HSP(i),i=1,107)
-	   write (11) (GSD(i),i=1,107)
-	   write (11) (GPD(i),i=1,107)
-	   write (11) (GDD(i),i=1,107)
-      elseif (rw.eq.'r') then
-	   read (11) (WJ(i),i=1,idim)
-	   read (11) (WK(i),i=1,idim)
-	   read (11) (GSS(i),i=1,107)
-	   read (11) (GSP(i),i=1,107)
-	   read (11) (GPP(i),i=1,107)
-	   read (11) (GP2(i),i=1,107)
-	   read (11) (HSP(i),i=1,107)
-	   read (11) (GSD(i),i=1,107)
-	   read (11) (GPD(i),i=1,107)
-	   read (11) (GDD(i),i=1,107)
-      else 
-      print *, 'Cannot read or write arrays'
-      endif
-      
-      if (sd.eq.'d') then
-      close (11,status='delete')
-      else
-      close (11)
-      endif
-      
-      return
-      end	
+    return
+end subroutine trace
 
+subroutine wrb_arr2(idim, WJ, WK, GSS, GSP, GPP, GP2, &
+    HSP, GSD, GPD, GDD, fname, rw, sd)
 
+    implicit none
 
+    character fname*(*), rw*1, sd*1
+    integer idim, i
+    _REAL_ WJ(idim), WK(idim)                    ! Coulomb matrix elements
+    _REAL_ GSS(107), GSP(107), GPP(107), GP2(107), &
+        HSP(107), GSD(107), GPD(107), GDD(107)
+
+    open (11, file=fname, form='unformatted')
+
+    if (rw .eq. 'w') then
+        write (11) (WJ(i), i=1, idim)
+        write (11) (WK(i), i=1, idim)
+        write (11) (GSS(i), i=1, 107)
+        write (11) (GSP(i), i=1, 107)
+        write (11) (GPP(i), i=1, 107)
+        write (11) (GP2(i), i=1, 107)
+        write (11) (HSP(i), i=1, 107)
+        write (11) (GSD(i), i=1, 107)
+        write (11) (GPD(i), i=1, 107)
+        write (11) (GDD(i), i=1, 107)
+    elseif (rw .eq. 'r') then
+        read (11) (WJ(i), i=1, idim)
+        read (11) (WK(i), i=1, idim)
+        read (11) (GSS(i), i=1, 107)
+        read (11) (GSP(i), i=1, 107)
+        read (11) (GPP(i), i=1, 107)
+        read (11) (GP2(i), i=1, 107)
+        read (11) (HSP(i), i=1, 107)
+        read (11) (GSD(i), i=1, 107)
+        read (11) (GPD(i), i=1, 107)
+        read (11) (GDD(i), i=1, 107)
+    else
+        print *, 'Cannot read or write arrays'
+    end if
+
+    if (sd .eq. 'd') then
+        close (11, status='delete')
+    else
+        close (11)
+    end if
+
+    return
+end subroutine wrb_arr2

@@ -1,0 +1,342 @@
+\section{The input file}\label{Input_file}
+
+The contents of the input file for \verb+NEXMD+ can be categorized into blocks: 
+\verb+&qmmm+ for geometry optimization, ground-state parameters, excited-state parameters, and solvent models; \verb+&moldyn+ for molecular dynamics, thermostats, and constraints; \verb+&pairs+ and \verb+&modes+ for specifying constraints; \verb+&coord+ for initial geometries; \verb+&veloc+ for initial velocity and \verb+&coeff+ for excited-state coefficients.  All input parameters are overviewed here, the numerical values in square brackets are default parameters.
+\vspace{0.5cm}
+
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+&qmmm
+   !***** Geometry Optimization
+\end{lstlisting}
+The following section contains input parameters pertaining to geometry optimization.
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+   maxcyc=0, ! Number of cycles for geometry optimization [0]
+   ntpr=1, ! Print results every ntpr cycles [1]
+   grms_tol=1.0d-2, ! Tolerance in eV/A (derivatives) [1.0d-2]
+\end{lstlisting}
+\begin{itemize}
+\item \verb+maxcyc+ sets the maximum number of cycles for geometry optimization.  If the number of cycles reaches \verb+maxcyc+, an error message reads: \verb+Maximum+ \verb+number+ \verb+of+ \verb+iterations+ \verb+reached+ \verb+without+ \verb+convergence+.  Therefore,  to optimize geometry, \verb+maxcyc+ must be set to a sufficiently large number greater than zero.  If the geometry reaches the maximum number of cycles, you must review the situation carefully to determine if the input geometry was appropriate or if \verb+grms_tol+ (shown below) was set too low.  A negative \verb+maxcyc+ is treated as \verb+0+. All files written according to the corresponding verbosity will be written for the optimized geometry.
+\item \verb+ntpr+ sets how often results for geometry optimization are printed to the standard output file.  The output of the iteration is written as \verb+iter+, \verb+energy+ in eV, and \verb+rms+ \verb+gradient+ in eV per \AA.  The latter quantity is explained in \verb+grms_tol+, shown below.
+\item \verb+grms_tol+ sets the convergence criteria for geometry optimization.  The units for \verb+grms_tol+ are in eV per \AA, so that a smaller \verb+grms_tol+ is a smaller change in energy per change in bond length (i.e. a tighter convergence criteria).
+\end{itemize}
+
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+   !***** Normal mode analysis (NMA)
+\end{lstlisting}
+\noindent The following section contains input parameters pertaining to normal mode calculations.
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+    do_nm=1, ! 0 for not doing NMA, greater than 0 for doing NMA [0]
+    deltaX = 1.0d-4, ! Displacement for second derivatives required Hessian calculation (Angstrom) (first derivatives are calculated analytically) (see M. Soler, T. Nelson, A. Roitberg, S. Tretiak*, and S. Fernandez-Alberti*, J. Phys. Chem. A, 118(45), 10372-10379 (2014).)  [1.0d-4]
+\end{lstlisting}
+\begin{itemize}
+    \item \verb+do_nm+ sets NEXMD to perform Normal Mode Analysis. Two files will be generated: \verb+nma_modes.out+ and \verb+nma_freq.out+ containing respectively the normal modes directions and the normal modes energies (Hartree). The NMA calculation can be performed for the ground state or for any excited state. It is recommended that this calculation is performed for a minimum energy configuration. Non adiabatic corrections \cite{soler2014signature} have still not been added to the current version.
+    \item \verb+deltaX+ sets the displacement (\AA) for the numerical Hessian calculation.
+\end{itemize}
+
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+   !***** Ground-State and Output Parameters
+\end{lstlisting}
+\noindent The following section contains input parameters pertaining to the ground-state calculation and its associated outputs.
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+   qm_theory='AM1', ! Integral type, check Amber's SQM for more options [AM1]
+   scfconv=1.0d-8, ! Ground-state SCF convergence criteria, eV [1.0d-6]
+   verbosity=0, ! QM/MM output verbosity (0-minimum, 5-maximum) 
+   ! [1 for dynamics and optimization, 5 for others]
+   printdipole=2, ! (0) Unrelaxed transitions, (1) Unrelaxed transitions plus 
+   ! total molecular, or (2) Unrelaxed/relaxed transitions plus 
+   ! total molecular [1 for dynamics and 2 for single-point]
+   itrmax=300, ! Max SCF iterations for ground state 
+   ! (negative to ignore convergence) [300]
+\end{lstlisting}
+ \begin{itemize}
+\item \verb+qm_theory+ sets the semi-empirical model Hamiltonian.  A list of available Hamiltonians can be found in Ref. \cite{amber2017}.  The majority of studies with \verb+NEXMD+ have used Austin Model 1 (AM1).  
+\item \verb+scfconv+ sets the convergence criteria for the self-consistent field (SCF) ground-state energy in eV. In other words, the user requests that the ground-state energy be determined to within \verb+scfconv+ eV.
+\item \verb+verbosity+ sets the level of printing of QM/MM related outputs.  The outputs of each level can be found in Ref. \cite{amber2017}.  The verbosity should be set to at least \verb+1+ in order to obtain ground-to-excited state oscillator strengths.  This is important for single-point calculations and obtaining an optical spectrum.%, as described in Subsections \ref{spcalc} and \ref{optspec}, respectively.
+\item \verb+printdipole+ sets the printing level for transition dipole moments.  There are three options to choose from which are: \verb+(0)+, x,y,z coordinates of ground-to-excited state transition dipole moments with respect to an arbitrary lab. frame, \verb+(1)+, same as \verb+(0)+ plus the module of the total molecular transition dipole moment, and \verb+(2)+, same as \verb+(1)+ plus relaxed and unrelaxed difference transition dipole moments.
+\item \verb+itrmax+ sets the maximum number of cycles for the ground-state SCF calculation.  If the number of cycles reaches \verb+itrmax+, the code will stop.  A negative value for \verb+itrmax+ means the ground-state SCF calculation will go through $\left|\verb+itrmax+\right|$ cycles regardless of whether or not the convergence criteria in \verb+scfconv+ has been met.
+\end{itemize}
+
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+   !***** Excited-State Parameters
+\end{lstlisting}
+\noindent The following section contains input parameters pertaining to the excited-state calculation.
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+   exst_method=1, ! CIS (1) or RPA (2) [1]
+   dav_guess=1, ! Restart Davidson from (0) Scratch, (1) Previous, 
+   ftol0=1.0d-7, ! Acceptance tolerance (|emin-eold|) [1.0d-5]
+   dav_maxcyc=200, ! Max cycles for Davidson diagonalization 
+   ! (negative to ignore convergence) [100]
+   printcharges=0, ! Print (1) or do not print (0) Mulliken charges of QM atoms [0]
+   calcxdens=.false., ! Print (.true.) or do not print (.false.) 
+   ! excited-to-excited transition dipole moments [.false.]
+\end{lstlisting}
+\begin{itemize}
+\item \verb+exst_method+ sets the approximate excited-state wavefunction, which is used to compute excited-state properties.  There are two options to choose from in \verb+NEXMD+.  The first is the configuration interactions singles (\verb+CIS+) wavefunction and the other is the random phase approximation wavefunction (\verb+RPA+).  The RPA wavefunction is a slight extension of the CIS wavefunction and includes more electron correlation effects.  Therefore, it is common for RPA to be more computationally demanding than CIS.  The CIS wavefunction is stable and has been used for the majority of studies with \verb+NEXMD+.
+\item \verb+dav_guess+ sets the initial guess for the Davidson algorithm.  The Davidson algorithm is used to calculate excited-state eigenvalues and eigenvectors.  One option is to start Davidson from \verb+scratch+.  However, this option may increase computation time.  Another option is start Davidson from the results of the \verb+previous+ calculation.  The latter option should be used for realistic simulations.
+\item \verb+ftol0+ sets the convergence criteria on excited-state energies.  In other words, the user requests that excited-state energies be determined to within \verb+ftol0+ eV.
+\item \verb+dav_maxcyc+ sets the maximum number of cycles for the Davidson algorithm.  If the number of cycles exceeds \verb+dav_maxcyc+, an error message will read: \verb+Number+ \verb+of+ \verb+Davidson+ \verb+iterations+ \verb+exceeded,+ \verb+exiting.+  A negative value for \verb+dav_maxcyc+ means the excited-state calculation will go through $\left|\verb+dav_maxcyc+\right|$ cycles regardless of whether or not the convergence criteria in \verb+ftol0+ has been met.
+\item \verb+printcharges+ sets whether or not to print Mulliken charges of QM atoms to the standard output file.
+\item \verb+calcxdens+ sets whether or not to print excited-to-excited transition dipole moments.  This option can only be set to \verb+true+ during single-point calculations.  An error will occur if \verb+calcxdens+ is set to \verb+true+ during dynamics.  A file called \verb+muab.out+ will be generated if \verb+calcxdens=.true.+, which contains excited-to-excited transition dipoles in arbitrary units.  The number of excited states included in \verb+muab.out+ depends on the number of excited states being propagated, which is controlled by \verb+n_exc_states_propagate+, located in an upcoming section of the input file.
+\end{itemize}
+
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+   !***** Solvent Models and External Electric Fields
+\end{lstlisting}
+\noindent The following section contains input parameters pertaining to solvent models and external electric fields.
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+   solvent_model=0, ! (0) None, (1) Linear response, (2) Vertical excitation, 
+   ! or (3) State-specific  [0]
+   potential_type=1, ! (1) COSMO or (2) Onsager [1]
+   onsager_radius=2, ! Onsager radius, A (system dependent) [2]
+   ceps=10, ! Dielectric constant, unitless [10]
+   linmixparam=1 ! Linear mixing parameter for vertical excitation 
+   ! or state-specific SCF calculation [1]
+   cosmo_scf_ftol=1.0d-5, ! Vertical excitation or state-specific 
+   ! SCF tolerance, eV [1.0d-5]
+   doZ=.false. ! Use relaxed (.true.) or unrelaxed (.false) density for 
+   ! vertical excitation or state-specific COSMO or Onsager [.false.]
+   EF=0, ! (0) None or (1) Electric field in ground and excited state [0]
+   Ex=0, ! Electric field vector X, eV/A [0]
+   Ey=0, ! Electric field vector Y, eV/A [0]
+   Ez=0, ! Electric field vector Z, eV/A [0] 
+\end{lstlisting}
+\begin{itemize}
+\item \verb+solvent_model+ sets the solvent model between gas phase, linear response, vertical excitation or state specific with the values 0, 1, 2 and 3 respectively.  A detailed description of these models can be found in Refs. \cite{bjorgaard2015solvent1,bjorgaard2015solvent2}.
+\item \verb+potential_type+ sets the potential of the solvent model.  The Onsager model assumes that the solute is placed in a spherical cavity inside the solvent. The latter is described as a homogeneous, polarizable medium of constant dielectric constant given by \verb+ceps+. The solute dipole moment induces a dipole moment of opposite direction in the surrounding medium. Polarization of the medium in turn polarizes the charge distribution in the solvent. Treating this mutual polarization in a self-consistent manner leads to the Onsager reaction field model. COSMO (Conductor-like Screening Model) generalizes the Onsager potential where the cavity surface is defined by the shape of the solute.  COSMO is a more complete description of the electrostatic interactions.
+\item \verb+onsager_radius+ defines the radius of the spherical cavity for the Onsager reaction field model.  
+\item \verb+ceps+ sets the dielectric constant of the solvent.  A list of solvents and their dielectric constants can be found in Ref. \cite{haynes2014crc}.  Be sure to reference Ref. \cite{haynes2014crc}.
+\item \verb+linmixparam+ sets the degree to which the last two SCF iterations are mixed.  The mixed solution is used as an input for the following SCF iteration.  The goal of introducing \verb+linmixparam+ is to significantly reduce the high cost of finding the SCF solution by inputting a solvent potential into the current iteration that is extrapolated from previous iterations.  See Refs. \cite{bjorgaard2015solvent1,bjorgaard2015solvent2} for more information.
+\item \verb+cosmo_scf_ftol+ sets the convergence criteria of the vertical excitation or state-specific solvent model SCF calculation.  In other words, the user requests that the energy be determined to within \verb+cosmo_scf_ftol+ eV.  The \verb+cosmo_scf_ftol+ flag sets the tolerance for both the Onsager and COSMO potentials.
+\item \verb+doZ+ sets whether to use the relaxed or unrelaxed density for the vertical excitation or state-specific solvent model.
+\item \verb+EF+ sets whether or not there is an external electric field applied to the system.
+\item \verb+Ex+, \verb+Ey+, \verb+Ez+ sets the magnitude and direction of the external electric field in the $x$, $y$, and $z$ axes, respectively.  The user must also set \verb+EF+ to \verb+1+ if an external electric field is desired in the simulation.
+\end{itemize}
+
+\noindent \textit{General Note}: The default tolerances are within accepted levels of convergence.  However, these values may be increased depending on the size of the system or time of simulation.
+\vspace{0.5cm}
+
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+&endqmmm
+
+&moldyn
+   !***** General Parameters
+\end{lstlisting}
+
+\noindent The following block contains general input parameters pertaining to molecular dynamics.
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+   NAMD_type = 'tsh', ! NAMD method [tsh, aimc, mf]
+   natoms=12, ! Number of atoms 
+   ! (must be equal to the number of atoms in system)
+   rnd_seed=19345, ! Seed for the random number generator
+   bo_dynamics_flag=0, ! (0) Non-BO or (1) BO [1]
+   exc_state_init=6, ! Initial excited state (0 - ground state) [0]
+   n_exc_states_propagate=8, ! Number of excited states [0]
+\end{lstlisting}
+
+\begin{itemize}
+\item \verb+NAMD_type+ sets the NAMD method: trajectory surface hoping (tsh), Ehrenfest (mf), and ab initio multiple cloning (aimc) \cite{freixas2018ab,freixas2021nonadiabatic}.
+\item \verb+natoms+ sets the number of atoms in the system being studied.  This number is important for memory allocation and must be equal to or greater than the number of atoms in the system.
+\item \verb+rnd_seed+ sets the seed for the random number generator.  For each \verb+rnd_seed+, there is a well-defined sequence of random numbers.  For non-adiabatic ensemble simulations, \verb+rnd_seed+ must be different from one trajectory to another.  This ensures the stochastic nature of the simulation, which is important for both the nuclear Langevin dynamics (i.e. coupling of the system to a heat bath) and the surface hopping algorithm,\cite{tully1990molecular} which governs electronic transitions between electronic states (i.e. non-adiabatic dynamics).%  The details of how \verb+rnd_seed+ is chosen for non-adiabatic dynamics will be discussed in Subsection \ref{nexmd}. 
+\item \verb+bo_dynamics+ sets whether the dynamics is non-Born--Oppenheimer (non-adiabatic) or Born--Oppenheimer (adiabatic).  If the simulation is non-adiabatic, this typically means the user is running an ensemble of trajectories.  This may also be the case for an adiabatic simulation, depending on the study.
+\item \verb+exc_state_init+ sets the initial excited-state of the system.  For a non-adiabatic ensemble simulation, a distribution of initial excited-states is needed to model a photo-excited wavepacket of different nuclear geometries.  Therefore, \verb+exc_state_init+ may be different from one trajectory to another.%  The details of how \verb+exc_state_init+ is chosen for non-adiabatic dynamics will be discussed in Subsection \ref{nexmd}. 
+\item \verb+n_exc_states_propagate+ sets the total number of excited-states to be propagated in the dynamics.  The user must be careful not to include unnecessary higher-energy states if it is unlikely for the system to access those states as this may greatly increase computation time. The number of excited-states to include in the simulation is determined by the electronic structure and optical spectrum of the system.%, which will be discussed in Subsections \ref{spcalc} and \ref{optspec}.
+\end{itemize}
+
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+   !***** Dynamics Parameters
+\end{lstlisting}
+The following section contains more inputs for molecular dynamics.
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+   time_init=0.0, ! Initial time, fs [0.0]
+   time_step=0.1, ! Time step, fs [0.1]
+   n_class_steps=10000, ! Number of classical steps [1]
+   n_quant_steps=4, ! Number of quantum steps for each classical step [4]
+   moldyn_deriv_flag=1, ! (0) None, (1) Analytical, or (2) Numerical [1]
+   num_deriv_step=1.0d-3, ! Displacement for numerical derivatives, A [1.0d-3]
+\end{lstlisting}
+%   rk_tolerance=1.0d-7, ! Tolerance for the Runge-Kutta propagator [1.0d-7]
+
+
+\begin{itemize}
+\item \verb+time_init+ sets the initial time of the trajectory.  If the trajectory has not yet begun, then this number is set 0.0 fs.  However, it is common for a trajectory to be restarted from where it left off.  In these cases the initial time depends on when the previous simulation has ended.  Restart input files will be discussed in Section \ref{restart}.
+\item \verb+time_step+ sets the classical time-step of the trajectory.  This is the time-step at which nuclear degrees of freedom are integrated.
+\item \verb+n_class_steps+ sets the total number of classical time-steps in the trajectory.  An error message will read: \verb+You+ \verb+must+ \verb+run+ \verb+dynamics+ \verb+(n_class_steps > 0)+ \verb+or+ \verb+geometry+ \verb+optimization+ \verb+(maxcyc > 0).+ \verb+Running+ \verb+both+ \verb+simultaneously+ \verb+is+ \verb+not+ \verb+possible.+
+\item \verb+n_quant_steps+ sets the number of quantum steps per classical step.  The nuclear degrees of freedom are integrated with the Velocity Verlet (VV) algorithm, while the electronic degrees of freedom (i.e. the quantum coefficients) are integrated with the Runge-Kutta (RK) algorithm.  The nuclear dynamics are more computationally stable than the quantum coefficients.  The VV algorithm, while less computationally demanding than RK, is sufficient for nuclear dynamics.  Quantum coefficients are more susceptible to computational instabilities and require a more rigorous method for integrating their equations of motion (i.e. the Schr\"{o}dinger equation).
+\item \verb+moldyn_deriv_flag+ sets how gradients are calculated.  The options here are numerical or analytical.  Generally, analytical derivatives should be used because they are more computationally stable and less computationally expensive than numerical derivatives.
+\item \verb+num_deriv_step+ sets the derivative step-size in units of angstroms (\AA) when the \verb+moldyn_deriv_flag+ is set to \verb+numerical+.
+%\item \verb+rk_tolerance+ sets the convergence criteria on the quantum coefficients in arbitrary units.  The smaller the \verb+rk_tolerance+, the tighter the convergence criteria.  The user should be careful not to set this quantity too low as RK may not be able to handle very low tolerance levels.  In these cases, the output file will show an error message that reads, \verb+RK tolerance may be too low+.  The \verb+rk_tolerance+ should be increased and trajectories should be restarted from 0.0 fs.
+\end{itemize}
+
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+   !***** Constraints
+\end{lstlisting}
+\noindent The following section contains input parameters pertaining to constrained distances and normal modes.
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+    npc=0, !Number of pairs of distances to be constrained [0]
+    nmc=0, !Number of normal modes to be constrained [0]
+\end{lstlisting}
+\begin{itemize}
+    \item \verb+npc+ is the number of pairs of distances tobe constrained \cite{andersen1983rattle}. In the current version the same atom can't belong to more than two constrained pairs. An extra block \verb+&pairs+ is needed to add the indexes of the pairs of atoms to be constrained. The current version can't constrain atom distances for minimization.
+    \item \verb+nmc+ is the number of normal modes to be constrained \cite{negrin2020photoinduced}. The current version can't constrain modes and distances at the same time. Two extra files are needed: \verb+reference.xyz+ and \verb+nma_modes.out+. \verb+reference.xyz+ contains the reference structure for which normal modes where calculated in \verb+xyz+ format. At each time step, NEXMD will translate and rotate in order to minimize the root mean squared deviation to the structure stored in \verb+reference.xyz+. The \verb+nma_modes+ contains the 3*\verb+natom+ normal modes directions (stored in columns). Any set of generalized directions can be constrained as long as the directions are orthonormalized. An extra block \verb+&modes+ is needed to add the indexes of the normal modes to be constrained. The current version can't constrain normal modes for minimization.
+\end{itemize}
+
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+   !***** Non-Adiabatic Parameters TSH
+\end{lstlisting}
+\noindent The following section contains input parameters pertaining to trajectory surface hopping dynamics.
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+   decoher_type=2, ! Type of decoherence: Reinitialize (0) Never, 
+   ! (1) At successful hops, (2) At successful plus frustrated hops... 
+   dotrivial=1, ! Do unavoided (trivial) crossing routine (1) or not (0) [1]
+   quant_step_reduction_factor=2.5d-2, ! Quantum step reduction factor [2.5d-2]
+   iredpot=1, ! Reduce excited states for tsh, 1 for yes and 0 for no [0]
+   nstates=2, ! Number of excited states to reduce [2]
+\end{lstlisting}
+\begin{itemize}
+\item \verb+decoher_type+ sets the method for decoherence.  The surface hopping method treats nuclear degrees of freedom classically and electronic degrees of freedom quantum mechanically.  Due to the classical treatment of nuclei, there is an overcoherence between quantum states.  In realistic simulations there should always be some form of decoherence.  Method \verb+0+ does not introduce any form of decoherence and should only be used for code testing or benchmarking purposes.  By reinitializing the quantum coefficients after hops, this introduces a form of decoherence that is instantaneous.  Method \verb+1+ collapses the wavefunction at all successful hops, whereas \verb+2+ collapses the wavefunction at all successful plus frustrated hops.  Frustrated hops are those that were unable to satisfy energy conservation and were rejected.  In general, method \verb+2+ should be used for realistic simulations.
+\item \verb+dotrivial+ sets whether or not to reduce the time-step in the vicinity of trivial crossings.  See description under \verb+quant_step_reduction_factor+ for more details.  Trivial crossings are identified by the method described in Ref. \cite{fernandez2012identification}.
+\item \verb+quant_step_reduction_factor+ sets how much to reduce the quantum step in the vicinity of an unavoided or trivial crossing.  At trivial crossings, the energy gap between the adjacent states is vanishingly small.  The coupling between these states is spiky localized in time.  Therefore, in order to resolve the non-adiabatic coupling between these states and determine whether or not an electronic transition occurs, the time-step must be reduced.  It is defined as \verb+quant_step_reduction_factor+ $\times$ \verb+quant_time_step+, where \verb+quant_time_step+ is determined by \verb+time_step+ and \verb+n_quant_steps+.
+\item \verb+iredpot+ is set to 1 to reduce the total number of excited states calculated after a hop for trajectory surface hopping dynamics. This is particularly useful for big systems with tens of states. If \verb+iredpot+ is set to 0 the number of states will remain constant during the complete simulation. Otherwise a reduction of states algorithm will be appliyed. \cite{nelson2016nonadiabatic}
+\item \verb+nstates+ sets how many states will remain above the current state after a hop in order to allow hopping up. The reduction of states is irreversible and some extra states should be calculated above the current state in order to account for hopping up.
+\end{itemize}
+
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+   !***** Non-Adiabatic Parameters AIMC
+\end{lstlisting}
+\noindent The following section contains input parameters pertaining to AIMC dynamics. AIMC dynamics may generate several trajectories from the same initial condition. Two types of files will be generated: those ending in \verb+.out+ will refer to a given trajectory with a four digit label and those ending in \verb+.dat+ will correspond to the complete ensemble. Ehrenfest dynamics works just as AIMC but without cloning, so no ensemble files will be produced and the trajectory files will not be labeled.
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+   AIMC_dclone_1=1.5, ! AIMC threshold for the first criterion [1.5]
+   AIMC_dclone_2=0.2617, ! AIMC threshold for the second criterion [0.2617]
+   AIMC_dclone_3=0.005, ! AIMC threshold for the third criterion [0.005]
+   AIMC_max_clone=4, ! Max number of consecutive branching for AIMC [4]
+   nclones0=0, ! Initial count of the number of consecutive branching for AIMC [0]
+   S0_S1_threshold=0.2, ! For dropping trajectories when S0/S1 energy gap is to low [0.2]
+\end{lstlisting}
+\begin{itemize}
+    \item \verb+AIMC_dclone_1+ is the threshold for the first cloning criterion, see \cite{freixas2018ab} for details.
+    \item \verb+AIMC_dclone_2+ is the threshold for the second cloning criterion, see \cite{freixas2018ab} for details. The default numerical value corresponds to 15 degrees in radians.
+    \item \verb+AIMC_dclone_3+ is the threshold for the third cloning criterion, see the supplementary information of \cite{lemus2022ultrafast} for details.
+    \item \verb+AIMC_max_clone+ prevent the AIMC algorithm to have an uncontrolled number of cloining events by allowing a limited number of consecutive clones. The default value 4 allows a maximum of $4^2=16$ clones per initial condition. Convergence tests for dendrimer systems have shown that after approximatelly 13 clones per initial condition there is no significant improvement of results \cite{freixas2021nonadiabatic}.
+    \item \verb+nclones0+ is the initial number of clones that already happened for a given trajectory. This variable is only used for restarting purposes.
+    \item \verb+S0_S1_threshold+ is the threshold for dropping trajectories when the energy gap between $S_0$ and $S_1$ is to low. AIMC dynamics simulation will continue for the remaining trajectories (if any). The remaining trajectories will be renormalized in order to continue the propagation. Information about the time and label of the dropped out trajectory will be printed in the \verb+dropped.out+ file. \verb+S0_S1_threshold+ is also valid for trajectory surface hopping dynamics, for which the simulation will simply stop if the threshold is reached. The default value is 0.2 eV.
+\end{itemize}
+
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+   !***** Thermostat Parameters
+\end{lstlisting}
+The following section contains input parameters pertaining to the thermostat.
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+   therm_type=1, ! Thermostat type: (0) Newtonian, (1) Langevin, 
+   therm_temperature=300, ! Thermostat temperature, K [300]
+   therm_friction=20, ! Thermostat friction coefficient, 1/ps [20]
+\end{lstlisting}
+\begin{itemize}
+\item \verb+therm_type+ sets the type of thermostat to be used in the simulation.  This determines the equation of motion governing nuclear dynamics.  There are two options for this input, one of which is \verb+Newtonian+.  This is the same as introducing no thermostat, i.e., simulations at constant energy, The other option is \verb+Langevin+.  The Langevin equation of motion is a stochastic differential equation that introduces terms for viscosity and a Gaussian random force that controls temperature in such a way that obeys the canonical ensemble.  In realistic simulations, the thermostat should be set to \verb+Langevin+.
+\item \verb+therm_temperature+ sets the temperature of the thermostat in units of Kelvin (K).
+\item \verb+therm_friction+ sets the friction parameter for the Langevin thermostat in units of inverse picoseconds $\left(\text{ps}^{-1}\right)$.  This input generally depends on the viscosity of the solvent that is being modeled. However, in most cases, the default parameter should be used.
+\end{itemize}
+
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+   !***** Output & Log Parameters
+\end{lstlisting}
+\noindent The following section contains input parameters pertaining to output data.
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+   verbosity=2, ! NEXMD output verbosity (0-minimum, 3-maximum)
+   ! [2 for dynamics, 3 for optimization and single-point]
+   out_data_steps=1, ! Number of steps to write data [1]
+   out_coords_steps=10, ! Number of steps to write the restart file [10]
+   out_data_cube=0, ! Write (1) or do not write (0) view files to generate cubes [0]
+   out_count_init=0, ! Initial count for view files [0]
+   printTdipole=0, ! For printing the transition dipole moment [0]
+   printTDM=0, ! For printing the complete transition density matrix [0]
+\end{lstlisting}
+\begin{itemize}
+\item \verb+verbosity+ sets the level of printing of NEXMD related outputs.
+\item \verb+out_data_steps+ sets number of steps to write data.  For example, if \verb+time_step=0.1+ and \verb+out_data_steps=2+, data will be written to output files every 0.2 fs.
+\item \verb+out_coords_steps+ sets the number of data steps to also write a restart file.  Note that the rate at which the restart file is written also depends on \verb+out_data_steps+.  For example, if \verb+time_step=0.1+, \verb+out_data_steps=2+, and \verb+out_coords_steps=2+, the restart file will be written every 0.4 fs.  In general, the restart file is written every \verb+time_step+ $\times$ \verb+out_data_steps+ $\times$ \verb+out_coords_steps+ fs.
+\item \verb+out_data_cube+ sets whether or not to generate \verb+.DATA+ files.  These files are later used to generate cube files.  If \verb+out_data_cube+ is set to \verb+1+, \verb+.DATA+ files are generated for every excited state and for every time step.  For example, the file \verb+view0003-0007.DATA+ refers to the $3^{\text{rd}}$ time step and $7^{\text{th}}$ excited state.
+\item \verb+out_count_init+ is the initial value of the iterator used for skipping the writing of the restart file.
+\item \verb+printTdipole+ is set to 1 in order to print the transition dipole moments from the ground state to each excited state considered in a separate file \verb+tdipole.out+.
+\item \verb+printTDM+ is set to 1 for printing the complete transition density matrix instead of only the diagonal with the default value 0. The matrix will be written as a vector for each time step. For trajectory surface hopping dynamics it will be only written for the current state. For Ehrenfest or AIMC dynamics it will be written for all states involved and the second column will label the state. Use with caution: huge amount of data can be produced when writing the complete density matrix.
+\end{itemize}
+
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+&endmoldyn
+
+\end{lstlisting}
+
+The following block contains input parameters pertaining to the indexes of the pairs of atoms distances to freeze. If \verb+npc+ is set to zero this entire block can be omitted.
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+&pairs
+    1 2
+    3 4
+&endpairs
+\end{lstlisting}
+\begin{itemize}
+\item Between \verb+&pairs+ and \verb+&endpairs+ are the indexes of the pairs of atoms to freeze. In this example the distances between the first and second, and the third and fourth will be frozen.
+\end{itemize}
+
+The following block contains input parameters pertaining to the indexes of the normal modes to freeze. If \verb+nmc+ is set to zero this entire block can be omitted.
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+&modes
+    9
+    7
+&endmodes
+\end{lstlisting}
+\begin{itemize}
+\item Between \verb+&modes+ and \verb+&endmodes+ are the indexes of modes in the corresponding \verb+nma_modes.out+ file to freeze. In this example the modes 9th and 17th will be frozen.
+\end{itemize}
+
+The following blocks contains input parameters pertaining to the coordinates and velocities of the atoms that constitute the molecule being studied.
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+&coord
+  6       -7.9798271101       0.6776918081      -0.0532285388
+  6       -7.0849928010       1.7602597759       0.0294961792
+  6       -5.7058415294       1.5490364812       0.0312760931
+  6       -5.2231419594       0.2195333448      -0.0446043010
+  6       -6.1050960756      -0.8685564920       0.0220869421
+  6       -7.5344099241      -0.6444487634       0.0248126135
+  1       -9.0268081830       0.8587716724      -0.0794794940
+  1       -7.4774606514       2.7566353436       0.1635393862
+  1       -5.0939335779       2.4479885163       0.1481876938
+  1       -4.1292016456       0.0999373674      -0.1580811639
+  1       -5.6916991654      -1.8878557992       0.1151090966
+  1       -8.2838388636      -1.4313798704       0.1051927200
+&endcoord
+
+&veloc
+     3.3718248255    -5.6032885851    -1.1970845430
+     2.5106648755     2.0978837936    -1.0696411897
+    -5.9135180273    -3.7505826950     1.1689299883
+     7.7194332369     4.8702351843     0.6576546539
+    -7.1851218597    -2.0113572464    -0.6329683366
+    -1.7276579899     0.3919019235    -0.0257452789
+   -17.0279163131     9.9875659542     5.3513734186
+    -4.7222747943    18.9640275032    11.9601977632
+    10.9539809532    17.0164104392    -9.7113209726
+    25.7548696749     2.2116651958    -0.5444198125
+   -16.5303708308    -2.3313274630    -3.2147489925
+    16.2776787026     2.2582071549     9.3572624705
+&endveloc
+\end{lstlisting}
+\begin{itemize}
+\item Between \verb+&coord+ and \verb+&endcoord+ are coordinates of the atoms in angstroms (\AA).  The first column identifies each atom with its atomic number.  The following three columns are the $x$, $y$, and $z$ coordinates, respectively.  The coordinates shown above are those of a benzene molecule.
+\item Between \verb+&veloc+ and \verb+&endveloc+ are three columns showing velocities of each atom along the $x$, $y$, and $z$ axes, respectively.  The units of velocity are \AA/ps. 
+\end{itemize}
+
+The following blocks contains input parameters pertaining to the quantum density matrix associated with the nuclear states (the Tully density matrix for TSH).
+\begin{lstlisting}[mathescape=false,escapeinside={(*@}{@*)}]
+&coeff
+  0.00  0.00
+  0.00  0.00
+  0.00  0.00
+  0.00  0.00
+  0.00  0.00
+  1.00  0.00
+  0.00  0.00
+  0.00  0.00
+&endcoeff
+\end{lstlisting}
+\begin{itemize} 
+\item Between \verb+&coeff+ and \verb+&endcoeff+ are two columns showing the magnitude and phase of the excited-state coefficients, respectively.  The number of rows should be equal to the number of excited states being propagated, \verb+n_exc_states_propagate+.  In this example, eight excited-states are being propagated and the system is initially fully excited in the sixth excited-state. This block needs to be the last in the \verb+input.ceon+ file for restarting to work properly.
+\end{itemize}

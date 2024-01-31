@@ -1,78 +1,72 @@
-MODULE qm2_iterator_mod
+module qm2_iterator_mod
 
-  IMPLICIT NONE
+    implicit none
 
-  ! iterators / counters
+    ! iterators / counters
 
-  PUBLIC :: scf_iterator_value
-  PUBLIC :: diis_iterator_value
-  PUBLIC :: diis_iterator_prev_value
-  PUBLIC :: remaining_diis_tokens
+    public :: scf_iterator_value
+    public :: diis_iterator_value
+    public :: diis_iterator_prev_value
+    public :: remaining_diis_tokens
 
-  PRIVATE
+    private
 
-CONTAINS
-  
-  
-  FUNCTION scf_iterator_value(qmmm_nml,ITER) RESULT(val)
-    ! this is an unbounded linear iterator
-    use qmmm_nml_module   , only : qmmm_nml_type
-    IMPLICIT NONE
+contains
 
-    type(qmmm_nml_type), intent(inout) :: qmmm_nml
-    integer,intent(in),optional :: ITER
-    integer :: val
+    function scf_iterator_value(qmmm_nml, ITER) result(val)
+        ! this is an unbounded linear iterator
+        use qmmm_nml_module, only : qmmm_nml_type
+        implicit none
 
-    IF ( PRESENT(ITER) ) qmmm_nml%iter_val_saved = ITER
+        type(qmmm_nml_type), intent(inout) :: qmmm_nml
+        integer, intent(in), optional :: ITER
+        integer :: val
 
-    val = qmmm_nml%iter_val_saved
+        if (PRESENT(ITER)) qmmm_nml%iter_val_saved = ITER
 
-  END FUNCTION scf_iterator_value
+        val = qmmm_nml%iter_val_saved
 
+    end function scf_iterator_value
 
-  FUNCTION diis_iterator_value(qmmm_nml) RESULT(val)
-    ! this is a circular iterator
+    function diis_iterator_value(qmmm_nml) result(val)
+        ! this is a circular iterator
 
-  use qmmm_nml_module   , only : qmmm_nml_type
-    IMPLICIT NONE
-    type(qmmm_nml_type), intent(inout) :: qmmm_nml
-    integer :: val
+        use qmmm_nml_module, only : qmmm_nml_type
+        implicit none
+        type(qmmm_nml_type), intent(inout) :: qmmm_nml
+        integer :: val
 
-    val = MOD( scf_iterator_value(qmmm_nml)-1 , qmmm_nml%ndiis_matrices ) + 1
+        val = MOD(scf_iterator_value(qmmm_nml) - 1, qmmm_nml%ndiis_matrices) + 1
 
-  END FUNCTION diis_iterator_value
+    end function diis_iterator_value
 
+    function diis_iterator_prev_value(qmmm_nml) result(val)
+        ! this is a circular iterator
 
+        use qmmm_nml_module, only : qmmm_nml_type
+        implicit none
 
-  FUNCTION diis_iterator_prev_value(qmmm_nml) RESULT(val)
-    ! this is a circular iterator
+        type(qmmm_nml_type), intent(inout) :: qmmm_nml
+        integer :: val
 
-  use qmmm_nml_module   , only : qmmm_nml_type
-    IMPLICIT NONE
-    
-    type(qmmm_nml_type), intent(inout) :: qmmm_nml
-    integer :: val
+        val = MOD(scf_iterator_value(qmmm_nml) - 2, qmmm_nml%ndiis_matrices) + 1
+        if (val < 1) val = 1
 
-    val = MOD( scf_iterator_value(qmmm_nml)-2 , qmmm_nml%ndiis_matrices ) + 1
-    IF ( val < 1 ) val = 1
+    end function diis_iterator_prev_value
 
-  END FUNCTION diis_iterator_prev_value
+    function remaining_diis_tokens(qmmm_nml, SET_TO) result(val)
 
+        use qmmm_nml_module, only : qmmm_nml_type
+        implicit none
 
-  FUNCTION remaining_diis_tokens(qmmm_nml,SET_TO) RESULT(val)
+        type(qmmm_nml_type), intent(inout) :: qmmm_nml
+        integer, intent(in), optional :: SET_TO
+        integer :: val
 
-  use qmmm_nml_module   , only : qmmm_nml_type
-    IMPLICIT NONE
+        if (PRESENT(SET_TO)) qmmm_nml%saved_val = SET_TO
 
-    type(qmmm_nml_type), intent(inout) :: qmmm_nml
-    integer,intent(in),optional :: SET_TO
-    integer :: val
+        val = qmmm_nml%saved_val
 
-    IF ( PRESENT(SET_TO) ) qmmm_nml%saved_val = SET_TO
+    end function remaining_diis_tokens
 
-    val = qmmm_nml%saved_val
-
-  END FUNCTION remaining_diis_tokens
-
-
-END MODULE qm2_iterator_mod
+end module qm2_iterator_mod
